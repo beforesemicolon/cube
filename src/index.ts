@@ -1,12 +1,12 @@
 export * from "./cube";
-export * from "./update-element-key";
+export * from "./element";
 import {Cube} from "./cube";
-import {updateElementKey} from "./update-element-key";
+import {element} from "./element";
 
 if (window) {
 	// @ts-ignore
 	window.CUBE = {
 		Cube,
-		updateElementKey,
+		element,
 	}
 }

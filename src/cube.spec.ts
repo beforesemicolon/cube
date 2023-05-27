@@ -8,7 +8,7 @@ describe('cube', () => {
 		const adoptionMock = jest.fn();
 		
 		const MyButton = () => {
-			const element = document.createElement("button");
+			const element = document.createElement("button", {});
 			
 			onMount(mountMock)
 			onDestroy(destroyMock)
@@ -20,26 +20,24 @@ describe('cube', () => {
 		
 		const Button = Cube(MyButton, {value: 12});
 		
-		const {createElement} = Button();
+		const btn = Button().createElement();
 		
-		const btn = createElement();
-		
-		document.body.appendChild(btn);
+		document.body.appendChild(btn.self());
 		
 		expect(mountMock).toHaveBeenCalled();
 		
-		btn.value = 20;
+		btn.attr("value", 20);
 		
 		expect(updateMock).toHaveBeenCalledWith("value", 20, 12);
 		
 		const iframe = document.createElement('iframe');
 		document.body.appendChild(iframe);
 		
-		iframe.contentDocument?.body.appendChild(btn)
+		iframe.contentDocument?.body.appendChild(btn.self())
 		
 		expect(adoptionMock).toHaveBeenCalled();
 		
-		btn.remove()
+		btn.self().remove()
 		
 		expect(destroyMock).toHaveBeenCalled();
 	});
@@ -58,13 +56,11 @@ describe('cube', () => {
 		
 		const Button = Cube(CoolButton, {value: 12});
 		
-		const {createElement} = Button();
+		const btn = Button().createElement();
 		
-		const btn = createElement();
+		document.body.appendChild(btn.self());
 		
-		document.body.appendChild(btn);
-		
-		btn.value = 20;
+		btn.attr("value", 20);
 		
 		expect(updateMock).toHaveBeenCalledWith({"value": 20})
 	});
@@ -83,13 +79,11 @@ describe('cube', () => {
 		
 		const Button = Cube(PureButton, {value: 12});
 		
-		const {createElement} = Button();
+		const btn = Button().createElement();
 		
-		const btn = createElement();
+		document.body.appendChild(btn.self());
 		
-		document.body.appendChild(btn);
-		
-		btn.shadowRoot?.querySelector("button")?.click();
+		btn.find("button")[0].self().click();
 		
 		// expect(btn.value).toBe(12)
 	});

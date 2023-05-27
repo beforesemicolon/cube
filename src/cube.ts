@@ -3,7 +3,7 @@ import {turnCamelToKebabCasing} from "./utils/turn-camel-to-kebab-casing";
 import {jsonParse} from "./utils/json-parse";
 import {JSONToCSS} from "./utils/json-to-css";
 import {getStyleString} from "./utils/get-style-string";
-import {Mode} from "fs";
+import {element, ElementInterface} from "./element";
 
 export interface StylesheetObject {
 	[k: string]: Partial<CSSStyleDeclaration> | StylesheetObject | number
@@ -18,21 +18,25 @@ export type CubeComponent<P> = CubeElement & P;
 export type Stylesheet = StylesheetObject | string;
 export type RenderElement = HTMLElement | DocumentFragment;
 export type Renderer<P> = (props: P) => RenderElement;
-export type ShadowRootMode = "open" | "closed" | "none";
+export type ShadowRootMode = "open" | "closed";
 export type RegisterComponentCallback<P> = () => ({
 	tagName: string;
-	mode: Mode;
+	mode: ShadowRootMode;
 	delegatesFocus: boolean;
-	createElement: () => CubeComponent<P>
+	createElement: () => ElementInterface
 })
+export interface StyleControl<S> {
+	update: (data: Partial<S>) => void;
+	load: (shadow: ShadowRoot | HTMLElement) => void;
+}
 export interface ComponentOptions {
 	mode?: ShadowRootMode;
 	delegatesFocus?: boolean;
 }
-export function Cube<P extends Record<string, any>>(
+export function Cube<P extends Record<string, any>, S extends Record<string, any>>(
 	renderer: Renderer<P>,
 	props: P = {} as P,
-	stylesheet: Stylesheet = ""
+	stylesheet?: (data: S) => Stylesheet
 ): RegisterComponentCallback<P> {
 	const tagName = turnCamelToKebabCasing(renderer.name || "");
 	
@@ -41,7 +45,7 @@ export function Cube<P extends Record<string, any>>(
 	}
 	
 	return ({mode = "open", delegatesFocus = false}: ComponentOptions = {}) => {
-		createComponentClass(tagName, {
+		createComponentClass<P, S>(tagName, {
 			mode,
 			delegatesFocus,
 			renderer,
@@ -53,9 +57,7 @@ export function Cube<P extends Record<string, any>>(
 			tagName,
 			mode,
 			delegatesFocus,
-			createElement: () => {
-				return document.createElement(tagName) as CubeComponent<P>;
-			},
+			createElement: () => element(tagName),
 		}
 	}
 }
@@ -103,7 +105,12 @@ export const onUpdate = (cb: (name: string, newValue: unknown, oldValue: unknown
 	}
 }
 
-function createComponentClass<P extends Record<string, any>>(tagName: string, {
+export const Style = () => {
+	// @ts-ignore
+	return currentComponent?.styleControl
+}
+
+function createComponentClass<P extends Record<string, any>, S extends Record<string, any>>(tagName: string, {
 	delegatesFocus = false,
 	mode = "open",
 	props,
@@ -114,7 +121,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 	delegatesFocus?: boolean;
 	props: P,
 	renderer: Renderer<P>;
-	stylesheet?: Stylesheet;
+	stylesheet?: (data: S) => Stylesheet;
 }) {
 	const CLS = customElements.get(tagName);
 	
@@ -131,6 +138,53 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 				mount: () => {},
 				adoption: () => {},
 				update: (name: string, newValue: unknown, oldValue: unknown) => {},
+				styleControl: {
+					update: this.updateStyle.bind(this),
+					detach: this.detachStyle.bind(this),
+					attach: this.attachStyle.bind(this),
+					reset: this.resetStyle.bind(this),
+				}
+			}
+			#styleElement?: HTMLStyleElement;
+			#previousStyleData: S = {} as S;
+			
+			getStyle(data: S) {
+				this.#previousStyleData = {...this.#previousStyleData, ...data};
+				let style: Stylesheet = "";
+				
+				if (typeof stylesheet === "function") {
+					style = stylesheet(this.#previousStyleData);
+					
+					if (style) {
+						style = typeof style === 'object'
+							? `<style class="${tagName.toLowerCase()}">${JSONToCSS(style, tagName, true)}</style>`
+							: getStyleString(style, tagName.toLowerCase(), true);
+					}
+				}
+				
+				return style;
+			}
+			
+			updateStyle(data: Partial<S>) {
+				const style = this.getStyle(data as S);
+				
+				if (this.#styleElement) {
+					this.#styleElement.outerHTML = style;
+				}
+			}
+			detachStyle() {
+				if (this.#styleElement) {
+					this.#styleElement.remove();
+				}
+			}
+			attachStyle() {
+				if (this.#styleElement) {
+					this.#shadowRoot.prepend(this.#styleElement)
+				}
+			}
+			resetStyle() {
+				this.#previousStyleData = {} as S;
+				this.updateStyle({});
 			}
 			
 			constructor() {
@@ -152,11 +206,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 					})
 				});
 				
-				if (mode !== "none") {
-					this.#shadowRoot = this.attachShadow({mode, delegatesFocus});
-				} else {
-					this.#shadowRoot = this;
-				}
+				this.#shadowRoot = this.attachShadow({mode, delegatesFocus});
 			}
 			
 			async connectedCallback() {
@@ -170,19 +220,13 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 					this.#element = element;
 					
 					if (noElement) {
-						let style = "";
+						const style = this.getStyle({} as S);
 						
-						if (stylesheet) {
-							style = typeof stylesheet === 'object'
-								? `<style class="${tagName}">${JSONToCSS(stylesheet, tagName, true)}</style>`
-								: getStyleString(stylesheet, tagName, true);
-						}
-						
-						if (mode === "none") {
-							document.head.insertAdjacentHTML("beforeend", style)
-						} else {
+						if (style) {
 							this.#shadowRoot.innerHTML = style;
+							this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
 						}
+						
 						this.#shadowRoot.appendChild(this.#element);
 					}
 				}
