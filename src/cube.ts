@@ -132,7 +132,7 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 			static readonly tagName = tagName;
 			#shadowRoot: ShadowRoot | HTMLElement;
 			#element: Element | DocumentFragment | null = null;
-			#props = JSON.parse(JSON.stringify(props)); // todo: use structured clone
+			#props = structuredClone(props);
 			#handlers = {
 				destroy: () => {},
 				mount: () => {},
@@ -153,7 +153,7 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				let style: Stylesheet = "";
 				
 				if (typeof stylesheet === "function") {
-					style = stylesheet(this.#previousStyleData);
+					style = stylesheet(structuredClone(this.#previousStyleData));
 					
 					if (style) {
 						style = typeof style === 'object'
