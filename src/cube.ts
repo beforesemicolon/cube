@@ -16,7 +16,7 @@ export interface CubeElement extends HTMLElement {
 }
 export type CubeComponent<P> = CubeElement & P;
 export type Stylesheet = StylesheetObject | string;
-export type RenderElement = HTMLElement | DocumentFragment;
+export type RenderElement = HTMLElement | Element | DocumentFragment;
 export type Renderer<P> = (props: P) => RenderElement;
 export type ShadowRootMode = "open" | "closed";
 export type RegisterComponentCallback<P> = () => ({
@@ -110,6 +110,17 @@ export const Style = () => {
 	return currentComponent?.styleControl
 }
 
+export const EventDispatch = <Data>() => {
+	// @ts-ignore
+	const dispatchEvent = currentComponent.dispatchEvent;
+	
+	return <T>(eventName: string, detail?: T) => {
+		dispatchEvent(new CustomEvent(eventName, {
+			detail
+		}))
+	}
+}
+
 function createComponentClass<P extends Record<string, any>, S extends Record<string, any>>(tagName: string, {
 	delegatesFocus = false,
 	mode = "open",
@@ -143,6 +154,9 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 					detach: this.detachStyle.bind(this),
 					attach: this.attachStyle.bind(this),
 					reset: this.resetStyle.bind(this),
+				},
+				dispatchEvent: (e: CustomEvent) => {
+					this.dispatchEvent(e)
 				}
 			}
 			#styleElement?: HTMLStyleElement;

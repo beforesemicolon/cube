@@ -24,14 +24,21 @@ export interface ElementInterface {
 	siblings: () => ElementInterface[];
 	prev: () => ElementInterface | null;
 	next: () => ElementInterface | null;
-	on: (eventName: string, handler?: EventListenerOrEventListenerObject) => ElementInterface;
+	on: (eventName: string, handler?: EventListenerOrEventListenerObject | CustomEventListener<unknown>) => ElementInterface;
 	off: (eventName: string) => ElementInterface;
 }
 
+interface CustomEventListener<D> {
+	(evt: CustomEvent<D>): void;
+}
+
 export const element = (tagNameOrElement: string | HTMLElement, content = ""): ElementInterface => {
-	let eventHandlers: Record<string, EventListenerOrEventListenerObject> = {};
+	let eventHandlers: Record<string, EventListenerOrEventListenerObject | CustomEventListener<unknown>> = {};
 	let el = typeof tagNameOrElement === "string" ? document.createElement(tagNameOrElement) : tagNameOrElement;
-	el.innerHTML = content;
+	
+	if (content) {
+		el.innerHTML = content;
+	}
 	
 	const isComponent = () => customElements.get(el.tagName.toLowerCase())
 	
@@ -168,17 +175,17 @@ export const element = (tagNameOrElement: string | HTMLElement, content = ""): E
 			
 			return this;
 		},
-		on(eventName: string, handler?: EventListenerOrEventListenerObject) {
+		on(eventName: string, handler?: EventListenerOrEventListenerObject | CustomEventListener<unknown>) {
 			if (handler) {
 				eventHandlers[eventName] = handler;
-				el.addEventListener(eventName, handler);
+				el.addEventListener(eventName, handler as EventListenerOrEventListenerObject);
 			}
 			
 			return this;
 		},
 		off(eventName: string) {
 			if (eventHandlers[eventName]) {
-				el.removeEventListener(eventName, eventHandlers[eventName]);
+				el.removeEventListener(eventName, eventHandlers[eventName] as EventListenerOrEventListenerObject);
 			}
 			
 			return this;
