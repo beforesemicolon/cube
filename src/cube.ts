@@ -8,16 +8,8 @@ import {element, ElementInterface} from "./element";
 export interface StylesheetObject {
 	[k: string]: Partial<CSSStyleDeclaration> | StylesheetObject | number
 }
-export interface CubeElement extends HTMLElement {
-	onMount: (cb: () => void) => void;
-	onUpdate: (cb: (name: string, newValue: unknown, oldValue: unknown) => void) => void;
-	onDestroy: (cb: () => void) => void;
-	onAdoption: (cb: () => void) => void;
-}
-export type CubeComponent<P> = CubeElement & P;
 export type Stylesheet = StylesheetObject | string;
-export type RenderElement = HTMLElement | Element | DocumentFragment;
-export type Renderer<P> = (props: P) => RenderElement;
+export type Renderer<P> = (props: P) => void;
 export type ShadowRootMode = "open" | "closed";
 export type RegisterComponentCallback<P> = () => ({
 	tagName: string;
@@ -105,9 +97,13 @@ export const onUpdate = (cb: (name: string, newValue: unknown, oldValue: unknown
 	}
 }
 
-export const Style = () => {
+export const Style = (styleProps?: {}) => {
 	// @ts-ignore
-	return currentComponent?.styleControl
+	const control = currentComponent?.styleControl;
+	
+	control.update(styleProps);
+	
+	return control
 }
 
 export const EventDispatch = <Data>() => {
@@ -119,6 +115,37 @@ export const EventDispatch = <Data>() => {
 			detail
 		}))
 	}
+}
+
+export const template = (stringParts: TemplateStringsArray, ...values: unknown[]): Record<string, ElementInterface> => {
+	if (currentComponent) {
+		let htmlString = stringParts
+			.map((s, i) => `${s}${values[i] || ""}`)
+			.join("")
+			.trim();
+		const frag = document.createDocumentFragment();
+		const el = document.createElement("div");
+		el.innerHTML = htmlString.trim();
+		el.childNodes.forEach(n => {
+			frag.appendChild(n)
+		})
+		
+		// @ts-ignore
+		currentComponent.element = frag;
+		
+		return Array.from(frag.querySelectorAll('[ref]')).reduce((acc, n) => {
+			const refName = n.getAttribute("ref");
+			n.removeAttribute("ref");
+			
+			if (refName) {
+				acc[refName] = element(n as HTMLElement);
+			}
+			
+			return acc
+		}, {} as Record<string, ElementInterface>);
+	}
+	
+	return {}
 }
 
 function createComponentClass<P extends Record<string, any>, S extends Record<string, any>>(tagName: string, {
@@ -142,7 +169,6 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 			static observedAttributes: Array<string> = Object.keys(props).map(turnCamelToKebabCasing);
 			static readonly tagName = tagName;
 			#shadowRoot: ShadowRoot | HTMLElement;
-			#element: Element | DocumentFragment | null = null;
 			#props = structuredClone(props);
 			#handlers = {
 				destroy: () => {},
@@ -157,7 +183,8 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				},
 				dispatchEvent: (e: CustomEvent) => {
 					this.dispatchEvent(e)
-				}
+				},
+				element: document.createDocumentFragment()
 			}
 			#styleElement?: HTMLStyleElement;
 			#previousStyleData: S = {} as S;
@@ -183,7 +210,9 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				const style = this.getStyle(data as S);
 				
 				if (this.#styleElement) {
-					this.#styleElement.outerHTML = style;
+					const div = document.createElement("div");
+					div.innerHTML = style
+					this.#styleElement.innerHTML = div.children[0].innerHTML;
 				}
 			}
 			detachStyle() {
@@ -224,26 +253,21 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 			}
 			
 			async connectedCallback() {
-				const noElement = this.#element === null;
+				this.#shadowRoot.innerHTML = "";
 				
-				if (noElement || this.isConnected) {
-					currentComponent = this.#handlers;
-					// todo freeze props but allow to be dynamically read
-					let element = renderer(this.#props);
-					currentComponent = null;
-					this.#element = element;
-					
-					if (noElement) {
-						const style = this.getStyle({} as S);
-						
-						if (style) {
-							this.#shadowRoot.innerHTML = style;
-							this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
-						}
-						
-						this.#shadowRoot.appendChild(this.#element);
-					}
+				currentComponent = this.#handlers;
+				// todo freeze props but allow to be dynamically read
+				renderer(this.#props);
+				currentComponent = null;
+				
+				const style = this.getStyle({} as S);
+				
+				if (style) {
+					this.#shadowRoot.innerHTML = style;
+					this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
 				}
+				
+				this.#shadowRoot.appendChild(this.#handlers.element);
 				
 				this.#handlers.mount();
 			}
