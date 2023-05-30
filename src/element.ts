@@ -24,7 +24,7 @@ export interface ElementInterface {
 	siblings: () => ElementInterface[];
 	prev: () => ElementInterface | null;
 	next: () => ElementInterface | null;
-	on: (eventName: string, handler?: EventListenerOrEventListenerObject | CustomEventListener<unknown>) => ElementInterface;
+	on: (eventName: string, handler?: EventListenerOrEventListenerObject | CustomEventListener<unknown>, options?: boolean | AddEventListenerOptions) => ElementInterface;
 	off: (eventName: string) => ElementInterface;
 }
 
@@ -33,14 +33,15 @@ interface CustomEventListener<D> {
 }
 
 export const element = (tagNameOrElement: string | HTMLElement, content = ""): ElementInterface => {
-	let eventHandlers: Record<string, EventListenerOrEventListenerObject | CustomEventListener<unknown>> = {};
+	let eventHandlers: Record<string, {
+		handler: EventListenerOrEventListenerObject | CustomEventListener<unknown>,
+		options?: boolean | AddEventListenerOptions
+	}> = {};
 	let el = typeof tagNameOrElement === "string" ? document.createElement(tagNameOrElement) : tagNameOrElement;
 	
 	if (content) {
 		el.innerHTML = content;
 	}
-	
-	const isComponent = () => customElements.get(el.tagName.toLowerCase())
 	
 	return {
 		self() {
@@ -153,7 +154,8 @@ export const element = (tagNameOrElement: string | HTMLElement, content = ""): E
 			el.replaceWith(node);
 			el = node;
 			for (let eventHandlersKey in eventHandlers) {
-				this.on(eventHandlersKey, eventHandlers[eventHandlersKey])
+				const {handler, options} = eventHandlers[eventHandlersKey]
+				this.on(eventHandlersKey, handler, options)
 			}
 			
 			return this;
@@ -175,17 +177,18 @@ export const element = (tagNameOrElement: string | HTMLElement, content = ""): E
 			
 			return this;
 		},
-		on(eventName: string, handler?: EventListenerOrEventListenerObject | CustomEventListener<unknown>) {
+		on(eventName: string, handler?: EventListenerOrEventListenerObject | CustomEventListener<unknown>, options?: boolean | AddEventListenerOptions) {
 			if (handler) {
-				eventHandlers[eventName] = handler;
-				el.addEventListener(eventName, handler as EventListenerOrEventListenerObject);
+				eventHandlers[eventName] = {handler, options};
+				el.addEventListener(eventName, handler as EventListenerOrEventListenerObject, options);
 			}
 			
 			return this;
 		},
 		off(eventName: string) {
 			if (eventHandlers[eventName]) {
-				el.removeEventListener(eventName, eventHandlers[eventName] as EventListenerOrEventListenerObject);
+				const {handler, options} = eventHandlers[eventName];
+				el.removeEventListener(eventName, handler as EventListenerOrEventListenerObject, options);
 			}
 			
 			return this;
