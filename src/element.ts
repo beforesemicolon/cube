@@ -6,6 +6,7 @@ import {turnCamelToKebabCasing} from "./utils/turn-camel-to-kebab-casing";
 
 export interface ElementInterface {
 	self: () => HTMLElement;
+	isComponent: () => boolean;
 	text: (value?: string) => string | null | ElementInterface;
 	toHtml: () => string;
 	html: (value?: string) => string | ElementInterface;
@@ -43,9 +44,14 @@ export const element = (tagNameOrElement: string | HTMLElement, content = ""): E
 		el.innerHTML = content;
 	}
 	
+	const isComponent = Boolean(customElements.get(el.tagName));
+	
 	return {
 		self() {
 			return el
+		},
+		isComponent() {
+			return isComponent;
 		},
 		toHtml() {
 			return el.outerHTML

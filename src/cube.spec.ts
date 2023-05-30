@@ -1,4 +1,4 @@
-import {Cube, onAdoption, onDestroy, onMount, onUpdate} from "./cube";
+import {Cube, onAdoption, onDestroy, onMount, onUpdate, template} from "./cube";
 
 describe('cube', () => {
 	it('should handle lifecycles', () => {
@@ -8,14 +8,12 @@ describe('cube', () => {
 		const adoptionMock = jest.fn();
 		
 		const MyButton = () => {
-			const element = document.createElement("button", {});
+			template`<button></button>`
 			
 			onMount(mountMock)
 			onDestroy(destroyMock)
 			onUpdate(updateMock)
 			onAdoption(adoptionMock)
-			
-			return element;
 		}
 		
 		const Button = Cube(MyButton, {value: 12});
