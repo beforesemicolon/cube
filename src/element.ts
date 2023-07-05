@@ -3,6 +3,7 @@ import {isPrimitive} from "./utils/is-primitive";
 import {jsonStringify} from "./utils/json-stringify";
 import {resolveHtmlEntities} from "./utils/resolve-html-entities";
 import {turnCamelToKebabCasing} from "./utils/turn-camel-to-kebab-casing";
+import {jsonParse} from "./utils/json-parse";
 
 export interface ElementInterface {
 	self: () => HTMLElement;
@@ -91,7 +92,12 @@ export const element = (tagNameOrElement: string | HTMLElement, content = ""): E
 				return el.getAttribute(name);
 			}
 			
-			if (name in booleanAttributes || typeof value === 'boolean') {
+			value = jsonParse(value);
+			const isBoolValue = typeof value === 'boolean';
+			const isBoolAttr = name in booleanAttributes;
+			
+			if (isBoolAttr) {
+				value = isBoolValue ? value : Boolean(value);
 				if (value) el.setAttribute(name, '');
 				else el.removeAttribute(name);
 			} else {
