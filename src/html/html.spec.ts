@@ -1,5 +1,4 @@
 import {html} from "./html";
-import {before} from "node:test";
 
 describe("html", () => {
 	beforeEach(() => {
@@ -150,14 +149,151 @@ describe("html", () => {
 		expect(btnElement).toBeInstanceOf(HTMLButtonElement)
 		expect(spanElement).toBeInstanceOf(HTMLSpanElement)
 	});
-
-	it('should handle attr attribute', () => {
-		const btn = html`
-			<button attr.disabled="${true}" attr.class.loading="${true}">
-				<span attr.style="color: #900;, ${true}" attr.style.font-style="bold, ${true}">click me</span>
-			</button>
-		`;
-
-		btn.render(document.body)
-	});
+	
+	describe("should handle attr directive", () => {
+		it('class name as property', () => {
+			let loading = true;
+			const btn = html`<button attr.class.loading="${() => loading}" attr.class.btn="true">click me</button>`;
+			
+			btn.render(document.body);
+			
+			expect(document.body.innerHTML).toBe('<button class="loading btn">click me</button>');
+			
+			loading = false;
+			
+			btn.render();
+			
+			expect(document.body.innerHTML).toBe('<button class="btn">click me</button>');
+		});
+		
+		it('class name as value', () => {
+			let loading = true;
+			const btn = html`<button attr.class="loading, ${() => loading}">click me</button>`;
+			
+			btn.render(document.body);
+			
+			expect(document.body.innerHTML).toBe('<button class="loading">click me</button>');
+			
+			loading = false;
+			
+			btn.render();
+			
+			expect(document.body.innerHTML).toBe('<button>click me</button>');
+		});
+		
+		it('data name as property', () => {
+			let loading = true;
+			const btn = html`<button attr.data.loading="${() => loading}" attr.data.btn="true">click me</button>`;
+			
+			btn.render(document.body);
+			
+			expect(document.body.innerHTML).toBe('<button data-loading="true" data-btn="true">click me</button>');
+			
+			loading = false;
+			
+			btn.render();
+			
+			expect(document.body.innerHTML).toBe('<button data-btn="true">click me</button>');
+		});
+		
+		it('data name as value wont work', () => {
+			let loading = true;
+			const btn = html`<button attr.data="loading, ${() => loading}">click me</button>`;
+			
+			btn.render(document.body);
+			
+			expect(document.body.innerHTML).toBe('<button>click me</button>');
+		});
+		
+		it('style property without flag', () => {
+			const btn = html`<button attr.style.cursor="pointer">click me</button>`;
+			
+			btn.render(document.body);
+			
+			expect(document.body.innerHTML).toBe('<button style="cursor: pointer;">click me</button>');
+		});
+		
+		it('style value without flag', () => {
+			const btn = html`<button attr.style="cursor: pointer">click me</button>`;
+			
+			btn.render(document.body);
+			
+			expect(document.body.innerHTML).toBe('<button style="cursor: pointer;">click me</button>');
+		});
+		
+		it('style property with flag', () => {
+			let pointer = false;
+			const btn = html`<button attr.style.cursor="pointer, ${() => pointer}">click me</button>`;
+			
+			btn.render(document.body);
+			
+			expect(document.body.innerHTML).toBe('<button>click me</button>');
+			
+			pointer = true;
+			
+			btn.render();
+			
+			expect(document.body.innerHTML).toBe('<button style="cursor: pointer;">click me</button>');
+		});
+		
+		it('style value with flag', () => {
+			let pointer = false;
+			const btn = html`<button attr.style="cursor: pointer, ${() => pointer}">click me</button>`;
+			
+			btn.render(document.body);
+			
+			expect(document.body.innerHTML).toBe('<button>click me</button>');
+			
+			pointer = true;
+			
+			btn.render();
+			
+			expect(document.body.innerHTML).toBe('<button style="cursor: pointer;">click me</button>');
+		});
+		
+		it('any boolean attr', () => {
+			let disabled = true;
+			const btn = html`<button attr.disabled="${() => disabled}">click me</button>`;
+			
+			btn.render(document.body);
+			
+			expect(document.body.innerHTML).toBe('<button disabled="">click me</button>');
+			
+			disabled = false;
+			
+			btn.render();
+			
+			expect(document.body.innerHTML).toBe('<button>click me</button>');
+		});
+		
+		it('any boolean attr with possible values', () => {
+			let hidden = true;
+			const btn = html`<button attr.hidden="until-found, ${() => hidden}">click me</button>`;
+			
+			btn.render(document.body);
+			
+			expect(document.body.innerHTML).toBe('<button hidden="until-found">click me</button>');
+			
+			hidden = false;
+			
+			btn.render();
+			
+			expect(document.body.innerHTML).toBe('<button>click me</button>');
+		});
+		
+		it('any non-boolean attr', () => {
+			let disabled = true;
+			const btn = html`<button attr.aria-disabled="${() => disabled}">click me</button>`;
+			
+			btn.render(document.body);
+			
+			expect(document.body.innerHTML).toBe('<button aria-disabled="true">click me</button>');
+			
+			disabled = false;
+			
+			btn.render();
+			
+			expect(document.body.innerHTML).toBe('<button aria-disabled="false">click me</button>');
+		});
+	})
 })

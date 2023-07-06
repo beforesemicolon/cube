@@ -1,9 +1,8 @@
-import {jsonParse, turnKebabToCamelCasing} from "../utils";
-import {before} from "node:test";
+import {booleanAttributes, jsonParse, turnCamelToKebabCasing, turnKebabToCamelCasing} from "../utils";
 import {isObjectLiteral} from "../utils/is-object-literal";
 
 export interface ExecutableValue {
-	type: "directive" | "attr" | "text" | "event",
+	type: "attr-dir" | "attr-value" | "text" | "event",
 	name: string;
 	rawValue: string;
 	value: unknown;
@@ -93,10 +92,8 @@ const checkNodeSlotAndDirectives = (node: Node, cb: (executable: Executable) => 
 
 	if (node.nodeType === 1) {
 		const element = node as Element;
-		console.log('-- element', element.outerHTML, Array.from(element.attributes));
 
-		for (const attr of element.attributes) {
-			console.log('-- ', attr.name);
+		for (const attr of Array.from(element.attributes)) {
 			const details = {
 				name: attr.name,
 				rawValue: attr.value,
@@ -111,25 +108,26 @@ const checkNodeSlotAndDirectives = (node: Node, cb: (executable: Executable) => 
 					prop: attr.name.slice(2),
 					type: "event"
 				})
-			} else if (/(attr|bind)(\.([a-z0-9-.]+))?|ref/.test(attr.name)) {
+			} else if (/^(attr|ref)/.test(attr.name)) {
 				element.removeAttribute(attr.name);
 
 				if (attr.name === "ref") {
 					refCb(attr.value)
 				} else {
-					const isAttrOrBind = attr.name.match(/(attr|bind)\.([a-z0-9-.]+)/);
+					const isAttrOrBind = attr.name.match(/(attr)\.([a-z0-9-.]+)/);
 					const prop = isAttrOrBind ? isAttrOrBind[2] : "";
 					values.push({
 						...details,
-						type: "directive",
+						type: "attr-dir",
 						name: attr.name.slice(0, attr.name.indexOf(".")),
+						value: "",
 						prop
 					})
 				}
 			} else if (/{{val[0-9]+}}/.test(attr.value)) {
 				values.push({
 					...details,
-					type: "attr"
+					type: "attr-value"
 				})
 			}
 		}
@@ -200,11 +198,11 @@ const handleTextExecutable = (executableValue: ExecutableValue, nodes: Node[]) =
 	}
 }
 
-const handleAttrDirectiveExecutable = (executableValue: ExecutableValue, value: unknown) => {
+const handleAttrDirectiveExecutable = (executableValue: ExecutableValue, value: string) => {
 	if (value !== executableValue.value) {
 		executableValue.value = value;
-		const [attrName, property] = (executableValue.prop || "").split(".");
-		const element = executableValue.renderedNode;
+		let [attrName, property] = (executableValue.prop || "").split(".");
+		const element = executableValue.renderedNode as HTMLElement;
 		let shouldAdd = typeof value === "boolean" ? value : true;
 
 		if (typeof value === "string") {
@@ -216,70 +214,74 @@ const handleAttrDirectiveExecutable = (executableValue: ExecutableValue, value: 
 				value = parts.slice(0, -1).join("")
 			}
 		}
+		
+		switch (attrName) {
+			case 'style':
+				if (property) {
+					property = turnKebabToCamelCasing(property);
 
-		console.log('-- handleAttrDirectiveExecutable', {attrName, property, value, shouldAdd, element});
-		// switch (attrName) {
-		// 	case 'style':
-		// 		if (property) {
-		// 			property = turnKebabToCamelCasing(property);
-		//
-		// 			element.style[property] = shouldAdd ? val : '';
-		// 		} else {
-		// 			val
-		// 				.match(/([a-z][a-z-]+)(?=:):([^;]+)/g)
-		// 				?.forEach((style: string) => {
-		// 					let [name, styleValue] = style.split(':').map(s => s.trim());
-		//
-		// 					if (shouldAdd) {
-		// 						element.style.setProperty(name, styleValue);
-		// 					} else {
-		// 						element.style.removeProperty(name);
-		// 					}
-		// 				})
-		// 		}
-		//
-		// 		break;
-		// 	case 'class':
-		// 		if (property) {
-		// 			if (shouldAdd) {
-		// 				element.classList.add(property);
-		// 			} else {
-		// 				element.classList.remove(property);
-		// 			}
-		// 		} else {
-		// 			const classes = val.split(/\s+/g);
-		//
-		// 			if (shouldAdd) {
-		// 				classes.forEach((cls: string) => element.classList.add(cls));
-		// 			} else {
-		// 				classes.forEach((cls: string) => element.classList.remove(cls));
-		// 			}
-		// 		}
-		// 		break;
-		// 	case 'data':
-		// 		if (property) {
-		// 			if (shouldAdd) {
-		// 				element.dataset[turnKebabToCamelCasing(property)] = val;
-		// 			} else {
-		// 				element.removeAttribute(`data-${turnCamelToKebabCasing(property)}`)
-		// 			}
-		// 		}
-		// 		break;
-		// 	default:
-		// 		if (attrName) {
-		// 			if (shouldAdd) {
-		// 				element.setAttribute(attrName,
-		// 					booleanAttr.hasOwnProperty(attrName) ? '' : `${val || shouldAdd}`);
-		// 			} else {
-		// 				element.removeAttribute(attrName);
-		// 			}
-		// 		}
-		// }
+					element.style.setProperty(property, shouldAdd ? value : '');
+				} else {
+					value
+						.match(/([a-z][a-z-]+)(?=:):([^;]+)/g)
+						?.forEach((style: string) => {
+							let [name, styleValue] = style.split(':').map(s => s.trim());
+
+							if (shouldAdd) {
+								element.style.setProperty(name, styleValue);
+							} else {
+								element.style.removeProperty(name);
+							}
+						})
+				}
+
+				break;
+			case 'class':
+				if (property) {
+					if (shouldAdd) {
+						element.classList.add(property);
+					} else {
+						element.classList.remove(property);
+					}
+				} else {
+					const classes = value.split(/\s+/g);
+
+					if (shouldAdd) {
+						classes.forEach((cls: string) => element.classList.add(cls));
+					} else {
+						classes.forEach((cls: string) => element.classList.remove(cls));
+					}
+				}
+				
+				if (!element.classList.length) {
+					element.removeAttribute("class")
+				}
+				break;
+			case 'data':
+				if (property) {
+					if (shouldAdd) {
+						element.dataset[turnKebabToCamelCasing(property)] = value;
+					} else {
+						element.removeAttribute(`data-${turnCamelToKebabCasing(property)}`)
+					}
+				}
+				break;
+			default:
+				if (attrName) {
+					const boolAttr = (booleanAttributes as Record<string, {possibleValues?: string[]}>)[attrName];
+					
+					if (boolAttr) {
+						if (shouldAdd) {
+							element.setAttribute(attrName, boolAttr.possibleValues && boolAttr.possibleValues.includes(value) ? value : "");
+						} else {
+							element.removeAttribute(attrName);
+						}
+					} else {
+						element.setAttribute(attrName, value);
+					}
+				}
+		}
 	}
-}
-
-const handleBindDirectiveExecutable = (executableValue: ExecutableValue, value: unknown) => {
-	console.log('-- handleBindDirectiveExecutable', executableValue, value);
 }
 
 const handleExecutable = (executable: Executable, values: unknown[]) => {
@@ -295,17 +297,9 @@ const handleExecutable = (executable: Executable, values: unknown[]) => {
 		let value: any = "";
 
 		switch (val.type) {
-			case "directive":
+			case "attr-dir":
 				value = jsonParse(parts.map(p => typeof p === "function" ? p() : p).join(""));
-
-				switch (val.name) {
-					case "attr":
-						handleAttrDirectiveExecutable(val, value);
-						break;
-					case "bind":
-						handleBindDirectiveExecutable(val, value);
-						break;
-				}
+				handleAttrDirectiveExecutable(val, value);
 				break;
 			case "event":
 				let node = Array.isArray(val.renderedNode)
@@ -332,7 +326,7 @@ const handleExecutable = (executable: Executable, values: unknown[]) => {
 					node.addEventListener(eventName, eventHandler, eventOption)
 				}
 				break;
-			case "attr":
+			case "attr-value":
 				value = jsonParse(parts.map(p => typeof p === "function" ? p() : p).join(""));
 
 				if (value === val.value) {
