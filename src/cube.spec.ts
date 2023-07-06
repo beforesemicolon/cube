@@ -1,6 +1,7 @@
 import 'core-js/stable/structured-clone';
-import {register, onAdoption, onDestroy, onMount, template, html} from "./cube";
+import {register, onAdoption, onDestroy, onMount, template} from "./cube";
 import {Only} from "./helpers/only.helper";
+import {html} from "./html";
 
 describe('cube', () => {
 	it('should handle lifecycles', () => {
@@ -137,118 +138,4 @@ describe('cube', () => {
 			expect(comp.self().shadowRoot?.innerHTML.trim()).toBe('<span>sample text</span>');
 		});
 	})
-	
-	describe('html', () => {
-		it('should render static text', () => {
-			const temp = html`sample`;
-			
-			temp.render(document.body);
-			
-			expect(document.body.innerHTML).toBe('sample');
-		});
-		
-		it('should render dynamic text and update', () => {
-			let x = 15;
-			
-			const temp = html`${() => x > 10 ? "more than 10" : "less than 10"}`;
-			
-			temp.render(document.body);
-			
-			expect(document.body.innerHTML).toBe('more than 10');
-			
-			x = 5;
-			
-			temp.render();
-			
-			expect(document.body.innerHTML).toBe('less than 10');
-		});
-		
-		it('should render html', () => {
-			const button = html`<button>click me</button>`;
-			
-			button.render(document.body);
-			
-			expect(document.body.innerHTML).toBe('<button>click me</button>');
-		});
-		
-		it('should render html with dynamic attr value', () => {
-			let type = "button"
-			const button = html`<button type="${() => type}">click me</button>`;
-			
-			button.render(document.body);
-			
-			expect(document.body.innerHTML).toBe('<button type="button">click me</button>');
-			
-			type = "submit";
-			
-			button.render();
-			
-			expect(document.body.innerHTML).toBe('<button type="submit">click me</button>');
-		});
-		
-		it('should render dynamic html', () => {
-			let value = "sample";
-			let edit = false;
-			const val = html`${() => edit ? `<input type="text" value="${value}"/>` : `<p>${value}</p>`}`;
-			
-			val.render(document.body);
-			
-			expect(document.body.innerHTML).toBe('<p>sample</p>');
-			
-			edit = true;
-			
-			val.render();
-			
-			expect(document.body.innerHTML).toBe('<input type="text" value="sample">');
-		});
-		
-		it('should render nested html 2 levels', () => {
-			const list = html`<ul>${html`${[1, 2, 3].map(i => `<li>item-${i}</li>`).join('&nbsp;')}`}</ul>`;
-			
-			list.render(document.body);
-			
-			expect(document.body.innerHTML).toBe('<ul><li>item-1</li>&nbsp;<li>item-2</li>&nbsp;<li>item-3</li></ul>')
-		});
-		
-		it('should render nested html 2 levels with dynamic inner level', () => {
-			let items = [1, 2, 3];
-			const list = html`<ul>${() => items.map(i => `<li>item-${i}</li>`).join('&nbsp;')}}</ul>`;
-			
-			list.render(document.body);
-			
-			expect(document.body.innerHTML).toBe('<ul><li>item-1</li>&nbsp;<li>item-2</li>&nbsp;<li>item-3</li></ul>');
-			
-			items = [1];
-			
-			list.render();
-			
-			expect(document.body.innerHTML).toBe('<ul><li>item-1</li></ul>');
-			
-			items = [1, 2];
-			
-			list.render();
-			
-			expect(document.body.innerHTML).toBe('<ul><li>item-1</li>&nbsp;<li>item-2</li></ul>');
-			
-			items = [];
-			
-			list.render();
-			
-			expect(document.body.innerHTML).toBe('<ul></ul>');
-			
-			items = [1, 2, 3];
-			
-			list.render();
-			
-			expect(document.body.innerHTML).toBe('<ul><li>item-1</li>&nbsp;<li>item-2</li>&nbsp;<li>item-3</li></ul>');
-		});
-		
-		it('should render nested html 3 levels', () => {
-			const deep = html`<ul>${html`<li>${html`<span>${html`sample`}</span>`}</li>`}</ul>`;
-			
-			deep.render(document.body);
-			
-			expect(document.body.innerHTML).toBe('<ul><li><span>sample</span></li></ul>')
-		});
-	});
 })

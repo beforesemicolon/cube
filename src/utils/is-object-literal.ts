@@ -1,0 +1,1 @@
+export const isObjectLiteral = (val: undefined) => `${val}` === '[object Object]';
