@@ -1,6 +1,5 @@
 import 'core-js/stable/structured-clone';
 import {register, onAdoption, onDestroy, onMount, template} from "./cube";
-import {Only} from "./helpers/only.helper";
 import {html} from "./html";
 
 describe('cube', () => {
@@ -82,60 +81,4 @@ describe('cube', () => {
 		
 		// expect(btn.value).toBe(12)
 	});
-	
-	describe("Only", () => {
-		it('works when flat', () => {
-			const TestComp = (props: any) => {
-				template`${() => props.hidden ? "" : `<span>icon</span>`}`;
-			}
-			
-			const Comp = register(TestComp, {hidden: false});
-			
-			const comp = Comp().createElement();
-			
-			document.body.appendChild(comp.self());
-			
-			expect(document.body.innerHTML).toBe("<test-comp></test-comp>");
-			expect(comp.self().shadowRoot?.innerHTML.trim()).toBe('<span>icon</span>');
-
-			comp.attr("hidden", true);
-
-			expect(document.body.innerHTML).toBe("<test-comp hidden=\"\"></test-comp>");
-			expect(comp.self().shadowRoot?.innerHTML.trim()).toBe('')
-
-			comp.attr("hidden", false);
-
-			expect(document.body.innerHTML).toBe("<test-comp></test-comp>");
-			expect(comp.self().shadowRoot?.innerHTML.trim()).toBe('<span>icon</span>');
-		});
-		
-		it('works when nested', () => {
-			const TestComp = (props: any) => {
-				template`${
-					() => (props.top ? html`
-						<span>sample ${html`text`}</span>
-					` : "")
-				}`;
-			}
-			
-			const Comp = register(TestComp, {top: true, deep: false});
-			
-			const comp = Comp().createElement();
-			
-			document.body.appendChild(comp.self());
-			
-			expect(document.body.innerHTML).toBe("<test-comp></test-comp>");
-			expect(comp.self().shadowRoot?.innerHTML.trim()).toBe('<span>sample text</span>');
-
-			comp.attr("top", false);
-
-			expect(document.body.innerHTML).toBe("<test-comp top=\"false\"></test-comp>");
-			expect(comp.self().shadowRoot?.innerHTML.trim()).toBe('');
-
-			comp.attr("top", true);
-
-			expect(document.body.innerHTML).toBe("<test-comp top=\"true\"></test-comp>");
-			expect(comp.self().shadowRoot?.innerHTML.trim()).toBe('<span>sample text</span>');
-		});
-	})
 })

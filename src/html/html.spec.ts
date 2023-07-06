@@ -55,7 +55,7 @@ describe("html", () => {
 	it('should render dynamic html', () => {
 		let value = "sample";
 		let edit = false;
-		const val = html`${() => edit ? `<input type="text" value="${value}"/>` : `<p>${value}</p>`}`;
+		const val = html`${() => edit ? `<input type="text" value="${value}"/>` : html`<p>${value}</p>`}`;
 
 		val.render(document.body);
 

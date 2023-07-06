@@ -7,5 +7,6 @@ export * from "./replace-host";
 export * from "./resolve-html-entities";
 export * from "./turn-kebab-to-camel-casing";
 export * from "./turn-camel-to-kebab-casing";
+export * from "./is-object-literal";
 import bool from "./boolean-attributes.json";
 export const booleanAttributes = bool;
