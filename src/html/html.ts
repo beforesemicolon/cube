@@ -1,4 +1,4 @@
-import {jsonParse} from "../utils";
+import {jsonParse, turnKebabToCamelCasing} from "../utils";
 import {before} from "node:test";
 import {isObjectLiteral} from "../utils/is-object-literal";
 
@@ -88,12 +88,15 @@ const changeCurrentIntoNewItems = (currentItems: Node[], newItems: Node[], endAn
 	}
 }
 
-const checkNodeSlotAndDirectives = (node: Node, cb: (executable: Executable) => void) => {
+const checkNodeSlotAndDirectives = (node: Node, cb: (executable: Executable) => void, refCb: (refName: string) => void) => {
 	const values: Executable['values'] = [];
 
 	if (node.nodeType === 1) {
 		const element = node as Element;
+		console.log('-- element', element.outerHTML, Array.from(element.attributes));
+
 		for (const attr of element.attributes) {
+			console.log('-- ', attr.name);
 			const details = {
 				name: attr.name,
 				rawValue: attr.value,
@@ -101,7 +104,7 @@ const checkNodeSlotAndDirectives = (node: Node, cb: (executable: Executable) => 
 				renderedNode: node,
 			};
 
-			if(/^on[a-z]+/.test(attr.name)) {
+			if (/^on[a-z]+/.test(attr.name)) {
 				element.removeAttribute(attr.name);
 				values.push({
 					...details,
@@ -109,14 +112,20 @@ const checkNodeSlotAndDirectives = (node: Node, cb: (executable: Executable) => 
 					type: "event"
 				})
 			} else if (/(attr|bind)(\.([a-z0-9-.]+))?|ref/.test(attr.name)) {
-				const isAttrOrBind = attr.name.match(/(attr|bind)\.([a-z0-9-.]+)/);
-				const prop = isAttrOrBind ? isAttrOrBind[2] : "";
-				element.removeAttribute(attr.name)
-				values.push({
-					...details,
-					type: "directive",
-					prop
-				})
+				element.removeAttribute(attr.name);
+
+				if (attr.name === "ref") {
+					refCb(attr.value)
+				} else {
+					const isAttrOrBind = attr.name.match(/(attr|bind)\.([a-z0-9-.]+)/);
+					const prop = isAttrOrBind ? isAttrOrBind[2] : "";
+					values.push({
+						...details,
+						type: "directive",
+						name: attr.name.slice(0, attr.name.indexOf(".")),
+						prop
+					})
+				}
 			} else if (/{{val[0-9]+}}/.test(attr.value)) {
 				values.push({
 					...details,
@@ -191,6 +200,88 @@ const handleTextExecutable = (executableValue: ExecutableValue, nodes: Node[]) =
 	}
 }
 
+const handleAttrDirectiveExecutable = (executableValue: ExecutableValue, value: unknown) => {
+	if (value !== executableValue.value) {
+		executableValue.value = value;
+		const [attrName, property] = (executableValue.prop || "").split(".");
+		const element = executableValue.renderedNode;
+		let shouldAdd = typeof value === "boolean" ? value : true;
+
+		if (typeof value === "string") {
+		    const parts = value.split(",");
+			const lastPart = jsonParse((parts.at(-1) as string).trim());
+
+			if(parts.length > 1 && typeof lastPart === "boolean") {
+				shouldAdd = lastPart;
+				value = parts.slice(0, -1).join("")
+			}
+		}
+
+		console.log('-- handleAttrDirectiveExecutable', {attrName, property, value, shouldAdd, element});
+		// switch (attrName) {
+		// 	case 'style':
+		// 		if (property) {
+		// 			property = turnKebabToCamelCasing(property);
+		//
+		// 			element.style[property] = shouldAdd ? val : '';
+		// 		} else {
+		// 			val
+		// 				.match(/([a-z][a-z-]+)(?=:):([^;]+)/g)
+		// 				?.forEach((style: string) => {
+		// 					let [name, styleValue] = style.split(':').map(s => s.trim());
+		//
+		// 					if (shouldAdd) {
+		// 						element.style.setProperty(name, styleValue);
+		// 					} else {
+		// 						element.style.removeProperty(name);
+		// 					}
+		// 				})
+		// 		}
+		//
+		// 		break;
+		// 	case 'class':
+		// 		if (property) {
+		// 			if (shouldAdd) {
+		// 				element.classList.add(property);
+		// 			} else {
+		// 				element.classList.remove(property);
+		// 			}
+		// 		} else {
+		// 			const classes = val.split(/\s+/g);
+		//
+		// 			if (shouldAdd) {
+		// 				classes.forEach((cls: string) => element.classList.add(cls));
+		// 			} else {
+		// 				classes.forEach((cls: string) => element.classList.remove(cls));
+		// 			}
+		// 		}
+		// 		break;
+		// 	case 'data':
+		// 		if (property) {
+		// 			if (shouldAdd) {
+		// 				element.dataset[turnKebabToCamelCasing(property)] = val;
+		// 			} else {
+		// 				element.removeAttribute(`data-${turnCamelToKebabCasing(property)}`)
+		// 			}
+		// 		}
+		// 		break;
+		// 	default:
+		// 		if (attrName) {
+		// 			if (shouldAdd) {
+		// 				element.setAttribute(attrName,
+		// 					booleanAttr.hasOwnProperty(attrName) ? '' : `${val || shouldAdd}`);
+		// 			} else {
+		// 				element.removeAttribute(attrName);
+		// 			}
+		// 		}
+		// }
+	}
+}
+
+const handleBindDirectiveExecutable = (executableValue: ExecutableValue, value: unknown) => {
+	console.log('-- handleBindDirectiveExecutable', executableValue, value);
+}
+
 const handleExecutable = (executable: Executable, values: unknown[]) => {
 
 	if (executable.subExecutables.length) {
@@ -205,10 +296,15 @@ const handleExecutable = (executable: Executable, values: unknown[]) => {
 
 		switch (val.type) {
 			case "directive":
+				value = jsonParse(parts.map(p => typeof p === "function" ? p() : p).join(""));
+
 				switch (val.name) {
 					case "attr":
+						handleAttrDirectiveExecutable(val, value);
+						break;
 					case "bind":
-					case "ref":
+						handleBindDirectiveExecutable(val, value);
+						break;
 				}
 				break;
 			case "event":
@@ -222,16 +318,16 @@ const handleExecutable = (executable: Executable, values: unknown[]) => {
 					: jsonParse(val.rawValue.split(',')[1]);
 
 				if (typeof eventHandler !== "function") {
-				    throw new Error(`handler for event "${val.name}" is not a function. Found ${eventHandler}.`)
+					throw new Error(`handler for event "${val.name}" is not a function. Found ${eventHandler}.`)
 				}
 
 				if (val.value !== eventHandler) {
 					const validOption = typeof option === "boolean" || isObjectLiteral(option);
 					const eventOption = validOption ? option : undefined;
 
-				    if (typeof val.value === "function") {
-					    node.removeEventListener(eventName, eventHandler, eventOption)
-				    }
+					if (typeof val.value === "function") {
+						node.removeEventListener(eventName, eventHandler, eventOption)
+					}
 
 					node.addEventListener(eventName, eventHandler, eventOption)
 				}
@@ -289,6 +385,7 @@ export class HTMLRenderTemplate {
 	nodes: Node[];
 	renderTarget: HTMLElement | ShadowRoot | null = null;
 	#executable: Executable;
+	refs: Map<string, Element> = new Map();
 
 	constructor(parts: TemplateStringsArray, public values: unknown[]) {
 		const frag = document.createDocumentFragment();
@@ -300,6 +397,7 @@ export class HTMLRenderTemplate {
 		el.childNodes.forEach(n => {
 			frag.appendChild(n)
 		});
+		const self = this;
 
 		this.#executable = (function traverse(n: HTMLElement | DocumentFragment, ancestorExecutable: Executable) {
 			Array.from(n.childNodes, c => {
@@ -308,6 +406,8 @@ export class HTMLRenderTemplate {
 				checkNodeSlotAndDirectives(c, executable => {
 					cn = executable;
 					ancestorExecutable.subExecutables.push(executable);
+				}, (refName: string) => {
+					self.refs.set(refName, c as HTMLElement)
 				});
 
 				if (c.nodeType === 1) {

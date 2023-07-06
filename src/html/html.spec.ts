@@ -140,4 +140,24 @@ describe("html", () => {
 		expect(() => btn.render(document.body))
 			.toThrowError('handler for event "onclick" is not a function. Found 2.');
 	});
+
+	it('should handle ref directive', () => {
+		const btn = html`<button ref="btn"><span ref="span">click me</span></button>`;
+
+		const btnElement = btn.refs.get("btn");
+		const spanElement = btn.refs.get("span");
+
+		expect(btnElement).toBeInstanceOf(HTMLButtonElement)
+		expect(spanElement).toBeInstanceOf(HTMLSpanElement)
+	});
+
+	it('should handle attr attribute', () => {
+		const btn = html`
+			<button attr.disabled="${true}" attr.class.loading="${true}">
+				<span attr.style="color: #900;, ${true}" attr.style.font-style="bold, ${true}">click me</span>
+			</button>
+		`;
+
+		btn.render(document.body)
+	});
 })

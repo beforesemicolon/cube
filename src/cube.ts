@@ -111,10 +111,12 @@ export const EventDispatch = <Data>() => {
 }
 
 
-export const template = (parts: TemplateStringsArray, ...values: unknown[]) => {
+export const template = (parts: TemplateStringsArray, ...values: unknown[]): HTMLRenderTemplate => {
 	const temp = new HTMLRenderTemplate(parts, values);
 
 	currentComponent.renderer = temp.render;
+
+	return temp;
 }
 
 function createComponentClass<P extends Record<string, any>, S extends Record<string, any>>(tagName: string, {
