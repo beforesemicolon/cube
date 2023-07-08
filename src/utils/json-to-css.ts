@@ -1,5 +1,5 @@
 import {turnCamelToKebabCasing} from "./turn-camel-to-kebab-casing";
-import {replaceHost} from "./replace-host";
+import {replaceCssHost} from "./replace-css-host";
 import {StylesheetObject} from "../cube";
 
 type callback = (str: string | null, declaration?: string) => void
@@ -8,7 +8,7 @@ export function JSONToCSS(obj: Record<string, any>, tagName: string, hasShadowRo
 	const css = Object.keys(obj).map(prop => createPropertyBody(prop, obj[prop])).join('').trim();
 	
 	if (!hasShadowRoot) {
-	   return replaceHost(css, tagName);
+	   return replaceCssHost(css, tagName);
 	}
 	
 	return css;

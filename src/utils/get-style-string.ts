@@ -1,4 +1,4 @@
-import {replaceHost} from "./replace-host";
+import {replaceCssHost} from "./replace-css-host";
 
 export function getStyleString(stylesheet: string, tagName: string, hasShadowRoot: boolean = true) {
 	stylesheet = stylesheet.trim().replace(/\s{2,}/g, ' ');
@@ -31,7 +31,7 @@ export function getStyleString(stylesheet: string, tagName: string, hasShadowRoo
 		
 		for (let style of styles) {
 			style.classList.add(tagName);
-			style.textContent = replaceHost(style.innerHTML, tagName);
+			style.textContent = replaceCssHost(style.innerHTML, tagName);
 		}
 	}
 

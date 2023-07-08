@@ -45,6 +45,7 @@ describe('getStyleString', () => {
 	});
 	
 	it('should replace :host with tag name if no shadow root', () => {
-		expect(getStyleString(style, 'test-tag', false)).toEqual('<style class="test-tag">test-tag { background: red; } test-tag.active { background: green; }</style>')
+		expect(getStyleString(`<link rel="stylesheet" href="./some/stye.css">${style}`, 'test-tag', false))
+			.toEqual('<link rel="stylesheet" href="./some/stye.css" class="test-tag"><style class="test-tag"> test-tag { background: red; } test-tag.active { background: green; }</style>')
 	});
 });
