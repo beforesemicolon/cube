@@ -12,17 +12,15 @@ export const handleAttrDirectiveExecutable = (executableValue: ExecutableValue, 
 			const parts = value.split(",");
 			const lastPart = jsonParse((parts.at(-1) as string).trim());
 			
-			if(parts.length > 1 && typeof lastPart === "boolean") {
+			if(parts.length && typeof lastPart === "boolean") {
 				shouldAdd = lastPart;
-				value = parts.slice(0, -1).join("")
+				value = parts.length > 1 ? parts.slice(0, -1).join("") : value;
 			}
 		}
 		
 		switch (attrName) {
 			case 'style':
 				if (property) {
-					property = turnKebabToCamelCasing(property);
-					
 					element.style.setProperty(property, shouldAdd ? value : '');
 				} else {
 					value
@@ -36,6 +34,10 @@ export const handleAttrDirectiveExecutable = (executableValue: ExecutableValue, 
 								element.style.removeProperty(name);
 							}
 						})
+				}
+				
+				if (!element.style.length) {
+					element.removeAttribute("style")
 				}
 				
 				break;
@@ -73,14 +75,14 @@ export const handleAttrDirectiveExecutable = (executableValue: ExecutableValue, 
 				if (attrName) {
 					const boolAttr = (booleanAttributes as Record<string, {possibleValues?: string[]}>)[attrName];
 					
-					if (boolAttr) {
-						if (shouldAdd) {
+					if (shouldAdd) {
+						if (boolAttr) {
 							element.setAttribute(attrName, boolAttr.possibleValues && boolAttr.possibleValues.includes(value) ? value : "");
 						} else {
-							element.removeAttribute(attrName);
+							element.setAttribute(attrName, value);
 						}
 					} else {
-						element.setAttribute(attrName, value);
+						element.removeAttribute(attrName);
 					}
 				}
 		}
