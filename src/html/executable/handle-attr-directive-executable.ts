@@ -6,15 +6,16 @@ export const handleAttrDirectiveExecutable = (executableValue: ExecutableValue, 
 		executableValue.value = value;
 		let [attrName, property] = (executableValue.prop || "").split(".");
 		const element = executableValue.renderedNode as HTMLElement;
-		let shouldAdd = typeof value === "boolean" ? value : true;
+		const parsedValue = jsonParse(value);
+		let shouldAdd = property && typeof parsedValue === "boolean" ? parsedValue : true;
 		
-		if (typeof value === "string") {
+		if (typeof parsedValue !== "boolean" && typeof value === "string") {
 			const parts = value.split(",");
-			const lastPart = jsonParse((parts.at(-1) as string).trim());
+			const lastPart = jsonParse((parts.at(-1) || "").trim());
 			
-			if(parts.length && typeof lastPart === "boolean") {
+			if (parts.length > 1 && typeof lastPart === "boolean") {
 				shouldAdd = lastPart;
-				value = parts.length > 1 ? parts.slice(0, -1).join("") : value;
+				value = parts.slice(0, -1).join("");
 			}
 		}
 		
@@ -73,11 +74,17 @@ export const handleAttrDirectiveExecutable = (executableValue: ExecutableValue, 
 				break;
 			default:
 				if (attrName) {
-					const boolAttr = (booleanAttributes as Record<string, {possibleValues?: string[]}>)[attrName];
+					const boolAttr = (booleanAttributes as Record<string, { possibleValues?: string[] }>)[attrName];
+					const boolAttributeWithValidPossibleValue = boolAttr?.possibleValues && boolAttr.possibleValues.includes(value);
+					// when it's a native boolean attribute, the value itself should be the flag to whether add/remove it
+					// unless it is a boolean attribute with a valid possible value
+					shouldAdd = boolAttr && !boolAttributeWithValidPossibleValue && typeof parsedValue === "boolean"
+						? parsedValue
+						: shouldAdd;
 					
 					if (shouldAdd) {
 						if (boolAttr) {
-							element.setAttribute(attrName, boolAttr.possibleValues && boolAttr.possibleValues.includes(value) ? value : "");
+							element.setAttribute(attrName, boolAttributeWithValidPossibleValue ? value : "");
 						} else {
 							element.setAttribute(attrName, value);
 						}

@@ -165,22 +165,22 @@ describe("handleAttrDirectiveExecutable", () => {
 		const e2: ExecutableValue = {
 			type: "attr-dir",
 			name: "attr",
-			rawValue: "cool value, true",
+			rawValue: "true",
 			value: "",
 			renderedNode: div,
-			prop: "aria-label"
+			prop: "aria-disabled"
 		};
 		
 		handleAttrDirectiveExecutable(e1, "sample, true")
-		handleAttrDirectiveExecutable(e2, "cool value, true")
+		handleAttrDirectiveExecutable(e2, "true")
 		
-		expect(div.outerHTML).toBe('<div id="sample" aria-label="cool value"></div>')
+		expect(div.outerHTML).toBe('<div id="sample" aria-disabled="true"></div>')
 		expect(e1.value).toBe('sample, true')
-		expect(e2.value).toBe('cool value, true')
+		expect(e2.value).toBe('true')
 		
 		handleAttrDirectiveExecutable(e1, "sample, false")
 		
-		expect(div.outerHTML).toBe('<div aria-label="cool value"></div>')
+		expect(div.outerHTML).toBe('<div aria-disabled="true"></div>')
 		expect(e1.value).toBe('sample, false')
 	});
 })

@@ -137,7 +137,7 @@ describe("html", () => {
 		const btn = html`<button onclick="${2}">click me</button>`;
 
 		expect(() => btn.render(document.body))
-			.toThrowError('handler for event "onclick" is not a function. Found 2.');
+			.toThrowError('handler for event "onclick" is not a function. Found "2".');
 	});
 
 	it('should handle ref directive', () => {
