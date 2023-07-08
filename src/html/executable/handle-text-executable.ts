@@ -8,16 +8,18 @@ export const handleTextExecutable = (executableValue: ExecutableValue, nodes: No
 		if (renderedIsAList) {
 			const renderedNodes = executableValue.renderedNode as Node[];
 			const lastNode = renderedNodes.at(-1);
-			let endAnchor: Node;
+			const comment = document.createComment("");
+			let endAnchor: Node = lastNode?.nextSibling ?? comment;
 			
-			if (lastNode?.nextSibling) {
-				endAnchor = lastNode.nextSibling
-			} else {
-				endAnchor = document.createComment("");
+			if (endAnchor === comment) {
 				lastNode?.parentNode?.appendChild(endAnchor)
 			}
 			
 			changeCurrentIntoNewItems(renderedNodes, nodes, endAnchor)
+			
+			if (endAnchor === comment) {
+				endAnchor?.parentNode?.removeChild(endAnchor)
+			}
 		} else {
 			const r = executableValue.renderedNode as Node;
 			
