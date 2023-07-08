@@ -7,7 +7,7 @@ import {
 	turnCamelToKebabCasing
 } from "./utils";
 import {element, ElementInterface} from "./element";
-import {HTMLRenderTemplate} from "./html";
+import {HTMLRenderTemplate} from "@beforesemicolon/html";
 
 export interface StylesheetObject {
 	[k: string]: Partial<CSSStyleDeclaration> | StylesheetObject | number
