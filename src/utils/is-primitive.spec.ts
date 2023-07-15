@@ -7,6 +7,8 @@ describe("isPrimitive", () => {
 		expect(isPrimitive(true)).toBeTruthy();
 		expect(isPrimitive(BigInt(1))).toBeTruthy();
 		expect(isPrimitive(Symbol("ss"))).toBeTruthy();
+		expect(isPrimitive(undefined)).toBeTruthy();
+		expect(isPrimitive(null)).toBeTruthy();
 	});
 	
 	it('should NOT be primitive', () => {

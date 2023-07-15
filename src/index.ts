@@ -1,22 +1,19 @@
 export * from "./cube";
-export * from "./element";
-export * from "./html";
-import {html, HTMLRenderTemplate} from "./html";
-import {register, onMount, onDestroy, onAdoption, Style, template, EventDispatch} from "./cube";
-import {element} from "./element";
+import {register, onMount, onDestroy, onAdoption, onAfterUpdate, onBeforeUpdate, style, template, eventDispatch} from "./cube";
 
 if (window) {
 	// @ts-ignore
-	window.CUBE = {
+	window.BFS = {
+		// @ts-ignore
+		...(window.BFS || {}),
 		register,
 		onMount,
 		onDestroy,
 		onAdoption,
-		Style,
+		onAfterUpdate,
+		onBeforeUpdate,
+		style,
 		template,
-		EventDispatch,
-		element,
-		html,
-		HTMLRenderTemplate
+		eventDispatch
 	}
 }

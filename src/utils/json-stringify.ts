@@ -1,5 +1,7 @@
+import {isPrimitive} from "./is-primitive";
+
 export function jsonStringify(value: any): any {
-	if (value && typeof value !== 'string') {
+	if (!isPrimitive(value)) {
 		try {
 			value = JSON.stringify(value);
 		} catch (e) {

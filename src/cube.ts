@@ -1,122 +1,129 @@
+import {HtmlTemplate} from "@beforesemicolon/html";
 import {
+	booleanAttributes,
+	getStyleString,
 	jsonParse,
 	JSONToCSS,
-	getStyleString,
-	booleanAttributes,
-	turnKebabToCamelCasing,
-	turnCamelToKebabCasing
+	turnCamelToKebabCasing,
+	turnKebabToCamelCasing
 } from "./utils";
-import {element, ElementInterface} from "./element";
-import {HTMLRenderTemplate} from "@beforesemicolon/html";
-
-export interface StylesheetObject {
-	[k: string]: Partial<CSSStyleDeclaration> | StylesheetObject | number
-}
-
-export type Stylesheet = StylesheetObject | string;
-export type Renderer<P> = (props: P) => void;
-type HTMLRenderer = (elementToAttachNodesTo?: ShadowRoot | HTMLElement) => void;
-export type ShadowRootMode = "open" | "closed";
-export type RegisterComponentCallback<P> = () => ({
-	tagName: string;
-	mode: ShadowRootMode;
-	delegatesFocus: boolean;
-	createElement: () => ElementInterface
-})
-
-export interface StyleControl<S> {
-	update: (data: Partial<S>) => void;
-	load: (shadow: ShadowRoot | HTMLElement) => void;
-}
-
-export interface ComponentOptions {
-	mode?: ShadowRootMode;
-	delegatesFocus?: boolean;
-}
+import {ComponentOptions, CurrentComponent, Renderer, RendererProps, Stylesheet} from "./types";
 
 export function register<P extends Record<string, any>, S extends Record<string, any>>(
 	renderer: Renderer<P>,
 	props: P = {} as P,
-	stylesheet?: (data: S) => Stylesheet
-): RegisterComponentCallback<P> {
+	stylesheet?: (data: S) => Stylesheet,
+	{mode = "open", delegatesFocus = false}: ComponentOptions = {}
+) {
 	const tagName = turnCamelToKebabCasing(renderer.name || "");
 
 	if (!tagName) {
 		throw new Error("Component render function must have a name")
 	}
 
-	return ({mode = "open", delegatesFocus = false}: ComponentOptions = {}) => {
-		createComponentClass<P, S>(tagName, {
-			mode,
-			delegatesFocus,
-			renderer,
-			props,
-			stylesheet
-		});
+	createComponentClass<P, S>(tagName, {
+		mode,
+		delegatesFocus,
+		renderer,
+		props,
+		stylesheet
+	});
+}
 
-		return {
-			tagName,
-			mode,
-			delegatesFocus,
-			createElement: () => element(tagName),
-		}
+let currentComponent: CurrentComponent<{}> | null = null;
+
+export const onMount = (cb: () => void) => {
+	if (currentComponent) {
+		currentComponent.mount = cb;
+	} else {
+		throw new Error('Must NOT use "onMount" lifecycle outside of a component')
 	}
 }
 
-interface CurrentComponent<S> {
-	destroy: () => void;
-	mount: () => void;
-	adoption: () => void;
-	styleControl: {
-		update: (styleProps: Partial<S>) => void;
-		detach: () => void;
-		attach: () => void;
-		reset: () => void;
-	},
-	dispatchEvent: (e: CustomEvent) => void;
-	renderer: HTMLRenderer;
+export const onBeforeUpdate = (cb: () => void) => {
+	if (currentComponent) {
+		currentComponent.beforeUpdate = cb;
+	} else {
+		throw new Error('Must NOT use "onBeforeUpdate" lifecycle outside of a component')
+	}
 }
 
-
-let currentComponent: CurrentComponent<{}>;
-
-export const onMount = (cb: () => void) => {
-	currentComponent.mount = cb;
+export const onAfterUpdate = (cb: () => void) => {
+	if (currentComponent) {
+		currentComponent.afterUpdate = cb;
+	} else {
+		throw new Error('Must NOT use "onAfterUpdate" lifecycle outside of a component')
+	}
 }
 
 export const onDestroy = (cb: () => void) => {
-	currentComponent.destroy = cb;
-}
-
-export const onAdoption = (cb: () => void) => {
-	currentComponent.adoption = cb;
-}
-
-export const Style = (styleProps?: {}) => {
-	const control = currentComponent.styleControl;
-
-	styleProps && control.update(styleProps);
-
-	return control
-}
-
-export const EventDispatch = <Data>() => {
-	const dispatchEvent = currentComponent.dispatchEvent;
-
-	return <T>(eventName: string, detail?: T) => {
-		dispatchEvent(new CustomEvent(eventName, {
-			detail
-		}))
+	if (currentComponent) {
+		currentComponent.destroy = cb;
+	} else {
+		throw new Error('Must NOT use "onDestroy" lifecycle outside of a component')
 	}
 }
 
+export const onAdoption = (cb: () => void) => {
+	if (currentComponent) {
+		currentComponent.adoption = cb;
+	} else {
+		throw new Error('Must NOT use "onAdoption" lifecycle outside of a component')
+	}
+}
 
-export const template = (parts: TemplateStringsArray, ...values: unknown[]): HTMLRenderTemplate => {
-	const temp = new HTMLRenderTemplate(parts, values);
+export const style = (styleProps?: {}) => {
+	if (currentComponent) {
+		const control = currentComponent.styleControl;
 
-	currentComponent.renderer = temp.render;
+		styleProps && control.update(styleProps);
 
-	return temp;
+		return control
+	}
+
+	throw new Error('Must NOT use "Style" outside of a component')
+}
+
+export const eventDispatch = <Data>() => {
+	if (currentComponent) {
+		const dispatchEvent = currentComponent.dispatchEvent;
+
+		return <T>(eventName: string, detail?: T) => {
+			dispatchEvent(new CustomEvent(eventName, {
+				detail
+			}))
+		}
+	}
+
+	throw new Error('Must NOT use "EventDispatch" outside of a component')
+}
+
+export const useValue = () => {
+	if (currentComponent) {
+		const comp = currentComponent;
+
+		return <V>(val: V) => {
+			return [
+				() => val,
+				(newVal: V) => {
+					val = newVal;
+					comp?.renderer?.update();
+				}
+			]
+		}
+	}
+
+	throw new Error('Must NOT use "useValue" outside of a component')
+}
+
+export const template = (parts: TemplateStringsArray, ...values: unknown[]) => {
+	if (currentComponent) {
+		currentComponent.renderer = new HtmlTemplate(parts, values);
+
+		return currentComponent.renderer;
+	}
+
+	throw new Error('Must NOT use "template" outside of a component')
 }
 
 function createComponentClass<P extends Record<string, any>, S extends Record<string, any>>(tagName: string, {
@@ -148,6 +155,10 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				},
 				adoption: () => {
 				},
+				beforeUpdate: () => {
+				},
+				afterUpdate: () => {
+				},
 				styleControl: {
 					update: this.updateStyle.bind(this),
 					detach: this.detachStyle.bind(this),
@@ -157,7 +168,7 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				dispatchEvent: (e: CustomEvent) => {
 					this.dispatchEvent(e)
 				},
-				renderer: () => ([]),
+				renderer: null,
 			}
 			#styleElement?: HTMLStyleElement;
 			#previousStyleData: S = {} as S;
@@ -218,8 +229,10 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 							const oldValue = this.#props[key];
 
 							if (newValue !== oldValue) {
+								this.#handlers.beforeUpdate();
 								this.#props[key as keyof P] = newValue;
-								this.#handlers.renderer(this.#shadowRoot);
+								this.#handlers.renderer?.update();
+								this.#handlers.afterUpdate();
 							}
 						}
 					})
@@ -232,9 +245,11 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				this.#shadowRoot.innerHTML = "";
 
 				currentComponent = this.#handlers;
-				// todo freeze props but allow to be dynamically read
-				renderer(this.#props);
-				this.#handlers.renderer(this.#shadowRoot);
+				renderer(Object.keys(this.#props).reduce((acc, key: keyof P) => {
+					acc[key] = () => this.#props[key];
+					return acc;
+				}, {} as RendererProps<P>));
+				currentComponent = null;
 
 				const style = this.getStyle({} as S);
 
@@ -242,6 +257,8 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 					this.#shadowRoot.innerHTML = style;
 					this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
 				}
+
+				this.#handlers.renderer?.render(this.#shadowRoot);
 
 				this.#handlers.mount();
 			}

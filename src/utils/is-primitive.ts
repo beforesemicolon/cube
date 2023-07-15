@@ -1,3 +1,3 @@
 export const isPrimitive = (val: any) => {
-	return /number|string|bigint|boolean|symbol/.test(typeof val)
+	return val === null || /undefined|number|string|bigint|boolean|symbol/.test(typeof val)
 }

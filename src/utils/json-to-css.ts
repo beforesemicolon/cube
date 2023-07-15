@@ -1,6 +1,6 @@
 import {turnCamelToKebabCasing} from "./turn-camel-to-kebab-casing";
 import {replaceCssHost} from "./replace-css-host";
-import {StylesheetObject} from "../cube";
+import {StylesheetObject} from "../types";
 
 type callback = (str: string | null, declaration?: string) => void
 
