@@ -7,15 +7,15 @@ import {
 	turnCamelToKebabCasing,
 	turnKebabToCamelCasing
 } from "./utils";
-import {ComponentOptions, CurrentComponent, Renderer, RendererProps, Stylesheet} from "./types";
+import {ComponentOptions, CurrentComponent, FnComponent, Props, Stylesheet} from "./types";
 
 export function register<P extends Record<string, any>, S extends Record<string, any>>(
-	renderer: Renderer<P>,
+	comp: FnComponent<P>,
 	props: P = {} as P,
 	stylesheet?: (data: S) => Stylesheet,
 	{mode = "open", delegatesFocus = false}: ComponentOptions = {}
 ) {
-	const tagName = turnCamelToKebabCasing(renderer.name || "");
+	const tagName = turnCamelToKebabCasing(comp.name || "");
 
 	if (!tagName) {
 		throw new Error("Component render function must have a name")
@@ -24,7 +24,7 @@ export function register<P extends Record<string, any>, S extends Record<string,
 	createComponentClass<P, S>(tagName, {
 		mode,
 		delegatesFocus,
-		renderer,
+		comp,
 		props,
 		stylesheet
 	});
@@ -107,7 +107,7 @@ export const useValue = () => {
 				() => val,
 				(newVal: V) => {
 					val = newVal;
-					comp?.renderer?.update();
+					comp?.template?.update();
 				}
 			]
 		}
@@ -118,9 +118,9 @@ export const useValue = () => {
 
 export const template = (parts: TemplateStringsArray, ...values: unknown[]) => {
 	if (currentComponent) {
-		currentComponent.renderer = new HtmlTemplate(parts, values);
+		currentComponent.template = new HtmlTemplate(parts, values);
 
-		return currentComponent.renderer;
+		return currentComponent.template;
 	}
 
 	throw new Error('Must NOT use "template" outside of a component')
@@ -130,13 +130,13 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 	delegatesFocus = false,
 	mode = "open",
 	props,
-	renderer,
+	comp,
 	stylesheet
 }: {
 	mode?: ShadowRootMode;
 	delegatesFocus?: boolean;
 	props: P,
-	renderer: Renderer<P>;
+	comp: FnComponent<P>;
 	stylesheet?: (data: S) => Stylesheet;
 }) {
 	const CLS = customElements.get(tagName);
@@ -168,7 +168,7 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				dispatchEvent: (e: CustomEvent) => {
 					this.dispatchEvent(e)
 				},
-				renderer: null,
+				template: null,
 			}
 			#styleElement?: HTMLStyleElement;
 			#previousStyleData: S = {} as S;
@@ -231,7 +231,7 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 							if (newValue !== oldValue) {
 								this.#handlers.beforeUpdate();
 								this.#props[key as keyof P] = newValue;
-								this.#handlers.renderer?.update();
+								this.#handlers.template?.update();
 								this.#handlers.afterUpdate();
 							}
 						}
@@ -245,10 +245,10 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				this.#shadowRoot.innerHTML = "";
 
 				currentComponent = this.#handlers;
-				renderer(Object.keys(this.#props).reduce((acc, key: keyof P) => {
+				comp(Object.keys(this.#props).reduce((acc, key: keyof P) => {
 					acc[key] = () => this.#props[key];
 					return acc;
-				}, {} as RendererProps<P>));
+				}, {} as Props<P>));
 				currentComponent = null;
 
 				const style = this.getStyle({} as S);
@@ -258,7 +258,7 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 					this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
 				}
 
-				this.#handlers.renderer?.render(this.#shadowRoot);
+				this.#handlers.template?.render(this.#shadowRoot);
 
 				this.#handlers.mount();
 			}

@@ -5,8 +5,8 @@ export interface StylesheetObject {
 }
 
 export type Stylesheet = StylesheetObject | string;
-export type RendererProps<P> = Record<keyof P, () => P[keyof P]>
-export type Renderer<P> = (props: RendererProps<P>) => void;
+export type Props<P> = Record<keyof P, () => P[keyof P]>
+export type FnComponent<P> = (props: Props<P>) => void;
 export type ShadowRootMode = "open" | "closed";
 export interface CurrentComponent<S> {
 	destroy: () => void;
@@ -21,7 +21,7 @@ export interface CurrentComponent<S> {
 		reset: () => void;
 	},
 	dispatchEvent: (e: CustomEvent) => void;
-	renderer: Template | null;
+	template: Template | null;
 }
 
 export interface ComponentOptions {

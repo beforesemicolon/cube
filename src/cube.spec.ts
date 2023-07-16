@@ -1,6 +1,6 @@
 import 'core-js/stable/structured-clone';
 import {register, onAdoption, onDestroy, onMount, onBeforeUpdate, onAfterUpdate, template, useValue} from "./cube";
-import {RendererProps} from "./types";
+import {Props} from "./types";
 
 describe('cube', () => {
 
@@ -15,7 +15,7 @@ describe('cube', () => {
 			type: "button" | "submit"
 		}
 
-		const MyButton = ({type}: RendererProps<ButtonProps>) => {
+		const MyButton = ({type}: Props<ButtonProps>) => {
 			template`<button type="${type}"><slot></slot></button>`
 
 			onMount(mountMock)
@@ -31,6 +31,7 @@ describe('cube', () => {
 
 		document.body.appendChild(btn);
 
+		expect(document.body.innerHTML).toBe('<my-button></my-button>')
 		expect(btn.shadowRoot?.innerHTML).toBe('<button type="button"><slot></slot></button>')
 
 		expect(mountMock).toHaveBeenCalledTimes(1);
