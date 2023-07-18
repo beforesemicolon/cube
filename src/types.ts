@@ -8,18 +8,12 @@ export type Stylesheet = StylesheetObject | string;
 export type Props<P> = Record<keyof P, () => P[keyof P]>
 export type FnComponent<P> = (props: Props<P>) => void;
 export type ShadowRootMode = "open" | "closed";
-export interface CurrentComponent<S> {
+export interface CurrentComponent {
 	destroy: () => void;
 	mount: () => void;
 	adoption: () => void;
 	beforeUpdate: () => void;
 	afterUpdate: () => void;
-	styleControl: {
-		update: (styleProps: Partial<S>) => void;
-		detach: () => void;
-		attach: () => void;
-		reset: () => void;
-	},
 	dispatchEvent: (e: CustomEvent) => void;
 	template: HtmlTemplate | null;
 }

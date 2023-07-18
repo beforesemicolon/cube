@@ -25,7 +25,7 @@ describe('cube', () => {
 			onAdoption(adoptionMock)
 		}
 
-		register<ButtonProps, {}>(MyButton, {type: "button"});
+		register<ButtonProps>(MyButton, {type: "button"});
 
 		const btn = document.createElement("my-button");
 
@@ -101,7 +101,7 @@ describe('cube', () => {
 			template`<child-comp val="12"></child-comp>`
 		}
 		
-		register<{val: number}, {}>(ChildComp, {
+		register<{val: number}>(ChildComp, {
 			val: 0
 		})
 		register(ParentComp)
@@ -123,7 +123,7 @@ describe('cube', () => {
 			template`<deep-comp val="${{sample: 12}}"></deep-comp>`
 		}
 		
-		register<{val: {sample: string}}, {}>(DeepComp, {
+		register<{val: {sample: string}}>(DeepComp, {
 			val: {
 				sample: ""
 			}

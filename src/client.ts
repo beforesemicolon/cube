@@ -1,5 +1,5 @@
 import {when, repeat, html} from '@beforesemicolon/html';
-import {register, onMount, onDestroy, onAdoption, onAfterUpdate, onBeforeUpdate, style, template, eventDispatch} from "./cube";
+import {register, onMount, onDestroy, onAdoption, onAfterUpdate, onBeforeUpdate, template, eventDispatch} from "./cube";
 
 if (window) {
 	// @ts-ignore
@@ -12,7 +12,6 @@ if (window) {
 		onAdoption,
 		onAfterUpdate,
 		onBeforeUpdate,
-		style,
 		template,
 		eventDispatch,
 		when,

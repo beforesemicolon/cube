@@ -9,10 +9,10 @@ import {
 } from "./utils";
 import {ComponentOptions, CurrentComponent, FnComponent, Props, Stylesheet} from "./types";
 
-export function register<P extends Record<string, any>, S extends Record<string, any>>(
+export function register<P extends Record<string, any>>(
 	comp: FnComponent<P>,
 	props: P = {} as P,
-	stylesheet?: (data: S) => Stylesheet,
+	stylesheet?: (data: Props<P>) => Stylesheet,
 	{mode = "open", delegatesFocus = false}: ComponentOptions = {}
 ) {
 	const tagName = turnCamelToKebabCasing(comp.name || "");
@@ -21,7 +21,7 @@ export function register<P extends Record<string, any>, S extends Record<string,
 		throw new Error("Component render function must have a name")
 	}
 	
-	createComponentClass<P, S>(tagName, {
+	createComponentClass<P>(tagName, {
 		mode,
 		delegatesFocus,
 		comp,
@@ -30,7 +30,7 @@ export function register<P extends Record<string, any>, S extends Record<string,
 	});
 }
 
-let currentComponent: CurrentComponent<{}> | null = null;
+let currentComponent: CurrentComponent | null = null;
 
 export const onMount = (cb: () => void) => {
 	if (currentComponent) {
@@ -72,18 +72,6 @@ export const onAdoption = (cb: () => void) => {
 	}
 }
 
-export const style = (styleProps?: {}) => {
-	if (currentComponent) {
-		const control = currentComponent.styleControl;
-		
-		styleProps && control.update(styleProps);
-		
-		return control
-	}
-	
-	throw new Error('Must NOT use "Style" outside of a component')
-}
-
 export const eventDispatch = <Data>() => {
 	if (currentComponent) {
 		const dispatchEvent = currentComponent.dispatchEvent;
@@ -121,7 +109,7 @@ export const template = (parts: TemplateStringsArray, ...values: unknown[]) => {
 	throw new Error('Must NOT use "template" outside of a component')
 }
 
-function createComponentClass<P extends Record<string, any>, S extends Record<string, any>>(tagName: string, {
+function createComponentClass<P extends Record<string, any>>(tagName: string, {
 	delegatesFocus = false,
 	mode = "open",
 	props,
@@ -132,7 +120,7 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 	delegatesFocus?: boolean;
 	props: P,
 	comp: FnComponent<P>;
-	stylesheet?: (data: S) => Stylesheet;
+	stylesheet?: (data: Props<P>) => Stylesheet;
 }) {
 	const CLS = customElements.get(tagName);
 	
@@ -142,7 +130,7 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 			static observedAttributes: Array<string> = Object.keys(props).map(turnCamelToKebabCasing);
 			static readonly tagName = tagName;
 			#shadowRoot: ShadowRoot;
-			#handlers: CurrentComponent<S> = {
+			#handlers: CurrentComponent = {
 				destroy: () => {
 				},
 				mount: () => {
@@ -153,27 +141,23 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				},
 				afterUpdate: () => {
 				},
-				styleControl: {
-					update: this.updateStyle.bind(this),
-					detach: this.detachStyle.bind(this),
-					attach: this.attachStyle.bind(this),
-					reset: this.resetStyle.bind(this),
-				},
 				dispatchEvent: (e: CustomEvent) => {
 					this.dispatchEvent(e)
 				},
 				template: null,
 			}
 			#styleElement?: HTMLStyleElement;
-			#previousStyleData: S = {} as S;
 			#props: P = structuredClone(props);
+			#readonlyProps: Props<P> = Object.keys(this.#props).reduce((acc, key: keyof P) => {
+				acc[key] = () => this.#props[key];
+				return acc;
+			}, {} as Props<P>)
 			
-			getStyle(data: S) {
-				this.#previousStyleData = {...this.#previousStyleData, ...data};
+			getStyle() {
 				let style: Stylesheet = "";
 				
 				if (typeof stylesheet === "function") {
-					style = stylesheet(structuredClone(this.#previousStyleData));
+					style = stylesheet(this.#readonlyProps);
 					
 					if (style) {
 						style = typeof style === 'object'
@@ -185,8 +169,8 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				return style;
 			}
 			
-			updateStyle(data: Partial<S>) {
-				const style = this.getStyle(data as S);
+			updateStyle() {
+				const style = this.getStyle();
 				
 				if (this.#styleElement) {
 					const div = document.createElement("div");
@@ -195,27 +179,8 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				}
 			}
 			
-			detachStyle() {
-				if (this.#styleElement) {
-					this.#styleElement.remove();
-				}
-			}
-			
-			attachStyle() {
-				if (this.#styleElement) {
-					this.#shadowRoot.prepend(this.#styleElement)
-				}
-			}
-			
-			resetStyle() {
-				this.#previousStyleData = {} as S;
-				this.updateStyle({});
-			}
-			
 			constructor() {
 				super();
-				
-				const self = this;
 				
 				Object.keys(this.#props).forEach((key) => {
 					Object.defineProperty(this, key, {
@@ -223,14 +188,19 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 							return this.#props[key];
 						},
 						set(newValue: any) {
-							const oldValue = self.#props[key];
-							const mounted = self.isConnected;
+							const oldValue = this.#props[key];
+							const mounted = this.isConnected;
 							
 							if (newValue !== oldValue) {
 								this.#props[key as keyof P] = newValue;
 								
 								mounted && this.#handlers.beforeUpdate();
 								this.#handlers.template?.update();
+								// only update style if it is a callback expecting arguments
+								// otherwise it is an indication that the style does not use the props values
+								if (typeof stylesheet === "function" && (stylesheet.length > 0 || /^(function\s*[^(]+)?\s*\(\s*\.\.\./.test(stylesheet.toString()))) {
+									this.updateStyle();
+								}
 								mounted && this.#handlers.afterUpdate();
 							}
 						}
@@ -244,15 +214,10 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 				this.#shadowRoot.innerHTML = "";
 				
 				currentComponent = this.#handlers;
-				comp(
-					Object.keys(props).reduce((acc, key: keyof P) => {
-						acc[key] = () => this.#props[key];
-						return acc;
-					}, {} as Props<P>)
-				);
+				comp(this.#readonlyProps);
 				currentComponent = null;
 				
-				const style = this.getStyle({} as S);
+				const style = this.getStyle();
 				
 				if (style) {
 					this.#shadowRoot.innerHTML = style;
