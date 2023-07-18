@@ -91,4 +91,50 @@ describe('cube', () => {
 
 	it('style should define component CSS', () => {
 	});
+	
+	it('should handle passing primitive to a component', () => {
+		const ChildComp = ({val}: Props<{val: number}>) => {
+			template`${val}`
+		}
+		
+		const ParentComp = () => {
+			template`<child-comp val="12"></child-comp>`
+		}
+		
+		register<{val: number}, {}>(ChildComp, {
+			val: 0
+		})
+		register(ParentComp)
+		
+		document.body.innerHTML = "<parent-comp></parent-comp>";
+		
+		const el = document.body.children[0];
+		
+		expect(el.shadowRoot?.innerHTML).toBe('<child-comp val="12"></child-comp>')
+		expect(el.shadowRoot?.children[0].shadowRoot?.innerHTML).toBe('12')
+	});
+	
+	it('should handle passing non-primitive to a component', () => {
+		const DeepComp = ({val}: Props<{val: {sample: string}}>) => {
+			template`${() => val().sample}`
+		}
+		
+		const TopComp = () => {
+			template`<deep-comp val="${{sample: 12}}"></deep-comp>`
+		}
+		
+		register<{val: {sample: string}}, {}>(DeepComp, {
+			val: {
+				sample: ""
+			}
+		})
+		register(TopComp)
+		
+		document.body.innerHTML = "<top-comp></top-comp>";
+		
+		const el = document.body.children[0];
+		
+		expect(el.shadowRoot?.innerHTML).toBe('<deep-comp val="{&quot;sample&quot;:12}"></deep-comp>')
+		expect(el.shadowRoot?.children[0].shadowRoot?.innerHTML).toBe('12')
+	});
 })

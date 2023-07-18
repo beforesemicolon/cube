@@ -5,7 +5,7 @@ describe('JSONToCSS', () => {
 		expect(JSONToCSS({
 			':host': {
 				display: 'inline-block',
-				opacity: 0.5,
+				opacity: "0.5",
 				backgroundColor: '[bg]',
 				button: {
 					opacity: "[disabled ? 0 : 1]"
@@ -23,7 +23,7 @@ describe('JSONToCSS', () => {
 		const style = {
 			':host': {
 				display: 'inline-block',
-				opacity: 0.5,
+				opacity: "0.5",
 				backgroundColor: '[bg]',
 				button: {
 					opacity: "[disabled ? 0 : 1]"
@@ -119,7 +119,7 @@ describe('JSONToCSS', () => {
 		expect(JSONToCSS({
 			':host': {
 				display: 'inline-block',
-				opacity: 0.5,
+				opacity: "0.5",
 				backgroundColor: '[bg]',
 				button: {
 					opacity: "[disabled ? 0 : 1]",
@@ -130,7 +130,7 @@ describe('JSONToCSS', () => {
 						}
 					},
 					'& + p': {
-						padding: '12px'
+						padding: 12
 					},
 					'span, b': {
 						display: 'inline-block',

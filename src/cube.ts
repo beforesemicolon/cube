@@ -16,11 +16,11 @@ export function register<P extends Record<string, any>, S extends Record<string,
 	{mode = "open", delegatesFocus = false}: ComponentOptions = {}
 ) {
 	const tagName = turnCamelToKebabCasing(comp.name || "");
-
+	
 	if (!tagName) {
 		throw new Error("Component render function must have a name")
 	}
-
+	
 	createComponentClass<P, S>(tagName, {
 		mode,
 		delegatesFocus,
@@ -75,54 +75,49 @@ export const onAdoption = (cb: () => void) => {
 export const style = (styleProps?: {}) => {
 	if (currentComponent) {
 		const control = currentComponent.styleControl;
-
+		
 		styleProps && control.update(styleProps);
-
+		
 		return control
 	}
-
+	
 	throw new Error('Must NOT use "Style" outside of a component')
 }
 
 export const eventDispatch = <Data>() => {
 	if (currentComponent) {
 		const dispatchEvent = currentComponent.dispatchEvent;
-
+		
 		return <T>(eventName: string, detail?: T) => {
 			dispatchEvent(new CustomEvent(eventName, {
 				detail
 			}))
 		}
 	}
-
+	
 	throw new Error('Must NOT use "EventDispatch" outside of a component')
 }
 
-export const useValue = () => {
+export const useValue = <V>(val: V): [() => V, (newVal: V) => void] => {
 	if (currentComponent) {
 		const comp = currentComponent;
-
-		return <V>(val: V) => {
-			return [
-				() => val,
-				(newVal: V) => {
-					val = newVal;
-					comp?.template?.update();
-				}
-			]
-		}
+		
+		return [() => val, (newVal: V) => {
+			val = newVal;
+			comp?.template?.update();
+		}]
 	}
-
+	
 	throw new Error('Must NOT use "useValue" outside of a component')
 }
 
 export const template = (parts: TemplateStringsArray, ...values: unknown[]) => {
 	if (currentComponent) {
 		currentComponent.template = new HtmlTemplate(parts, values);
-
+		
 		return currentComponent.template;
 	}
-
+	
 	throw new Error('Must NOT use "template" outside of a component')
 }
 
@@ -140,14 +135,13 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 	stylesheet?: (data: S) => Stylesheet;
 }) {
 	const CLS = customElements.get(tagName);
-
+	
 	if (!CLS) {
 		class WebComponent extends HTMLElement {
 			// @ts-ignore
 			static observedAttributes: Array<string> = Object.keys(props).map(turnCamelToKebabCasing);
 			static readonly tagName = tagName;
 			#shadowRoot: ShadowRoot;
-			#props = structuredClone(props);
 			#handlers: CurrentComponent<S> = {
 				destroy: () => {
 				},
@@ -172,117 +166,123 @@ function createComponentClass<P extends Record<string, any>, S extends Record<st
 			}
 			#styleElement?: HTMLStyleElement;
 			#previousStyleData: S = {} as S;
-
+			#props: P = structuredClone(props);
+			
 			getStyle(data: S) {
 				this.#previousStyleData = {...this.#previousStyleData, ...data};
 				let style: Stylesheet = "";
-
+				
 				if (typeof stylesheet === "function") {
 					style = stylesheet(structuredClone(this.#previousStyleData));
-
+					
 					if (style) {
 						style = typeof style === 'object'
 							? `<style class="${tagName.toLowerCase()}">${JSONToCSS(style, tagName, true)}</style>`
 							: getStyleString(style, tagName.toLowerCase(), true);
 					}
 				}
-
+				
 				return style;
 			}
-
+			
 			updateStyle(data: Partial<S>) {
 				const style = this.getStyle(data as S);
-
+				
 				if (this.#styleElement) {
 					const div = document.createElement("div");
 					div.innerHTML = style
 					this.#styleElement.innerHTML = div.children[0].innerHTML;
 				}
 			}
-
+			
 			detachStyle() {
 				if (this.#styleElement) {
 					this.#styleElement.remove();
 				}
 			}
-
+			
 			attachStyle() {
 				if (this.#styleElement) {
 					this.#shadowRoot.prepend(this.#styleElement)
 				}
 			}
-
+			
 			resetStyle() {
 				this.#previousStyleData = {} as S;
 				this.updateStyle({});
 			}
-
+			
 			constructor() {
 				super();
-
+				
+				const self = this;
+				
 				Object.keys(this.#props).forEach((key) => {
 					Object.defineProperty(this, key, {
 						get() {
 							return this.#props[key];
 						},
 						set(newValue: any) {
-							const oldValue = this.#props[key];
-
+							const oldValue = self.#props[key];
+							const mounted = self.isConnected;
+							
 							if (newValue !== oldValue) {
-								this.#handlers.beforeUpdate();
 								this.#props[key as keyof P] = newValue;
+								
+								mounted && this.#handlers.beforeUpdate();
 								this.#handlers.template?.update();
-								this.#handlers.afterUpdate();
+								mounted && this.#handlers.afterUpdate();
 							}
 						}
 					})
 				});
-
+				
 				this.#shadowRoot = this.attachShadow({mode, delegatesFocus});
 			}
-
+			
 			async connectedCallback() {
 				this.#shadowRoot.innerHTML = "";
-
+				
 				currentComponent = this.#handlers;
-				comp(Object.keys(this.#props).reduce((acc, key: keyof P) => {
-					acc[key] = () => this.#props[key];
-					return acc;
-				}, {} as Props<P>));
+				comp(
+					Object.keys(props).reduce((acc, key: keyof P) => {
+						acc[key] = () => this.#props[key];
+						return acc;
+					}, {} as Props<P>)
+				);
 				currentComponent = null;
-
+				
 				const style = this.getStyle({} as S);
-
+				
 				if (style) {
 					this.#shadowRoot.innerHTML = style;
 					this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
 				}
-
+				
 				this.#handlers.template?.render(this.#shadowRoot);
-
 				this.#handlers.mount();
 			}
-
+			
 			async disconnectedCallback() {
 				this.#handlers.destroy();
 			}
-
+			
 			async attributeChangedCallback(name: string, oldValue: any, newValue: any) {
 				const propName = turnKebabToCamelCasing(name);
-
-				if (!newValue && typeof props[propName] === 'boolean' && name in booleanAttributes) {
+				
+				if (!newValue && typeof this.#props[propName] === 'boolean' && name in booleanAttributes) {
 					newValue = this.hasAttribute(name);
 				}
-
+				
 				// @ts-ignore
 				this[propName] = jsonParse(newValue);
 			}
-
+			
 			async adoptedCallback() {
 				this.#handlers.adoption();
 			}
 		}
-
+		
 		return customElements.define(tagName, WebComponent);
 	}
 }

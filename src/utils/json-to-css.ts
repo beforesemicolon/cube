@@ -14,13 +14,15 @@ export function JSONToCSS(obj: Record<string, any>, tagName: string, hasShadowRo
 	return css;
 }
 
-function getPropertyCSS(prop: string, value: StylesheetObject, parentProp: string, cb: callback) {
+function getPropertyCSS(prop: string, value: StylesheetObject | number | string | Record<string, any>, parentProp: string, cb: callback) {
 	prop = prop.trim();
 	
+	value = typeof value === "number" ? value + 'px' : value;
+	
 	if(prop.startsWith('&')) {
-		cb(null, createPropertyBody(prop.replace(/&/g, parentProp), value));
+		cb(null, createPropertyBody(prop.replace(/&/g, parentProp), value as Record<string, any>));
 	} else if(prop.startsWith('@')) {
-		cb(null, createPropertyBody(prop, value))
+		cb(null, createPropertyBody(prop, value as Record<string, any>))
 	} else if(typeof value === 'object') {
 		if (parentProp.startsWith('@')) {
 			cb(createPropertyBody(prop, value))

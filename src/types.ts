@@ -1,4 +1,4 @@
-import {Template} from "@beforesemicolon/html";
+import {HtmlTemplate} from "@beforesemicolon/html";
 
 export interface StylesheetObject {
 	[k: string]: Partial<CSSStyleDeclaration> | StylesheetObject | number
@@ -21,7 +21,7 @@ export interface CurrentComponent<S> {
 		reset: () => void;
 	},
 	dispatchEvent: (e: CustomEvent) => void;
-	template: Template | null;
+	template: HtmlTemplate | null;
 }
 
 export interface ComponentOptions {
