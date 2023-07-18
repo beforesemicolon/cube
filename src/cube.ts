@@ -198,7 +198,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 								this.#handlers.template?.update();
 								// only update style if it is a callback expecting arguments
 								// otherwise it is an indication that the style does not use the props values
-								if (typeof stylesheet === "function" && (stylesheet.length > 0 || /^(function\s*[^(]+)?\s*\(\s*\.\.\./.test(stylesheet.toString()))) {
+								if (typeof stylesheet === "function" && stylesheet.length > 0) {
 									this.updateStyle();
 								}
 								mounted && this.#handlers.afterUpdate();
