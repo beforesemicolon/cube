@@ -1,13 +1,11 @@
 import 'core-js/stable/structured-clone';
-import {register, onAdoption, onDestroy, onMount, onBeforeUpdate, onAfterUpdate, template, useValue} from "./cube";
+import {register, onAdoption, onDestroy, onMount, template} from "./cube";
 import {Props} from "./types";
 
 describe('cube', () => {
 
 	it('should handle lifecycles', () => {
 		const mountMock = jest.fn();
-		const beforeUpdateMock = jest.fn();
-		const afterUpdateMock = jest.fn();
 		const destroyMock = jest.fn();
 		const adoptionMock = jest.fn();
 
@@ -19,8 +17,6 @@ describe('cube', () => {
 			template`<button type="${type}"><slot></slot></button>`
 
 			onMount(mountMock)
-			onBeforeUpdate(beforeUpdateMock)
-			onAfterUpdate(afterUpdateMock)
 			onDestroy(destroyMock)
 			onAdoption(adoptionMock)
 		}
@@ -39,9 +35,6 @@ describe('cube', () => {
 		btn.setAttribute("type", "submit");
 
 		expect(btn.shadowRoot?.innerHTML).toBe('<button type="submit"><slot></slot></button>')
-
-		expect(beforeUpdateMock).toHaveBeenCalledTimes(1);
-		expect(afterUpdateMock).toHaveBeenCalledTimes(1);
 
 		const iframe = document.createElement('iframe');
 		document.body.appendChild(iframe);

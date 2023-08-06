@@ -35,6 +35,8 @@ function getPropertyCSS(prop: string, value: StylesheetObject | number | string 
 
 			cb(null, createPropertyBody(selector, value))
 		}
+	} else if(prop.startsWith('--')) { // CSS variables
+		cb(`${prop}: ${value};`);
 	} else {
 		cb(`${turnCamelToKebabCasing(prop)}: ${value};`);
 	}

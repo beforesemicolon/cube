@@ -168,4 +168,12 @@ describe('JSONToCSS', () => {
 			}
 		}, 'comp-test', true)).toBe('.box {display: inline-block;} .box__small {width: 50px;} .box__large {width: 150px;}')
 	});
+	
+	it('should keep variable', () => {
+		expect(JSONToCSS({
+			":host": {
+				'--color-grey-100': "#222"
+			}
+		}, 'comp-test', true)).toBe(':host {--color-grey-100: #222;}')
+	});
 })

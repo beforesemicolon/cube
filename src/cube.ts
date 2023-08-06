@@ -28,6 +28,8 @@ export function register<P extends Record<string, any>>(
 		props,
 		stylesheet
 	});
+	
+	return tagName;
 }
 
 let currentComponent: CurrentComponent | null = null;
@@ -37,22 +39,6 @@ export const onMount = (cb: () => void) => {
 		currentComponent.mount = cb;
 	} else {
 		throw new Error('Must NOT use "onMount" lifecycle outside of a component')
-	}
-}
-
-export const onBeforeUpdate = (cb: () => void) => {
-	if (currentComponent) {
-		currentComponent.beforeUpdate = cb;
-	} else {
-		throw new Error('Must NOT use "onBeforeUpdate" lifecycle outside of a component')
-	}
-}
-
-export const onAfterUpdate = (cb: () => void) => {
-	if (currentComponent) {
-		currentComponent.afterUpdate = cb;
-	} else {
-		throw new Error('Must NOT use "onAfterUpdate" lifecycle outside of a component')
 	}
 }
 
@@ -109,6 +95,14 @@ export const template = (parts: TemplateStringsArray, ...values: unknown[]) => {
 	throw new Error('Must NOT use "template" outside of a component')
 }
 
+export const host = () => {
+	if (currentComponent) {
+		return currentComponent.self;
+	}
+	
+	throw new Error('Must NOT use "host" outside of a component')
+}
+
 function createComponentClass<P extends Record<string, any>>(tagName: string, {
 	delegatesFocus = false,
 	mode = "open",
@@ -137,14 +131,11 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 				},
 				adoption: () => {
 				},
-				beforeUpdate: () => {
-				},
-				afterUpdate: () => {
-				},
 				dispatchEvent: (e: CustomEvent) => {
 					this.dispatchEvent(e)
 				},
 				template: null,
+				self: this,
 			}
 			#styleElement?: HTMLStyleElement;
 			#props: P = structuredClone(props);
@@ -189,19 +180,16 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 						},
 						set(newValue: any) {
 							const oldValue = this.#props[key];
-							const mounted = this.isConnected;
 							
 							if (newValue !== oldValue) {
 								this.#props[key as keyof P] = newValue;
 								
-								mounted && this.#handlers.beforeUpdate();
 								this.#handlers.template?.update();
 								// only update style if it is a callback expecting arguments
 								// otherwise it is an indication that the style does not use the props values
 								if (typeof stylesheet === "function" && stylesheet.length > 0) {
 									this.updateStyle();
 								}
-								mounted && this.#handlers.afterUpdate();
 							}
 						}
 					})

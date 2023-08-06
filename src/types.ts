@@ -1,21 +1,23 @@
-import {HtmlTemplate} from "@beforesemicolon/html";
+import {HtmlTemplate, repeat, html, when, element} from "@beforesemicolon/html";
+import {eventDispatch, host, onAdoption, onDestroy, onMount, register, template, useValue} from "./cube";
 
 export interface StylesheetObject {
 	[k: string]: Partial<CSSStyleDeclaration> | StylesheetObject | number
 }
 
 export type Stylesheet = StylesheetObject | string;
-export type Props<P> = Record<keyof P, () => P[keyof P]>
+export type Props<P> = {
+	[K in keyof P]: () => P[K];
+}
 export type FnComponent<P> = (props: Props<P>) => void;
 export type ShadowRootMode = "open" | "closed";
 export interface CurrentComponent {
 	destroy: () => void;
 	mount: () => void;
 	adoption: () => void;
-	beforeUpdate: () => void;
-	afterUpdate: () => void;
 	dispatchEvent: (e: CustomEvent) => void;
 	template: HtmlTemplate | null;
+	self: HTMLElement;
 }
 
 export interface ComponentOptions {
@@ -23,31 +25,17 @@ export interface ComponentOptions {
 	delegatesFocus?: boolean;
 }
 
-export interface CustomEventListener<D> {
-	(evt: CustomEvent<D>): void;
-}
-
-export interface ElementInterface {
-	self: () => HTMLElement;
-	isComponent: () => boolean;
-	text: (value?: string) => string | null | ElementInterface;
-	toHtml: () => string;
-	html: (value?: string) => string | ElementInterface | null;
-	attr: (name: string, value?: any) => string | null | ElementInterface;
-	prop: (name: string, value?: any) => string | null | ElementInterface;
-	class: (value?: string) => string | ElementInterface;
-	id: (value?: string) => string | ElementInterface;
-	style: (property: keyof CSSStyleDeclaration, value: string | null) => string | CSSStyleDeclaration;
-	parent: () => ElementInterface | null;
-	children: () => ElementInterface[];
-	prepend: (node: Node) => ElementInterface;
-	append: (node: Node) => ElementInterface;
-	replaceWith: (node: HTMLElement) => ElementInterface;
-	insertAt: (node: Node, order: number) => ElementInterface;
-	find: (selector: string) => ElementInterface[];
-	siblings: () => ElementInterface[];
-	prev: () => ElementInterface | null;
-	next: () => ElementInterface | null;
-	on: (eventName: string, handler?: EventListenerOrEventListenerObject | CustomEventListener<unknown>, options?: boolean | AddEventListenerOptions) => ElementInterface;
-	off: (eventName: string) => ElementInterface;
+export interface Cube {
+	register: typeof register;
+	onMount: typeof onMount;
+	onDestroy: typeof onDestroy;
+	onAdoption: typeof onAdoption;
+	eventDispatch: typeof eventDispatch;
+	useValue: typeof useValue;
+	template: typeof template;
+	host: typeof host;
+	repeat: typeof repeat;
+	when: typeof when;
+	html: typeof html;
+	element: typeof element;
 }
