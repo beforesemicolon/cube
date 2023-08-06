@@ -1,0 +1,159 @@
+@font-face {
+	font-family: 'Open Sans';
+	src: url('../fonts/open-sans/OpenSans-Light.ttf') format('truetype');
+	font-weight: 100;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Open Sans';
+	src: url('../fonts/open-sans/OpenSans-Regular.ttf') format('truetype');
+	font-weight: 300;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Open Sans';
+	src: url('../fonts/open-sans/OpenSans-Semibold.ttf') format('truetype');
+	font-weight: 500;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Open Sans';
+	src: url('../fonts/open-sans/OpenSans-Bold.ttf') format('truetype');
+	font-weight: 700;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Rajdhani';
+	src: url('../fonts/Rajdhani/Rajdhani-Regular.ttf') format('truetype');
+	font-weight: 500;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Rajdhani';
+	src: url('../fonts/Rajdhani/Rajdhani-Light.ttf') format('truetype');
+	font-weight: 100;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Rajdhani';
+	src: url('../fonts/Rajdhani/Rajdhani-Medium.ttf') format('truetype');
+	font-weight: 300;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Rajdhani';
+	src: url('../fonts/Rajdhani/Rajdhani-SemiBold.ttf') format('truetype');
+	font-weight: 700;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Rajdhani';
+	src: url('../fonts/Rajdhani/Rajdhani-Bold.ttf') format('truetype');
+	font-weight: 900;
+	font-style: normal;
+}
+
+/* Global ---------––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+html, body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-size: 16px;
+	font-family: "Open Sans", sans-serif;
+	width: 100vw;
+	height: 100vh;
+	color: #ffffff;
+	background: linear-gradient(180deg, #0B0B0B, #0B0B0B, #171717);
+	min-height: 100vh;
+}
+
+*, *::after, *::before {
+	box-sizing: border-box;
+}
+
+/* Common ---------––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+h1, h2, h3, h4, h5, h6, p {
+	margin-top: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: "Rajdhani", sans-serif;
+}
+
+/* Utils ---------––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.wrapper {
+	margin: 0 auto;
+	width: 100%;
+	max-width: 1020px;
+	padding: 25px;
+}
+
+/* Header ---------––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+/* Footer ---------––––––––––––––––––––––––––––––––––––––––––––––––– */
+footer {
+	background: #fefefe;
+	margin-top: 70px;
+	padding-top: 50px;
+	padding-bottom: 50px;
+	position: relative;
+	color: #111;
+}
+
+footer .footer-sections {
+	display: flex;
+	gap: 10%;
+}
+
+footer h2 {
+	font-size: 16px;
+	margin-bottom: 30px;
+}
+
+
+footer section h3 {
+	font-family: "Open Sans", sans-serif;
+	font-size: 16px;
+	font-weight: 700;
+	margin-bottom: 15px;
+}
+
+footer section ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+footer section ul li {
+	margin: 15px 0;
+}
+
+footer section ul li a {
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 300;
+}
+
+footer section ul li address {
+	display: block;
+	margin: 30px 0 0;
+}
+
+footer .copyright {
+	text-align: right;
+	flex: 1;
+}
+
