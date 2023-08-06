@@ -4,3 +4,4 @@ src
 tsconfig.json
 coverage
 **.tgz
+docs
