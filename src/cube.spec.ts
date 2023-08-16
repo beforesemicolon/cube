@@ -1,9 +1,10 @@
 import 'core-js/stable/structured-clone';
-import {register, onAdoption, onDestroy, onMount, template} from "./cube";
+import {register, onAdoption, onDestroy, onMount, template, useValue} from "./cube";
 import {Props} from "./types";
+import {when, html, repeat} from "@beforesemicolon/html";
 
 describe('cube', () => {
-
+	
 	it('should handle lifecycles', () => {
 		const mountMock = jest.fn();
 		const destroyMock = jest.fn();
@@ -21,9 +22,7 @@ describe('cube', () => {
 			onAdoption(adoptionMock)
 		}
 
-		register<ButtonProps>(MyButton, {type: "button"});
-
-		const btn = document.createElement("my-button");
+		const btn = document.createElement(register<ButtonProps>(MyButton, {type: "button"}));
 
 		document.body.appendChild(btn);
 
@@ -130,4 +129,46 @@ describe('cube', () => {
 		expect(el.shadowRoot?.innerHTML).toBe('<deep-comp val="{&quot;sample&quot;:12}"></deep-comp>')
 		expect(el.shadowRoot?.children[0].shadowRoot?.innerHTML).toBe('12')
 	});
+	
+	describe('should work with helpers', () => {
+		describe('when', () => {
+			it('should ', () => {
+				const WhenComp = () => {
+					const [val, setVal] = useValue(3)
+					const [isZero, setIsZero] = useValue(false)
+					
+					const switchVal = () => {
+						if (val() === 0) {
+							setVal(5)
+							setIsZero(false)
+						} else {
+							setVal(0);
+							setIsZero(true)
+						}
+					}
+					
+					template`
+						${when(isZero, html`<p>Zero: ${val}</p>`, html`<p>Non Zero: ${val}</p>`)}
+						<button onclick="${switchVal}">switch</button>`
+				}
+				
+				const el = document.createElement(register(WhenComp));
+				
+				document.body.appendChild(el);
+				
+				const btn = el.shadowRoot?.querySelector('button') as HTMLButtonElement
+				
+				expect(el.shadowRoot?.innerHTML).toBe('<p>Non Zero: 3</p><button>switch</button>')
+				
+				btn.click();
+				
+				expect(el.shadowRoot?.innerHTML).toBe('<p>Zero: 0</p><button>switch</button>')
+				
+				btn.click();
+				
+				expect(el.shadowRoot?.innerHTML).toBe('<p>Non Zero: 5</p><button>switch</button>')
+			});
+		});
+	});
 })
+

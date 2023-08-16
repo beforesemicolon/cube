@@ -6,15 +6,21 @@ export interface StylesheetObject {
 }
 
 export type Stylesheet = StylesheetObject | string;
+export type Style<P> = (data: Props<P>) => Stylesheet;
 export type Props<P> = {
 	[K in keyof P]: () => P[K];
 }
 export type FnComponent<P> = (props: Props<P>) => void;
-export type ShadowRootMode = "open" | "closed";
+export enum ShadowRootMode {
+	OPEN = "open",
+	CLOSED = "closed",
+	NONE = "none"
+};
 export interface CurrentComponent {
 	destroy: () => void;
 	mount: () => void;
 	adoption: () => void;
+	update: (propName: string, newValue: unknown, oldValue: unknown) => void;
 	dispatchEvent: (e: CustomEvent) => void;
 	template: HtmlTemplate | null;
 	self: HTMLElement;

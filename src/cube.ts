@@ -7,14 +7,18 @@ import {
 	turnCamelToKebabCasing,
 	turnKebabToCamelCasing
 } from "./utils";
-import {ComponentOptions, CurrentComponent, FnComponent, Props, Stylesheet} from "./types";
+import {ComponentOptions, CurrentComponent, FnComponent, Props, ShadowRootMode, Style, Stylesheet} from "./types";
 
 export function register<P extends Record<string, any>>(
 	comp: FnComponent<P>,
 	props: P = {} as P,
-	stylesheet?: (data: Props<P>) => Stylesheet,
-	{mode = "open", delegatesFocus = false}: ComponentOptions = {}
+	styleOrOptions: Style<P> | ComponentOptions = {},
+	opt: ComponentOptions = {}
 ) {
+	const isStyle = typeof styleOrOptions === "function";
+	const stylesheet = isStyle ? styleOrOptions : undefined;
+	const {mode = ShadowRootMode.OPEN, delegatesFocus = false} = isStyle ? opt : styleOrOptions;
+	
 	const tagName = turnCamelToKebabCasing(comp.name || "");
 	
 	if (!tagName) {
@@ -39,6 +43,14 @@ export const onMount = (cb: () => void) => {
 		currentComponent.mount = cb;
 	} else {
 		throw new Error('Must NOT use "onMount" lifecycle outside of a component')
+	}
+}
+
+export const onUpdate = (cb: () => void) => {
+	if (currentComponent) {
+		currentComponent.update = cb;
+	} else {
+		throw new Error('Must NOT use "onUpdate" lifecycle outside of a component')
 	}
 }
 
@@ -77,8 +89,10 @@ export const useValue = <V>(val: V): [() => V, (newVal: V) => void] => {
 		const comp = currentComponent;
 		
 		return [() => val, (newVal: V) => {
-			val = newVal;
-			comp?.template?.update();
+			if (newVal !== val) {
+				val = newVal;
+				comp?.template?.update();
+			}
 		}]
 	}
 	
@@ -105,7 +119,7 @@ export const host = () => {
 
 function createComponentClass<P extends Record<string, any>>(tagName: string, {
 	delegatesFocus = false,
-	mode = "open",
+	mode = ShadowRootMode.OPEN,
 	props,
 	comp,
 	stylesheet
@@ -114,7 +128,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 	delegatesFocus?: boolean;
 	props: P,
 	comp: FnComponent<P>;
-	stylesheet?: (data: Props<P>) => Stylesheet;
+	stylesheet?: Style<P>;
 }) {
 	const CLS = customElements.get(tagName);
 	
@@ -123,12 +137,13 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 			// @ts-ignore
 			static observedAttributes: Array<string> = Object.keys(props).map(turnCamelToKebabCasing);
 			static readonly tagName = tagName;
-			#shadowRoot: ShadowRoot;
+			#renderedBefore = false;
+			#shadowRoot: ShadowRoot | HTMLElement;
 			#handlers: CurrentComponent = {
 				destroy: () => {
 				},
-				mount: () => {
-				},
+				mount: () => {},
+				update: () => {},
 				adoption: () => {
 				},
 				dispatchEvent: (e: CustomEvent) => {
@@ -153,7 +168,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 					if (style) {
 						style = typeof style === 'object'
 							? `<style class="${tagName.toLowerCase()}">${JSONToCSS(style, tagName, true)}</style>`
-							: getStyleString(style, tagName.toLowerCase(), true);
+							: getStyleString(style, tagName.toLowerCase());
 					}
 				}
 				
@@ -165,8 +180,12 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 				
 				if (this.#styleElement) {
 					const div = document.createElement("div");
-					div.innerHTML = style
-					this.#styleElement.innerHTML = div.children[0].innerHTML;
+					div.innerHTML = style;
+					const styleEl = document.head.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
+					
+					if (styleEl) {
+						this.#styleElement.textContent = styleEl.textContent;
+					}
 				}
 			}
 			
@@ -184,35 +203,57 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 							if (newValue !== oldValue) {
 								this.#props[key as keyof P] = newValue;
 								
-								this.#handlers.template?.update();
-								// only update style if it is a callback expecting arguments
-								// otherwise it is an indication that the style does not use the props values
-								if (typeof stylesheet === "function" && stylesheet.length > 0) {
-									this.updateStyle();
+								// only perform DOM updates while mounted
+								if (this.isConnected) {
+									this.#handlers.update(key, newValue, oldValue);
+									this.#handlers.template?.update();
+									// only update style if it is a callback expecting arguments
+									// otherwise it is an indication that the style does not use the props values
+									if (typeof stylesheet === "function" && stylesheet.length > 0) {
+										this.updateStyle();
+									}
 								}
 							}
 						}
 					})
 				});
 				
-				this.#shadowRoot = this.attachShadow({mode, delegatesFocus});
+				if (mode === ShadowRootMode.NONE) {
+					this.#shadowRoot = this;
+				} else {
+					this.#shadowRoot = this.attachShadow({mode, delegatesFocus});
+				}
 			}
 			
 			async connectedCallback() {
-				this.#shadowRoot.innerHTML = "";
-				
-				currentComponent = this.#handlers;
-				comp(this.#readonlyProps);
-				currentComponent = null;
-				
-				const style = this.getStyle();
-				
-				if (style) {
-					this.#shadowRoot.innerHTML = style;
-					this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
+				if (!this.#renderedBefore) {
+					this.#renderedBefore = true;
+					currentComponent = this.#handlers;
+					comp(this.#readonlyProps);
+					currentComponent = null;
+					
+					const style = this.getStyle();
+					
+					if (style) {
+						if (mode === ShadowRootMode.NONE) {
+							const styleEl = document.head.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
+							
+							if (!styleEl) {
+								document.head.insertAdjacentHTML("beforeend", style);
+							}
+							
+							this.#styleElement = styleEl;
+						} else {
+							this.#shadowRoot.innerHTML = style;
+							this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
+						}
+					}
+					
+					this.#handlers.template?.render(this.#shadowRoot);
+				} else {
+					this.#handlers.template?.update();
 				}
 				
-				this.#handlers.template?.render(this.#shadowRoot);
 				this.#handlers.mount();
 			}
 			

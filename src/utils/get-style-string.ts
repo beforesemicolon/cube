@@ -1,6 +1,6 @@
 import {replaceCssHost} from "./replace-css-host";
 
-export function getStyleString(stylesheet: string, tagName: string, hasShadowRoot: boolean = true) {
+export function getStyleString(stylesheet: string, tagName: string) {
 	stylesheet = stylesheet.trim().replace(/\s{2,}/g, ' ');
 
 	if (!stylesheet) {
@@ -12,28 +12,26 @@ export function getStyleString(stylesheet: string, tagName: string, hasShadowRoo
 	div.innerHTML = stylesheet;
 	const styleTag = document.createElement('style');
 	const links: HTMLLinkElement[] = []
-	const styles: HTMLStyleElement[] = [styleTag]
 
 	Array.from(div.childNodes).forEach(child => {
 		if (child.nodeName === 'LINK' && ((child as HTMLLinkElement).getAttribute('rel') || '').trim() === 'stylesheet') {
+			(child as HTMLLinkElement).classList.add(tagName);
 			links.push(child as HTMLLinkElement);
-		} else if (child.nodeName === 'STYLE') {
-			styles.push(child as HTMLStyleElement);
 		} else if(child.nodeName === '#text') {
+			(child as Text).nodeValue = replaceCssHost((child as Text).nodeValue ?? '', tagName).trim();
 			styleTag.appendChild(child);
+		} else if (child.nodeName === 'STYLE') {
+			if ((child as HTMLStyleElement).id) {
+				styleTag.id = (child as HTMLStyleElement).id;
+			}
+			(child as HTMLStyleElement).classList.forEach(cls => {
+				styleTag.classList.add(cls);
+			})
+			styleTag.insertAdjacentText('beforeend', replaceCssHost((child as Text).textContent ?? '', tagName).trim());
 		}
 	});
-
-	if (!hasShadowRoot) {
-		links.forEach(link => {
-			link.classList.add(tagName);
-		})
-		
-		for (let style of styles) {
-			style.classList.add(tagName);
-			style.textContent = replaceCssHost(style.innerHTML, tagName);
-		}
-	}
-
-	return links.map(el => el.outerHTML).join('') + styles.filter(el => (el.textContent || '').trim()).map(el => el.outerHTML).join('');
+	
+	styleTag.classList.add(tagName);
+	
+	return links.map(el => el.outerHTML).join('') + ((styleTag.textContent ?? '').trim().length ? styleTag.outerHTML : '');
 }
