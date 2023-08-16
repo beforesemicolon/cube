@@ -1,4 +1,4 @@
-![cube](./docs/assets/banner.jpg)
+![cube](https://github.com/beforesemicolon/cube/blob/b72a6bf46a103e5327a0a0e21541f922b7f9b02d/docs/assets/banner.jpg)
 
 [![npm](https://img.shields.io/npm/v/%40beforesemicolon%2Fcube)](https://www.npmjs.com/package/@beforesemicolon/cube)
 ![npm](https://img.shields.io/npm/l/%40beforesemicolon%2Fcube)
