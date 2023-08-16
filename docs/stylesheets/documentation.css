@@ -1,0 +1,70 @@
+main {
+	padding-bottom: 50px;
+}
+
+main .wrapper {
+	padding-top: 30px;
+	padding-bottom: 30px;
+}
+
+main .wrapper {
+	display: flex;
+	max-height: 100vh;
+	overflow: auto;
+}
+
+main aside {
+	width: 275px;
+	border-right: 1px solid #222;
+	position: sticky;
+	top: 0;
+}
+
+#doc-menu {
+	margin: 0;
+	padding: 0 0 0 20px;
+	list-style: none;
+}
+
+#doc-menu span {
+	display: block;
+	font-weight: 900;
+	margin: 0 0 5px;
+}
+
+#doc-menu > li {
+	margin-bottom: 20px;
+}
+
+#doc-menu ul {
+	padding-left: 25px;
+}
+
+#doc-menu ul li {
+	margin-bottom: 3px;
+}
+
+main article {
+	flex: 1;
+	padding: 0 20px;
+}
+
+/* Article ---------––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+article code-preview {
+	margin: 35px 0;
+}
+
+article h2 {
+	font-size: 2rem;
+}
+
+article h3 {
+	font-size: 1.5rem;
+	margin: 45px 0 10px;
+}
+
+article p {
+	line-height: 150%;
+	letter-spacing: 0.05rem;
+}
