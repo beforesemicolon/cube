@@ -1,23 +1,16 @@
 main {
-	padding-bottom: 50px;
+	padding-bottom: 0;
 }
 
 main .wrapper {
 	padding-top: 30px;
-	padding-bottom: 30px;
-}
-
-main .wrapper {
 	display: flex;
-	max-height: 100vh;
 	overflow: auto;
 }
 
 main aside {
 	width: 275px;
 	border-right: 1px solid #222;
-	position: sticky;
-	top: 0;
 }
 
 #doc-menu {
@@ -37,19 +30,34 @@ main aside {
 }
 
 #doc-menu ul {
-	padding-left: 25px;
+	padding-left: 15px;
 }
 
 #doc-menu ul li {
-	margin-bottom: 3px;
+	margin-bottom: 5px;
+	padding: 3px 10px;
 }
 
-main article {
+#doc-menu ul li.active {
+	border-right: 3px solid #fff;
+	background: #181818;
+	font-weight: 500;
+}
+
+#doc-menu a {
+	color: #fff;
+	text-decoration: none;
+}
+
+/* Article ---------––––––––––––––––––––––––––––––––––––––––––––––––– */
+article {
 	flex: 1;
 	padding: 0 20px;
 }
 
-/* Article ---------––––––––––––––––––––––––––––––––––––––––––––––––– */
+article img {
+	margin-bottom: 20px;
+}
 
 article code-preview {
 	margin: 35px 0;
@@ -68,3 +76,19 @@ article p {
 	line-height: 150%;
 	letter-spacing: 0.05rem;
 }
+
+article .nav-footer {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 50px;
+	border-top: 1px solid #222;
+	padding: 20px 0 50px;
+}
+
+article .nav-footer a {
+	color: #fff;
+	text-decoration: none;
+	font-weight: 900;
+}
+
+

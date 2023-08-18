@@ -219,6 +219,12 @@ header nav a:hover {
 	}
 }
 
+/* Main ---------––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+main {
+	padding-bottom: 50px;
+}
+
 /* Footer ---------––––––––––––––––––––––––––––––––––––––––––––––––– */
 footer {
 	background: #fefefe;
@@ -240,6 +246,7 @@ footer h2 {
 	display: flex;
 	gap: 10px;
 	align-items: center;
+	color: #111;
 }
 
 
