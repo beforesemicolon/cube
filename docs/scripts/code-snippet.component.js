@@ -104,7 +104,6 @@ const CodeSnippetStyle = () => {
       pre: {
         display: "block",
         margin: 0,
-        height: "100%",
         overflow: "auto",
         code: {
           display: "block",
@@ -119,7 +118,7 @@ const CodeSnippetStyle = () => {
 }
 
 register(CodeSnippet, {
-  language: "bash",
+  language: "shell",
   name: "",
   src: "",
   hideLang: false,

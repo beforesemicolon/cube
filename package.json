@@ -8,7 +8,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "docs:watch": "nodemon --watch docs/documentation/articles -e html --exec 'npm run build:docs'",
+    "watch:docs": "nodemon --watch docs/documentation/articles -e html --exec 'npm run build:docs'",
     "build:docs": "node ./scripts/build-docs.js",
     "build:min": "esbuild `find src \\( -name '*.ts' ! -name '*.spec.ts' \\)` --outdir=dist --platform=node --format=cjs --keep-names --minify --target=esnext\n",
     "build:browser": "esbuild src/client.ts --bundle --minify --keep-names --sourcemap --target=esnext --outfile=dist/client.js",

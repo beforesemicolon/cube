@@ -59,8 +59,15 @@ article img {
 	margin-bottom: 20px;
 }
 
-article code-preview {
-	margin: 35px 0;
+article code-preview,
+article code-snippet {
+	margin: 15px 0;
+}
+
+article p code {
+	background: #222;
+	padding: 3px 8px;
+	border-radius: 2px;
 }
 
 article h2 {
