@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/%40beforesemicolon%2Fcube)](https://www.npmjs.com/package/@beforesemicolon/cube)
 ![npm](https://img.shields.io/npm/l/%40beforesemicolon%2Fcube)
 
-Cube is a simple and powerful function-oriented library to create future-proof UI components and web applications.
+Cube is a simple and powerful function-oriented framework to create future-proof UI components and web applications.
 
 ## Quick Start
 

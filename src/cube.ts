@@ -9,15 +9,27 @@ import {
 } from "./utils";
 import {ComponentOptions, CurrentComponent, FnComponent, Props, ShadowRootMode, Style, Stylesheet} from "./types";
 
+const defaultOptions: ComponentOptions = {
+	mode: ShadowRootMode.OPEN,
+	delegatesFocus: false
+}
+
+export function globalConfig(opt: ComponentOptions = defaultOptions) {
+	defaultOptions.mode = opt.mode && [ShadowRootMode.OPEN, ShadowRootMode.CLOSED, ShadowRootMode.NONE].includes(opt.mode)
+		? opt.mode
+		: ShadowRootMode.OPEN;
+	defaultOptions.delegatesFocus = typeof opt.delegatesFocus === "boolean" ? opt.delegatesFocus : false;
+}
+
 export function register<P extends Record<string, any>>(
 	comp: FnComponent<P>,
 	props: P = {} as P,
-	styleOrOptions: Style<P> | ComponentOptions = {},
-	opt: ComponentOptions = {}
+	styleOrOptions: Style<P> | ComponentOptions = defaultOptions,
+	opt: ComponentOptions = defaultOptions
 ) {
 	const isStyle = typeof styleOrOptions === "function";
 	const stylesheet = isStyle ? styleOrOptions : undefined;
-	const {mode = ShadowRootMode.OPEN, delegatesFocus = false} = isStyle ? opt : styleOrOptions;
+	const {mode = defaultOptions.mode, delegatesFocus = defaultOptions.delegatesFocus} = isStyle ? opt : styleOrOptions;
 	
 	const tagName = turnCamelToKebabCasing(comp.name || "");
 	
@@ -33,7 +45,10 @@ export function register<P extends Record<string, any>>(
 		stylesheet
 	});
 	
-	return tagName;
+	return {
+		tagName, props, mode,
+		delegatesFocus,
+	};
 }
 
 let currentComponent: CurrentComponent | null = null;
@@ -142,8 +157,10 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 			#handlers: CurrentComponent = {
 				destroy: () => {
 				},
-				mount: () => {},
-				update: () => {},
+				mount: () => {
+				},
+				update: () => {
+				},
 				adoption: () => {
 				},
 				dispatchEvent: (e: CustomEvent) => {

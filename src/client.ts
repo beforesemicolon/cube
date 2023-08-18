@@ -8,7 +8,8 @@ import {
 	eventDispatch,
 	useValue,
 	host,
-	onUpdate
+	onUpdate,
+	globalConfig
 } from "./cube";
 
 if (window) {
@@ -18,6 +19,7 @@ if (window) {
 		...(window.BFS || {}),
 		Cube: {
 			register,
+			config: globalConfig,
 			onMount,
 			onDestroy,
 			onAdoption,

@@ -22,7 +22,7 @@ describe('cube', () => {
 			onAdoption(adoptionMock)
 		}
 
-		const btn = document.createElement(register<ButtonProps>(MyButton, {type: "button"}));
+		const btn = document.createElement(register<ButtonProps>(MyButton, {type: "button"}).tagName);
 
 		document.body.appendChild(btn);
 
@@ -152,7 +152,7 @@ describe('cube', () => {
 						<button onclick="${switchVal}">switch</button>`
 				}
 				
-				const el = document.createElement(register(WhenComp));
+				const el = document.createElement(register(WhenComp).tagName);
 				
 				document.body.appendChild(el);
 				

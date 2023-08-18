@@ -1,7 +1,7 @@
 {
   "name": "@beforesemicolon/cube",
   "version": "0.1.7",
-  "description": "Function-oriented library to create future-proof UI components and web applications.",
+  "description": "Function-oriented framework to create future-proof UI components and web applications.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
