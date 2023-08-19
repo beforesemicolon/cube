@@ -1,7 +1,8 @@
 import '../scripts/highlight/highlight.min.js';
-import snippets from './snippets.json' assert { type: 'json' };
+import snippets from './snippets.json' assert {type: 'json'};
+
 const {hljs, BFS} = window;
-const {register, template, html, useValue, when} = BFS.Cube;
+const {register, template, html, useValue, when, host} = BFS.Cube;
 
 
 export const langColor = {
@@ -11,9 +12,16 @@ export const langColor = {
 }
 
 const CodeSnippet = (props) => {
-  const snippet = snippets[props.name()];
+  const comp = host();
+  let snippet = (snippets[props.name()] || comp.innerHTML).trim()
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
   
   if (snippet) {
+    comp.innerHTML = '';
+    
     const code = hljs.highlight(snippet, {language: props.language()});
     const [copyLabel, setCopyLabel] = useValue('Copy');
     let timer;
@@ -35,7 +43,8 @@ const CodeSnippet = (props) => {
     
     const copyButton = when(
       navigator.clipboard,
-      () => html`<button class="btn" type="button" onclick="${copyToClipboard}">${copyLabel}</button>`
+      () => html`
+				<button class="btn" type="button" onclick="${copyToClipboard}">${copyLabel}</button>`
     );
     
     const sourceLink = when(
@@ -59,7 +68,7 @@ const CodeSnippet = (props) => {
       <pre><code class="language-${props.language} theme-hybrid" ref="code"></code></pre>
     `;
     
-    temp.refs['code'].insertAdjacentHTML("afterbegin", code.value)
+    temp.refs['code'][0].insertAdjacentHTML("afterbegin", code.value)
   }
 }
 
@@ -122,6 +131,6 @@ register(CodeSnippet, {
   name: "",
   src: "",
   hideLang: false,
-},  CodeSnippetStyle, {
+}, CodeSnippetStyle, {
   mode: "none"
 })

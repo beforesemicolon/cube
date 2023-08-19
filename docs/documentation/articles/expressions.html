@@ -1,0 +1,62 @@
+<h2>Expressions</h2>
+<p>Cube templates are <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates">template literals</a>
+therefore can include expressions which can be dynamic or static.</p>
+
+<h2 id="static-expression">Static Expressions</h2>
+<p>Static expressions are anything you don't want the template to react to if they change. This means that after
+everything is rendered, no matter the change the DOM elements will remain the same.</p>
+
+<code-snippet language="javascript">
+let label = "click me";
+let type = "button";
+
+const Button = html`<button type="${type}">${label}</button>`;
+
+Button.render(document.body);
+// renders: <button type="button">click me</button>
+
+// update data
+label = "clicked";
+type = "reset";
+
+// trigger update to check for changes and
+// update rendered DOM elements accordingly
+Button.update();
+
+// nothing changes and things remain rendered as
+// <button type="button">click me</button>
+</code-snippet>
+
+<p>The <code><a href="documentation/html">html</a></code> template literal tag will return an <code>HTMLTemplate</code> instance
+which has the <code>render</code> method to put elements on the DOM and <code>update</code> to
+update the elements according to data changes.</p>
+
+<p>This API is what powers Cube. Behind the scenes Cube is calling these methods whenever changes are detected
+and the template is doing all the work making sure the DOM only gets updated on changes and elements are rendered
+according to the data snapshot.</p>
+
+<h2 id="dynamic-expression">Dynamic Expressions</h2>
+<p>A dynamic expression is simply and expression returned by a function.</p>
+
+<code-snippet language="javascript">
+let label = "click me";
+let type = "button";
+
+const Button = html`<button type="${() => type}">${() => label}</button>`;
+
+Button.render(document.body);
+// renders: <button type="button">click me</button>
+
+// update data
+label = "clicked";
+type = "reset";
+
+Button.update();
+
+// DOM updates to
+// <button type="reset">clicked</button>
+</code-snippet>
+
+<p>The template will automatically call these functions on every <code>update</code> trigger and this is where
+the power of this templating system lies. This simple capability makes this template super powerful.</p>
+

@@ -10,38 +10,61 @@ const DocumentDirPath = path.resolve(__dirname, '../docs/documentation');
 const DocumentHtmlPath = path.join(DocumentDirPath, 'index.html');
 const DocumentArticlesDirPath = path.join(DocumentDirPath, 'articles');
 
+const footerNav = ({prev, next}) => `
+<div class="nav-footer">
+	<div class="prev">
+		${prev ? `<span>Prev:</span> <a href="${prev.href}">${prev.label}</a>` : ''}
+	</div>
+	<div class="next">
+		${next ? `<span>Next:</span> <a href="${next.href}">${next.label}</a>` : ''}
+	</div>
+</div>
+`
+
+const getNavObj = (anchorElement) => {
+	if (anchorElement) {
+		const href = anchorElement.href;
+		const fileName = (href.replace(/\/documentation\/?/, '') || 'why-cube') + '.html'
+		const name = fileName.replace(".html", '');
+		const label = name
+			.split('-')
+			.map(n => n[0].toUpperCase() + n.slice(1))
+			.join(" ");
+		
+		return {href, label};
+	}
+	
+	return null;
+}
+
 fs.readFile(DocumentHtmlPath, 'utf-8')
 	.then(async content => {
 		const doc = parse(content);
 		const html = doc.querySelector('html');
 		const article = doc.getElementById('doc-content');
-		const activeNavItem = doc.querySelector('#doc-menu li.active');
+		const docMenu = doc.getElementById('doc-menu');
+		const navItems = docMenu.querySelectorAll('a');
+		let idx = 0;
 		
-		const articlesFileNames = await fs.readdir(DocumentArticlesDirPath);
-		
-		for (const name of articlesFileNames) {
-			article.innerHTML = await fs.readFile(path.join(DocumentArticlesDirPath, name), 'utf-8');
-			const corespondentAnchor = doc.querySelector(`#doc-menu a[href="/documentation/${name.replace(".html", '')}"]`)
+		for (let navItem of navItems) {
+			const href = navItem.href;
+			const fileName = (href.replace(/\/documentation\/?/, '') || 'why-cube') + '.html'
 			
-			if (corespondentAnchor) {
-				activeNavItem.classList.remove("active");
-				corespondentAnchor.parentElement.classList.add('active');
-			} else {
-				console.log(`No nav link for "${name}"`);
-			}
+			article.innerHTML = await fs.readFile(path.join(DocumentArticlesDirPath, fileName), 'utf-8');
+			
+			navItem.parentElement.classList.add('active');
+			
+			article.insertAdjacentHTML("beforeend", footerNav({
+				prev: getNavObj(navItems[idx - 1]),
+				next: getNavObj(navItems[idx + 1])
+			}))
 			
 			const newArticleContent = html.outerHTML;
 			
-			if (corespondentAnchor) {
-				activeNavItem.classList.add("active");
-				corespondentAnchor.parentElement.classList.remove('active');
-			}
+			navItem.parentElement.classList.remove('active');
 			
-			try {
-				await fs.unlink(path.join(DocumentDirPath, name))
-			} catch(e) {
-			}
+			await fs.writeFile(path.join(DocumentDirPath, fileName), newArticleContent)
 			
-			await fs.writeFile(path.join(DocumentDirPath, name), newArticleContent)
+			idx += 1;
 		}
 	})

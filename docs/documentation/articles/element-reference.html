@@ -1,0 +1,63 @@
+<h2>Element Reference</h2>
+<p>Although rarely, there will be times when you will need reference of the DOM elements created from the template
+you define. For that, Cube templates has a special attribute called <code>ref</code>.</p>
+<p>This attribute marks the element you want to gain reference of, and it takes a name from which you want to access it.</p>
+<code-snippet language="javascript">
+const Button = html`
+  <button>
+    <span ref="label">my button</span>
+  </button>`;
+
+Button.refs['label'] // HTMLSpanElement instance
+</code-snippet>
+
+By default, both <code>html</code> and <code>template</code> template literal tags return a template instance which
+contains a <code>refs</code> map keyed by the value you provide the <code>ref</code> attribute. From this map
+you can access the element you want.
+
+<code-snippet language="javascript">
+const MyButton = () => {
+  const temp = template`
+    <button>
+     <span ref="label">my button</span>
+    </button>`;
+
+  temp.refs['label'] // Array or elements
+}
+
+register(MyButton)
+</code-snippet>
+
+<h3 id="deep-references">Deep References</h3>
+<p>Every element will return its references. This means that when you compose a lot of elements in your template,
+from your template you will be able to access deep references.</p>
+
+<code-snippet language="javascript">
+const button = (label) => html`<button ref="btn">${label}</button>`;
+
+const ActionButtons = () => {
+  const temp = template`
+    <div class="btn-group">
+      ${button("delete")}
+      ${button("edit")}
+      ${button("open")}
+    </div>
+  `;
+
+  temp.refs['btn'] // Array or buttons
+}
+
+register(ActionButtons)
+</code-snippet>
+
+<h3 id="dynamic-references">Dynamic References</h3>
+<p>The references will also work in case of dynamic elements. For example, in cases where elements are conditionally
+rendered.</p>
+
+<code-snippet language="javascript">
+const TodoStatus = (status) => status == "pending"
+  ? html`<span ref="status">Pending</span>`
+  : html`<span ref="status">Done</span>;
+</code-snippet>
+
+<p>Cube <code>refs</code> object will dynamically contain newly added references regardless if it's mounted or not.</p>

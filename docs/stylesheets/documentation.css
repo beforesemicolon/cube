@@ -64,19 +64,30 @@ article code-snippet {
 	margin: 15px 0;
 }
 
+article ul code,
 article p code {
 	background: #222;
 	padding: 3px 8px;
 	border-radius: 2px;
 }
 
+article p a {
+	color: #a67af7;
+	font-weight: 500;
+}
+
 article h2 {
 	font-size: 2rem;
+	margin: 35px 0 5px;
 }
 
 article h3 {
 	font-size: 1.5rem;
-	margin: 45px 0 10px;
+	margin: 55px 0 10px;
+}
+
+article h4 {
+	margin: 30px 0 10px;
 }
 
 article p {
