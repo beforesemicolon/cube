@@ -1,0 +1,46 @@
+<h2><code>element</code> helper</h2>
+<p>The <code>element</code> helper is the simplest helper because all it does is allow you to create
+elements in one call.</p>
+
+<p>So instead of this:</p>
+
+<code-snippet language="javascript">
+const btn = document.createElement("button");
+
+btn.className = "btn cta";
+btn.setAttribute("disabled", "");
+btn.innerHTML = "<span>click me</span>"
+</code-snippet>
+
+<p>You can do this:</p>
+
+<code-snippet language="javascript">
+const btn = element("button", {
+  attributes: {
+    disabled: true,
+    class: "btn cta"
+  },
+  htmlContent: "<span>click me</span>"
+});
+</code-snippet>
+
+<h3 id="why-it-exists">Why it exists</h3>
+<p>It actually does not just help you create elements in one call. It does many things that can
+help you with component elements like properly setting prop values for the component on creation.</p>
+
+<p>For example, when you create Cube components, the props become properties in the component instance.
+This properties can be simple <a href="https://developer.mozilla.org/en-US/docs/Glossary/Primitive">primitive values</a>
+but could also be complex data type like a <code>Map</code> or <code>Array</code>. The <code>element</code>
+helper will ensure that they are properly set in the component where via the attribute would be harder to do.</p>
+
+<code-snippet language="javascript">
+const MyButton = () => {...}
+
+const {tagName} = register(MyButton, {disabled: true});
+
+const btn = element(tagName); // MyButton instance
+</code-snippet>
+
+<p>Learn more about the <a href="/documentation/element">element API</a></p>
+
+

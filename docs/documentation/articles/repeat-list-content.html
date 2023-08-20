@@ -1,0 +1,83 @@
+<h2>Repeat/List Content</h2>
+
+<p>A powerful templating system will allow you to avoid repeating yourself. A lot of what we render is based on data
+and when there is a lot of data you will need a templating system that will simplify it.</p>
+<p>Cube will handle arrays by default. This makes it easy to render long lists.</p>
+
+<code-snippet language="javascript">
+const TodoItem = (name) => html`<li class="todo-item">${name}</li>`;
+
+const TodoItems = ["item 1", "item 2", "item 3"];
+
+const TodoList = html`<ul class="todo-list">${TodoItems.map(TodoItem)}</ul>`;
+
+TodoList.render(document.body)
+</code-snippet>
+
+<p>The above example is perfect to render static lists but if you have a dynamic list, one you update frequently, you
+need to make the render dynamic.</p>
+
+<code-snippet language="javascript">
+const TodoList = html`<ul class="todo-list">${() => TodoItems.map(TodoItem)}</ul>`;
+</code-snippet>
+
+<p>By turning it into dynamic expression the elements will update according changes. However,
+this means that every time there is a change causing an entire DOM change.</p>
+
+<p>Instead, it is better to keep a list of <code>html</code> instances of <code>Node</code>.</p>
+
+<code-snippet language="javascript">
+const TodoItem = (name) => html`<li class="todo-item">${name}</li>`;
+
+const TodoItems = ["item 1", "item 2", "item 3"].map(TodoItem);
+
+const TodoList = html`<ul class="todo-list">${() => TodoItems}</ul>`;
+
+TodoList.render(document.body)
+</code-snippet>
+
+<p>Then you can modify the list as you wish and the DOM will only udpate where things have changed</p>
+
+<code-snippet language="javascript">
+// add new item to the list
+TodoItems.push(TodoItem(`item 4`))
+
+// apply the changes to the DOM
+TodoList.update()
+</code-snippet>
+
+<p>But all this is painful to track therefore Cube has the <a href="#repeat-helper">repeat helper</a> that handles
+all this for you.</p>
+
+<h3 id="repeat-helper"><code>repeat</code> Helper</h3>
+<p>The <code>repeat</code> helper is a special templating tool that handles lists and any type of repetitions on the
+DOM. It does all the caching and tracking while being data based.</p>
+<p>It takes a number, an array, or a function that will return a number or array.</p>
+
+<code-snippet language="javascript">
+// provide a number and a callback that renders each number
+html`${repeat(5, n => n)}`
+
+// provide an array and a callback that renders each item
+html`${repeat([1, 2, 3], n => n)}`
+
+// dynamically get a list count or array and a callback that renders each item
+html`${repeat(() => Math.floor(Math.random() * 10), n => n)}`
+</code-snippet>
+
+<p>Everything you return by the callback will be associated with each item from the list. This means if
+the list have repeated items, they will render once as a DOM element. This is true for
+	<a href="https://developer.mozilla.org/en-US/docs/Glossary/Primitive">primitive values</a> only.</p>
+
+<code-snippet language="javascript">
+html`${repeat([1, 3, 5, 3], n => `item-${n}`)}`
+// renders: item-1item-3item-5item-3
+
+html`${repeat([1, 3, 5, 3], n => html`item-${n}`)}`
+// renders: item-1item-3item-5
+</code-snippet>
+
+<p>As you can see from above example, whenever you are mapping a data to a DOM element will result in
+unique DOM elements regardless of repeated primitives in the list. This is because each data will be mapped
+to a html instance therefore <code>3</code> will be mapped to the same DOM element and the same DOM element
+cannot exist twice in the Document.</p>

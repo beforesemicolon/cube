@@ -61,3 +61,40 @@ const MyButton = () => {
 
 register(MyButton)
 </code-snippet>
+
+<h3 id="injecting-html">Injecting HTML</h3>
+<p>Cube templates will handle <code>html</code> and <code><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a></code> instances.
+It also handles arrays containing these.</p>
+
+<code-snippet language="javascript">
+const span = document.createElement("span");
+span.textContent = "sample";
+
+html`<button>${span}</button>`;
+// renders: <button><span>sample</span></button>
+</code-snippet>
+
+<p>Everything else is treated as text. Bellow example will not render the <code>span</code> as HTML. It will be just
+an HTML string on the DOM which makes things pretty easy and that's one thing that makes Cube special and safe.</p>
+<p>Unlike other UI frameworks, everything is rendered as text, and you need to tell it when to render things using <code>html</code>
+template string tag or passing real <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a> instances.</p>
+
+<code-snippet language="javascript">
+const htmlString = "<button><span>sample</span></button>";
+
+html`<pre><code>${htmlString}</code></pre>`;
+</code-snippet>
+
+<p>However, if you have a string you want to render, which is normal usecase, you can still use <code>html</code>
+but as a function.</p>
+
+<code-snippet language="javascript">
+const span = "<span>sample</span>";
+
+html`<button>${html([span])}</button>`;
+</code-snippet>
+
+<p>The <a href="/documentation/html">html</a> template string tag can be called with an array of HTML strings
+which it can then render.</p>
+<p>You should only use this method with trusted HTML string or
+	<a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/11-Client-side_Testing/03-Testing_for_HTML_Injection">properly testing for HTML injections</a>.</p>

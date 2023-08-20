@@ -64,6 +64,8 @@ article code-snippet {
 	margin: 15px 0;
 }
 
+article h3 code,
+article h4 code,
 article ul code,
 article p code {
 	background: #222;
@@ -71,19 +73,20 @@ article p code {
 	border-radius: 2px;
 }
 
-article p a {
+article p a,
+article ul a {
 	color: #a67af7;
 	font-weight: 500;
 }
 
 article h2 {
-	font-size: 2rem;
-	margin: 35px 0 5px;
+	font-size: 2.4rem;
+	margin: 0 0 25px;
 }
 
 article h3 {
 	font-size: 1.5rem;
-	margin: 55px 0 10px;
+	margin: 40px 0 10px;
 }
 
 article h4 {

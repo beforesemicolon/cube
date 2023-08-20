@@ -1,0 +1,75 @@
+<h2>Conditional Render</h2>
+<p>Cube templating system tracks the DOM for you and knows what changes based on data. It also remembers the rendered
+DOM which make conditional rendering elements optimal.</p>
+
+<p>Conditional rendering is as easy as setting ternaries in the template.</p>
+
+<code-snippet language="javascript">
+const status = "done";
+
+html`
+<div class="todo-status">
+${() => status == 'pending'
+  ? html`<span>Pending</span>`
+  : html`<span>Done</span>`
+}
+</div>`;
+</code-snippet>
+
+<p>The above example is using a <a href="/documentation/expressions#dynamic-expression">dynamic expression</a> to set
+the status and this is not optimal because every time the function is called by the Cube template, it will
+create new instances of the html. In this case it's pretty small, but it could be a large markup.</p>
+
+<p>Instead, you can create instances and use them in the dynamic expression.</p>
+
+<code-snippet language="javascript">
+const status = "done";
+
+const pendingSpan = html`<span>Pending</span>`;
+const doneSpan = html`<span>done</span>`;
+
+html`
+<div class="todo-status">
+  ${() => status == 'pending' ? pendingSpan: doneSpan}
+</div>`;
+</code-snippet>
+
+<h3 id="when-helper"><code>when</code> helper</h3>
+<p>Cube template has few helpers and one of them is the <code>when</code> helper you can use specifically for conditional rendering.</p>
+
+<p>Bellow is the same example as above ones but using the <code>when</code> helper which already handles all the performance
+issues already mentioned. This is because <code>when</code> caches the result and does everything for you.</p>
+
+<code-snippet language="javascript">
+const status = "done";
+
+html`
+<div class="todo-status">
+  ${when(() => status == 'pending',
+    html`<span>Pending</span>`,
+    html`<span>Done</span>`)}
+</div>`;
+</code-snippet>
+
+<p>The <code>when</code> helper takes a condition, a truthy value, and an optional falsy value, and all of these can be functions.</p>
+<p>Condition as function same as a <a href="/documentation/expressions#dynamic-expression">dynamic expression</a> and the other
+arguments as function is ideal to lazy load content.</p>
+
+<code-snippet language="javascript">
+let loading = true;
+
+const sample = html`${when(
+  () => loading,
+    html`<p>loading...</p>`,
+    // lazy load the rest
+    () => html`<p>loaded</p>`
+  )}`;
+
+
+setTimeout(() => {
+  loading = false;
+  sample.update();
+}, 2500)
+</code-snippet>
+
+<p>Using the function to render content will delay it for when the condition is met.</p>
