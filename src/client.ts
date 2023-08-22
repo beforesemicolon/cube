@@ -9,7 +9,10 @@ import {
 	useValue,
 	host,
 	onUpdate,
-	globalConfig
+	globalConfig,
+	useContext,
+	createContext,
+	onContextUpdate
 } from "./cube";
 
 if (window) {
@@ -24,6 +27,9 @@ if (window) {
 			onDestroy,
 			onAdoption,
 			onUpdate,
+			onContextUpdate,
+			useContext,
+			createContext,
 			template,
 			eventDispatch,
 			useValue,

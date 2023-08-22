@@ -15,15 +15,6 @@ export enum ShadowRootMode {
 	OPEN = "open",
 	CLOSED = "closed",
 	NONE = "none"
-};
-export interface CurrentComponent {
-	destroy: () => void;
-	mount: () => void;
-	adoption: () => void;
-	update: (propName: string, newValue: unknown, oldValue: unknown) => void;
-	dispatchEvent: (e: CustomEvent) => void;
-	template: HtmlTemplate | null;
-	self: HTMLElement;
 }
 
 export interface ComponentOptions {

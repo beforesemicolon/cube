@@ -7,7 +7,7 @@ import {
 	turnCamelToKebabCasing,
 	turnKebabToCamelCasing
 } from "./utils";
-import {ComponentOptions, CurrentComponent, FnComponent, Props, ShadowRootMode, Style, Stylesheet} from "./types";
+import {ComponentOptions, FnComponent, Props, ShadowRootMode, Style, Stylesheet} from "./types";
 
 const defaultOptions: ComponentOptions = {
 	mode: ShadowRootMode.OPEN,
@@ -51,19 +51,163 @@ export function register<P extends Record<string, any>>(
 	};
 }
 
+interface ContextModel<T> {
+	readonly: boolean;
+	getData: () => T;
+	setData: (data: T) => void;
+	subs: Set<(name: string, newValue: unknown, oldValue: unknown) => void>
+}
+
+type Context<T> = Record<string, ContextModel<T>>;
+
+interface CurrentComponent {
+	destroy: (() => void) | null;
+	mount: (() => void | (() => void)) | null;
+	adoption: (() => void) | null;
+	update: ((propName: string, newValue: unknown, oldValue: unknown) => void) | null;
+	contextUpdate: (propName: string, newValue: unknown, oldValue: unknown) => void;
+	dispatchEvent: (e: CustomEvent) => void;
+	contextMap: Map<string, {reactive: boolean; inContext: boolean; ctx: ContextModel<unknown> | null}>;
+	template: HtmlTemplate | null;
+	self: HTMLElement;
+}
+
 let currentComponent: CurrentComponent | null = null;
 
-export const onMount = (cb: () => void) => {
+const CONTEXT: WeakMap<HTMLElement, Context<unknown>> = new WeakMap();
+
+const getContextHost = (name: string, ancestor: HTMLElement) => {
+	const tagName = ancestor.tagName;
+	
+	while (ancestor) {
+		if (!ancestor) {
+			break;
+		}
+		
+		if (ancestor instanceof ShadowRoot) {
+			ancestor = ancestor.host as HTMLElement;
+		}
+		
+		const host = CONTEXT.get(ancestor);
+		
+		if (host && host[name]) {
+			return host[name];
+		}
+		
+		// move this to the end so the component can find its own context first
+		ancestor = ancestor.parentNode as HTMLElement;
+	}
+	
+	if (!ancestor) {
+		throw new Error(`Component "${tagName}" is not in context of "${name}"`)
+	}
+}
+
+export const useContext = <T>(name: string, reactive = true) => {
 	if (currentComponent) {
-		currentComponent.mount = cb;
+		const comp = currentComponent;
+		const ctx = getContextHost(name, currentComponent.self) ?? null;
+		
+		comp.contextMap.set(name, {
+			reactive,
+			ctx,
+			inContext: true
+		})
+		
+		if (reactive) {
+			ctx?.subs.add(comp?.contextUpdate)
+		}
+		
+		return {
+			update: (newValue: T) => {
+				const host = comp.contextMap.get(name);
+				
+				if (host?.inContext && host?.ctx) {
+					host.ctx.setData(newValue);
+				}
+			},
+			value: (): T | null => {
+				const host = comp.contextMap.get(name);
+				
+				if (host && host.inContext) {
+					return host?.ctx?.getData() as T;
+				}
+				
+				return null;
+			},
+		}
+	} else {
+		throw new Error('Must NOT use "useContext" outside of a component')
+	}
+}
+
+export const createContext = <T>(name: string, data: T, {readonly = false, reactive = true} = {}) => {
+	if (currentComponent) {
+		if (!CONTEXT.has(currentComponent.self)) {
+			const subs: ContextModel<T>['subs'] = new Set();
+			
+			if (reactive) {
+				subs.add(currentComponent.contextUpdate)
+			}
+			
+			CONTEXT.set(currentComponent.self, {
+				[name]: {
+					readonly,
+					getData() {
+						return data
+					},
+					setData(newValue: T) {
+						const oldValue = data;
+						data = newValue;
+						subs.forEach((sub) => sub(name, newValue, oldValue))
+					},
+					subs
+				}
+			} as Context<unknown>);
+		} else {
+			throw new Error(`A context named "${name}" already exists for this component`)
+		}
+		
+		return useContext<T>(name, reactive);
+	} else {
+		throw new Error('Must NOT use "createContext" outside of a component')
+	}
+}
+
+export const onContextUpdate = (cb: (propName: string, newValue: unknown, oldValue: unknown) => void) => {
+	if (currentComponent) {
+		const comp = currentComponent;
+		comp.contextMap.forEach((val, name) => {
+			// remove any sub added by useContext
+			val.ctx?.subs.delete(comp.contextUpdate);
+			// set a new contextUpdate so the onDestroy can clea it up
+			comp.contextUpdate = (...args) => {
+				val.reactive && currentComponent?.template?.update();
+				cb(...args)
+			};
+			// then override with this new contextUpdate
+			val.ctx?.subs.add(comp.contextUpdate)
+		})
 	} else {
 		throw new Error('Must NOT use "onMount" lifecycle outside of a component')
 	}
 }
 
-export const onUpdate = (cb: () => void) => {
+export const onMount = (cb: () => void) => {
 	if (currentComponent) {
-		currentComponent.update = cb;
+		if (currentComponent.mount === null) {
+			currentComponent.mount = cb;
+		}
+	} else {
+		throw new Error('Must NOT use "onMount" lifecycle outside of a component')
+	}
+}
+
+export const onUpdate = (cb: (propName: string, newValue: unknown, oldValue: unknown) => void) => {
+	if (currentComponent) {
+		if (currentComponent.update === null) {
+			currentComponent.update = cb;
+		}
 	} else {
 		throw new Error('Must NOT use "onUpdate" lifecycle outside of a component')
 	}
@@ -79,7 +223,9 @@ export const onDestroy = (cb: () => void) => {
 
 export const onAdoption = (cb: () => void) => {
 	if (currentComponent) {
-		currentComponent.adoption = cb;
+		if (currentComponent.adoption === null) {
+			currentComponent.adoption = cb;
+		}
 	} else {
 		throw new Error('Must NOT use "onAdoption" lifecycle outside of a component')
 	}
@@ -155,16 +301,16 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 			#renderedBefore = false;
 			#shadowRoot: ShadowRoot | HTMLElement;
 			#handlers: CurrentComponent = {
-				destroy: () => {
-				},
-				mount: () => {
-				},
-				update: () => {
-				},
-				adoption: () => {
-				},
+				destroy: null,
+				mount: null,
+				update: null,
+				adoption: null,
 				dispatchEvent: (e: CustomEvent) => {
 					this.dispatchEvent(e)
+				},
+				contextMap: new Map(),
+				contextUpdate: () => {
+					this.#handlers.template?.update();
 				},
 				template: null,
 				self: this,
@@ -222,13 +368,14 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 								
 								// only perform DOM updates while mounted
 								if (this.isConnected) {
-									this.#handlers.update(key, newValue, oldValue);
-									this.#handlers.template?.update();
+									this.#handlers.update?.(key, newValue, oldValue);
 									// only update style if it is a callback expecting arguments
 									// otherwise it is an indication that the style does not use the props values
 									if (typeof stylesheet === "function" && stylesheet.length > 0) {
 										this.updateStyle();
 									}
+									
+									this.#handlers.template?.update();
 								}
 							}
 						}
@@ -268,14 +415,37 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 					
 					this.#handlers.template?.render(this.#shadowRoot);
 				} else {
+					// verify that the component was mounted in context and
+					// subscribe it to all context it needs
+					this.#handlers.contextMap.forEach((val, name) => {
+						try {
+							const ctx = getContextHost(name, this) ?? null;
+							val.inContext = true;
+							val.ctx = ctx;
+							val.ctx?.subs.add(this.#handlers.contextUpdate)
+						} catch (e) {
+							console.error(`Component "${tagName}" is no longer in context of "${name}"`);
+							// set inContext to false in case there is something trying to
+							// read or update the context. only components in context can do that
+							val.inContext = false;
+						}
+					})
 					this.#handlers.template?.update();
 				}
 				
-				this.#handlers.mount();
+				const destroy = this.#handlers.mount?.();
+				
+				if (!this.#handlers.destroy && typeof destroy === "function") {
+					this.#handlers.destroy = destroy;
+				}
 			}
 			
 			async disconnectedCallback() {
-				this.#handlers.destroy();
+				// unsubscribe from any existing context
+				this.#handlers.contextMap.forEach((val, name) => {
+					val.ctx?.subs.delete(this.#handlers.contextUpdate)
+				})
+				this.#handlers.destroy?.();
 			}
 			
 			async attributeChangedCallback(name: string, oldValue: any, newValue: any) {
@@ -290,7 +460,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 			}
 			
 			async adoptedCallback() {
-				this.#handlers.adoption();
+				this.#handlers.adoption?.();
 			}
 		}
 		
