@@ -1,5 +1,6 @@
 import {HtmlTemplate, repeat, html, when, element} from "@beforesemicolon/html";
 import {eventDispatch, host, onAdoption, onDestroy, onMount, register, template, useValue} from "./cube";
+import e from "express";
 
 export interface StylesheetObject {
 	[k: string]: Partial<CSSStyleDeclaration> | StylesheetObject | number
@@ -17,9 +18,41 @@ export enum ShadowRootMode {
 	NONE = "none"
 }
 
+export interface PathOptions {
+	title?: string;
+	state?: Record<string, unknown>;
+	search?: Record<string, string>;
+}
+
+export interface Page {
+	path: string,
+	options: PathOptions
+}
+
 export interface ComponentOptions {
 	mode?: ShadowRootMode;
 	delegatesFocus?: boolean;
+}
+
+export interface ContextModel<T> {
+	readonly: boolean;
+	getData: () => T;
+	setData: (data: T) => void;
+	subs: Set<(name: string, newValue: unknown, oldValue: unknown) => void>
+}
+
+export type Context<T> = Record<string, ContextModel<T>>;
+
+export interface CurrentComponent {
+	destroy: (() => void) | null;
+	mount: (() => void | (() => void)) | null;
+	adoption: (() => void) | null;
+	update: ((propName: string, newValue: unknown, oldValue: unknown) => void) | null;
+	contextUpdate: (propName: string, newValue: unknown, oldValue: unknown) => void;
+	dispatchEvent: (e: CustomEvent) => void;
+	contextMap: Map<string, {reactive: boolean; inContext: boolean; ctx: ContextModel<unknown> | null}>;
+	template: HtmlTemplate | null;
+	self: HTMLElement;
 }
 
 export interface Cube {

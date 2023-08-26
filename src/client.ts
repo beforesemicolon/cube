@@ -1,4 +1,7 @@
 import {when, repeat, html, element, HtmlTemplate} from '@beforesemicolon/html';
+import './router';
+import {goToPage, goToPreviousPage, replacePage} from './router';
+
 import {
 	register,
 	onMount,
@@ -21,6 +24,7 @@ if (window) {
 		// @ts-ignore
 		...(window.BFS || {}),
 		Cube: {
+			replacePage, goToPage, goToPreviousPage,
 			register,
 			config: globalConfig,
 			onMount,
