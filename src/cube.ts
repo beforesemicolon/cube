@@ -7,12 +7,17 @@ import {
 	turnCamelToKebabCasing,
 	turnKebabToCamelCasing
 } from "./utils";
-import {ComponentOptions, FnComponent, Props, ShadowRootMode, Style, Stylesheet} from "./types";
+import {ComponentOptions, FnComponent, Props, ShadowRootMode, Style, Stylesheet, CurrentComponent} from "./types";
+import initContext from "./context";
 
+let currentComponent: CurrentComponent | null = null;
 const defaultOptions: ComponentOptions = {
 	mode: ShadowRootMode.OPEN,
 	delegatesFocus: false
 }
+const CTX = initContext(() => currentComponent)
+
+export const {useContext, createContext, onContextUpdate} = CTX;
 
 export function globalConfig(opt: ComponentOptions = defaultOptions) {
 	defaultOptions.mode = opt.mode && [ShadowRootMode.OPEN, ShadowRootMode.CLOSED, ShadowRootMode.NONE].includes(opt.mode)
@@ -49,148 +54,6 @@ export function register<P extends Record<string, any>>(
 		tagName, props, mode,
 		delegatesFocus,
 	};
-}
-
-interface ContextModel<T> {
-	readonly: boolean;
-	getData: () => T;
-	setData: (data: T) => void;
-	subs: Set<(name: string, newValue: unknown, oldValue: unknown) => void>
-}
-
-type Context<T> = Record<string, ContextModel<T>>;
-
-interface CurrentComponent {
-	destroy: (() => void) | null;
-	mount: (() => void | (() => void)) | null;
-	adoption: (() => void) | null;
-	update: ((propName: string, newValue: unknown, oldValue: unknown) => void) | null;
-	contextUpdate: (propName: string, newValue: unknown, oldValue: unknown) => void;
-	dispatchEvent: (e: CustomEvent) => void;
-	contextMap: Map<string, {reactive: boolean; inContext: boolean; ctx: ContextModel<unknown> | null}>;
-	template: HtmlTemplate | null;
-	self: HTMLElement;
-}
-
-let currentComponent: CurrentComponent | null = null;
-
-const CONTEXT: WeakMap<HTMLElement, Context<unknown>> = new WeakMap();
-
-const getContextHost = (name: string, ancestor: HTMLElement) => {
-	const tagName = ancestor.tagName;
-	
-	while (ancestor) {
-		if (!ancestor) {
-			break;
-		}
-		
-		if (ancestor instanceof ShadowRoot) {
-			ancestor = ancestor.host as HTMLElement;
-		}
-		
-		const host = CONTEXT.get(ancestor);
-		
-		if (host && host[name]) {
-			return host[name];
-		}
-		
-		// move this to the end so the component can find its own context first
-		ancestor = ancestor.parentNode as HTMLElement;
-	}
-	
-	if (!ancestor) {
-		throw new Error(`Component "${tagName}" is not in context of "${name}"`)
-	}
-}
-
-export const useContext = <T>(name: string, reactive = true) => {
-	if (currentComponent) {
-		const comp = currentComponent;
-		const ctx = getContextHost(name, currentComponent.self) ?? null;
-		
-		comp.contextMap.set(name, {
-			reactive,
-			ctx,
-			inContext: true
-		})
-		
-		if (reactive) {
-			ctx?.subs.add(comp?.contextUpdate)
-		}
-		
-		return {
-			update: (newValue: T) => {
-				const host = comp.contextMap.get(name);
-				
-				if (host?.inContext && host?.ctx) {
-					host.ctx.setData(newValue);
-				}
-			},
-			value: (): T | null => {
-				const host = comp.contextMap.get(name);
-				
-				if (host && host.inContext) {
-					return host?.ctx?.getData() as T;
-				}
-				
-				return null;
-			},
-		}
-	} else {
-		throw new Error('Must NOT use "useContext" outside of a component')
-	}
-}
-
-export const createContext = <T>(name: string, data: T, {readonly = false, reactive = true} = {}) => {
-	if (currentComponent) {
-		if (!CONTEXT.has(currentComponent.self)) {
-			const subs: ContextModel<T>['subs'] = new Set();
-			
-			if (reactive) {
-				subs.add(currentComponent.contextUpdate)
-			}
-			
-			CONTEXT.set(currentComponent.self, {
-				[name]: {
-					readonly,
-					getData() {
-						return data
-					},
-					setData(newValue: T) {
-						const oldValue = data;
-						data = newValue;
-						subs.forEach((sub) => sub(name, newValue, oldValue))
-					},
-					subs
-				}
-			} as Context<unknown>);
-		} else {
-			throw new Error(`A context named "${name}" already exists for this component`)
-		}
-		
-		return useContext<T>(name, reactive);
-	} else {
-		throw new Error('Must NOT use "createContext" outside of a component')
-	}
-}
-
-export const onContextUpdate = (cb: (propName: string, newValue: unknown, oldValue: unknown) => void) => {
-	if (currentComponent) {
-		const comp = currentComponent;
-		comp.contextMap.forEach((val, name) => {
-			// remove any sub added by useContext
-			val.ctx?.subs.delete(comp.contextUpdate);
-			// set a new contextUpdate so the onDestroy can clea it up
-			comp.contextUpdate = (...args) => {
-				val.reactive && currentComponent?.template?.update();
-				cb(...args)
-			};
-			// then override with this new contextUpdate
-			val.ctx?.subs.add(comp.contextUpdate)
-		})
-	} else {
-		throw new Error('Must NOT use "onMount" lifecycle outside of a component')
-	}
 }
 
 export const onMount = (cb: () => void) => {
@@ -419,7 +282,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 					// subscribe it to all context it needs
 					this.#handlers.contextMap.forEach((val, name) => {
 						try {
-							const ctx = getContextHost(name, this) ?? null;
+							const ctx = CTX.getContextHost(name, this) ?? null;
 							val.inContext = true;
 							val.ctx = ctx;
 							val.ctx?.subs.add(this.#handlers.contextUpdate)
