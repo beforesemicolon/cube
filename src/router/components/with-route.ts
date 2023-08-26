@@ -39,9 +39,10 @@ const WithRoute = (props: Props<WithRouteProps>) => {
 				if (componentTagName) {
 					const el = element(componentTagName);
 					
-					comp.innerHTML = '';
+					// match the slot name so it can be rendered
+					el.setAttribute("slot", slotName)
 					comp.appendChild(el);
-					showContent();
+					hideContent();
 				} else if (props.src()) {
 					fetch(props.src())
 						.then(res => res.text())
