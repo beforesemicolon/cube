@@ -140,5 +140,5 @@ dist
 
 # files
 docs/documentation/*.html
-index.html
+server
 
