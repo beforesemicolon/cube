@@ -38,6 +38,7 @@ main aside {
 	padding: 3px 10px;
 }
 
+#doc-menu li.active,
 #doc-menu ul li.active {
 	border-right: 3px solid #fff;
 	background: #181818;
@@ -47,6 +48,17 @@ main aside {
 #doc-menu a {
 	color: #fff;
 	text-decoration: none;
+}
+
+#doc-menu li.active {
+	position: relative;
+	left: -5px;
+	width: calc(100% + 5px)
+}
+
+#doc-menu li.active a {
+	background: none;
+	padding-left: 5px;
 }
 
 /* Article ---------––––––––––––––––––––––––––––––––––––––––––––––––– */
