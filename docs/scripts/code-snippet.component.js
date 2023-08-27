@@ -65,7 +65,9 @@ const CodeSnippet = (props) => {
         ${sourceLink}
         ${langLabel}
       </div>
-      <pre><code class="language-${props.language} theme-hybrid" ref="code"></code></pre>
+      <div class="container">
+        <pre><code class="language-${props.language} theme-hybrid" ref="code"></code></pre>
+      </div>
     `;
     
     temp.refs['code'][0].insertAdjacentHTML("afterbegin", code.value)
@@ -81,10 +83,13 @@ const CodeSnippetStyle = () => {
       padding: "30px 15px 10px",
       borderRadius: 5,
       position: "relative",
-      maxHeight: 450,
       boxSizing: "border-box",
       "*": {
         boxSizing: "border-box"
+      },
+      ".container": {
+        overflow: "auto",
+        maxHeight: 400,
       },
       ".actions": {
         position: "absolute",
@@ -113,7 +118,6 @@ const CodeSnippetStyle = () => {
       pre: {
         display: "block",
         margin: 0,
-        overflow: "auto",
         code: {
           display: "block",
           textWrap: "wrap",

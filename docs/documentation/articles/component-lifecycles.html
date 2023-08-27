@@ -1,0 +1,127 @@
+<h2>Component Lifecycles</h2>
+<p>Cube offers four lifecycles for the component, and they can only be set in the component once. These lifecycles
+map to the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements#using_the_lifecycle_callbacks">native web components lifecycles</a>
+but with a simpler name and usability.</p>
+
+<h3 id="before-mounting">Before Mounting</h3>
+<p>One thing to keep in mind is that your component function is called once before the first mounting. This means that
+even if your component is removed from the DOM (mount) and added again the function will not get called.</p>
+<p>This behavior is just like a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/constructor">class constructor</a>
+,and it happens right before mounting.</p>
+
+<p>This means that anything initialized inside the component remains regardless of component been removed from the DOM
+and can lead to memory leaks. Therefore, it should be used for things that remains as long as the component instance
+is needed.</p>
+
+<h3 id="onmount">onMount</h3>
+<p>The <code>onMount</code> lifecycle is called when the component is added to the DOM. It is the perfect place
+to start any subscription and initialize timers.</p>
+
+<code-snippet language="javascript">
+const MyComponent = () => {
+  let interval;
+	
+  onMount(() => {
+    interval = setInterval(() => {
+      // logic
+    }, 1000)
+  })
+}
+</code-snippet>
+
+<h4 id="onmount-vs-component-body">onMount vs component body</h4>
+<p>Truth is, because the component function is called only once, you can do anything you can do inside the <code>onMount</code>
+inside the function body.</p>
+<code-snippet language="javascript">
+const MyComponent = () => {
+  const interval = setInterval(() => {
+    // logic
+  }, 1000)
+}
+</code-snippet>
+
+<p>This will work the same way because the component function is called right before the component is added to the DOM
+   and the <code>onMount</code> lifecycle is called.</p>
+
+<p>By using <code>onMount</code> you make sure things are only done when the component is mounted. There could be that
+the component is removed or moved to different places in the DOM or even new documents. By using the lifecycle you
+ensure that proper setup and cleanup is done correctly.</p>
+
+<p>One additional advantage of using <code>onMount</code> is that it handles the mounting and unmount.</p>
+<code-snippet language="javascript">
+const MyComponent = () => {
+  onMount(() => {
+    const interval = setInterval(() => {
+      // logic
+    }, 1000)
+
+    return () => {
+      clearInterval(interval)
+    }
+  })
+}
+</code-snippet>
+
+<p>You can return a cleanup function from the <code>onMount</code> callback which will be called whenever the
+component is removed from the DOM.</p>
+
+<h3 id="ondestroy">onDestroy</h3>
+<p>The <code>onDestroy</code> lifecycle is used to cleanup anything set up during the component mounting or initialization.</p>
+<code-snippet language="javascript">
+const MyComponent = () => {
+  const interval = setInterval(() => {
+   // logic
+  }, 1000)
+
+  onDestroy(() => {
+    clearInterval(interval)
+  })
+}
+</code-snippet>
+<p>If you are using the <code>onMount</code> lifecycle you can simply return the destroy callback. If you use the
+<code>onDestroy</code> with the <code>onMount</code> destroy callback, the <code>onDestroy</code> takes precedence.</p>
+
+<h3 id="onadoption">onAdoption</h3>
+<p>The <code>onAdoption</code> lifecycle is triggered when a component is moved from one document to another.</p>
+<code-snippet language="javascript">
+const MyComponent = () => {
+  onAdoption(() => {
+    // logic
+  })
+}
+
+const {tagName} = register(MyComponent);
+
+const comp = document.createElement(tagName);
+const iframe = document.body.querySelector('iframe');
+
+// will trigger onMount
+document.body.appendChild(comp)
+
+// will trigger onAdoption then onMount
+iframe.contentDocument.body.appendChild(btn)
+</code-snippet>
+
+<p>This lifecycle is useful to check if the component was moved to an environment where certain things may or
+may not exist to make appropriate changes.</p>
+
+<h3 id="onupdate">onUpdate</h3>
+<p>The <code>onUpdate</code> lifecycle is particularly different as it informs you about very specific changes. It will be
+triggered:</p>
+<ul>
+	<li>After a prop change (<em>either via the attribute or directly changing the property</em>) and the DOM was updated with the change;</li>
+	<li>Only if the component is mounted. This does not mean the component element will not be updated;</li>
+</ul>
+
+<p>The lifecycle callback is called exactly with the property that changed.</p>
+<code-snippet language="javascript">
+const MyComponent = () => {
+  onUpdate((propName, newValue, oldValue) => {
+    // logic
+  })
+}
+</code-snippet>
+
+<p>Like you can see, this lifecycle does not get triggered for internal state changes, only props. This is because if there are
+internal states, you know when this will be changing because you set the logic.</p>
+<p>You can use this lifecycle for internal logic, not derived states but anything you need to trigger or adjust.</p>

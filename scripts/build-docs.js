@@ -52,7 +52,7 @@ fs.readFile(DocumentHtmlPath, 'utf-8')
 			
 			article.innerHTML = await fs.readFile(path.join(DocumentArticlesDirPath, fileName), 'utf-8');
 			
-			navItem.parentElement.classList.add('active');
+			navItem.closest('li').classList.add('active');
 			
 			article.insertAdjacentHTML("beforeend", footerNav({
 				prev: getNavObj(navItems[idx - 1]),

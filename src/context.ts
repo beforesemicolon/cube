@@ -30,7 +30,7 @@ const getContextHost = (name: string, ancestor: HTMLElement) => {
 }
 
 export default (currentComponent: () => CurrentComponent | null) => {
-	const createContext = <T>(name: string, data: T, {readonly = false, reactive = true} = {}) => {
+	const createContext = <T>(name: string, data: T, {readonly = true, reactive = false} = {}) => {
 		const comp = currentComponent();
 		
 		if (comp) {
@@ -48,9 +48,11 @@ export default (currentComponent: () => CurrentComponent | null) => {
 							return data
 						},
 						setData(newValue: T) {
-							const oldValue = data;
-							data = newValue;
-							subs.forEach((sub) => sub(name, newValue, oldValue))
+							if (!readonly) {
+								const oldValue = data;
+								data = newValue;
+								subs.forEach((sub) => sub(name, newValue, oldValue))
+							}
 						},
 						subs
 					}
@@ -59,7 +61,18 @@ export default (currentComponent: () => CurrentComponent | null) => {
 				throw new Error(`A context named "${name}" already exists for this component`)
 			}
 			
-			return useContext<T>(name, reactive);
+			const ctx = useContext<T>(name, reactive);
+			
+			return {
+				...ctx,
+				update: (newValue: T) => {
+					const host = comp.contextMap.get(name);
+					
+					if (host?.inContext && host?.ctx) {
+						host.ctx.setData(newValue);
+					}
+				},
+			};
 		} else {
 			throw new Error('Must NOT use "createContext" outside of a component')
 		}
@@ -85,7 +98,7 @@ export default (currentComponent: () => CurrentComponent | null) => {
 				update: (newValue: T) => {
 					const host = comp.contextMap.get(name);
 					
-					if (host?.inContext && host?.ctx) {
+					if (host?.inContext && host?.ctx && !host.ctx.readonly) {
 						host.ctx.setData(newValue);
 					}
 				},

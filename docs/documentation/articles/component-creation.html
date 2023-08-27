@@ -1,0 +1,89 @@
+<h2>Component Creation</h2>
+<p>Cube is web UI framework. Although it creates web components first, it can be used to create any type of
+components. It really depends on which way you prefer.</p>
+
+<h3 id="cube-component">Cube Component</h3>
+<p>Cube components are simply functions you can register as a web components.</p>
+
+<code-snippet language="javascript">
+const MyComponent = () => {} // valid component
+
+register(MyComponent)
+</code-snippet>
+
+<p>Components don't have to render anything which means you can use them as data providers, to run some logic, etc.
+However, if you are rendering something you need to use the Cube <code>template</code> template literal tag.</p>
+
+<code-snippet language="javascript">
+const MyComponent = () => {
+  template`<p>Hello World</p>`
+}
+
+register(MyComponent)
+</code-snippet>
+
+<p>The <code>template</code> is a special <code>html</code> template literal tag which is tied to the
+component and also the only one that allows you to use native web component APIs like
+	<a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">slot</a>.</p>
+<p>By default, Cube creates a web component with a shadow root in an
+	<a href="https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/mode">open mode</a>. You can change this
+by playing with the configuration of the component to even remove the shadow root. <a href="/documentation/register">Learn more</a>.</p>
+
+<h4 id="component-name">Component name</h4>
+<p>The name of the function you use to create components is very important. Cube will use the function name
+to define the tag name of the component element.</p>
+
+<p>This means that <code>MyComponent</code> becomes <code>my-component</code> tag name.</p>
+<code-snippet language="html">
+<my-component></my-component>
+</code-snippet>
+
+<p>A valid component function name must be at least two words camelcase. This is according the custom elements
+	<a href="https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name">valid name</a> specifications.
+An error will be thrown if this is not the case.</p>
+
+<h3 id="function-component">Function Component</h3>
+<p>What if you don't want web components? Well, Cube templating system is the most powerful part of the framework
+,and you can use it by itself.</p>
+
+<p>Since components are just functions, you can create one that returns a <code>html</code> instance and then render it.</p>
+
+<code-snippet language="javascript">
+const MyComponent = () => {
+  return html`<p>Hello World</p>`
+}
+
+MyComponent.render(document.body); // append it to the document
+</code-snippet>
+
+<p>If you want to see an example of a full app built this way, check out this example of a
+	<a href="https://stackblitz.com/edit/web-platform-lvonxr?file=app.js">modular todo app</a>.</p>
+<p>You can use this by only installing the <a href="https://www.npmjs.com/package/@beforesemicolon/html">template system itself</a> with:</p>
+
+<code-snippet>
+npm install @beforesemicolon/html
+</code-snippet>
+<h3 id="native-web-component">Native Web Component</h3>
+<p>One thing that Cube simplifies a lot is the way you create web components natively. As a matter of fact, Cube
+use various techniques to handle all the complexity behind the scenes.</p>
+
+<p>Cube template will take care of all DOM manipulation and template if you want to use the native web components
+API. This makes this approach more developer friendly.</p>
+
+<code-snippet language="javascript">
+class MyComponent extends HTMLElement {
+  constructor() {
+    super();
+	
+    this.template = html`<p>Hello World</p>`
+   
+    this.template.render(this)
+  }
+}
+
+customElements.define("my-component", MyComponent)
+</code-snippet>
+
+<p>Take a look at this full <a href="https://www.npmjs.com/package/@beforesemicolon/html#web-component">button example</a>
+using native web component's APIs.</p>
+

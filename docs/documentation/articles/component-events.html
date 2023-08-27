@@ -1,1 +1,42 @@
+<h2>Component Events</h2>
+<p>Cube events is nothing new. It is based on the same native
+	<a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener">event listeners
+	</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent">custom events</a>.</p>
 
+<p>To set an event listener you simply use inline event listeners attributes which starts with <code>on</code> followed
+by the name of the event.</p>
+
+<code-snippet language="javascript">
+const handleClick = (event) => {
+  // handle event
+}
+
+template`<button onclick="${handleClick}">click me</button>`
+</code-snippet>
+
+<p>This works with any native HTML DOM <a href="https://developer.mozilla.org/en-US/docs/Web/Events">events</a> as
+well as any custom events you dispatch inside a component.</p>
+
+<code-snippet language="javascript">
+const handleEvent = (event) => {
+  // handle event
+}
+
+template`<my-button onsomecustomevent="${handleEvent}">click me</my-button>`
+</code-snippet>
+
+<h3 id="event-dispatch">Event Dispatch</h3>
+<p>To be able to dispatch custom events Cube exposes the <a href="/documentation/event-dispatch">event dispatch</a>
+helper which returns a simple function that you can call with the name of an event you want, can be anything, followed
+by an optional data to pass with this event.</p>
+
+<code-snippet language="javascript">
+const MyButton = () => {
+  const dispatch = eventDispatch();
+
+  dispatch("somecustomevent", {data: "sample"})
+}
+</code-snippet>
+
+<p>You can use this to dispatch events of any type with any data which you can then listen to on the component tag
+just like listening to any other native event.</p>

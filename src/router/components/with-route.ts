@@ -18,8 +18,8 @@ const WithRoute = (props: Props<WithRouteProps>) => {
 		const ctx = createContext("params", {}, {readonly: true});
 		const path = pathStringToPattern(props.path())
 		const slotName = String(Math.random());
-		
 		const temp = template`<slot ref="slot" name="${slotName}"></slot>`;
+		let el: Element;
 		
 		const showContent = () => {
 			temp.refs['slot'][0].removeAttribute("name")
@@ -31,17 +31,17 @@ const WithRoute = (props: Props<WithRouteProps>) => {
 		
 		const onRouteChange = (pathname: string) => {
 			const params = getPathMatchParams(pathname, path.pattern, path.params);
+			const componentTagName = props.component();
 			
 			if (params !== null) {
-				const componentTagName = props.component();
 				ctx.update(params)
 				
 				if (componentTagName) {
-					const el = element(componentTagName);
+					el = el ?? element(componentTagName);
 					
 					// match the slot name so it can be rendered
 					el.setAttribute("slot", slotName)
-					comp.appendChild(el);
+					!el.isConnected && comp.appendChild(el);
 					hideContent();
 				} else if (props.src()) {
 					fetch(props.src())
@@ -55,7 +55,11 @@ const WithRoute = (props: Props<WithRouteProps>) => {
 					showContent();
 				}
 			} else {
-				hideContent();
+				if (componentTagName) {
+					el.removeAttribute("slot")
+				} else {
+					hideContent();
+				}
 			}
 		};
 		
