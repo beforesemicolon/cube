@@ -1,5 +1,4 @@
-import {Props} from "../../types";
-import {eventDispatch, onMount, register, template, useValue} from "../../cube";
+import {Props, Cube} from "../../types";
 import {goToPreviousPage} from "../go-to-previous-page";
 import {searchParamsToJson} from "../utils/search-params-to-json";
 import {isSamePath} from "../utils/is-same-path";
@@ -13,42 +12,43 @@ interface PageLinkProps {
 	previous: boolean;
 }
 
-const PageLink = (props: Props<PageLinkProps>) => {
-	const dispatch = eventDispatch();
-	
-	const [disabled, setDisabled] = useValue(pages.length === 1);
-	const isDisabled = () => props.previous() && disabled();
-	const isActive = () => isSamePath(props.path())
-	
-	onMount(() => {
-		const onRouteChange = () => {
-			setDisabled(pages.length === 1);
-			!props.previous() && dispatch("active", isActive());
-		}
+export default ({eventDispatch, onMount, register, template, useValue}: Cube) => {
+	const PageLink = (props: Props<PageLinkProps>) => {
+		const dispatch = eventDispatch();
 		
-		return pages.subscribe(onRouteChange);
-	})
-	
-	const handleClick = (event: Event) => {
-		event.preventDefault();
-		event.stopPropagation();
+		const [disabled, setDisabled] = useValue(pages.length === 1);
+		const isDisabled = () => props.previous() && disabled();
+		const isActive = () => isSamePath(props.path())
 		
-		if (props.previous()) {
-			goToPreviousPage();
-		} else {
-			const [path, searchPart = ""] = props.path().split('?');
+		onMount(() => {
+			const onRouteChange = () => {
+				setDisabled(pages.length === 1);
+				!props.previous() && dispatch("active", isActive());
+			}
 			
-			if (path) {
-				goToPage(path, {
-					title: props.title() || document.title,
-					state: props.state(),
-					search: searchParamsToJson(searchPart)
-				})
+			return pages.subscribe(onRouteChange);
+		})
+		
+		const handleClick = (event: Event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			
+			if (props.previous()) {
+				goToPreviousPage();
+			} else {
+				const [path, searchPart = ""] = props.path().split('?');
+				
+				if (path) {
+					goToPage(path, {
+						title: props.title() || document.title,
+						state: props.state(),
+						search: searchParamsToJson(searchPart)
+					})
+				}
 			}
 		}
-	}
-	
-	template`
+		
+		template`
 		<a
 			part="anchor"
 			href="${props.path}"
@@ -58,11 +58,12 @@ const PageLink = (props: Props<PageLinkProps>) => {
 			>
 			<slot></slot>
 		</a>`
+	}
+	
+	register<PageLinkProps>(PageLink, {
+		path: "",
+		title: "",
+		state: {},
+		previous: false
+	});
 }
-
-register<PageLinkProps>(PageLink, {
-	path: "",
-	title: "",
-	state: {},
-	previous: false
-});

@@ -8,3 +8,7 @@ docs
 jest.config.js
 scripts
 server
+dist/localization
+dist/animation
+dist/router
+dist/store

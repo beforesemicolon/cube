@@ -1,6 +1,5 @@
 import {HtmlTemplate, repeat, html, when, element} from "@beforesemicolon/html";
-import {eventDispatch, host, onAdoption, onDestroy, onMount, register, template, useValue} from "./cube";
-import e from "express";
+import {eventDispatch, host, onAdoption, onDestroy, onMount, register, template, useValue, createContext, useContext} from "./cube";
 
 export interface StylesheetObject {
 	[k: string]: Partial<CSSStyleDeclaration> | StylesheetObject | number
@@ -68,4 +67,6 @@ export interface Cube {
 	when: typeof when;
 	html: typeof html;
 	element: typeof element;
+	createContext: typeof createContext;
+	useContext: typeof useContext;
 }
