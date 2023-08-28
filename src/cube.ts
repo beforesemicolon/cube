@@ -113,10 +113,8 @@ export const useValue = <V>(val: V): [() => V, (newVal: V) => void] => {
 		const comp = currentComponent;
 		
 		return [() => val, (newVal: V) => {
-			if (newVal !== val) {
-				val = newVal;
-				comp?.template?.update();
-			}
+			val = newVal;
+			comp?.template?.update();
 		}]
 	}
 	

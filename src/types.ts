@@ -17,17 +17,6 @@ export enum ShadowRootMode {
 	NONE = "none"
 }
 
-export interface PathOptions {
-	title?: string;
-	state?: Record<string, unknown>;
-	search?: Record<string, string>;
-}
-
-export interface Page {
-	path: string,
-	options: PathOptions
-}
-
 export interface ComponentOptions {
 	mode?: ShadowRootMode;
 	delegatesFocus?: boolean;
@@ -69,4 +58,25 @@ export interface Cube {
 	element: typeof element;
 	createContext: typeof createContext;
 	useContext: typeof useContext;
+}
+
+export type Subscriber<T> = (data: T | null) => void
+
+export interface Store<T> {
+	value: () => Readonly<T> | null;
+	update: (newData: T | null) => void;
+	subscribe: (sub: Subscriber<Readonly<T>>) => void;
+}
+
+export interface ListStore<T> {
+	createItem: (item: T) => void;
+	updateItem: (id: string, item: T) => void;
+	loadItems: (items: T[]) => void;
+	getItem: (id: string) => Readonly<T> | null;
+	getItems: (ids: string[]) => Readonly<T[]>;
+	deleteItem: (id: string) => void;
+	deleteItems: (ids: string[]) => void;
+	findItem: (filter: (item: T) => boolean) => Readonly<T> | null;
+	findItems: (filter: (item: T) => boolean) => Readonly<T[]>;
+	subscribe: (sub: Subscriber<Readonly<T[]>>) => void;
 }

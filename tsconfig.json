@@ -26,10 +26,5 @@
   ],
   "exclude": [
     "src/**/*.spec.ts",
-    "server/**/*",
-    "src/localization/**/*",
-    "src/router/**/*",
-    "src/animation/**/*",
-    "src/store/**/*",
   ]
 }

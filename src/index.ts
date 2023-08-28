@@ -4,7 +4,8 @@ import initRouter from "./router";
 
 initRouter(cube as unknown as Cube);
 
-export * from "./cube";
 export * from "./types";
-export {replacePage, goToPage, goToPreviousPage} from "./router";
+export * from "./cube";
+export * from "./store";
+export {replacePage, goToPage, previousPage, nextPage} from "./router";
 export {when, repeat, html, HtmlTemplate, element} from '@beforesemicolon/html';
