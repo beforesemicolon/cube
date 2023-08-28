@@ -55,7 +55,7 @@ export default ({createContext, host, onMount, register, template, element}: Cub
 						showContent();
 					}
 				} else {
-					if (componentTagName) {
+					if (componentTagName && el) {
 						el.removeAttribute("slot")
 					} else {
 						hideContent();

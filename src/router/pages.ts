@@ -1,105 +1,56 @@
-import {Page} from "../types";
-import {searchParamsToJson} from "./utils/search-params-to-json";
+import {isSamePath} from "./utils/is-same-path";
 
-const routeListeners: Set<(current: string, prev: string) => void> = new Set();
-const pages: Array<Page> = [
-	{
-		path: "/", options: {
-			title: document.title,
-			state: {},
-			search: searchParamsToJson(location.search)
-		}
-	}
-];
-
-let prevPath: string = location.pathname;
-
-// init pages on load
-if (location.pathname !== "/") {
-	pages.push({
-		path: location.pathname, options: {
-			title: document.title,
-			state: {},
-			search: searchParamsToJson(location.search)
-		}
-	})
-}
+const routeListeners: Set<(pathname: string) => void> = new Set();
+const entryPath = location.pathname;
 
 const broadcast = () => {
 	routeListeners.forEach(cb => {
-		cb(location.pathname, prevPath)
+		cb(location.pathname)
 	})
 }
 
 window.addEventListener("popstate", (e) => {
-	const beforeLastPath = pages[pages.length - 2];
-	
-	const wentBack = location.pathname == (beforeLastPath?.path || "/");
-	
-	if (wentBack) {
-		pages.pop();
-	} else {
-		pages.push({
-			path: location.pathname,
-			options: {
-				state: e.state,
-				title: document.title ?? '',
-				search: searchParamsToJson(location.search)
-			}
-		})
-	}
-	
 	broadcast();
 })
 
 export default {
-	get length() {
-		return pages.length;
+	get entryPath() {
+		return entryPath;
 	},
-	subscribe(sub: (current: string, prev: string) => void) {
+	subscribe(sub: (pathname: string) => void) {
 		routeListeners.add(sub);
-		sub(location.pathname, pages[pages.length - 1]?.path);
+		sub(location.pathname);
 		
 		return () => {
 			routeListeners.delete(sub);
 		}
 	},
-	add(newPage: Page) {
-		prevPath = location.pathname;
-		
-		if (prevPath !== location.href) {
-			pages.push(newPage);
+	add(pathname: string, state: Record<string, unknown> = {}, title = document.title) {
+		if (!isSamePath(pathname)) {
+			window.history.pushState(state, title, pathname);
 			
-			window.history.pushState(newPage.options.state, newPage.options.title ?? document.title, newPage.path);
-			
-			// keep max 50 entries
-			if (pages.length > 50) {
-				pages.shift();
+			if (title !== document.title) {
+				document.title = title;
 			}
 			
 			broadcast();
 		}
 	},
-	replace(newPage: Page) {
-		prevPath = location.pathname;
-		
-		if (prevPath !== location.href) {
-			pages[pages.length - 1] = newPage;
+	replace(pathname: string, state: Record<string, unknown> = {}, title = document.title) {
+		if (!isSamePath(pathname)) {
+			window.history.replaceState(state, title, pathname);
 			
-			window.history.replaceState(newPage.options.state, newPage.options.title ?? document.title, newPage.path);
-			
-			// keep max 50 entries
-			if (pages.length > 50) {
-				pages.shift();
+			if (title !== document.title) {
+				document.title = title;
 			}
 			
 			broadcast();
 		}
 	},
 	previous() {
-		if (pages.length) {
-			prevPath = location.pathname;
-			window.history.back();
-		}
+		window.history.back();
+	},
+	next() {
+		window.history.forward();
 	}
 }

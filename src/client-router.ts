@@ -1,4 +1,4 @@
-import initRouter, {goToPage, replacePage, goToPreviousPage} from './router';
+import initRouter, {goToPage, replacePage, previousPage, nextPage} from './router';
 
 // @ts-ignore
 if (window) {
@@ -9,7 +9,10 @@ if (window) {
 		Cube: {
 			// @ts-ignore
 			...(window.BFS.Cube || {}),
-			goToPage, replacePage, goToPreviousPage
+			goToPage,
+			replacePage,
+			previousPage,
+			nextPage
 		}
 	}
 	

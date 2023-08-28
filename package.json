@@ -1,6 +1,6 @@
 {
   "name": "@beforesemicolon/cube",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Function-oriented framework to create future-proof UI components and web applications.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -9,13 +9,14 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "docs": "nodemon --watch docs/documentation/articles -e html --exec 'npm run build:docs'",
-    "local": "nodemon --watch src -e ts --exec 'npm-run-all build:client build:client-router'",
+    "local": "nodemon --watch src -e ts --exec 'npm-run-all build:client build:client-router build:client-store '",
     "server": "nodemon --watch server --exec 'node server'",
     "build:docs": "node ./scripts/build-docs.js",
-    "build:min": "esbuild `find src \\( -name '*.ts' ! -name '*.spec.ts' \\)` --outdir=dist --platform=node --format=cjs --keep-names --minify --target=es2020\n",
+    "build:min": "esbuild `find src \\( -name '*.ts' ! -name '*.spec.ts' \\)` --outdir=dist --platform=node --format=cjs --keep-names --minify --target=es2020",
     "build:client": "esbuild src/client.ts --bundle --minify --keep-names --sourcemap --target=es2020 --outfile=dist/client.js",
     "build:client-router": "esbuild src/client-router.ts --bundle --minify --keep-names --sourcemap --target=es2020 --outfile=dist/client-router.js",
-    "build": "npm-run-all test build:docs && rm -rf dist && tsc && npm-run-all build:min build:client build:client-router"
+    "build:client-store": "esbuild src/client-store.ts --bundle --minify --keep-names --sourcemap --target=es2020 --outfile=dist/client-store.js",
+    "build": "npm-run-all test build:docs && rm -rf dist && tsc && npm-run-all build:min build:client build:client-router build:client-store"
   },
   "keywords": [],
   "author": "",
