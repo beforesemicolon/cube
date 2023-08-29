@@ -10,7 +10,7 @@ interface WithRouteProps {
 }
 
 
-export default ({createContext, host, onMount, register, template, element}: Cube) => {
+export default ({createContext, host, onMount, register, template, element, html, when}: Cube) => {
 	const WithRoute = (props: Props<WithRouteProps>) => {
 		const comp = host();
 		
@@ -18,7 +18,10 @@ export default ({createContext, host, onMount, register, template, element}: Cub
 			const ctx = createContext("params", {}, {readonly: true});
 			const path = pathStringToPattern(props.path())
 			const slotName = String(Math.random());
-			const temp = template`<slot ref="slot" name="${slotName}"></slot>`;
+			const temp = template`
+				<slot ref="slot" name="${slotName}"></slot>
+				${when(props.src, html`<slot ref="loading" name="loading"><p>Loading...</p></slot>`)}
+      `;
 			let el: Element;
 			
 			const showContent = () => {
@@ -47,6 +50,7 @@ export default ({createContext, host, onMount, register, template, element}: Cub
 						fetch(props.src())
 							.then(res => res.text())
 							.then(html => {
+								temp.refs['loading'][0].remove();
 								comp.innerHTML = html;
 								showContent();
 							})
