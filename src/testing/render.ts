@@ -7,15 +7,6 @@ const defaultOptions: ComponentOptions = {
 	delegatesFocus: false
 }
 
-beforeEach(() => {
-	// @ts-ignore
-	jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => cb());
-});
-
-afterEach(() => {
-	(window.requestAnimationFrame as jest.Mock).mockRestore();
-});
-
 export const render = <P extends Record<string, any>>(
 	el: Element | HTMLElement | Node | HtmlTemplate | string | FnComponent<P>,
 	props: P = {} as P,

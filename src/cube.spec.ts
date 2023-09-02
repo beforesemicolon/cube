@@ -1,7 +1,8 @@
 import 'core-js/stable/structured-clone';
-import {register, onAdoption, onDestroy, onMount, template, useValue} from "./cube";
+import './testing/setup-jest';
+import {onAdoption, onDestroy, onMount, register, template, useValue} from "./cube";
 import {Props} from "./types";
-import {when, html, repeat, element} from "@beforesemicolon/html";
+import {html, when} from "@beforesemicolon/html";
 import {render} from './testing/render';
 
 describe('cube', () => {
