@@ -1,7 +1,8 @@
 import 'core-js/stable/structured-clone';
 import {register, onAdoption, onDestroy, onMount, template, useValue} from "./cube";
 import {Props} from "./types";
-import {when, html, repeat} from "@beforesemicolon/html";
+import {when, html, repeat, element} from "@beforesemicolon/html";
+import {render} from './testing/render';
 
 describe('cube', () => {
 	
@@ -21,30 +22,28 @@ describe('cube', () => {
 			onDestroy(destroyMock)
 			onAdoption(adoptionMock)
 		}
+		
+		const res = render(MyButton, {type: "button"})
 
-		const btn = document.createElement(register<ButtonProps>(MyButton, {type: "button"}).tagName);
-
-		document.body.appendChild(btn);
-
-		expect(document.body.innerHTML).toBe('<my-button></my-button>')
-		expect(btn.shadowRoot?.innerHTML).toBe('<button type="button"><slot></slot></button>')
+		expect(`${res}`).toBe('<my-button></my-button>')
+		expect(res.content).toBe('<button type="button"><slot></slot></button>')
 
 		expect(mountMock).toHaveBeenCalledTimes(1);
+		
+		res.target?.setAttribute("type", "submit");
 
-		btn.setAttribute("type", "submit");
-
-		expect(btn.shadowRoot?.innerHTML).toBe('<button type="submit"><slot></slot></button>')
+		expect(res.content).toBe('<button type="submit"><slot></slot></button>')
 
 		const iframe = document.createElement('iframe');
 		document.body.appendChild(iframe);
 
-		iframe.contentDocument?.body.appendChild(btn)
+		iframe.contentDocument?.body.appendChild(res.target as Element)
 
 		expect(destroyMock).toHaveBeenCalledTimes(1);
 		expect(adoptionMock).toHaveBeenCalledTimes(1);
 		expect(mountMock).toHaveBeenCalledTimes(2);
 
-		btn.remove()
+		res.target?.remove()
 
 		expect(destroyMock).toHaveBeenCalledTimes(2);
 	});
