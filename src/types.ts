@@ -58,6 +58,7 @@ export interface Cube {
 	element: typeof element;
 	createContext: typeof createContext;
 	useContext: typeof useContext;
+	HtmlTemplate: HtmlTemplate;
 }
 
 export type Subscriber<T> = (data: T | null) => void
