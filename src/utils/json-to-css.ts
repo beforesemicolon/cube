@@ -1,4 +1,4 @@
-import {turnCamelToKebabCasing} from "./turn-camel-to-kebab-casing";
+import {turnCamelToKebabCasing} from "@beforesemicolon/html/dist/utils";
 import {replaceCssHost} from "./replace-css-host";
 import {StylesheetObject} from "../types";
 

@@ -1,12 +1,4 @@
 export * from "./get-style-string";
-export * from "./is-primitive";
-export * from "./json-parse";
-export * from "./json-stringify";
 export * from "./json-to-css";
 export * from "./replace-css-host";
 export * from "./resolve-html-entities";
-export * from "./turn-kebab-to-camel-casing";
-export * from "./turn-camel-to-kebab-casing";
-export * from "./is-object-literal";
-import bool from "./boolean-attributes.json";
-export const booleanAttributes = bool;
