@@ -1,6 +1,6 @@
 import {Cube, Props} from "../../types";
-import {isSamePath} from "../utils/is-same-path";
-import pages from "../pages";
+import {isOnPage} from "../utils/is-on-page";
+import {onPageChange, goToPage} from "../pages";
 
 interface PageLinkProps {
 	path: string;
@@ -12,10 +12,10 @@ export default ({eventDispatch, onMount, register, template, useValue}: Cube) =>
 	const PageLink = (props: Props<PageLinkProps>) => {
 		const dispatch = eventDispatch();
 
-		const isActive = () => isSamePath(props.path())
+		const isActive = () => isOnPage(props.path())
 
 		onMount(() => {
-			let previousActive = isSamePath(props.path());
+			let previousActive = isOnPage(props.path());
 
 			const onRouteChange = () => {
 				const newActive = isActive();
@@ -25,7 +25,7 @@ export default ({eventDispatch, onMount, register, template, useValue}: Cube) =>
 				}
 			}
 
-			return pages.subscribe(onRouteChange);
+			return onPageChange(onRouteChange);
 		})
 
 		const handleClick = (event: Event) => {
@@ -35,7 +35,7 @@ export default ({eventDispatch, onMount, register, template, useValue}: Cube) =>
 			const [path, searchPart = ""] = props.path().split('?');
 
 			if (path) {
-				pages.add(path, props.state(), props.title())
+				goToPage(path, props.state(), props.title())
 			}
 		}
 

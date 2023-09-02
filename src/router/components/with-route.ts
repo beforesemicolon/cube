@@ -1,11 +1,11 @@
 import {Props, Cube} from "../../types";
 import {pathStringToPattern} from "../utils/path-string-to-pattern";
 import {getPathMatchParams} from "../utils/get-path-match-params";
-import pages from "../pages";
+import {onPageChange} from "../pages";
+import {isOnPage} from "../utils/is-on-page";
 
 interface WithRouteProps {
 	path: string;
-	component: string;
 	src: string;
 }
 
@@ -20,7 +20,7 @@ export default ({createContext, host, onMount, register, template, element, html
 			const slotName = String(Math.random());
 			const temp = template`
 				<slot ref="slot" name="${slotName}"></slot>
-				${when(props.src, html`<slot ref="loading" name="loading"><p>Loading...</p></slot>`)}
+				${when(() => props.src() && isOnPage(props.path()), html`<slot ref="loading" name="loading"><p>Loading...</p></slot>`)}
       `;
 			let el: Element;
 			
@@ -32,50 +32,47 @@ export default ({createContext, host, onMount, register, template, element, html
 				temp.refs['slot'][0].setAttribute("name", slotName);
 			}
 			
+			const loadContent = (src: string) => {
+				fetch(src)
+					.then(res => {
+						if (res.status === 200) {
+							return res.text()
+						}
+						
+						throw new Error(`Loading "${props.src()}" content failed with status code ${res.status}`);
+					})
+					.then(html => {
+						temp.refs['loading'][0].remove();
+						comp.innerHTML = html;
+						showContent();
+					})
+					.catch(console.error)
+			}
+			
 			const onRouteChange = (pathname: string) => {
 				const params = getPathMatchParams(pathname, path.pattern, path.params);
-				const componentTagName = props.component();
 				
 				if (params !== null) {
 					ctx.update(params)
 					
-					if (componentTagName) {
-						el = el ?? element(componentTagName);
-						
-						// match the slot name so it can be rendered
-						el.setAttribute("slot", slotName)
-						!el.isConnected && comp.appendChild(el);
-						hideContent();
-					} else if (props.src()) {
-						fetch(props.src())
-							.then(res => res.text())
-							.then(html => {
-								temp.refs['loading'][0].remove();
-								comp.innerHTML = html;
-								showContent();
-							})
-							.catch(console.error)
+					if (props.src()) {
+						loadContent(props.src())
 					} else {
 						showContent();
 					}
 				} else {
-					if (componentTagName && el) {
-						el.removeAttribute("slot")
-					} else {
-						hideContent();
-					}
+					hideContent();
 				}
 			};
 			
 			onMount(() => {
-				return pages.subscribe(onRouteChange);
+				return onPageChange(onRouteChange);
 			})
 		}
 	}
 	
 	register(WithRoute, {
 		path: "",
-		component: "",
 		src: "",
 	});
 }
