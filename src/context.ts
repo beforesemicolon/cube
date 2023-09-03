@@ -34,43 +34,43 @@ export default (currentComponent: () => CurrentComponent | null) => {
 		const comp = currentComponent();
 		
 		if (comp) {
+			const subs: ContextModel<T>['subs'] = new Set();
+			
 			if (!CONTEXT.has(comp.self)) {
-				const subs: ContextModel<T>['subs'] = new Set();
-				
-				if (reactive) {
-					subs.add(comp.contextUpdate)
-				}
-				
-				CONTEXT.set(comp.self, {
-					[name]: {
-						readonly,
-						getData() {
-							return data
-						},
-						setData(newValue: T) {
-							if (!readonly) {
-								const oldValue = data;
-								data = newValue;
-								subs.forEach((sub) => sub(name, newValue, oldValue))
-							}
-						},
-						subs
-					}
-				} as Context<unknown>);
-			} else {
+				CONTEXT.set(comp.self, {});
+			}
+			
+			if ((CONTEXT.get(comp.self) as Context<T>)[name]) {
 				throw new Error(`A context named "${name}" already exists for this component`)
 			}
+			
+			if (reactive) {
+				subs.add(comp.contextUpdate)
+			}
+			
+			(CONTEXT.get(comp.self) as Context<T>)[name] = {
+				readonly,
+				getData() {
+					return data
+				},
+				setData(newValue: T) {
+					if (!readonly) {
+						const oldValue = data;
+						data = newValue;
+						subs.forEach((sub) => sub(name, newValue, oldValue))
+					}
+				},
+				subs
+			};
 			
 			const ctx = useContext<T>(name, reactive);
 			
 			return {
 				...ctx,
 				update: (newValue: T) => {
-					const host = comp.contextMap.get(name);
-					
-					if (host?.inContext && host?.ctx) {
-						host.ctx.setData(newValue);
-					}
+					const oldValue = data;
+					data = newValue;
+					subs.forEach((sub) => sub(name, newValue, oldValue))
 				},
 			};
 		} else {
