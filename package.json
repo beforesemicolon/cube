@@ -9,14 +9,15 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "docs": "nodemon --watch docs/documentation/articles -e html --exec 'npm run build:docs'",
-    "local": "nodemon --watch src -e ts --exec 'npm-run-all build:client build:client-router build:client-store '",
+    "local": "nodemon --watch src -e ts --exec 'npm-run-all build:client build:client-router build:client-store build:client-intl'",
     "server": "nodemon --watch server --exec 'node server'",
     "build:docs": "node ./scripts/build-docs.js",
     "build:min": "esbuild `find src \\( -name '*.ts' ! -name '*.spec.ts' \\)` --outdir=dist --platform=node --format=cjs --keep-names --minify --target=es2020",
     "build:client": "esbuild src/client.ts --bundle --minify --keep-names --sourcemap --target=es2020 --outfile=dist/client.js",
     "build:client-router": "esbuild src/client-router.ts --bundle --minify --keep-names --sourcemap --target=es2020 --outfile=dist/client-router.js",
     "build:client-store": "esbuild src/client-store.ts --bundle --minify --keep-names --sourcemap --target=es2020 --outfile=dist/client-store.js",
-    "build": "npm-run-all test build:docs && rm -rf dist && tsc && npm-run-all build:min build:client build:client-router build:client-store"
+    "build:client-intl": "esbuild src/client-intl.ts --bundle --minify --keep-names --sourcemap --target=es2020 --outfile=dist/client-intl.js",
+    "build": "npm-run-all test build:docs && rm -rf dist && tsc && npm-run-all build:min build:client build:client-router build:client-store build:client-intl"
   },
   "keywords": [],
   "author": "",
@@ -26,7 +27,7 @@
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.1",
     "@types/jsdom": "^21.1.1",
-    "@types/node": "^20.1.0",
+    "@types/node": "^20.5.7",
     "core-js": "^3.31.0",
     "esbuild": "^0.17.18",
     "express": "^4.18.2",
@@ -39,6 +40,6 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@beforesemicolon/html": "^0.1.21"
+    "@beforesemicolon/html": "^0.1.22"
   }
 }
