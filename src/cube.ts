@@ -1,11 +1,13 @@
 import {HtmlTemplate} from "@beforesemicolon/html";
 import {
-	booleanAttributes,
-	getStyleString,
-	jsonParse,
-	JSONToCSS,
 	turnCamelToKebabCasing,
-	turnKebabToCamelCasing
+	turnKebabToCamelCasing,
+	jsonParse,
+	booleanAttributes
+} from "@beforesemicolon/html/dist/utils";
+import {
+	getStyleString,
+	JSONToCSS,
 } from "./utils";
 import {ComponentOptions, FnComponent, Props, ShadowRootMode, Style, Stylesheet, CurrentComponent} from "./types";
 import initContext from "./context";
@@ -251,54 +253,56 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 			}
 			
 			async connectedCallback() {
-				if (!this.#renderedBefore) {
-					this.#renderedBefore = true;
-					currentComponent = this.#handlers;
-					comp(this.#readonlyProps);
-					currentComponent = null;
-					
-					const style = this.getStyle();
-					
-					if (style) {
-						if (mode === ShadowRootMode.NONE) {
-							const styleEl = document.head.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
-							
-							if (!styleEl) {
-								document.head.insertAdjacentHTML("beforeend", style);
+				requestAnimationFrame(() => {
+					if (!this.#renderedBefore) {
+						this.#renderedBefore = true;
+						currentComponent = this.#handlers;
+						comp(this.#readonlyProps);
+						currentComponent = null;
+						
+						const style = this.getStyle();
+						
+						if (style) {
+							if (mode === ShadowRootMode.NONE) {
+								const styleEl = document.head.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
+								
+								if (!styleEl) {
+									document.head.insertAdjacentHTML("beforeend", style);
+								}
+								
+								this.#styleElement = styleEl;
+							} else {
+								this.#shadowRoot.innerHTML = style;
+								this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
 							}
-							
-							this.#styleElement = styleEl;
-						} else {
-							this.#shadowRoot.innerHTML = style;
-							this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
 						}
+						
+						this.#handlers.template?.render(this.#shadowRoot);
+					} else {
+						// verify that the component was mounted in context and
+						// onPageChange it to all context it needs
+						this.#handlers.contextMap.forEach((val, name) => {
+							try {
+								const ctx = CTX.getContextHost(name, this) ?? null;
+								val.inContext = true;
+								val.ctx = ctx;
+								val.ctx?.subs.add(this.#handlers.contextUpdate)
+							} catch (e) {
+								console.error(`Component "${tagName}" is no longer in context of "${name}"`);
+								// set inContext to false in case there is something trying to
+								// read or update the context. only components in context can do that
+								val.inContext = false;
+							}
+						})
+						this.#handlers.template?.update();
 					}
 					
-					this.#handlers.template?.render(this.#shadowRoot);
-				} else {
-					// verify that the component was mounted in context and
-					// subscribe it to all context it needs
-					this.#handlers.contextMap.forEach((val, name) => {
-						try {
-							const ctx = CTX.getContextHost(name, this) ?? null;
-							val.inContext = true;
-							val.ctx = ctx;
-							val.ctx?.subs.add(this.#handlers.contextUpdate)
-						} catch (e) {
-							console.error(`Component "${tagName}" is no longer in context of "${name}"`);
-							// set inContext to false in case there is something trying to
-							// read or update the context. only components in context can do that
-							val.inContext = false;
-						}
-					})
-					this.#handlers.template?.update();
-				}
-				
-				const destroy = this.#handlers.mount?.();
-				
-				if (!this.#handlers.destroy && typeof destroy === "function") {
-					this.#handlers.destroy = destroy;
-				}
+					const destroy = this.#handlers.mount?.();
+					
+					if (!this.#handlers.destroy && typeof destroy === "function") {
+						this.#handlers.destroy = destroy;
+					}
+				})
 			}
 			
 			async disconnectedCallback() {
