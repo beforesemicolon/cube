@@ -1,8 +1,6 @@
-import 'core-js/stable/structured-clone';
-import './testing/setup-jest';
 import {onAdoption, onDestroy, onMount, register, template, useValue} from "./cube";
 import {Props} from "./types";
-import {html, when} from "@beforesemicolon/html";
+import {element, html, when} from "@beforesemicolon/html";
 import {render} from './testing/render';
 
 describe('cube', () => {
@@ -35,7 +33,7 @@ describe('cube', () => {
 
 		expect(res.content).toBe('<button type="submit"><slot></slot></button>')
 
-		const iframe = document.createElement('iframe');
+		const iframe = element('iframe') as HTMLIFrameElement;
 		document.body.appendChild(iframe);
 
 		iframe.contentDocument?.body.appendChild(res.target as Element)
@@ -93,17 +91,12 @@ describe('cube', () => {
 			template`<child-comp val="12"></child-comp>`
 		}
 		
-		register<{val: number}>(ChildComp, {
-			val: 0
-		})
-		register(ParentComp)
+	  register(ChildComp, {val: 0});
 		
-		document.body.innerHTML = "<parent-comp></parent-comp>";
+		const parent = render(ParentComp)
 		
-		const el = document.body.children[0];
-		
-		expect(el.shadowRoot?.innerHTML).toBe('<child-comp val="12"></child-comp>')
-		expect(el.shadowRoot?.children[0].shadowRoot?.innerHTML).toBe('12')
+		expect(parent.content).toBe('<child-comp val="12"></child-comp>')
+		expect(parent.find('child-comp')[0].content).toBe('12')
 	});
 	
 	it('should handle passing non-primitive to a component', () => {
@@ -120,14 +113,10 @@ describe('cube', () => {
 				sample: ""
 			}
 		})
-		register(TopComp)
+		const el = render(TopComp)
 		
-		document.body.innerHTML = "<top-comp></top-comp>";
-		
-		const el = document.body.children[0];
-		
-		expect(el.shadowRoot?.innerHTML).toBe('<deep-comp val="{&quot;sample&quot;:12}"></deep-comp>')
-		expect(el.shadowRoot?.children[0].shadowRoot?.innerHTML).toBe('12')
+		expect(el.content).toBe('<deep-comp val="{&quot;sample&quot;:12}"></deep-comp>')
+		expect(el.find('deep-comp')[0].content).toBe('12')
 	});
 	
 	describe('should work with helpers', () => {
@@ -152,21 +141,19 @@ describe('cube', () => {
 						<button onclick="${switchVal}">switch</button>`
 				}
 				
-				const el = document.createElement(register(WhenComp).tagName);
+				const el = render(WhenComp);
 				
-				document.body.appendChild(el);
+				const btn = el.find('button')[0]
 				
-				const btn = el.shadowRoot?.querySelector('button') as HTMLButtonElement
+				expect(el.content).toBe('<p>Non Zero: 3</p><button>switch</button>')
 				
-				expect(el.shadowRoot?.innerHTML).toBe('<p>Non Zero: 3</p><button>switch</button>')
+				btn.target?.click();
 				
-				btn.click();
+				expect(el.content).toBe('<p>Zero: 0</p><button>switch</button>')
 				
-				expect(el.shadowRoot?.innerHTML).toBe('<p>Zero: 0</p><button>switch</button>')
+				btn.target?.click();
 				
-				btn.click();
-				
-				expect(el.shadowRoot?.innerHTML).toBe('<p>Non Zero: 5</p><button>switch</button>')
+				expect(el.content).toBe('<p>Non Zero: 5</p><button>switch</button>')
 			});
 		});
 	});

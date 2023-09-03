@@ -7,11 +7,41 @@ const defaultOptions: ComponentOptions = {
 	delegatesFocus: false
 }
 
+interface ElementControl {
+	target: HTMLElement |  null;
+	toString: () => string;
+	content: string;
+	find: (cssSelector: string) => Array<ElementControl>;
+}
+
+const getElementControl = (target: HTMLElement): ElementControl => ({
+	target,
+	toString() {
+		return target ? target.outerHTML : document.body.innerHTML
+	},
+	get content() {
+		return target ? (target.shadowRoot ?? target).innerHTML : document.body.innerHTML
+	},
+	find(cssSelector: string) {
+		if (cssSelector.trim().length) {
+			if (target) {
+				// @ts-ignore
+				return Array.from((target.shadowRoot ?? target).querySelectorAll(cssSelector), getElementControl);
+			}
+			
+			// @ts-ignore
+			return Array.from(document.querySelectorAll(cssSelector), getElementControl);
+		}
+		
+		return [];
+	}
+})
+
 export const render = <P extends Record<string, any>>(
 	el: Element | HTMLElement | Node | HtmlTemplate | string | FnComponent<P>,
 	props: P = {} as P,
 	styleOrOptions: Style<P> | ComponentOptions = {},
-	opt: ComponentOptions = defaultOptions) => {
+	opt: ComponentOptions = defaultOptions): ElementControl => {
 	document.body.innerHTML = '';
 	let target: Element | null = null;
 	
@@ -29,24 +59,5 @@ export const render = <P extends Record<string, any>>(
 		target = el instanceof HTMLElement ? el : null;
 	}
 	
-	return {
-		target,
-		toString() {
-			return target ? target.outerHTML : document.body.innerHTML
-		},
-		get content() {
-			return target ? (target.shadowRoot ?? target).innerHTML : document.body.innerHTML
-		},
-		find(cssSelector: string) {
-			if (cssSelector.trim().length) {
-				if (target) {
-					return Array.from((target.shadowRoot ?? target).querySelectorAll(cssSelector));
-				}
-				
-				return Array.from(document.querySelectorAll(cssSelector));
-			}
-			
-			return [];
-		}
-	}
+	return getElementControl(target as HTMLElement)
 }
