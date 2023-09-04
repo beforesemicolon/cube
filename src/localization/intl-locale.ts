@@ -1,4 +1,5 @@
 import {Cube, Props, ShadowRootMode} from "../types";
+import {config} from "../config";
 
 const defaultLocale = {
 	'cube-intl': {
@@ -41,7 +42,7 @@ export default ({register, template, onMount, createContext}: Cube) => {
 					})
 					.catch(console.error)
 			} else if (props.srcDir()) {
-				const lang = document.documentElement.lang || "en";
+				const lang = document.documentElement.lang || config.lang;
 				const src = `${props.srcDir().replace(/\/$/, '')}/${lang}.json`
 				
 				fetch(src)

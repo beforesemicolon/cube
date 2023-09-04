@@ -1,4 +1,5 @@
 import {Props, Cube, ShadowRootMode} from "../types";
+import {config} from "../config";
 
 interface IntlNameProps {
 	value: string;
@@ -7,10 +8,10 @@ interface IntlNameProps {
 	lang: string;
 }
 
-export default ({register, host, template, element, useContext, useValue}: Cube) => {
+export default ({register, host, template}: Cube) => {
 	const IntlName = (props: Props<IntlNameProps>) => {
 		const comp = host();
-		const locale = new Intl.Locale(document.documentElement.lang || 'en');
+		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		const content = comp.textContent;
 		
 		comp.innerHTML = '';

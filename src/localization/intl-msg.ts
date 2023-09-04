@@ -1,4 +1,5 @@
-import {Cube, Props, ShadowRootMode} from "../types";
+import {Cube, Props} from "../types";
+import {config} from "../config";
 
 interface IntlMsgProps {
 	id: string;
@@ -10,7 +11,7 @@ export default ({register, html, template, element, useContext, host}: Cube) => 
 	
 	const IntlMsg = (props: Props<IntlMsgProps>) => {
 		const comp = host();
-		const locale = new Intl.Locale(document.documentElement.lang || 'en');
+		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		
 		const msgs = useContext<Record<string, unknown>>("intl-msg");
 		
@@ -19,6 +20,7 @@ export default ({register, html, template, element, useContext, host}: Cube) => 
 				return '';
 			}
 			
+			// @ts-ignore
 			const dir = locale.textInfo.direction;
 			const map = msgs.value() ?? {};
 			const txtParts: Array<string> = [];

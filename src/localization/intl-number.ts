@@ -1,4 +1,5 @@
 import {Props, Cube, ShadowRootMode} from "../types";
+import {config} from "../config";
 
 interface IntlNumberProps {
 	value: number;
@@ -16,10 +17,10 @@ interface IntlNumberProps {
 	rounding: "ceil" | "floor" | "expand" | "trunc" | "halfCeil" | "halfFloor" | "halfTrunc" | "halfEven" | undefined,
 }
 
-export default ({register, host, template, element, useContext, useValue}: Cube) => {
+export default ({register, host, template}: Cube) => {
 	const IntlNumber = (props: Props<IntlNumberProps>) => {
 		const comp = host();
-		const locale = new Intl.Locale(document.documentElement.lang || 'en');
+		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		const content = comp.textContent;
 		
 		comp.innerHTML = '';

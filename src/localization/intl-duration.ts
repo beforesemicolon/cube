@@ -1,5 +1,6 @@
 import {Props, Cube, ShadowRootMode} from "../types";
 import {millisecondsToTimeParts} from "./utils/milliseconds-to-time-parts";
+import {config} from "../config";
 
 const allFields = new Set(['second', 'minute', 'hour', 'day', 'month', 'year'])
 
@@ -9,16 +10,17 @@ interface IntlDurationProps {
 	fields: '*' | 'second' | 'minute' | 'hour' | 'day' | 'month' | 'year';
 }
 
-export default ({register, host, template, element, useContext, useValue}: Cube) => {
+export default ({register, host, template, useContext}: Cube) => {
 	const IntlDuration = (props: Props<IntlDurationProps>) => {
 		const comp = host();
 		const msgsctx = useContext<Record<string, unknown>>("intl-msg", true);
-		const locale = new Intl.Locale(document.documentElement.lang || 'en');
+		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		const content = comp.textContent;
 		const name = new Intl.DisplayNames(locale.language, {
 			style: "long",
 			type: "dateTimeField",
 		});
+		// @ts-ignore
 		const list = new Intl.ListFormat(locale.language, {
 			style: "long",
 			type: "conjunction",

@@ -1,5 +1,6 @@
 import {Props, Cube, ShadowRootMode} from "../types";
 import {isValidDate} from './utils/is-valid-date';
+import {config} from "../config";
 
 interface IntlDateProps {
 	hour12: boolean;
@@ -43,7 +44,7 @@ interface IntlDateProps {
 export default ({register, host, template}: Cube) => {
 	const IntlDate = (props: Props<IntlDateProps>) => {
 		const comp = host();
-		const locale = new Intl.Locale(document.documentElement.lang || 'en');
+		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		const content = comp.textContent;
 		
 		comp.innerHTML = '';
@@ -64,6 +65,7 @@ export default ({register, host, template}: Cube) => {
 			
 			const fomatter = new Intl.DateTimeFormat(locale.language, {
 				hour12: props.hour12(),
+				// @ts-ignore
 				calendar: props.cal() || locale.calendars[0],
 				...(props.hourCycle() ? {hourCycle: props.hourCycle()} : {}),
 				...(props.timeStyle() ? {timeStyle: props.timeStyle()} : {}),

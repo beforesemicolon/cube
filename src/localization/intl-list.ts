@@ -1,4 +1,5 @@
 import {Props, Cube, ShadowRootMode} from "../types";
+import {config} from "../config";
 
 interface IntlListProps {
 	items: Array<string> | undefined;
@@ -15,9 +16,10 @@ export default ({register, template}: Cube) => {
 	}
 	
 	const IntlList = (props: Props<IntlListProps>) => {
-		const locale = new Intl.Locale(document.documentElement.lang || 'en');
+		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		
 		const list = () => {
+			// @ts-ignore
 			return new Intl.ListFormat(locale.language, {
 				style: props.style(),
 				type: (Type[props.type()] ?? props.type()) || 'and',

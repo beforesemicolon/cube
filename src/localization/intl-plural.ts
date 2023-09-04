@@ -1,4 +1,5 @@
 import {Props, Cube, ShadowRootMode} from "../types";
+import {config} from "../config";
 
 interface IntlPluralProps {
 	value: number | undefined;
@@ -14,7 +15,7 @@ interface IntlPluralProps {
 export default ({register, host, template, html}: Cube) => {
 	const IntlPlural = (props: Props<IntlPluralProps>) => {
 		const comp = host();
-		const locale = new Intl.Locale(document.documentElement.lang || 'en');
+		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		const content = comp.textContent;
 		
 		const plural = () => {

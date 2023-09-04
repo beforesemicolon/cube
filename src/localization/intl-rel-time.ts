@@ -1,6 +1,7 @@
 import {Props, Cube, ShadowRootMode} from "../types";
 import {isValidDate} from './utils/is-valid-date';
 import {ONE_HOUR, ONE_MINUTE, ONE_SECOND, ONE_DAY} from "./utils/time-in-miliseconds";
+import {config} from "../config";
 
 interface IntlRelTimeProps {
 	live: boolean;
@@ -115,7 +116,7 @@ export default ({register, host, template, useValue, onMount}: Cube) => {
 	
 	const IntlRelTime = (props: Props<IntlRelTimeProps>) => {
 		const comp = host();
-		const locale = new Intl.Locale(document.documentElement.lang || 'en');
+		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		const [time, setTime] = useValue('');
 		let interval: ReturnType<typeof setTimeout>;
 		const content = comp.textContent;
