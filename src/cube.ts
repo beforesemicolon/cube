@@ -1,42 +1,29 @@
 import {HtmlTemplate} from "@beforesemicolon/html";
 import {
-	turnCamelToKebabCasing,
-	turnKebabToCamelCasing,
+	booleanAttributes,
 	jsonParse,
-	booleanAttributes
+	turnCamelToKebabCasing,
+	turnKebabToCamelCasing
 } from "@beforesemicolon/html/dist/utils";
-import {
-	getStyleString,
-	JSONToCSS,
-} from "./utils";
-import {ComponentOptions, FnComponent, Props, ShadowRootMode, Style, Stylesheet, CurrentComponent} from "./types";
+import {getStyleString, JSONToCSS,} from "./utils";
+import {ComponentOptions, CurrentComponent, FnComponent, Props, ShadowRootMode, Style, Stylesheet} from "./types";
+import {config} from './config';
 import initContext from "./context";
 
 let currentComponent: CurrentComponent | null = null;
-const defaultOptions: ComponentOptions = {
-	mode: ShadowRootMode.OPEN,
-	delegatesFocus: false
-}
 const CTX = initContext(() => currentComponent)
 
 export const {useContext, createContext, onContextUpdate} = CTX;
 
-export function globalConfig(opt: ComponentOptions = defaultOptions) {
-	defaultOptions.mode = opt.mode && [ShadowRootMode.OPEN, ShadowRootMode.CLOSED, ShadowRootMode.NONE].includes(opt.mode)
-		? opt.mode
-		: ShadowRootMode.OPEN;
-	defaultOptions.delegatesFocus = typeof opt.delegatesFocus === "boolean" ? opt.delegatesFocus : false;
-}
-
 export function register<P extends Record<string, any>>(
 	comp: FnComponent<P>,
 	props: P = {} as P,
-	styleOrOptions: Style<P> | ComponentOptions = defaultOptions,
-	opt: ComponentOptions = defaultOptions
+	styleOrOptions: Style<P> | ComponentOptions = config,
+	opt: ComponentOptions = config
 ) {
 	const isStyle = typeof styleOrOptions === "function";
 	const stylesheet = isStyle ? styleOrOptions : undefined;
-	const {mode = defaultOptions.mode, delegatesFocus = defaultOptions.delegatesFocus} = isStyle ? opt : styleOrOptions;
+	const {mode = config.mode, delegatesFocus = config.delegatesFocus} = isStyle ? opt : styleOrOptions;
 	
 	const tagName = turnCamelToKebabCasing(comp.name || "");
 	
@@ -78,6 +65,16 @@ export const onUpdate = (cb: (propName: string, newValue: unknown, oldValue: unk
 	}
 }
 
+export const onDOMUpdate = (cb: (nodes: Set<Node>) => void) => {
+	if (currentComponent) {
+		if (currentComponent.domUpdate === null) {
+			currentComponent.domUpdate = cb;
+		}
+	} else {
+		throw new Error('Must NOT use "onDOMUpdate" lifecycle outside of a component')
+	}
+}
+
 export const onDestroy = (cb: () => void) => {
 	if (currentComponent) {
 		currentComponent.destroy = cb;
@@ -96,6 +93,14 @@ export const onAdoption = (cb: () => void) => {
 	}
 }
 
+export const onError = (cb: (err: Error) => void) => {
+	if (currentComponent) {
+		currentComponent.error = cb;
+	} else {
+		throw new Error('Must NOT use "onError" lifecycle outside of a component')
+	}
+}
+
 export const eventDispatch = <Data>() => {
 	if (currentComponent) {
 		const dispatchEvent = currentComponent.dispatchEvent;
@@ -107,7 +112,7 @@ export const eventDispatch = <Data>() => {
 		}
 	}
 	
-	throw new Error('Must NOT use "EventDispatch" outside of a component')
+	throw new Error('Must NOT use "eventDispatch" outside of a component')
 }
 
 export const useValue = <V>(val: V): [() => V, (newVal: V) => void] => {
@@ -167,7 +172,9 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 				destroy: null,
 				mount: null,
 				update: null,
+				domUpdate: null,
 				adoption: null,
+				error: config.onError,
 				dispatchEvent: (e: CustomEvent) => {
 					this.dispatchEvent(e)
 				},
@@ -184,6 +191,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 				acc[key] = () => this.#props[key];
 				return acc;
 			}, {} as Props<P>)
+			#observer: MutationObserver | null = null;
 			
 			getStyle() {
 				let style: Stylesheet = "";
@@ -193,8 +201,8 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 					
 					if (style) {
 						style = typeof style === 'object'
-							? `<style class="${tagName.toLowerCase()}">${JSONToCSS(style, tagName, true)}</style>`
-							: getStyleString(style, tagName.toLowerCase());
+							? `<style class="${tagName.toLowerCase()}">${JSONToCSS(style, tagName, mode !== ShadowRootMode.NONE)}</style>`
+							: getStyleString(style, tagName.toLowerCase(), mode !== ShadowRootMode.NONE);
 					}
 				}
 				
@@ -231,14 +239,18 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 								
 								// only perform DOM updates while mounted
 								if (this.isConnected) {
-									this.#handlers.update?.(key, newValue, oldValue);
-									// only update style if it is a callback expecting arguments
-									// otherwise it is an indication that the style does not use the props values
-									if (typeof stylesheet === "function" && stylesheet.length > 0) {
-										this.updateStyle();
+									try {
+										this.#handlers.update?.(key, newValue, oldValue);
+										// only update style if it is a callback expecting arguments
+										// otherwise it is an indication that the style does not use the props values
+										if (typeof stylesheet === "function" && stylesheet.length > 0) {
+											this.updateStyle();
+										}
+										
+										this.#handlers.template?.update();
+									} catch(e) {
+										this.#handlers.error?.(e as Error);
 									}
-									
-									this.#handlers.template?.update();
 								}
 							}
 						}
@@ -254,63 +266,95 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 			
 			async connectedCallback() {
 				requestAnimationFrame(() => {
-					if (!this.#renderedBefore) {
-						this.#renderedBefore = true;
-						currentComponent = this.#handlers;
-						comp(this.#readonlyProps);
-						currentComponent = null;
-						
-						const style = this.getStyle();
-						
-						if (style) {
-							if (mode === ShadowRootMode.NONE) {
-								const styleEl = document.head.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
-								
-								if (!styleEl) {
-									document.head.insertAdjacentHTML("beforeend", style);
+					try {
+						if (!this.#renderedBefore) {
+							this.#renderedBefore = true;
+							currentComponent = this.#handlers;
+							comp(this.#readonlyProps);
+							currentComponent = null;
+							
+							const style = this.getStyle();
+							
+							if (style) {
+								if (mode === ShadowRootMode.NONE) {
+									const styleEl = document.head.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
+									
+									if (!styleEl) {
+										document.head.insertAdjacentHTML("beforeend", style);
+									}
+									
+									this.#styleElement = styleEl;
+								} else {
+									this.#shadowRoot.innerHTML = style;
+									this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
 								}
-								
-								this.#styleElement = styleEl;
-							} else {
-								this.#shadowRoot.innerHTML = style;
-								this.#styleElement = this.#shadowRoot.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
 							}
+							
+							this.#handlers.template?.render(this.#shadowRoot);
+						} else {
+							// verify that the component was mounted in context and
+							// onPageChange it to all context it needs
+							this.#handlers.contextMap.forEach((val, name) => {
+								try {
+									const ctx = CTX.getContextHost(name, this) ?? null;
+									val.inContext = true;
+									val.ctx = ctx;
+									val.ctx?.subs.add(this.#handlers.contextUpdate)
+								} catch (e) {
+									console.error(`Component "${tagName}" is no longer in context of "${name}"`);
+									// set inContext to false in case there is something trying to
+									// read or update the context. only components in context can do that
+									val.inContext = false;
+									this.#handlers.error?.(e as Error)
+								}
+							})
+							this.#handlers.template?.update();
 						}
 						
-						this.#handlers.template?.render(this.#shadowRoot);
-					} else {
-						// verify that the component was mounted in context and
-						// onPageChange it to all context it needs
-						this.#handlers.contextMap.forEach((val, name) => {
-							try {
-								const ctx = CTX.getContextHost(name, this) ?? null;
-								val.inContext = true;
-								val.ctx = ctx;
-								val.ctx?.subs.add(this.#handlers.contextUpdate)
-							} catch (e) {
-								console.error(`Component "${tagName}" is no longer in context of "${name}"`);
-								// set inContext to false in case there is something trying to
-								// read or update the context. only components in context can do that
-								val.inContext = false;
-							}
-						})
-						this.#handlers.template?.update();
-					}
-					
-					const destroy = this.#handlers.mount?.();
-					
-					if (!this.#handlers.destroy && typeof destroy === "function") {
-						this.#handlers.destroy = destroy;
+						if (typeof this.#handlers.domUpdate === "function") {
+							const observerOptions = {
+								childList: true,
+								subtree: true,
+								attributes: true,
+							};
+							
+							this.#observer = new MutationObserver((records) => {
+								if (this.isConnected) {
+									try {
+										this.#handlers.domUpdate?.(new Set(records.map(rec => rec.target)));
+									} catch(e) {
+										this.#handlers.error?.(e as Error);
+									}
+								}
+							});
+							
+							this.#observer.observe(this.#shadowRoot, observerOptions);
+						}
+						
+						const destroy = this.#handlers.mount?.();
+						
+						if (!this.#handlers.destroy && typeof destroy === "function") {
+							this.#handlers.destroy = destroy;
+						}
+					} catch(e) {
+						this.#handlers.error?.(e as Error)
 					}
 				})
 			}
 			
 			async disconnectedCallback() {
-				// unsubscribe from any existing context
-				this.#handlers.contextMap.forEach((val, name) => {
-					val.ctx?.subs.delete(this.#handlers.contextUpdate)
-				})
-				this.#handlers.destroy?.();
+				requestAnimationFrame(() => {
+					try {
+						// unsubscribe from any existing context
+						this.#handlers.contextMap.forEach((val, name) => {
+							val.ctx?.subs.delete(this.#handlers.contextUpdate)
+						})
+						this.#handlers.destroy?.()
+						this.#observer?.disconnect()
+					} catch(e) {
+						this.#handlers.error?.(e as Error)
+					}
+				});
 			}
 			
 			async attributeChangedCallback(name: string, oldValue: any, newValue: any) {
@@ -325,7 +369,11 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 			}
 			
 			async adoptedCallback() {
-				this.#handlers.adoption?.();
+				try {
+					this.#handlers.adoption?.();
+				} catch(e) {
+					this.#handlers.error?.(e as Error)
+				}
 			}
 		}
 		

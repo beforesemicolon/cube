@@ -9,5 +9,6 @@ initIntl(cube as unknown as Cube);
 export * from "./types";
 export * from "./cube";
 export * from "./store";
+export * from "./config";
 export {replacePage, goToPage, previousPage, nextPage, onPageChange} from "./router";
 export {when, repeat, html, HtmlTemplate, element} from '@beforesemicolon/html';

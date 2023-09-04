@@ -10,11 +10,13 @@ import {
 	useValue,
 	host,
 	onUpdate,
-	globalConfig,
+	onDOMUpdate,
+	onError,
 	useContext,
 	createContext,
 	onContextUpdate
 } from "./cube";
+import {config, updateConfig} from './config';
 
 if (window) {
 	// @ts-ignore
@@ -23,11 +25,14 @@ if (window) {
 		...(window.BFS || {}),
 		Cube: {
 			register,
-			globalConfig,
+			config,
+			updateConfig,
 			onMount,
 			onDestroy,
 			onAdoption,
 			onUpdate,
+			onDOMUpdate,
+			onError,
 			onContextUpdate,
 			useContext,
 			createContext,

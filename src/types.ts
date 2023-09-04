@@ -22,6 +22,25 @@ export interface ComponentOptions {
 	delegatesFocus?: boolean;
 }
 
+export interface Config extends ComponentOptions {
+	lang: string;
+	onError: (e: Error) => void
+}
+
+export interface CurrentComponent {
+	destroy: (() => void) | null;
+	mount: (() => void | (() => void)) | null;
+	adoption: (() => void) | null;
+	error: ((err: Error) => void) | null;
+	domUpdate: ((nodes: Set<Node>) => void) | null;
+	update: ((propName: string, newValue: unknown, oldValue: unknown) => void) | null;
+	contextUpdate: (propName: string, newValue: unknown, oldValue: unknown) => void;
+	dispatchEvent: (e: CustomEvent) => void;
+	contextMap: Map<string, {reactive: boolean; inContext: boolean; ctx: ContextModel<unknown> | null}>;
+	template: HtmlTemplate | null;
+	self: HTMLElement;
+}
+
 export interface ContextModel<T> {
 	readonly: boolean;
 	getData: () => T;
@@ -30,18 +49,6 @@ export interface ContextModel<T> {
 }
 
 export type Context<T> = Record<string, ContextModel<T>>;
-
-export interface CurrentComponent {
-	destroy: (() => void) | null;
-	mount: (() => void | (() => void)) | null;
-	adoption: (() => void) | null;
-	update: ((propName: string, newValue: unknown, oldValue: unknown) => void) | null;
-	contextUpdate: (propName: string, newValue: unknown, oldValue: unknown) => void;
-	dispatchEvent: (e: CustomEvent) => void;
-	contextMap: Map<string, {reactive: boolean; inContext: boolean; ctx: ContextModel<unknown> | null}>;
-	template: HtmlTemplate | null;
-	self: HTMLElement;
-}
 
 export interface Cube {
 	register: typeof register;
