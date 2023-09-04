@@ -1,6 +1,6 @@
 import {replaceCssHost} from "./replace-css-host";
 
-export function getStyleString(stylesheet: string, tagName: string) {
+export function getStyleString(stylesheet: string, tagName: string, hasShadowRoot: boolean = true) {
 	stylesheet = stylesheet.trim().replace(/\s{2,}/g, ' ');
 
 	if (!stylesheet) {
@@ -18,7 +18,9 @@ export function getStyleString(stylesheet: string, tagName: string) {
 			(child as HTMLLinkElement).classList.add(tagName);
 			links.push(child as HTMLLinkElement);
 		} else if(child.nodeName === '#text') {
-			(child as Text).nodeValue = replaceCssHost((child as Text).nodeValue ?? '', tagName).trim();
+			if (!hasShadowRoot) {
+				(child as Text).nodeValue = replaceCssHost((child as Text).nodeValue ?? '', tagName).trim();
+			}
 			styleTag.appendChild(child);
 		} else if (child.nodeName === 'STYLE') {
 			if ((child as HTMLStyleElement).id) {
@@ -27,7 +29,12 @@ export function getStyleString(stylesheet: string, tagName: string) {
 			(child as HTMLStyleElement).classList.forEach(cls => {
 				styleTag.classList.add(cls);
 			})
-			styleTag.insertAdjacentText('beforeend', replaceCssHost((child as Text).textContent ?? '', tagName).trim());
+			
+			if (!hasShadowRoot) {
+				(child as Text).nodeValue = replaceCssHost((child as Text).nodeValue ?? '', tagName).trim();
+			}
+			
+			styleTag.insertAdjacentText('beforeend', (child as Text).textContent ?? '');
 		}
 	});
 	
