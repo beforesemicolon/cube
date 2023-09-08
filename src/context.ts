@@ -133,7 +133,7 @@ export default (currentComponent: () => CurrentComponent | null) => {
 				val.ctx?.subs.add(comp.contextUpdate)
 			})
 		} else {
-			throw new Error('Must NOT use "onMount" lifecycle outside of a component')
+			throw new Error('Must NOT use "onContextUpdate" lifecycle outside of a component')
 		}
 	}
 	

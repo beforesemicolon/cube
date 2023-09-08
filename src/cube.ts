@@ -116,9 +116,9 @@ export const eventDispatch = <Data>() => {
 }
 
 export const useValue = <V>(val: V): [() => V, (newVal: V) => void] => {
-	if (currentComponent) {
-		const comp = currentComponent;
-		
+	const comp = currentComponent;
+	
+	if (comp) {
 		return [() => val, (newVal: V) => {
 			val = newVal;
 			comp?.template?.update();
@@ -129,10 +129,11 @@ export const useValue = <V>(val: V): [() => V, (newVal: V) => void] => {
 }
 
 export const template = (parts: TemplateStringsArray, ...values: unknown[]) => {
-	if (currentComponent) {
-		currentComponent.template = new HtmlTemplate(parts, values);
+	const comp = currentComponent;
+	if (comp) {
+		comp.template = new HtmlTemplate(parts, values);
 		
-		return currentComponent.template;
+		return comp.template;
 	}
 	
 	throw new Error('Must NOT use "template" outside of a component')
@@ -238,7 +239,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 								this.#props[key as keyof P] = newValue;
 								
 								// only perform DOM updates while mounted
-								if (this.isConnected) {
+								if (this.isConnected && this.#renderedBefore) {
 									try {
 										this.#handlers.update?.(key, newValue, oldValue);
 										// only update style if it is a callback expecting arguments
@@ -268,7 +269,6 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 				requestAnimationFrame(() => {
 					try {
 						if (!this.#renderedBefore) {
-							this.#renderedBefore = true;
 							currentComponent = this.#handlers;
 							comp(this.#readonlyProps);
 							currentComponent = null;
@@ -336,6 +336,8 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 						if (!this.#handlers.destroy && typeof destroy === "function") {
 							this.#handlers.destroy = destroy;
 						}
+						
+						this.#renderedBefore = true;
 					} catch(e) {
 						this.#handlers.error?.(e as Error)
 					}
@@ -369,11 +371,13 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 			}
 			
 			async adoptedCallback() {
-				try {
-					this.#handlers.adoption?.();
-				} catch(e) {
-					this.#handlers.error?.(e as Error)
-				}
+				requestAnimationFrame(() => {
+					try {
+						this.#handlers.adoption?.();
+					} catch(e) {
+						this.#handlers.error?.(e as Error)
+					}
+				})
 			}
 		}
 		
