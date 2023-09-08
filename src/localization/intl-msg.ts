@@ -3,7 +3,6 @@ import {config} from "../config";
 
 interface IntlMsgProps {
 	id: string;
-	tag: string;
 	values: Record<string, any>;
 }
 
@@ -55,15 +54,6 @@ export default ({register, html, template, element, useContext, host}: Cube) => 
 			
 			const markup = html(txtParts as unknown as TemplateStringsArray, txtValues);
 			
-			if (props.tag()) {
-				const el = element(props.tag());
-				
-				markup.render(el);
-				
-				el.setAttribute('dir', dir)
-				return el;
-			}
-			
 			comp.setAttribute('dir', dir)
 			return markup;
 		}
@@ -73,7 +63,6 @@ export default ({register, html, template, element, useContext, host}: Cube) => 
 	
 	register<IntlMsgProps>(IntlMsg, {
 		id: "",
-		tag: "",
 		values: {}
 	})
 }

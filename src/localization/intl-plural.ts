@@ -12,20 +12,23 @@ interface IntlPluralProps {
 	type: 'cardinal' | 'ordinal' | undefined
 }
 
-export default ({register, host, template, html}: Cube) => {
+export default ({register, host, template, html, useContext}: Cube) => {
 	const IntlPlural = (props: Props<IntlPluralProps>) => {
 		const comp = host();
 		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
+		const msgsctx = useContext<Record<string, unknown>>("intl-msg", true);
 		const content = comp.textContent;
 		
 		const plural = () => {
 			const value = props.value() ?? Number(content);
 			const pr = new Intl.PluralRules(locale.language, {type: props.type()});
-			
-			const val = props[pr.select(value)]();
+			const msg = msgsctx.value();
+			const cubeIntl = msg ? (msg['cube-intl'] as Record<string, any>) : null;
+			const sel = pr.select(value);
+			const val = props[sel]() || cubeIntl?.plural[sel] || '';
 			
 			if (props.type() === 'ordinal') {
-				return html`${value}<slot name="${val}">${val}</slot>`;
+				return html`${value}<slot name="${sel}">${val}</slot>`;
 			}
 			
 			return val || value;

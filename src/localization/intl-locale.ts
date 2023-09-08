@@ -12,6 +12,14 @@ const defaultLocale = {
 		second: {single: "second", plural: "seconds", narrow: "s", short: "sec"},
 		millisecond: {single: "millisecond", plural: "milliseconds", narrow: "ms", short: "mils"},
 		nanosecond: {single: "nanosecond", plural: "nanoseconds", narrow: "ns", short: "nano"},
+		plural: {
+			other: "th",
+			zero: "th",
+			one: "st",
+			two: "nd",
+			few: "rd",
+			many: "th",
+		}
 	}
 }
 

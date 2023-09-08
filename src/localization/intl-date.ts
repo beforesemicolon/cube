@@ -78,7 +78,7 @@ export default ({register, host, template}: Cube) => {
 			
 			try {
 				const date = typeof value == "string" || typeof value == "number"
-					? new Date(value)
+					? !isNaN(Number(value)) ? new Date(Number(value)) : new Date(value)
 					: value as Date;
 				
 				if (!isValidDate(date)) {
