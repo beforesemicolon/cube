@@ -42,7 +42,7 @@ export default ({createContext, host, onMount, register, template, element, html
 						throw new Error(`Loading "${props.src()}" content failed with status code ${res.status}`);
 					})
 					.then(html => {
-						temp.refs['loading'][0].remove();
+						temp.refs['loading'] && temp.refs['loading'][0].remove();
 						comp.innerHTML = html;
 						showContent();
 					})
