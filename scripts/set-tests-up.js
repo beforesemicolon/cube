@@ -1,10 +1,23 @@
 require('core-js/stable/structured-clone');
 
-beforeEach(() => {
+// @ts-ignore
+global.crypto.randomUUID = () => String(Math.floor(Math.random() * 1000));
+document.documentElement.lang = 'en';
+
+beforeAll(() => {
   // @ts-ignore
   jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => cb());
+  window.fetch = jest.fn();
+  jest.spyOn(console, 'error');
 });
 
-afterEach(() => {
+afterAll(() => {
   window.requestAnimationFrame.mockRestore();
+  window.fetch = undefined;
+  jest.resetAllMocks();
 });
+
+
+beforeEach(() => {
+  console.error.mockClear();
+})
