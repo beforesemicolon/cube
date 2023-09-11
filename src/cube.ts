@@ -102,11 +102,11 @@ export const onError = (cb: (err: Error) => void) => {
 }
 
 export const eventDispatch = <Data>() => {
-	if (currentComponent) {
-		const dispatchEvent = currentComponent.dispatchEvent;
-		
+	const comp = currentComponent;
+	
+	if (comp) {
 		return <T>(eventName: string, detail?: T) => {
-			dispatchEvent(new CustomEvent(eventName, {
+			comp.dispatchEvent(new CustomEvent(eventName, {
 				detail
 			}))
 		}
@@ -193,6 +193,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 				return acc;
 			}, {} as Props<P>)
 			#observer: MutationObserver | null = null;
+			__ROOT__: ShadowRoot | undefined;
 			
 			getStyle() {
 				let style: Stylesheet = "";
@@ -233,24 +234,28 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 							return this.#props[key];
 						},
 						set(newValue: any) {
-							const oldValue = this.#props[key];
-							
-							if (newValue !== oldValue) {
-								this.#props[key as keyof P] = newValue;
+							// ignore attribute value that hasn't been parsed to their real value yet
+							// this can happen after string parsed to node and before executables are collected
+							if (!/{{val[\d+]}}/.test(String(newValue))) {
+								const oldValue = this.#props[key];
 								
-								// only perform DOM updates while mounted
-								if (this.isConnected && this.#renderedBefore) {
-									try {
-										this.#handlers.update?.(key, newValue, oldValue);
-										// only update style if it is a callback expecting arguments
-										// otherwise it is an indication that the style does not use the props values
-										if (typeof stylesheet === "function" && stylesheet.length > 0) {
-											this.updateStyle();
+								if (newValue !== oldValue) {
+									this.#props[key as keyof P] = newValue;
+									
+									// only perform DOM updates while mounted
+									if (this.isConnected && this.#renderedBefore) {
+										try {
+											this.#handlers.update?.(key, newValue, oldValue);
+											// only update style if it is a callback expecting arguments
+											// otherwise it is an indication that the style does not use the props values
+											if (typeof stylesheet === "function" && stylesheet.length > 0) {
+												this.updateStyle();
+											}
+											
+											this.#handlers.template?.update();
+										} catch (e) {
+											this.#handlers.error?.(e as Error);
 										}
-										
-										this.#handlers.template?.update();
-									} catch(e) {
-										this.#handlers.error?.(e as Error);
 									}
 								}
 							}
@@ -262,6 +267,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 					this.#shadowRoot = this;
 				} else {
 					this.#shadowRoot = this.attachShadow({mode, delegatesFocus});
+					this.__ROOT__ = this.#shadowRoot;
 				}
 			}
 			
@@ -322,7 +328,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 								if (this.isConnected) {
 									try {
 										this.#handlers.domUpdate?.(new Set(records.map(rec => rec.target)));
-									} catch(e) {
+									} catch (e) {
 										this.#handlers.error?.(e as Error);
 									}
 								}
@@ -338,7 +344,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 						}
 						
 						this.#renderedBefore = true;
-					} catch(e) {
+					} catch (e) {
 						this.#handlers.error?.(e as Error)
 					}
 				})
@@ -353,28 +359,32 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 						})
 						this.#handlers.destroy?.()
 						this.#observer?.disconnect()
-					} catch(e) {
+					} catch (e) {
 						this.#handlers.error?.(e as Error)
 					}
 				});
 			}
 			
 			async attributeChangedCallback(name: string, oldValue: any, newValue: any) {
-				const propName = turnKebabToCamelCasing(name);
-				
-				if (!newValue && typeof this.#props[propName] === 'boolean' && name in booleanAttributes) {
-					newValue = this.hasAttribute(name);
+				// ignore attribute value that hasn't been parsed to their real value yet
+				// this can happen after string parsed to node and before executables are collected
+				if (!/{{val[\d+]}}/.test(String(newValue))) {
+					const propName = turnKebabToCamelCasing(name);
+					
+					if (!newValue && typeof this.#props[propName] === 'boolean' && name in booleanAttributes) {
+						newValue = this.hasAttribute(name);
+					}
+					
+					// @ts-ignore
+					this[propName] = jsonParse(newValue);
 				}
-				
-				// @ts-ignore
-				this[propName] = jsonParse(newValue);
 			}
 			
 			async adoptedCallback() {
 				requestAnimationFrame(() => {
 					try {
 						this.#handlers.adoption?.();
-					} catch(e) {
+					} catch (e) {
 						this.#handlers.error?.(e as Error)
 					}
 				})

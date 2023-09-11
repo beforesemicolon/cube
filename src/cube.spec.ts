@@ -14,7 +14,7 @@ import {
 import {updateConfig} from './config';
 import {Props, ShadowRootMode} from "./types";
 import {element, html} from "@beforesemicolon/html";
-import {render} from './testing/render';
+import {render} from './testing';
 
 describe('cube', () => {
 	
@@ -71,7 +71,7 @@ describe('cube', () => {
 		expect(three.delegatesFocus).toBe(true)
 	});
 	
-	it('should handle lifecycles', () => {
+	it('should handle lifecycles', async () => {
 		const mountMock = jest.fn();
 		const destroyMock = jest.fn();
 		const adoptionMock = jest.fn();
@@ -94,7 +94,7 @@ describe('cube', () => {
 			onAdoption(adoptionMock)
 		}
 		
-		const res = render(MyButton, {type: "button", label: "click me"})
+		const res = await render(MyButton, {type: "button", label: "click me"})
 
 		expect(`${res}`).toBe('<my-button></my-button>')
 		expect(res.content).toBe('<button type="button">click me</button>')
@@ -133,7 +133,7 @@ describe('cube', () => {
 	
 	});
 	
-	it('should handle error with onError', () => {
+	it('should handle error with onError', async () => {
 		const errMock = jest.fn();
 		
 		const ErrorComponent = () => {
@@ -142,12 +142,12 @@ describe('cube', () => {
 			throw new Error("Failed")
 		}
 		
-		render(ErrorComponent)
+		await render(ErrorComponent)
 		
 		expect(errMock).toHaveBeenCalledWith(new Error("Failed"))
 	});
 	
-	it('should handle error with global onError', () => {
+	it('should handle error with global onError', async () => {
 		const errMock = jest.fn();
 		
 		updateConfig({
@@ -158,20 +158,20 @@ describe('cube', () => {
 			throw new Error("Failed")
 		}
 		
-		render(GlobalErrorComponent)
+		await render(GlobalErrorComponent)
 		
 		expect(errMock).toHaveBeenCalledWith(new Error("Failed"))
 	
 	});
 	
-	it('should dispatch event with eventDispatch', () => {
+	it('should dispatch event with eventDispatch', async () => {
 		const EventComponent = () => {
 			const dispatch = eventDispatch();
 			
 			template`<button onclick="${() => dispatch('clicked')}">click me</button>`
 		}
 		
-		const cont = render(EventComponent);
+		const cont = await render(EventComponent);
 		
 		expect(cont.content).toBe('<button>click me</button>')
 		
@@ -185,14 +185,14 @@ describe('cube', () => {
 		expect(clickMock).toHaveBeenCalledWith(new CustomEvent("clicked"));
 	});
 	
-	it('should update template on change with useValue', () => {
+	it('should update template on change with useValue', async () => {
 		const ChangeComponent = () => {
 			const [count, setCount] = useValue(0);
 			
 			template`<button onclick="${() => setCount(count() + 1)}">${count}</button>`
 		}
 		
-		const cont = render(ChangeComponent);
+		const cont = await render(ChangeComponent);
 		
 		expect(cont.content).toBe('<button>0</button>')
 		
@@ -201,7 +201,7 @@ describe('cube', () => {
 		expect(cont.content).toBe('<button>1</button>')
 	});
 	
-	it('should render content with template', () => {
+	it('should render content with template', async () => {
 		const RenderComponent = () => {
 			const el = element("p", {textContent: "sample"})
 			const markup = html`<div>content</div>`
@@ -209,12 +209,12 @@ describe('cube', () => {
 			template`${el}<button>click me</button>${markup}`
 		}
 		
-		const cont = render(RenderComponent);
+		const cont = await render(RenderComponent);
 		
 		expect(cont.content).toBe('<p>sample</p><button>click me</button><div>content</div>')
 	});
 	
-	it('should have reference of the component with host', () => {
+	it('should have reference of the component with host', async () => {
 		const hostMock = jest.fn();
 		
 		const HostComponent = () => {
@@ -223,7 +223,7 @@ describe('cube', () => {
 			hostMock(comp);
 		}
 		
-		const res = render(HostComponent)
+		const res = await render(HostComponent)
 		
 		expect(hostMock).toHaveBeenCalledWith(res.target)
 	});
@@ -284,7 +284,7 @@ describe('cube', () => {
 		});
 	})
 	
-	it('should handle CSS string', () => {
+	it('should handle CSS string', async () => {
 		const CSSComponentStyle = () => {
 			return `:host {display: block}`
 		}
@@ -293,7 +293,7 @@ describe('cube', () => {
 			template`content`
 		}
 		
-		const cont = render(CSSComponent, {}, CSSComponentStyle);
+		const cont = await render(CSSComponent, {}, CSSComponentStyle);
 		
 		expect(cont.content).toBe('<style class="css-component">:host {display: block}</style>content')
 		
@@ -305,12 +305,12 @@ describe('cube', () => {
 			template`content`
 		}
 		
-		const cont2 = render(CSSComponent2, {}, CSSComponentStyle2);
+		const cont2 = await render(CSSComponent2, {}, CSSComponentStyle2);
 		
-		expect(cont2.content).toBe('<style class="css-component">:host {display: block}</style>content')
+		expect(cont2.content).toBe('<style class="css-component2">:host {display: block}</style>content')
 	});
 	
-	it('should handle CSS JSON', () => {
+	it('should handle CSS JSON', async () => {
 		const JSONComponentStyle = () => {
 			return {
 				":host": {
@@ -323,12 +323,12 @@ describe('cube', () => {
 			template`content`
 		}
 		
-		const cont = render(JSONComponent, {}, JSONComponentStyle);
+		const cont = await render(JSONComponent, {}, JSONComponentStyle);
 		
 		expect(cont.content).toBe('<style class="json-component">:host {display: block;}</style>content')
 	});
 	
-	it('should handle style with none mode', () => {
+	it('should handle style with none mode', async () => {
 		const JSONComponentStyle = () => {
 			return {
 				":host": {
@@ -341,7 +341,7 @@ describe('cube', () => {
 			template`content`
 		}
 		
-		const cont = render(JSONGlobalComponent, {}, JSONComponentStyle, {mode: ShadowRootMode.NONE});
+		const cont = await render(JSONGlobalComponent, {}, JSONComponentStyle, {mode: ShadowRootMode.NONE});
 		
 		expect(cont.content).toBe('content');
 		expect(document.head.querySelector('style[class="json-global-component"]')?.outerHTML)
@@ -352,7 +352,7 @@ describe('cube', () => {
 	
 	});
 	
-	it('should handle passing primitive to a component', () => {
+	it('should handle passing primitive to a component', async () => {
 		const ChildComp = ({val}: Props<{val: number}>) => {
 			template`${val}`
 		}
@@ -363,13 +363,13 @@ describe('cube', () => {
 		
 	  register(ChildComp, {val: 0});
 		
-		const parent = render(ParentComp)
+		const parent = await render(ParentComp)
 		
 		expect(parent.content).toBe('<child-comp val="12"></child-comp>')
 		expect(parent.find('child-comp')[0].content).toBe('12')
 	});
 	
-	it('should handle passing non-primitive to a component', () => {
+	it('should handle passing non-primitive to a component', async () => {
 		const DeepComp = ({val}: Props<{val: {sample: string}}>) => {
 			template`${() => val().sample}`
 		}
@@ -383,13 +383,13 @@ describe('cube', () => {
 				sample: ""
 			}
 		})
-		const el = render(TopComp)
+		const el = await render(TopComp)
 		
 		expect(el.content).toBe('<deep-comp val="{&quot;sample&quot;:12}"></deep-comp>')
 		expect(el.find('deep-comp')[0].content).toBe('12')
 	});
 	
-	it('should get references of elements from template', () => {
+	it('should get references of elements from template', async () => {
 		const refMock = jest.fn();
 		
 		const RefComponent = () => {
@@ -401,7 +401,7 @@ describe('cube', () => {
 			refMock(temp.refs)
 		}
 		
-		const cont = render(RefComponent);
+		const cont = await render(RefComponent);
 		
 		expect(cont.content).toBe('<p>sample</p><button>click me</button><div>content</div>')
 		

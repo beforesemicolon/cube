@@ -71,20 +71,22 @@ export interface Cube {
 export type Subscriber<T> = (data: T | null) => void
 
 export interface Store<T> {
-	value: () => Readonly<T> | null;
+	value: T | null;
 	update: (newData: T | null) => void;
-	subscribe: (sub: Subscriber<Readonly<T>>) => void;
+	subscribe: (sub: Subscriber<T>) => (() => void);
 }
 
+export type ListStoreItemID = unknown;
+
 export interface ListStore<T> {
-	createItem: (item: T) => void;
-	updateItem: (id: string, item: T) => void;
-	loadItems: (items: T[]) => void;
-	getItem: (id: string) => Readonly<T> | null;
-	getItems: (ids: string[]) => Readonly<T[]>;
-	deleteItem: (id: string) => void;
-	deleteItems: (ids: string[]) => void;
-	findItem: (filter: (item: T) => boolean) => Readonly<T> | null;
-	findItems: (filter: (item: T) => boolean) => Readonly<T[]>;
-	subscribe: (sub: Subscriber<Readonly<T[]>>) => void;
+	createItem: (item: T) => ListStoreItemID;
+	updateItem: (id: ListStoreItemID, item: Partial<T>) => T;
+	loadItems: (items: T[]) => ListStoreItemID[];
+	getItem: (id: ListStoreItemID) => T | null;
+	getItems: () => T[];
+	deleteItem: (id: ListStoreItemID) => ListStoreItemID;
+	deleteItems: (ids: ListStoreItemID[]) => ListStoreItemID[];
+	findItem: (filter: (item: T) => boolean) => T | null;
+	findItems: (filter: (item: T) => boolean) => T[];
+	subscribe: (sub: Subscriber<T[]>) => (() => void);
 }
