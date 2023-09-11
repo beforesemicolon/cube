@@ -1,4 +1,4 @@
-export const replaceCssHost = (css: string, tagName: string) => css.replace(/:(host-context|host)(?:\s*\((.*?)\))?/gmi, (_, h, s) => {
+export const replaceCssHost = (css: string, tagName: string) => css.replace(/:(host-context|host)(?:\s*\(([^,{]*)\))?/gmi, (_, h, s) => {
 	if (h === 'host-context') {
 		return `${(s || '').trim()} ${tagName}`;
 	}

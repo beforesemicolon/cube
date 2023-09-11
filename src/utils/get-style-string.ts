@@ -26,6 +26,7 @@ export function getStyleString(stylesheet: string, tagName: string, hasShadowRoo
 			if ((child as HTMLStyleElement).id) {
 				styleTag.id = (child as HTMLStyleElement).id;
 			}
+			
 			(child as HTMLStyleElement).classList.forEach(cls => {
 				styleTag.classList.add(cls);
 			})

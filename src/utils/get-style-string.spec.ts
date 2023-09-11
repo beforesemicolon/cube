@@ -20,8 +20,8 @@ describe('getStyleString', () => {
 	});
 	
 	it('should keep css inside a style tag id by the tag name', () => {
-		expect(getStyleString(`<style id="my-style">${style}</style>`, 'test-tag'))
-			.toEqual('<style id="my-style" class="test-tag"> :host { background: red; } :host ( .active ) { background: green; } </style>')
+		expect(getStyleString(`<style id="my-style" class="simple-style comp-one">${style}</style>`, 'test-tag'))
+			.toEqual('<style id="my-style" class="simple-style comp-one test-tag"> :host { background: red; } :host ( .active ) { background: green; } </style>')
 		expect(getStyleString(`<style id="my-style">${style}</style>`, 'test-tag', false))
 			.toEqual('<style id="my-style" class="test-tag">test-tag { background: red; } test-tag.active { background: green; }</style>')
 	});
