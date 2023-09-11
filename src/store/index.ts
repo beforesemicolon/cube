@@ -1,4 +1,5 @@
-import {Subscriber, Store, ListStore} from "../types";
+import {Subscriber, Store, ListStore, ListStoreItemID} from "../types";
+import {mergeObjects} from "../utils/merge-objects";
 
 const subs: Record<string, Set<Subscriber<any>>> = {};
 const stores: Record<string, Store<any> | ListStore<any>> = {};
@@ -9,16 +10,17 @@ const broadcast = <T>(data: T, storeName: string) => {
 	});
 }
 
-const subscribe = <T>(sub: Subscriber<T>, storeName: string) => {
+const subscribe = <T>(sub: Subscriber<T>, storeName: string, data: T | null = null) => {
 	if (typeof sub === "function") {
 		subs[storeName].add(sub as Subscriber<unknown>);
+		sub(data);
 		
 		return () => {
 			subs[storeName].delete(sub as Subscriber<unknown>);
 		}
 	}
 	
-	throw new Error(`Invalid store subscribe handler. Received ${sub} but expected a function.`)
+	throw new Error(`Invalid store subscribe handler. Received "${sub}" but expected a function.`)
 }
 
 export const store = <T>(name: string, data: T | null = null, mapper: (val: T) => T = v => v): Store<T> => {
@@ -28,11 +30,13 @@ export const store = <T>(name: string, data: T | null = null, mapper: (val: T) =
 	
 	subs[name] = new Set();
 	stores[name] = Object.freeze({
-		value: (): Readonly<T> | null => data,
+		get value(): T | null {
+			return data;
+		},
 		update: (newData: T | null) => {
 			if (newData !== data) {
 				if (newData !== null) {
-					data = mapper(newData);
+					data = mapper(mergeObjects(data, newData));
 				} else {
 					data = null;
 				}
@@ -40,16 +44,13 @@ export const store = <T>(name: string, data: T | null = null, mapper: (val: T) =
 				broadcast(data, name);
 			}
 		},
-		subscribe: (sub: Subscriber<Readonly<T>>) => {
-			subscribe(sub, name);
-			sub(data);
-		}
+		subscribe: (sub: Subscriber<T>) => subscribe<T>(sub, name, data)
 	});
 	
 	return stores[name] as Store<T>;
 }
 
-const getItemIdValue = <T>(item: T, identifierName = "id") => {
+const getItemIdValue = <T>(item: T, identifierName = "id"): ListStoreItemID | null => {
 	if (item && typeof item === "object" && item.hasOwnProperty(identifierName)) {
 		// @ts-ignore
 		return item[identifierName] ?? null;
@@ -66,63 +67,76 @@ export const listStore = <T>(name: string, data: Array<T> = [], identifierName =
 	// shallow copy the data
 	data = [...data];
 	
-	const keyedData: Array<[string, T]> = data.map((item, idx) => {
-		return [getItemIdValue(item, identifierName) ?? String(idx), item];
+	const keyedData: Array<[ListStoreItemID, T]> = data.map((item) => {
+		return [getItemIdValue(item, identifierName) ?? crypto.randomUUID(), item];
 	});
 	
-	const map: Map<string, T> = new Map(keyedData);
+	const map: Map<unknown, T> = new Map(keyedData);
 	
 	const emit = () => broadcast(data, name);
 	
 	subs[name] = new Set();
 	stores[name] = Object.freeze({
-		createItem: (newItem: T) => {
-			const id = getItemIdValue(newItem, identifierName) ?? String(map.size + 1);
+		createItem: (newItem: T): ListStoreItemID => {
+			const id = getItemIdValue(newItem, identifierName) ?? crypto.randomUUID();
 			map.set(id, newItem);
 			data.push(newItem);
-			console.log('-- createItem', data);
 			emit();
+			
+			return id;
 		},
 		loadItems: (newItems: T[]) => {
+			const ids: ListStoreItemID[] = []
+			
 			newItems.forEach((newItem) => {
-				const id = getItemIdValue(newItem, identifierName) ?? String(map.size + 1);
+				const id = getItemIdValue(newItem, identifierName) ?? crypto.randomUUID();
 				map.set(id, newItem);
+				data.push(newItem);
+				ids.push(id);
 			})
-			data.push(...newItems);
-			emit();
+			
+			ids.length && emit();
+			
+			return ids;
 		},
-		getItem: (id: string): Readonly<T> | null => {
+		getItem: (id: ListStoreItemID): T | null => {
 			return map.get(id) ?? null;
 		},
 		getItems: () => {
 			return data;
 		},
-		updateItem: (id: string, updatedItem: T) => {
+		updateItem: (id: ListStoreItemID, updatedItem: Partial<T>) => {
 			const found = map.get(id);
 			
 			if (found) {
-				map.set(id, updatedItem);
+				updatedItem = mergeObjects(found, updatedItem) as T;
+				map.set(id, updatedItem as T);
 				const idx = data.indexOf(found);
 				
-				data[idx] = updatedItem;
+				data[idx] = updatedItem as T;
 				emit();
+				
+				return updatedItem;
 			} else {
-				console.error(`Failed to update item of id of "${id}". Item does not exist.`);
+				throw new Error(`Failed to update item with ${identifierName} of "${id}". Item does not exist.`);
 			}
 		},
-		deleteItem: (id: string) => {
+		deleteItem: (id: ListStoreItemID): ListStoreItemID => {
 			if (map.has(id)) {
 				map.delete(id);
 				const idx = data.indexOf(map.get(id) as T);
 				
 				data.splice(idx, 1);
 				emit();
+				
+				return id;
 			} else {
-				console.error(`Failed to delete item of id of "${id}". Item does not exist.`);
+				throw new Error(`Failed to delete item with ${identifierName} of "${id}". Item does not exist.`);
 			}
 		},
-		deleteItems: (ids: string[]) => {
+		deleteItems: (ids: ListStoreItemID[]): ListStoreItemID[] => {
 			const beforeCount = map.size;
+			const delIds: ListStoreItemID[] = []
 			
 			ids.forEach(id => {
 				if (map.has(id)) {
@@ -130,16 +144,17 @@ export const listStore = <T>(name: string, data: Array<T> = [], identifierName =
 					const idx = data.indexOf(map.get(id) as T);
 					
 					data.splice(idx, 1);
+					delIds.push(id)
 				} else {
-					console.error(`Failed to delete item of id of "${id}". Item does not exist.`);
+					console.error(`Failed to delete item with ${identifierName} of "${id}". Item does not exist.`);
 				}
 			})
 			
-			if (beforeCount !== map.size) {
-				emit();
-			}
+			beforeCount !== map.size && emit()
+			
+			return delIds;
 		},
-		findItem: (filter: (item: T) => boolean): Readonly<T> | null => {
+		findItem: (filter: (item: T) => boolean): T | null => {
 			for (let [_, item] of map) {
 				if (filter(item)) {
 					return item
@@ -148,8 +163,8 @@ export const listStore = <T>(name: string, data: Array<T> = [], identifierName =
 			
 			return null;
 		},
-		findItems: (filter: (item: T) => boolean): Readonly<T[]> => {
-			const items: Readonly<T>[] = [];
+		findItems: (filter: (item: T) => boolean): T[] => {
+			const items: T[] = [];
 			
 			for (let [_, item] of map) {
 				if (filter(item)) {
@@ -159,10 +174,7 @@ export const listStore = <T>(name: string, data: Array<T> = [], identifierName =
 			
 			return items;
 		},
-		subscribe: (sub: Subscriber<Readonly<T[]>>) => {
-			subscribe(sub, name);
-			sub(data);
-		}
+		subscribe: (sub: Subscriber<T[]>) => subscribe<T[]>(sub, name, data)
 	})
 	
 	return stores[name] as ListStore<T>;
