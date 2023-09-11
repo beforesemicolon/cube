@@ -2,7 +2,7 @@ import {isOnPage} from "./utils/is-on-page";
 
 const routeListeners: Set<(pathname: string) => void> = new Set();
 
-const broadcast = () => {
+const broadcast = async () => {
 	routeListeners.forEach(cb => {
 		cb(location.pathname)
 	})
@@ -24,7 +24,7 @@ export const onPageChange = (sub: (pathname: string) => void) =>{
 export const goToPage = (pathname: string, state: Record<string, unknown> = {}, title = document.title) => {
 	if (!isOnPage(pathname)) {
 		window.history.pushState(state, title, pathname);
-		
+	
 		if (title !== document.title) {
 			document.title = title;
 		}

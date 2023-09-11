@@ -11,18 +11,14 @@ interface PageLinkProps {
 export default ({eventDispatch, onMount, register, template, useValue}: Cube) => {
 	const PageLink = (props: Props<PageLinkProps>) => {
 		const dispatch = eventDispatch();
-
-		const isActive = () => isOnPage(props.path())
+		const [active, setActive] = useValue(false);
+		const part = () => active() ? "anchor active" : "anchor";
 
 		onMount(() => {
-			let previousActive = isOnPage(props.path());
-
 			const onRouteChange = () => {
-				const newActive = isActive();
-
-				if (previousActive !== newActive) {
-					dispatch("active", newActive);
-				}
+				const newActive = isOnPage(props.path());
+				setActive(newActive);
+				dispatch("active", newActive);
 			}
 
 			return onPageChange(onRouteChange);
@@ -31,20 +27,14 @@ export default ({eventDispatch, onMount, register, template, useValue}: Cube) =>
 		const handleClick = (event: Event) => {
 			event.preventDefault();
 			event.stopPropagation();
-
-			const [path, searchPart = ""] = props.path().split('?');
-
-			if (path) {
-				goToPage(path, props.state(), props.title())
-			}
+			goToPage(props.path(), props.state(), props.title())
 		}
 
 		template`
 			<a
-				part="anchor"
+				part="${part}"
 				href="${props.path}"
 				onclick="${handleClick}"
-				attr.class.active="${isActive}"
 				>
 				<slot></slot>
 			</a>`
