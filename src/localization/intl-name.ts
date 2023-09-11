@@ -5,7 +5,7 @@ interface IntlNameProps {
 	value: string;
 	type: "language" | "region" | "script" | "dateTimeField" | "currency" | "calendar";
 	style: 'long' | 'short' | 'narrow' | undefined;
-	lang: string;
+	locale: string | undefined;
 }
 
 export default ({register, host, template}: Cube) => {
@@ -19,7 +19,7 @@ export default ({register, host, template}: Cube) => {
 		const name = () => {
 			const value = props.value() || content || '';
 			
-			return value ? new Intl.DisplayNames(props.lang() || locale.language, {
+			return value ? new Intl.DisplayNames(props.locale() || locale.language, {
 				style: props.style(),
 				type: props.type(),
 			}).of(value) : ''
@@ -32,6 +32,6 @@ export default ({register, host, template}: Cube) => {
 		value: "",
 		type: "language",
 		style: 'long',
-		lang: ''
+		locale: undefined
 	}, {mode: ShadowRootMode.NONE})
 }

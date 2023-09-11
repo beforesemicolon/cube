@@ -34,13 +34,13 @@ export default ({register, template, onMount, createContext}: Cube) => {
 		
 		onMount(() => {
 			if (props.src()) {
-				fetch(props.src())
+				fetch(new URL(props.src(), location.origin).href)
 					.then(res => {
 						if (res.status === 200) {
 							return res.json()
 						}
 						
-						throw new Error(`Loading "${props.src()}" locale messages failed with status code ${res.status}`);
+						throw new Error(`[intl-locale] Loading "${props.src()}" locale messages failed with status code ${res.status}`);
 					})
 					.then(data => {
 						msgs.update({
@@ -53,13 +53,13 @@ export default ({register, template, onMount, createContext}: Cube) => {
 				const lang = document.documentElement.lang || config.lang;
 				const src = `${props.srcDir().replace(/\/$/, '')}/${lang}.json`
 				
-				fetch(src)
+				fetch(new URL(src, location.origin).href)
 					.then(res => {
 						if (res.status === 200) {
 							return res.json()
 						}
 						
-						throw new Error(`Loading "${src}" locale messages failed with status code ${res.status}`);
+						throw new Error(`[intl-locale] Loading "${src}" locale messages failed with status code ${res.status}`);
 					})
 					.then(data => {
 						msgs.update({

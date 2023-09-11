@@ -4,7 +4,8 @@ import {config} from "../config";
 interface IntlListProps {
 	items: Array<string> | undefined;
 	type: 'and' | 'or' | 'none' | 'disjunction' | 'conjunction' | 'unit';
-	style: 'short' | 'narrow' | 'long';
+	style: 'short' | 'narrow' | 'long' | undefined;
+	locale: string | undefined;
 }
 
 export default ({register, template}: Cube) => {
@@ -20,10 +21,10 @@ export default ({register, template}: Cube) => {
 		
 		const list = () => {
 			// @ts-ignore
-			return new Intl.ListFormat(locale.language, {
+			return new Intl.ListFormat(props.locale() || locale.language, {
 				style: props.style(),
 				type: (Type[props.type()] ?? props.type()) || 'and',
-			}).format(props.items());
+			}).format(props.items() || []);
 		}
 		
 		template`${list}`;
@@ -32,6 +33,7 @@ export default ({register, template}: Cube) => {
 	register<IntlListProps>(IntlList, {
 		items: undefined,
 		type: 'and',
-		style: 'long'
+		style: 'long',
+		locale: undefined
 	}, {mode: ShadowRootMode.NONE})
 }

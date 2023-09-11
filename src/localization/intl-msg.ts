@@ -27,11 +27,12 @@ export default ({register, html, template, element, useContext, host}: Cube) => 
 			let text = map[props.id()];
 			
 			if (text === undefined) {
-				console.error(`Intl Message with id  of "${props.id()}" not found. Using the id as backup.`);
+				console.error(`[intl-msg] id of "${props.id()}" was not found. Rendering the id itself as backup.`);
 				return props.id();
 			}
 			
 			const values  = props.values();
+			
 			const pattern = /\{\s*([a-z0-9]+)\s*\}/g;
 			let txt = String(text)
 			let match = null;

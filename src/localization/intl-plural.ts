@@ -9,7 +9,8 @@ interface IntlPluralProps {
 	two: string;
 	few: string;
 	many: string;
-	type: 'cardinal' | 'ordinal' | undefined
+	type: 'cardinal' | 'ordinal' | undefined;
+	locale: string | undefined;
 }
 
 export default ({register, host, template, html, useContext}: Cube) => {
@@ -20,17 +21,22 @@ export default ({register, host, template, html, useContext}: Cube) => {
 		const content = comp.textContent;
 		
 		const plural = () => {
-			const value = props.value() ?? Number(content);
-			const pr = new Intl.PluralRules(locale.language, {type: props.type()});
+			const value = Number(props.value() ?? content);
+			
+			if (isNaN(value)) {
+				return ''
+			}
+			
+			const pr = new Intl.PluralRules(props.locale() || locale.language, {type: props.type()});
 			const msg = msgsctx.value();
 			const cubeIntl = msg ? (msg['cube-intl'] as Record<string, any>) : null;
 			const sel = pr.select(value);
 			const val = props[sel]() || cubeIntl?.plural[sel] || '';
-			
+
 			if (props.type() === 'ordinal') {
 				return html`${value}<slot name="${sel}">${val}</slot>`;
 			}
-			
+
 			return val || value;
 		}
 		
@@ -38,6 +44,7 @@ export default ({register, host, template, html, useContext}: Cube) => {
 	}
 	
 	register<IntlPluralProps>(IntlPlural, {
+		locale: undefined,
 		value: undefined,
 		other: '',
 		zero: '',

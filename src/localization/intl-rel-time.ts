@@ -1,45 +1,46 @@
 import {Props, Cube, ShadowRootMode} from "../types";
 import {isValidDate} from './utils/is-valid-date';
-import {ONE_HOUR, ONE_MINUTE, ONE_SECOND, ONE_DAY} from "./utils/time-in-miliseconds";
+import {ONE_HOUR_MS, ONE_MINUTE_MS, ONE_SECOND_MS, ONE_DAY_MS} from "./utils/time-in-miliseconds";
 import {config} from "../config";
+
+type RelUnit = "year"
+	| "years"
+	| "quarter"
+	| "quarters"
+	| "month"
+	| "months"
+	| "week"
+	| "weeks"
+	| "day"
+	| "days"
+	| "hour"
+	| "hours"
+	| "minute"
+	| "minutes"
+	| "second"
+	| "seconds"
 
 interface IntlRelTimeProps {
 	live: boolean;
-	value: number | Date;
 	showDecimals: false;
-	seconds: number;
-	milliseconds: number;
+	value: number | undefined;
 	style: 'long' | 'short' | 'narrow' | undefined;
 	numeric: boolean;
-	unit: "year"
-		| "years"
-		| "quarter"
-		| "quarters"
-		| "month"
-		| "months"
-		| "week"
-		| "weeks"
-		| "day"
-		| "days"
-		| "hour"
-		| "hours"
-		| "minute"
-		| "minutes"
-		| "second"
-		| "seconds";
+	unit: "auto" | RelUnit;
+	locale: string | undefined;
 }
 
 const getUpdateIntervalByUnit = (unit: IntlRelTimeProps['unit']) => {
 	switch (unit) {
 		case "hours":
 		case "hour":
-			return ONE_HOUR;
+			return ONE_HOUR_MS;
 		case "minutes":
 		case "minute":
-			return ONE_MINUTE;
+			return ONE_MINUTE_MS;
 		case "seconds":
 		case "second":
-			return ONE_SECOND;
+			return ONE_SECOND_MS;
 		default:
 			return null;
 	}
@@ -47,27 +48,27 @@ const getUpdateIntervalByUnit = (unit: IntlRelTimeProps['unit']) => {
 
 const getUnitAndValue = (milliseconds: number, precision = 0): {
 	val: number,
-	unit: IntlRelTimeProps['unit'];
+	unit: RelUnit;
 	interval: number | null
 } => {
 	const inThePast = milliseconds < 0 ? -1 : 1;
 	milliseconds = Math.abs(milliseconds);
-	const days = Number((milliseconds / ONE_DAY).toFixed(precision));
+	const days = Number((milliseconds / ONE_DAY_MS).toFixed(precision));
 	
 	if (days < 1) {
-		if (milliseconds < ONE_MINUTE) {
+		if (milliseconds < ONE_MINUTE_MS) {
 			return {
-				val: Number((milliseconds / ONE_SECOND).toFixed(precision)) * inThePast,
+				val: Number((milliseconds / ONE_SECOND_MS).toFixed(precision)) * inThePast,
 				unit: 'seconds',
 				interval: getUpdateIntervalByUnit('seconds')
 			};
 		}
 		
-		const hours = days / (ONE_MINUTE * 60)
+		const hours = milliseconds / (ONE_MINUTE_MS * 60)
 		
 		if (hours < 1) {
 			return {
-				val: Number((milliseconds / ONE_MINUTE).toFixed(precision)) * inThePast,
+				val: Number((milliseconds / ONE_MINUTE_MS).toFixed(precision)) * inThePast,
 				unit: 'minutes',
 				interval: getUpdateIntervalByUnit('minutes')
 			};
@@ -124,25 +125,20 @@ export default ({register, host, template, useValue, onMount}: Cube) => {
 		comp.innerHTML = '';
 		
 		const getTime = (): { value: string | null; interval: number | null } => {
-			const relative = new Intl.RelativeTimeFormat(locale.language, {
+			let value: any = Number(props.value() || content || 0);
+			
+			if (!value) {
+				return {value: null, interval: null};
+			}
+			
+			const precision = props.showDecimals() ? 1 : 0;
+			const relative = new Intl.RelativeTimeFormat(props.locale() || locale.language, {
 				style: props.style(),
 				numeric: props.numeric() ? 'always' : 'auto'
 			});
-			let value = props.value() || content;
-			const precision = props.showDecimals() ? 1 : 0;
 			
-			if (props.milliseconds()) {
-				value = new Date(props.milliseconds());
-			} else if (props.seconds()) {
-				value = new Date(props.seconds() * ONE_SECOND);
-			}
-			
-			if (value instanceof Date) {
-				if (!isValidDate(value)) {
-					return {value: `[Invalid Date: ${value}]`, interval: null};
-				}
-				
-				const rel = getUnitAndValue(value.getTime() - Date.now(), precision)
+			if (props.unit() === "auto") {
+				const rel = getUnitAndValue(value - Date.now(), precision)
 				
 				return {
 					value: relative.format(rel.val, rel.unit),
@@ -150,14 +146,10 @@ export default ({register, host, template, useValue, onMount}: Cube) => {
 				};
 			}
 			
-			if (props.unit() && value) {
-				return {
-					value: relative.format(Number(Number(value).toFixed(precision)), props.unit()),
-					interval: getUpdateIntervalByUnit(props.unit())
-				};
-			}
-			
-			return {value: null, interval: null};
+			return {
+				value: relative.format(Number(value.toFixed(precision)), props.unit() as RelUnit),
+				interval: getUpdateIntervalByUnit(props.unit())
+			};
 		}
 		
 		const updateTime = () => {
@@ -186,13 +178,12 @@ export default ({register, host, template, useValue, onMount}: Cube) => {
 	}
 	
 	register<IntlRelTimeProps>(IntlRelTime, {
+		locale: undefined,
 		showDecimals: false,
 		live: false,
-		value: 0,
-		seconds: 0,
-		milliseconds: 0,
+		value: undefined,
 		numeric: false,
 		style: 'long',
-		unit: 'days'
+		unit: 'auto'
 	}, {mode: ShadowRootMode.NONE})
 }

@@ -1,9 +1,10 @@
 import {Props, Cube, ShadowRootMode} from "../types";
 import {isValidDate} from './utils/is-valid-date';
 import {config} from "../config";
+import {conditionalField} from "../utils";
 
-interface IntlDateProps {
-	hour12: boolean;
+interface IntlDatetimeProps {
+	hour12: boolean | undefined;
 	weekday: 'long' | 'short' | 'narrow' | undefined;
 	era: 'long' | 'short' | 'narrow' | undefined;
 	dayPeriod: 'long' | 'short' | 'narrow' | undefined;
@@ -13,14 +14,15 @@ interface IntlDateProps {
 	timeStyle: 'full' | 'long' | 'medium' | 'short' | undefined;
 	hour: 'numeric' | '2-digit' | undefined;
 	minute: 'numeric' | '2-digit' | undefined;
-	seconds: 'numeric' | '2-digit' | undefined;
+	second: 'numeric' | '2-digit' | undefined;
 	month: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' | undefined;
 	hourCycle: 'h11' | 'h12' | 'h23' | 'h24' | undefined;
 	timezone: 'UTC' | string | undefined;
 	timezoneName: 'long' | 'short' | 'shortOffset' | 'longOffset' | 'shortGeneric' | 'longGeneric' | undefined;
-	value: Date | string | number;
+	value: string | number;
+	locale: string | undefined;
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/getCalendars#supported_calendar_types
-	cal: 'buddhist'
+	calendar: 'buddhist'
 		| 'chinese'
 		| 'coptic'
 		| 'dangi'
@@ -42,7 +44,7 @@ interface IntlDateProps {
 }
 
 export default ({register, host, template}: Cube) => {
-	const IntlDate = (props: Props<IntlDateProps>) => {
+	const IntlDatetime = (props: Props<IntlDatetimeProps>) => {
 		const comp = host();
 		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		const content = comp.textContent;
@@ -51,28 +53,28 @@ export default ({register, host, template}: Cube) => {
 		
 		const dateString = () => {
 			const dateTimeOptions = {
-				// if dateStyle or timeStyle is provided we cannot set these
-				weekday: props.weekday() || undefined,
-				era: props.era() || undefined,
-				year: props.year() || undefined,
-				month: props.month() || undefined,
-				day: props.day() || undefined,
-				dayPeriod: props.dayPeriod() || undefined,
-				hour: props.hour() || undefined,
-				minute: props.minute() || undefined,
-				second: props.seconds() || undefined,
+				...conditionalField('weekday', props.weekday()),
+				...conditionalField('era', props.era()),
+				...conditionalField('year', props.year()),
+				...conditionalField('month', props.month()),
+				...conditionalField('day', props.day()),
+				...conditionalField('dayPeriod', props.dayPeriod()),
+				...conditionalField('hour', props.hour()),
+				...conditionalField('minute', props.minute()),
+				...conditionalField('second', props.second()),
 			}
 			
-			const fomatter = new Intl.DateTimeFormat(locale.language, {
+			const fomatter = new Intl.DateTimeFormat(props.locale() || locale.language, {
 				hour12: props.hour12(),
 				// @ts-ignore
-				calendar: props.cal() || locale.calendars[0],
-				...(props.hourCycle() ? {hourCycle: props.hourCycle()} : {}),
-				...(props.timeStyle() ? {timeStyle: props.timeStyle()} : {}),
-				...(props.dateStyle() ? {dateStyle: props.dateStyle()} : {}),
+				...conditionalField('calendar', props.calendar()),
+				...conditionalField('hourCycle', props.hourCycle()),
+				...conditionalField('timeStyle', props.timeStyle()),
+				...conditionalField('dateStyle', props.dateStyle()),
+				...conditionalField('timeZone', props.timezone()),
+				...conditionalField('timezoneName', props.timezoneName()),
+				// if dateStyle or timeStyle is provided we cannot set individual time/date options
 				...(props.dateStyle() || props.timeStyle() ? {} : dateTimeOptions),
-				...(props.timezone() ? {timeZone: props.timezone()} : {}),
-				...(props.timezoneName() ? {timezoneName: props.timezoneName()} : {}),
 			})
 			const value = props.value() || content || Date.now();
 			
@@ -94,21 +96,22 @@ export default ({register, host, template}: Cube) => {
 		template`${dateString}`;
 	}
 	
-	register<IntlDateProps>(IntlDate, {
+	register<IntlDatetimeProps>(IntlDatetime, {
 		hour12: false,
 		hourCycle: 'h23',
 		weekday: 'short',
+		locale: undefined,
 		era: undefined,
 		dayPeriod: 'long',
-		year: '2-digit',
-		day: '2-digit',
-		hour: '2-digit',
-		minute: '2-digit',
-		seconds: '2-digit',
-		month: '2-digit',
+		year: 'numeric',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: 'numeric',
+		second: 'numeric',
+		month: 'numeric',
 		timeStyle: undefined,
 		dateStyle: undefined,
-		cal: undefined,
+		calendar: undefined,
 		timezone: undefined,
 		timezoneName: 'short',
 		value: "",

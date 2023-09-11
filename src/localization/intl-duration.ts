@@ -5,7 +5,7 @@ import {config} from "../config";
 const allFields = new Set(['second', 'minute', 'hour', 'day', 'month', 'year'])
 
 interface IntlDurationProps {
-	value: Date | number | undefined;
+	value: number | undefined;
 	style: "narrow" | "short" | "long";
 	fields: '*' | 'second' | 'minute' | 'hour' | 'day' | 'month' | 'year';
 }
@@ -55,11 +55,11 @@ export default ({register, host, template, useContext}: Cube) => {
 				: new Set((props.fields() || '').split(/\s+/g).map(s => s.trim()))
 			let value = props.value() || content;
 			
-			if (value instanceof Date) {
-				value = value.getTime();
-			} else {
-				value = Number(value);
+			if (!value) {
+			  return '';
 			}
+			
+			value = Number(value);
 			
 			const tp = millisecondsToTimeParts(value, fields);
 			const gap = props.style() === "narrow" ? "" : " "
