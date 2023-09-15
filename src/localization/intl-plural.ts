@@ -1,4 +1,4 @@
-import {Props, Cube, ShadowRootMode} from "../types";
+import {Props, Cube, ShadowRootMode, ObjectLiteral} from "../types";
 import {config} from "../config";
 
 interface IntlPluralProps {
@@ -17,7 +17,7 @@ export default ({register, host, template, html, useContext}: Cube) => {
 	const IntlPlural = (props: Props<IntlPluralProps>) => {
 		const comp = host();
 		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
-		const msgsctx = useContext<Record<string, unknown>>("intl-msg", true);
+		const msgsctx = useContext<ObjectLiteral>("intl-msg", true);
 		const content = comp.textContent;
 		
 		const plural = () => {

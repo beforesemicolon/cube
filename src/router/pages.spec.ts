@@ -1,5 +1,4 @@
-
-import {goToPage, onPageChange, previousPage, replacePage, nextPage} from "./pages";
+import {goToPage, onPageChange, previousPage, replacePage, nextPage, updateSearchQuery} from "./pages";
 
 describe('pages', () => {
 	const onPageChangeListener = jest.fn();
@@ -20,12 +19,12 @@ describe('pages', () => {
 
 		goToPage('/sample')
 
-		expect(onPageChangeListener).toHaveBeenCalledWith('/sample')
+		expect(onPageChangeListener).toHaveBeenCalledWith('/sample', {})
 		expect(history.length).toBe(2);
 
 		goToPage('/test', {data: 1000}, 'test page')
 
-		expect(onPageChangeListener).toHaveBeenCalledWith('/test')
+		expect(onPageChangeListener).toHaveBeenCalledWith('/test', {})
 		expect(history.state).toEqual({data: 1000})
 		expect(document.title).toBe('test page')
 		expect(history.length).toBe(3);
@@ -69,5 +68,26 @@ describe('pages', () => {
 			expect(document.title).toBe('new page')
 			done()
 		}, 300)
+	});
+	
+	it('should update search query', () => {
+		expect(location.search).toBe('');
+		
+		updateSearchQuery({
+			"date": "2020-01-01",
+			"sample": "30"
+		})
+		
+		expect(location.search).toEqual('?date=2020-01-01&sample=30');
+		
+		updateSearchQuery({
+			"item": {name: "test", price: 30}
+		})
+		
+		expect(location.search).toEqual('?date=2020-01-01&sample=30&item=%7B%22name%22%3A%22test%22%2C%22price%22%3A30%7D');
+		
+		updateSearchQuery(null)
+		
+		expect(location.search).toEqual('');
 	});
 })

@@ -5,7 +5,7 @@ import {
 	turnCamelToKebabCasing,
 	turnKebabToCamelCasing
 } from "@beforesemicolon/html/dist/utils";
-import {getStyleString, JSONToCSS,} from "./utils";
+import {getStyleString, JSONToCSS, TC} from "./utils";
 import {ComponentOptions, CurrentComponent, FnComponent, Props, ShadowRootMode, Style, Stylesheet} from "./types";
 import {config} from './config';
 import initContext from "./context";
@@ -21,9 +21,9 @@ export function register<P extends Record<string, any>>(
 	styleOrOptions: Style<P> | ComponentOptions = config,
 	opt: ComponentOptions = config
 ) {
-	const isStyle = typeof styleOrOptions === "function";
-	const stylesheet = isStyle ? styleOrOptions : undefined;
-	const {mode = config.mode, delegatesFocus = config.delegatesFocus} = isStyle ? opt : styleOrOptions;
+	const isStyle = TC.function(styleOrOptions);
+	const stylesheet = (isStyle ? styleOrOptions : undefined) as Style<P>;
+	const {mode = config.mode, delegatesFocus = config.delegatesFocus} = (isStyle ? opt : styleOrOptions) as ComponentOptions;
 	
 	const tagName = turnCamelToKebabCasing(comp.name || "");
 	
@@ -198,13 +198,15 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 			getStyle() {
 				let style: Stylesheet = "";
 				
-				if (typeof stylesheet === "function") {
+				if (TC.function(stylesheet)) {
 					style = stylesheet(this.#readonlyProps);
 					
 					if (style) {
-						style = typeof style === 'object'
+						style = TC.objectLiteral(style)
 							? `<style class="${tagName.toLowerCase()}">${JSONToCSS(style, tagName, mode !== ShadowRootMode.NONE)}</style>`
-							: getStyleString(style, tagName.toLowerCase(), mode !== ShadowRootMode.NONE);
+							: TC.string(style)
+								? getStyleString(style, tagName.toLowerCase(), mode !== ShadowRootMode.NONE)
+								: '';
 					}
 				}
 				
@@ -248,7 +250,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 											this.#handlers.update?.(key, newValue, oldValue);
 											// only update style if it is a callback expecting arguments
 											// otherwise it is an indication that the style does not use the props values
-											if (typeof stylesheet === "function" && stylesheet.length > 0) {
+											if (TC.function(stylesheet) && stylesheet.length > 0) {
 												this.updateStyle();
 											}
 											
@@ -317,7 +319,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 							this.#handlers.template?.update();
 						}
 						
-						if (typeof this.#handlers.domUpdate === "function") {
+						if (TC.function(this.#handlers.domUpdate)) {
 							const observerOptions = {
 								childList: true,
 								subtree: true,
@@ -337,9 +339,9 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 							this.#observer.observe(this.#shadowRoot, observerOptions);
 						}
 						
-						const destroy = this.#handlers.mount?.();
+						const destroy = this.#handlers.mount?.() || null;
 						
-						if (!this.#handlers.destroy && typeof destroy === "function") {
+						if (!this.#handlers.destroy && TC.function(destroy)) {
 							this.#handlers.destroy = destroy;
 						}
 						
@@ -371,7 +373,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 				if (!/{{val[\d+]}}/.test(String(newValue))) {
 					const propName = turnKebabToCamelCasing(name);
 					
-					if (!newValue && typeof this.#props[propName] === 'boolean' && name in booleanAttributes) {
+					if (!newValue && TC.boolean(this.#props[propName]) && name in booleanAttributes) {
 						newValue = this.hasAttribute(name);
 					}
 					

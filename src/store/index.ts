@@ -1,5 +1,5 @@
 import {Subscriber, Store, ListStore, ListStoreItemID} from "../types";
-import {mergeObjects} from "../utils/merge-objects";
+import {TC, mergeObjects} from "../utils";
 
 const subs: Record<string, Set<Subscriber<any>>> = {};
 const stores: Record<string, Store<any> | ListStore<any>> = {};
@@ -11,7 +11,7 @@ const broadcast = <T>(data: T, storeName: string) => {
 }
 
 const subscribe = <T>(sub: Subscriber<T>, storeName: string, data: T | null = null) => {
-	if (typeof sub === "function") {
+	if (TC.function(sub)) {
 		subs[storeName].add(sub as Subscriber<unknown>);
 		sub(data);
 		
@@ -23,6 +23,12 @@ const subscribe = <T>(sub: Subscriber<T>, storeName: string, data: T | null = nu
 	throw new Error(`Invalid store subscribe handler. Received "${sub}" but expected a function.`)
 }
 
+/**
+ * a simple store that allows anything to be stored
+ * @param name
+ * @param data
+ * @param mapper
+ */
 export const store = <T>(name: string, data: T | null = null, mapper: (val: T) => T = v => v): Store<T> => {
 	if (stores[name]) {
 		throw new Error(`Store "${name}" already exists. Stores must be unique.`)
@@ -51,7 +57,7 @@ export const store = <T>(name: string, data: T | null = null, mapper: (val: T) =
 }
 
 const getItemIdValue = <T>(item: T, identifierName = "id"): ListStoreItemID | null => {
-	if (item && typeof item === "object" && item.hasOwnProperty(identifierName)) {
+	if (TC.object(item) && item.hasOwnProperty(identifierName)) {
 		// @ts-ignore
 		return item[identifierName] ?? null;
 	}

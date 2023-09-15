@@ -1,4 +1,5 @@
 import {Config, ShadowRootMode} from "./types";
+import {TC} from "./utils";
 
 const defaultOptions: Config = {
 	mode: ShadowRootMode.OPEN,
@@ -16,13 +17,14 @@ export function updateConfig(opt: Partial<Config> = defaultOptions) {
 					: ShadowRootMode.OPEN;
 				break;
 			case "delegatesFocus":
-				defaultOptions.delegatesFocus = typeof opt.delegatesFocus === "boolean" ? opt.delegatesFocus : false;
+				defaultOptions.delegatesFocus = TC.boolean(opt.delegatesFocus) ? opt.delegatesFocus : false;
 				break;
 			case "lang":
 				defaultOptions.lang = String(opt.lang);
 				break;
 			case "onError":
-				defaultOptions.onError = typeof opt.onError === "function" ? opt.onError : console.error;
+				// @ts-ignore
+				defaultOptions.onError = TC.function(opt.onError) ? opt.onError : console.error;
 				break;
 		}
 	}

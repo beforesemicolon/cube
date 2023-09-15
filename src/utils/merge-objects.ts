@@ -1,19 +1,26 @@
-const isObject = (value: unknown) => value !== null && typeof value === 'object';
+import {TC} from "./type-check";
 
-export function mergeObjects(a: unknown, b: unknown) {
-	if(!isObject(a) || !isObject(b)) return b ?? {};
+const isObjectLiteralOrArray = (value: any) => TC.objectLiteral(value) || TC.array(value);
+
+/**
+ * merge object literal or array in place unless newObj is true (false by default)
+ * @param a
+ * @param b
+ * @param newObj
+ */
+export function mergeObjects(a: any, b: any, newObj = false) {
+	if (!isObjectLiteralOrArray(a) || !isObjectLiteralOrArray(b)) return b ?? a;
 	
-	// @ts-ignore
-	const obj = Array.isArray(a) ? [...a] : {...a};
+	if (newObj) {
+		a = TC.array(a) ? [...a] : {...a};
+	}
 	
-	// @ts-ignore
-	for(const key in b) {
-		// @ts-ignore
-		if(b.hasOwnProperty(key)) {
+	for (const key in b) {
+		if (b.hasOwnProperty(key)) {
 			// @ts-ignore
-			obj[key] = mergeObjects(obj[key], b[key]);
+			a[key] = mergeObjects(a[key], b[key]);
 		}
 	}
 	
-	return obj;
+	return a;
 }

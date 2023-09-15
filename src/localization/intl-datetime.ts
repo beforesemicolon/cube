@@ -1,7 +1,7 @@
 import {Props, Cube, ShadowRootMode} from "../types";
 import {isValidDate} from './utils/is-valid-date';
 import {config} from "../config";
-import {conditionalField} from "../utils";
+import {conditionalField, TC} from "../utils";
 
 interface IntlDatetimeProps {
 	hour12: boolean | undefined;
@@ -79,9 +79,9 @@ export default ({register, host, template}: Cube) => {
 			const value = props.value() || content || Date.now();
 			
 			try {
-				const date = typeof value == "string" || typeof value == "number"
-					? !isNaN(Number(value)) ? new Date(Number(value)) : new Date(value)
-					: value as Date;
+				const date = TC.string(value) || TC.numeric(value)
+					? TC.numeric(value) ? new Date(Number(value)) : new Date(value)
+					: value;
 				
 				if (!isValidDate(date)) {
 					throw new Error('Invalid Date')

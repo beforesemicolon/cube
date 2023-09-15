@@ -1,11 +1,11 @@
-import {Cube, Props} from "../../types";
+import {Cube, ObjectLiteral, Props} from "../../types";
 import {isOnPage} from "../utils/is-on-page";
 import {onPageChange, goToPage} from "../pages";
 
 interface PageLinkProps {
 	path: string;
 	title: string;
-	state: Record<string, unknown>;
+	state: ObjectLiteral;
 }
 
 export default ({eventDispatch, onMount, register, template, useValue}: Cube) => {

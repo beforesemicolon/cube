@@ -1,6 +1,7 @@
 import {element, HtmlTemplate} from "@beforesemicolon/html";
 import {register} from "../cube";
 import {ComponentOptions, FnComponent, ShadowRootMode, Style} from "../types";
+import {TC} from "../utils";
 
 const defaultOptions: ComponentOptions = {
 	mode: ShadowRootMode.OPEN,
@@ -49,7 +50,7 @@ class ComponentControl {
 	 * removes the target element from the DOM (only if it's an HTMLElement)
 	 */
 	unmount() {
-		if (this.target instanceof HTMLElement) {
+		if (TC.type(this.target, HTMLElement)) {
 			this.target.remove();
 		}
 	}
@@ -63,18 +64,19 @@ export const render = async <P extends Record<string, any>>(
 	document.body.innerHTML = '';
 	let target: HTMLElement = document.body;
 	
-	if (typeof el === 'function') {
+	if (TC.function(el)) {
+		// @ts-ignore
 		const {tagName} = register<P>(el, props, styleOrOptions, opt);
 		
 		target = element(tagName) as HTMLElement;
 		document.body.appendChild(target);
-	} else if (el instanceof HtmlTemplate) {
-		el.render(document.body)
-	} else if (typeof el === 'string') {
+	} else if (TC.type(el, HtmlTemplate)) {
+		(el as HtmlTemplate).render(document.body)
+	} else if (TC.string(el)) {
 		document.body.innerHTML = el;
-	} else if (el instanceof Node) {
+	} else if (TC.type(el, Node)) {
 		document.body.appendChild(el);
-		if (el instanceof HTMLElement) {
+		if (TC.type(el, HTMLElement)) {
 			target = el;
 		}
 	}

@@ -1,6 +1,7 @@
 import {turnCamelToKebabCasing} from "@beforesemicolon/html/dist/utils";
 import {replaceCssHost} from "./replace-css-host";
 import {StylesheetObject} from "../types";
+import {TC} from "./type-check";
 
 type callback = (str: string | null, declaration?: string) => void
 
@@ -17,15 +18,15 @@ export function JSONToCSS(obj: Record<string, any>, tagName: string, hasShadowRo
 function getPropertyCSS(prop: string, value: StylesheetObject | number | string | Record<string, any>, parentProp: string, cb: callback) {
 	prop = prop.trim();
 	
-	value = typeof value === "number" ? value + 'px' : value;
+	value = TC.number(value) ? value + 'px' : value;
 	
 	if(prop.startsWith('&')) {
 		cb(null, createPropertyBody(prop.replace(/&/g, parentProp), value as Record<string, any>));
 	} else if(prop.startsWith('@')) {
 		cb(null, createPropertyBody(prop, value as Record<string, any>))
-	} else if(typeof value === 'object') {
+	} else if(TC.objectLiteral(value)) {
 		if (parentProp.startsWith('@')) {
-			cb(createPropertyBody(prop, value))
+			cb(createPropertyBody(prop, value as Record<string, any>))
 		} else if(/^[^+~>]/i.test(prop)) {
 			const selector = parentProp
 				.split(',')
@@ -33,7 +34,7 @@ function getPropertyCSS(prop: string, value: StylesheetObject | number | string 
 				.join(', ')
 				.trim();
 
-			cb(null, createPropertyBody(selector, value))
+			cb(null, createPropertyBody(selector, value as Record<string, any>))
 		}
 	} else if(prop.startsWith('--')) { // CSS variables
 		cb(`${prop}: ${value};`);

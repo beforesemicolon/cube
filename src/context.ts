@@ -1,4 +1,5 @@
 import {CurrentComponent, Context, ContextModel} from "./types";
+import {TC} from "./utils";
 
 const CONTEXT: WeakMap<HTMLElement, Context<unknown>> = new WeakMap();
 
@@ -10,8 +11,8 @@ const getContextHost = (name: string, ancestor: HTMLElement) => {
 			break;
 		}
 		
-		if (ancestor instanceof ShadowRoot) {
-			ancestor = ancestor.host as HTMLElement;
+		if (TC.type(ancestor, ShadowRoot)) {
+			ancestor = (ancestor as unknown as ShadowRoot).host as HTMLElement;
 		}
 		
 		const host = CONTEXT.get(ancestor);

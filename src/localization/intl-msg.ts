@@ -1,4 +1,4 @@
-import {Cube, Props} from "../types";
+import {Cube, ObjectLiteral, Props} from "../types";
 import {config} from "../config";
 
 interface IntlMsgProps {
@@ -12,7 +12,7 @@ export default ({register, html, template, element, useContext, host}: Cube) => 
 		const comp = host();
 		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		
-		const msgs = useContext<Record<string, unknown>>("intl-msg");
+		const msgs = useContext<ObjectLiteral>("intl-msg");
 		
 		const msg = () => {
 			if (msgs.value() === null) {

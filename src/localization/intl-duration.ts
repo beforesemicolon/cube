@@ -1,4 +1,4 @@
-import {Props, Cube, ShadowRootMode} from "../types";
+import {Props, Cube, ShadowRootMode, ObjectLiteral} from "../types";
 import {millisecondsToTimeParts} from "./utils/milliseconds-to-time-parts";
 import {config} from "../config";
 
@@ -13,7 +13,7 @@ interface IntlDurationProps {
 export default ({register, host, template, useContext}: Cube) => {
 	const IntlDuration = (props: Props<IntlDurationProps>) => {
 		const comp = host();
-		const msgsctx = useContext<Record<string, unknown>>("intl-msg", true);
+		const msgsctx = useContext<ObjectLiteral>("intl-msg", true);
 		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		const content = comp.textContent;
 		const name = new Intl.DisplayNames(locale.language, {

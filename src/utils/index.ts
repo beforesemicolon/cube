@@ -3,3 +3,4 @@ export * from "./get-style-string";
 export * from "./json-to-css";
 export * from "./merge-objects";
 export * from "./replace-css-host";
+export * from "./type-check";
