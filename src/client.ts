@@ -16,6 +16,7 @@ import {
 	createContext,
 	onContextUpdate
 } from "./cube";
+import {TC} from './utils';
 import {config, updateConfig} from './config';
 
 if (window) {
@@ -24,6 +25,7 @@ if (window) {
 		// @ts-ignore
 		...(window.BFS || {}),
 		Cube: {
+			TC,
 			register,
 			config,
 			updateConfig,

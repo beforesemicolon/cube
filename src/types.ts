@@ -1,5 +1,6 @@
 import {HtmlTemplate, repeat, html, when, element} from "@beforesemicolon/html";
 import {eventDispatch, host, onAdoption, onDestroy, onMount, register, template, useValue, createContext, useContext} from "./cube";
+import {TC} from './utils/type-check';
 
 export interface StylesheetObject {
 	[k: string]: Partial<CSSStyleDeclaration> | StylesheetObject | number
@@ -27,6 +28,7 @@ export interface Config extends ComponentOptions {
 	onError: (e: Error) => void
 }
 
+export type ObjectLiteral = Record<string, unknown>;
 export interface CurrentComponent {
 	destroy: (() => void) | null;
 	mount: (() => void | (() => void)) | null;
@@ -66,6 +68,7 @@ export interface Cube {
 	createContext: typeof createContext;
 	useContext: typeof useContext;
 	HtmlTemplate: HtmlTemplate;
+	TC: typeof TC;
 }
 
 export type Subscriber<T> = (data: T | null) => void
