@@ -6,7 +6,16 @@ import {
 	turnKebabToCamelCasing
 } from "@beforesemicolon/html/dist/utils";
 import {getStyleString, JSONToCSS, TC} from "./utils";
-import {ComponentOptions, CurrentComponent, FnComponent, Props, ShadowRootMode, Style, Stylesheet} from "./types";
+import {
+	ComponentOptions,
+	CurrentComponent,
+	FnComponent,
+	ObjectLiteral,
+	Props,
+	ShadowRootMode,
+	Style,
+	Stylesheet
+} from "./types";
 import {config} from './config';
 import initContext from "./context";
 
@@ -15,12 +24,16 @@ const CTX = initContext(() => currentComponent)
 
 export const {useContext, createContext, onContextUpdate} = CTX;
 
-export function register<P extends Record<string, any>>(
+export function register<P extends ObjectLiteral>(
 	comp: FnComponent<P>,
 	props: P = {} as P,
 	styleOrOptions: Style<P> | ComponentOptions = config,
 	opt: ComponentOptions = config
 ) {
+	if (!TC.objectLiteral(props)) {
+		props = {} as P
+	}
+	
 	const isStyle = TC.function(styleOrOptions);
 	const stylesheet = (isStyle ? styleOrOptions : undefined) as Style<P>;
 	const {mode = config.mode, delegatesFocus = config.delegatesFocus} = (isStyle ? opt : styleOrOptions) as ComponentOptions;
@@ -93,6 +106,10 @@ export const onAdoption = (cb: () => void) => {
 	}
 }
 
+/**
+ * sets a listener for any error that happens after its setting
+ * @param cb
+ */
 export const onError = (cb: (err: Error) => void) => {
 	if (currentComponent) {
 		currentComponent.error = cb;
@@ -164,7 +181,6 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 	
 	if (!CLS) {
 		class WebComponent extends HTMLElement {
-			// @ts-ignore
 			static observedAttributes: Array<string> = Object.keys(props).map(turnCamelToKebabCasing);
 			static readonly tagName = tagName;
 			#renderedBefore = false;
@@ -217,13 +233,7 @@ function createComponentClass<P extends Record<string, any>>(tagName: string, {
 				const style = this.getStyle();
 				
 				if (this.#styleElement) {
-					const div = document.createElement("div");
-					div.innerHTML = style;
-					const styleEl = document.head.querySelector(`[class="${tagName.toLowerCase()}"]`) as HTMLStyleElement;
-					
-					if (styleEl) {
-						this.#styleElement.textContent = styleEl.textContent;
-					}
+					this.#styleElement.outerHTML = style;
 				}
 			}
 			
