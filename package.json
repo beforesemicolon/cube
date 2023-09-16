@@ -41,6 +41,6 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@beforesemicolon/html": "file:../html/beforesemicolon-html-0.1.23.tgz"
+    "@beforesemicolon/html": "^0.1.25"
   }
 }
