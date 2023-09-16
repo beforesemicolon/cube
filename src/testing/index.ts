@@ -1,6 +1,6 @@
 import {element, HtmlTemplate} from "@beforesemicolon/html";
 import {register} from "../cube";
-import {ComponentOptions, FnComponent, ShadowRootMode, Style} from "../types";
+import {ComponentOptions, FnComponent, ObjectLiteral, ShadowRootMode, Style, WebComponent} from "../types";
 import {TC} from "../utils";
 
 const defaultOptions: ComponentOptions = {
@@ -8,8 +8,8 @@ const defaultOptions: ComponentOptions = {
 	delegatesFocus: false
 }
 
-class ComponentControl {
-	constructor(public target: HTMLElement) {
+class ComponentControl<P extends ObjectLiteral> {
+	constructor(public target: WebComponent<P>) {
 	}
 	
 	/**
@@ -32,7 +32,7 @@ class ComponentControl {
 	 * finds elements inside the target element (only if it's an HTMLElement)
 	 * @param cssSelector
 	 */
-	find(cssSelector: string): ComponentControl[] {
+	find(cssSelector: string): ComponentControl<P>[] {
 		// @ts-ignore
 		return Array.from((this.target.__ROOT__ ?? this.target).querySelectorAll(cssSelector), el => new ComponentControl(el as HTMLElement));
 	}
@@ -56,11 +56,11 @@ class ComponentControl {
 	}
 }
 
-export const render = async <P extends Record<string, any>>(
+export const render = async <P extends ObjectLiteral>(
 	el: Element | HTMLElement | Node | HtmlTemplate | string | FnComponent<P>,
 	props: P = {} as P,
 	styleOrOptions: Style<P> | ComponentOptions = {},
-	opt: ComponentOptions = defaultOptions): Promise<ComponentControl> => {
+	opt: ComponentOptions = defaultOptions): Promise<ComponentControl<P>> => {
 	document.body.innerHTML = '';
 	let target: HTMLElement = document.body;
 	
@@ -83,7 +83,7 @@ export const render = async <P extends Record<string, any>>(
 	
 	await new Promise(process.nextTick);
 	
-	return new ComponentControl(target as HTMLElement)
+	return new ComponentControl(target as WebComponent<P>)
 }
 
 export const waitFor = async <T>(cb: () => Promise<T> | T, timeout = 0): Promise<T> => {

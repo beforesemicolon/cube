@@ -66,7 +66,6 @@ export default ({register, host, template}: Cube) => {
 			
 			const fomatter = new Intl.DateTimeFormat(props.locale() || locale.language, {
 				hour12: props.hour12(),
-				// @ts-ignore
 				...conditionalField('calendar', props.calendar()),
 				...conditionalField('hourCycle', props.hourCycle()),
 				...conditionalField('timeStyle', props.timeStyle()),

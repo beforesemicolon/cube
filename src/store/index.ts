@@ -1,4 +1,4 @@
-import {Subscriber, Store, ListStore, ListStoreItemID} from "../types";
+import {Subscriber, Store, ListStore, ListStoreItemID, ObjectLiteral} from "../types";
 import {TC, mergeObjects} from "../utils";
 
 const subs: Record<string, Set<Subscriber<any>>> = {};
@@ -56,16 +56,15 @@ export const store = <T>(name: string, data: T | null = null, mapper: (val: T) =
 	return stores[name] as Store<T>;
 }
 
-const getItemIdValue = <T>(item: T, identifierName = "id"): ListStoreItemID | null => {
-	if (TC.object(item) && item.hasOwnProperty(identifierName)) {
-		// @ts-ignore
+const getItemIdValue = <T extends ObjectLiteral>(item: T, identifierName = "id"): ListStoreItemID | null => {
+	if (TC.objectLiteral(item) && item.hasOwnProperty(identifierName)) {
 		return item[identifierName] ?? null;
 	}
 	
 	return null
 }
 
-export const listStore = <T>(name: string, data: Array<T> = [], identifierName = "id"): ListStore<T> => {
+export const listStore = <T extends ObjectLiteral>(name: string, data: Array<T> = [], identifierName = "id"): ListStore<T> => {
 	if (stores[name]) {
 		throw new Error(`Store "${name}" already exists. Stores must be unique.`)
 	}

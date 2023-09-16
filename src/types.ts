@@ -28,7 +28,7 @@ export interface Config extends ComponentOptions {
 	onError: (e: Error) => void
 }
 
-export type ObjectLiteral = Record<string, unknown>;
+export type ObjectLiteral = Record<string, any>;
 export interface CurrentComponent {
 	destroy: (() => void) | null;
 	mount: (() => void | (() => void)) | null;
@@ -51,6 +51,10 @@ export interface ContextModel<T> {
 }
 
 export type Context<T> = Record<string, ContextModel<T>>;
+
+export type WebComponent<P extends ObjectLiteral> = HTMLElement & {
+	[key in keyof P]: P[string];
+};
 
 export interface Cube {
 	register: typeof register;
