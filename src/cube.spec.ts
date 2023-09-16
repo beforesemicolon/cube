@@ -8,31 +8,35 @@ import {
 	onMount,
 	onUpdate,
 	register,
-	template,
+	template, useContext, createContext, onContextUpdate,
 	useValue
 } from "./cube";
 import {updateConfig} from './config';
 import {Props, ShadowRootMode} from "./types";
 import {element, html} from "@beforesemicolon/html";
-import {render} from './testing';
+import {render, wait, waitFor} from './testing';
 
 describe('cube', () => {
+	const onErrorMock = jest.fn();
 	
 	beforeEach(() => {
+		onErrorMock.mockClear();
 		updateConfig({
 			mode: ShadowRootMode.OPEN,
 			delegatesFocus: false,
 			lang: 'en',
-			onError: console.error
+			onError: onErrorMock
 		})
 	})
 	
 	it('should register component', () => {
 		jest.spyOn(customElements, 'define');
 		
-		const MyComponent = () => {};
+		const MyComponent = () => {
+		};
 		
-		const res = register(MyComponent);
+		// @ts-ignore
+		const res = register(MyComponent, null);
 		
 		const calls = (customElements.define as jest.Mock).mock.calls;
 		
@@ -41,9 +45,12 @@ describe('cube', () => {
 	});
 	
 	it('should update config', () => {
-		const OneComponent = () => {};
-		const TwoComponent = () => {};
-		const ThreeComponent = () => {};
+		const OneComponent = () => {
+		};
+		const TwoComponent = () => {
+		};
+		const ThreeComponent = () => {
+		};
 		
 		updateConfig({
 			mode: ShadowRootMode.NONE
@@ -72,20 +79,22 @@ describe('cube', () => {
 	});
 	
 	it('should handle lifecycles', async () => {
+		const initMock = jest.fn();
 		const mountMock = jest.fn();
 		const destroyMock = jest.fn();
 		const adoptionMock = jest.fn();
 		const updateMock = jest.fn();
 		const domUpdateMock = jest.fn();
-
+		
 		interface ButtonProps {
 			type: "button" | "submit";
 			label: string;
 		}
-
+		
 		const MyButton = ({type, label}: Props<ButtonProps>) => {
+			initMock();
 			template`<button type="${type}">${label}</button>`
-
+			
 			onMount(mountMock)
 			onUpdate(updateMock)
 			onDOMUpdate(domUpdateMock)
@@ -94,15 +103,15 @@ describe('cube', () => {
 			onAdoption(adoptionMock)
 		}
 		
-		const res = await render(MyButton, {type: "button", label: "click me"})
-
+		const res = await render<ButtonProps>(MyButton, {type: "button", label: "click me"})
+		
 		expect(`${res}`).toBe('<my-button></my-button>')
 		expect(res.content).toBe('<button type="button">click me</button>')
-
+		
 		expect(mountMock).toHaveBeenCalledTimes(1);
 		
 		res.target?.setAttribute("type", "submit");
-
+		
 		expect(res.content).toBe('<button type="submit">click me</button>')
 		expect(updateMock).toHaveBeenCalledTimes(1);
 		
@@ -110,27 +119,56 @@ describe('cube', () => {
 		
 		expect(res.content).toBe('<button type="submit">clicked</button>')
 		expect(updateMock).toHaveBeenCalledTimes(2);
-
+		
 		const iframe = element('iframe') as HTMLIFrameElement;
 		document.body.appendChild(iframe);
-
+		
 		iframe.contentDocument?.body.appendChild(res.target as Element)
-
+		
 		expect(destroyMock).toHaveBeenCalledTimes(1);
 		expect(adoptionMock).toHaveBeenCalledTimes(1);
 		expect(mountMock).toHaveBeenCalledTimes(2);
-
+		
 		res.target?.remove()
-
+		
 		expect(destroyMock).toHaveBeenCalledTimes(2);
+		expect(initMock).toHaveBeenCalledTimes(1);
 	});
 	
-	it('should use onMount returned function as onDestroy', () => {
-	
+	it('should use onMount returned function as onDestroy', async () => {
+		const mountMock = jest.fn();
+		const destroyMock = jest.fn();
+		const DestroyComp = () => {
+			onMount(() => {
+				mountMock();
+				return destroyMock
+			})
+		}
+		
+		const res = await render(DestroyComp);
+		
+		res.unmount();
+		
+		expect(mountMock).toHaveBeenCalledTimes(1);
+		expect(destroyMock).toHaveBeenCalledTimes(1);
 	});
 	
-	it('should handle props update via element reference', () => {
-	
+	it('should handle props update via element reference', async () => {
+		const updateMock = jest.fn();
+		const ValComp = () => {
+			onUpdate(updateMock)
+		}
+		
+		const res = await render<{ val: number }>(ValComp, {val: 12});
+		
+		expect(res.target.val).toBe(12);
+		
+		res.target.val = 20;
+		
+		expect(res.target.val).toBe(20);
+		
+		expect(updateMock).toHaveBeenCalledTimes(1);
+		expect(updateMock).toHaveBeenCalledWith("val", 20, 12);
 	});
 	
 	it('should handle error with onError', async () => {
@@ -161,7 +199,7 @@ describe('cube', () => {
 		await render(GlobalErrorComponent)
 		
 		expect(errMock).toHaveBeenCalledWith(new Error("Failed"))
-	
+		
 	});
 	
 	it('should dispatch event with eventDispatch', async () => {
@@ -204,7 +242,8 @@ describe('cube', () => {
 	it('should render content with template', async () => {
 		const RenderComponent = () => {
 			const el = element("p", {textContent: "sample"})
-			const markup = html`<div>content</div>`
+			const markup = html`
+				<div>content</div>`
 			
 			template`${el}<button>click me</button>${markup}`
 		}
@@ -229,58 +268,180 @@ describe('cube', () => {
 	});
 	
 	describe('should catch errors in', () => {
-		it('style handler', () => {});
-		it('prop update', () => {});
-		it('mount handler', () => {});
-		it('dom update handler', () => {});
-		it('destroy handler', () => {});
-		it('adoption handler', () => {});
-		it('context setup', () => {});
+		it('style handler', async () => {
+			const StyleError = () => {}
+			
+			await render(StyleError, {}, () => {
+				throw new Error('err in style');
+			})
+			
+			expect(onErrorMock).toHaveBeenCalledWith(new Error('err in style'));
+		});
+		
+		it('prop update', async () => {
+			const UpdateError = () => {
+				onUpdate(() => {
+					throw new Error('err in update');
+				})
+			}
+			
+			const cont = await render(UpdateError, {x: 10})
+			
+			cont.target.x = 20;
+			
+			expect(onErrorMock).toHaveBeenCalledWith(new Error('err in update'));
+		});
+		
+		it('mount handler', async () => {
+			const MountError = () => {
+				onMount(() => {
+					throw new Error('err in mount');
+				})
+			}
+			
+			await render(MountError)
+			
+			expect(onErrorMock).toHaveBeenCalledWith(new Error('err in mount'));
+		});
+		
+		it.skip('dom update handler', async () => {
+			const DOMUpdateError = (props: Props<{ x: number }>) => {
+				onDOMUpdate(() => {
+					throw new Error('err in dom update');
+				})
+				
+				template`${props.x}`
+			}
+			
+			const cont = await render(DOMUpdateError, {x: 10})
+			
+			cont.target.x = 20;
+			
+			expect(onErrorMock).toHaveBeenCalledWith(new Error('err in update'));
+		});
+		
+		it('destroy handler', async () => {
+			const DestroyError = () => {
+				onDestroy(() => {
+					throw new Error('err in destroy');
+				})
+			}
+			
+			const cont = await render(DestroyError)
+			
+			cont.unmount();
+			
+			expect(onErrorMock).toHaveBeenCalledWith(new Error('err in destroy'));
+		});
+		
+		it('adoption handler', async () => {
+			const AdoptionError = () => {
+				onAdoption(() => {
+					throw new Error('err in adoption');
+				})
+			}
+			
+			const cont = await render(AdoptionError)
+			
+			const iframe = element('iframe') as HTMLIFrameElement;
+			document.body.appendChild(iframe);
+			
+			iframe.contentDocument?.body.appendChild(cont.target)
+			
+			expect(onErrorMock).toHaveBeenCalledWith(new Error('err in adoption'));
+		});
 	})
-
+	
 	describe("should throw error if", () => {
 		it('function with no name is provided to register', () => {
-			expect(() => register(() => {})).toThrowError('Component render function must have a name')
+			expect(() => register(() => {
+			})).toThrowError('Component render function must have a name')
 		});
 		
 		it('onDestroy is used outside component', () => {
-			expect(() => onDestroy(() => {})).toThrowError('Must NOT use "onDestroy" lifecycle outside of a component')
+			expect(() => onDestroy(() => {
+			})).toThrowError('Must NOT use "onDestroy" lifecycle outside of a component')
 		});
-
+		
 		it('onMount is used outside component', () => {
-			expect(() => onMount(() => {})).toThrowError('Must NOT use "onMount" lifecycle outside of a component')
+			expect(() => onMount(() => {
+			})).toThrowError('Must NOT use "onMount" lifecycle outside of a component')
 		});
-
+		
 		it('onUpdate is used outside component', () => {
-			expect(() => onUpdate(() => {})).toThrowError('Must NOT use "onUpdate" lifecycle outside of a component')
+			expect(() => onUpdate(() => {
+			})).toThrowError('Must NOT use "onUpdate" lifecycle outside of a component')
 		});
 		
 		it('onDOMUpdate is used outside component', () => {
-			expect(() => onDOMUpdate(() => {})).toThrowError('Must NOT use "onDOMUpdate" lifecycle outside of a component')
+			expect(() => onDOMUpdate(() => {
+			})).toThrowError('Must NOT use "onDOMUpdate" lifecycle outside of a component')
 		});
 		
 		it('onAdoption is used outside component', () => {
-			expect(() => onAdoption(() => {})).toThrowError('Must NOT use "onAdoption" lifecycle outside of a component')
+			expect(() => onAdoption(() => {
+			})).toThrowError('Must NOT use "onAdoption" lifecycle outside of a component')
 		});
-
+		
 		it('onError is used outside component', () => {
-			expect(() => onError(() => {})).toThrowError('Must NOT use "onError" lifecycle outside of a component')
+			expect(() => onError(() => {
+			})).toThrowError('Must NOT use "onError" lifecycle outside of a component')
 		});
-
+		
 		it('template is used outside component', () => {
 			expect(() => template`sample`).toThrowError('Must NOT use "template" outside of a component')
 		});
-
+		
+		it('useContext is used outside component', () => {
+			expect(() => useContext('sample')).toThrowError('Must NOT use "useContext" outside of a component')
+		});
+		
+		it('createContext is used outside component', () => {
+			expect(() => createContext('sample', {})).toThrowError('Must NOT use "createContext" outside of a component')
+		});
+		
+		it('onContextUpdate is used outside component', () => {
+			expect(() => onContextUpdate(() => {})).toThrowError('Must NOT use "onContextUpdate" lifecycle outside of a component')
+		});
+		
 		it('eventDispatch is used outside component', () => {
 			expect(() => eventDispatch()).toThrowError('Must NOT use "eventDispatch" outside of a component')
 		});
-
+		
 		it('useValue is used outside component', () => {
 			expect(() => useValue(12)).toThrowError('Must NOT use "useValue" outside of a component')
 		});
 		
 		it('host is used outside component', () => {
 			expect(() => host()).toThrowError('Must NOT use "host" outside of a component')
+		});
+		
+		it('context with same name already exists', async () => {
+			const InvalidCtx = () => {
+				const ctx1 = createContext('ctx1', {});
+				const ctx2 = createContext('ctx1', {});
+			}
+			
+			await render(InvalidCtx);
+			
+			expect(onErrorMock).toHaveBeenCalledWith(new Error('A context named "ctx1" already exists for this component'))
+		});
+		
+		it('component is not in context', async () => {
+			const NotInCtxOne = () => {
+				const ctx1 = useContext('ctx');
+				
+				template`${ctx1.value}`;
+			}
+			
+			const WrapperCtxComp = () => {
+				template`<not-in-ctx></not-in-ctx>`;
+			}
+			
+			await render(NotInCtxOne);
+			await render(WrapperCtxComp);
+			
+			expect(onErrorMock).toHaveBeenCalledWith(new Error('Component "NOT-IN-CTX-ONE" is not in context of "ctx"'))
 		});
 	})
 	
@@ -348,12 +509,35 @@ describe('cube', () => {
 			.toBe('<style class="json-global-component">json-global-component {display: block;}</style>');
 	});
 	
-	it('should update style on props change', () => {
-	
+	it('should update style on props change', async () => {
+		interface CompProps {
+			disabled: boolean;
+		}
+		
+		const StyledCompStyle = jest.fn((props: Props<CompProps>) => {
+			return {
+				":host": {
+					opacity: props.disabled() ? 0.5 : 1
+				}
+			}
+		})
+		const StyledComp = () => {
+		}
+		
+		const cont = await render<CompProps>(StyledComp, {disabled: false}, StyledCompStyle);
+		
+		expect(StyledCompStyle).toHaveBeenCalledTimes(1)
+		
+		expect(cont.content).toBe('<style class="styled-comp">:host {opacity: 1px;}</style>')
+		
+		cont.target.disabled = true;
+		
+		expect(StyledCompStyle).toHaveBeenCalledTimes(2)
+		expect(cont.content).toBe('<style class="styled-comp">:host {opacity: 0.5px;}</style>')
 	});
 	
 	it('should handle passing primitive to a component', async () => {
-		const ChildComp = ({val}: Props<{val: number}>) => {
+		const ChildComp = ({val}: Props<{ val: number }>) => {
 			template`${val}`
 		}
 		
@@ -361,7 +545,7 @@ describe('cube', () => {
 			template`<child-comp val="12"></child-comp>`
 		}
 		
-	  register(ChildComp, {val: 0});
+		register(ChildComp, {val: 0});
 		
 		const parent = await render(ParentComp)
 		
@@ -370,7 +554,7 @@ describe('cube', () => {
 	});
 	
 	it('should handle passing non-primitive to a component', async () => {
-		const DeepComp = ({val}: Props<{val: {sample: string}}>) => {
+		const DeepComp = ({val}: Props<{ val: { sample: string } }>) => {
 			template`${() => val().sample}`
 		}
 		
@@ -378,7 +562,7 @@ describe('cube', () => {
 			template`<deep-comp val="${{sample: 12}}"></deep-comp>`
 		}
 		
-		register<{val: {sample: string}}>(DeepComp, {
+		register<{ val: { sample: string } }>(DeepComp, {
 			val: {
 				sample: ""
 			}
@@ -394,7 +578,8 @@ describe('cube', () => {
 		
 		const RefComponent = () => {
 			const el = element("p", {textContent: "sample"})
-			const markup = html`<div ref="content">content</div>`
+			const markup = html`
+				<div ref="content">content</div>`
 			
 			const temp = template`${el}<button ref="btn">click me</button>${markup}`;
 			
@@ -411,12 +596,83 @@ describe('cube', () => {
 		})
 	});
 	
-	it('should handle context', () => {
+	describe('should handle context', () => {
+		const CtxUserComp = () => {
+			const ctx = useContext("sample");
+			
+			template`<button onclick="${() => ctx.update(20)}">${ctx.value}</button>`;
+		}
+		
+		register(CtxUserComp);
+		
+		it('if readonly', async () => {
+			const CtxReadComp = () => {
+				const ctx = createContext("sample", 12);
+			}
+			
+			register(CtxReadComp);
+			
+			const cont = await render(html`<ctx-read-comp><ctx-user-comp></ctx-user-comp></ctx-read-comp>`);
+			
+			const ctxUserCompBtn = cont.find('ctx-user-comp')[0].find('button')[0];
+			
+			expect(ctxUserCompBtn.content).toBe('12');
+			
+			ctxUserCompBtn.target.click();
+			
+			expect(ctxUserCompBtn.content).toBe('12');
+		});
+		
+		it('if writable', async () => {
+			const ctxUpdateMock = jest.fn();
+			const CtxWriteComp = () => {
+				const ctx = createContext("sample", 12, {readonly: false});
+				
+				onContextUpdate(ctxUpdateMock)
+				
+				template`${ctx.value}`;
+			}
+			
+			register(CtxWriteComp);
+			
+			const cont = await render(html`<ctx-write-comp><ctx-user-comp></ctx-user-comp></ctx-write-comp>`);
+			
+			const ctxComp = cont.find('ctx-write-comp')[0];
+			const ctxUserCompBtn = cont.find('ctx-user-comp')[0].find('button')[0];
+			
+			expect(ctxComp.content).toBe('12');
+			expect(ctxUserCompBtn.content).toBe('12');
+			
+			ctxUserCompBtn.target.click();
+			
+			expect(ctxComp.content).toBe('12');
+			expect(ctxUserCompBtn.content).toBe('20');
+			expect(ctxUpdateMock).toHaveBeenCalledWith("sample", 20, 12)
+		});
+		
+		it('if reactive', async () => {
+			const CtxReactiveComp = () => {
+				const ctx = createContext("sample", 12, {readonly: false, reactive: true});
+				
+				template`${ctx.value}`;
+			}
+			
+			register(CtxReactiveComp);
+			
+			const cont = await render(html`<ctx-reactive-comp><ctx-user-comp></ctx-user-comp></ctx-reactive-comp>`);
+			
+			const ctxComp = cont.find('ctx-reactive-comp')[0];
+			const ctxUserCompBtn = cont.find('ctx-user-comp')[0].find('button')[0];
+			
+			expect(ctxComp.content).toBe('12');
+			expect(ctxUserCompBtn.content).toBe('12');
+			
+			ctxUserCompBtn.target.click();
+			
+			expect(ctxComp.content).toBe('20');
+			expect(ctxUserCompBtn.content).toBe('20');
+		});
+	})
 	
-	});
-	
-	it('should return a string representation of component content', () => {
-	
-	});
 })
 
