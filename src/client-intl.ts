@@ -1,4 +1,5 @@
 import initIntl from './localization';
+import {TC} from './utils';
 
 // @ts-ignore
 if (window) {
@@ -9,6 +10,7 @@ if (window) {
 		Cube: {
 			// @ts-ignore
 			...(window.BFS.Cube || {}),
+			TC,
 		}
 	}
 	

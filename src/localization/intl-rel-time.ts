@@ -1,5 +1,4 @@
 import {Props, Cube, ShadowRootMode} from "../types";
-import {isValidDate} from './utils/is-valid-date';
 import {ONE_HOUR_MS, ONE_MINUTE_MS, ONE_SECOND_MS, ONE_DAY_MS} from "./utils/time-in-miliseconds";
 import {config} from "../config";
 

@@ -1,4 +1,4 @@
-import {Props, Cube, ShadowRootMode, ObjectLiteral} from "../types";
+import {Cube, ObjectLiteral, Props} from "../types";
 import {config} from "../config";
 
 interface IntlPluralProps {

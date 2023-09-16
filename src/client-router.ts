@@ -1,4 +1,5 @@
 import initRouter, {goToPage, replacePage, previousPage, nextPage, onPageChange, isOnPage} from './router';
+import {TC} from './utils';
 
 // @ts-ignore
 if (window) {
@@ -14,7 +15,8 @@ if (window) {
 			previousPage,
 			nextPage,
 			onPageChange,
-			isOnPage
+			isOnPage,
+			TC
 		}
 	}
 	
