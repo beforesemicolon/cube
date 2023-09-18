@@ -5,9 +5,78 @@ import initLocale from './intl-locale';
 import {render} from "../testing";
 import {html} from "@beforesemicolon/html";
 
-initLocale(cube as unknown as Cube)
+const locale = initLocale(cube as unknown as Cube)
 
 describe('intl-locale', () => {
+	it('should return correct lang and msgs', () => {
+		expect(locale.lang).toBe('en');
+		expect(locale.messages).toEqual({
+			"cube-intl": {
+				"day": {
+					"narrow": "day",
+					"plural": "days",
+					"short": "day",
+					"single": "day"
+				},
+				"hour": {
+					"narrow": "h",
+					"plural": "hours",
+					"short": "hr",
+					"single": "hour"
+				},
+				"millisecond": {
+					"narrow": "ms",
+					"plural": "milliseconds",
+					"short": "mils",
+					"single": "millisecond"
+				},
+				"minute": {
+					"narrow": "min",
+					"plural": "minutes",
+					"short": "min",
+					"single": "minute"
+				},
+				"month": {
+					"narrow": "m",
+					"plural": "months",
+					"short": "month",
+					"single": "month"
+				},
+				"nanosecond": {
+					"narrow": "ns",
+					"plural": "nanoseconds",
+					"short": "nano",
+					"single": "nanosecond"
+				},
+				"plural": {
+					"few": "rd",
+					"many": "th",
+					"one": "st",
+					"other": "th",
+					"two": "nd",
+					"zero": "th"
+				},
+				"second": {
+					"narrow": "s",
+					"plural": "seconds",
+					"short": "sec",
+					"single": "second"
+				},
+				"week": {
+					"narrow": "week",
+					"plural": "weeks",
+					"short": "week",
+					"single": "week"
+				},
+				"year": {
+					"narrow": "yr",
+					"plural": "years",
+					"short": "year",
+					"single": "year"
+				}
+			}
+		});
+	});
 	it('should load translation file with src', async () => {
 		jest.spyOn(window, 'fetch').mockImplementationOnce(() => {
 			return Promise.resolve({

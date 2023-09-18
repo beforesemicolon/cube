@@ -1,10 +1,16 @@
 import {Cube} from "../types";
 import * as cube from '../cube';
-import initList from './intl-list';
+import initList, {IntlListProps} from './intl-list';
 import {render} from "../testing";
 import {html} from "@beforesemicolon/html";
+import {TC} from "../utils";
 
-initList(cube as unknown as Cube)
+const CUBE = {
+	...cube,
+	TC
+} as unknown as Cube
+
+const l = initList(CUBE)
 
 describe('intl-list', () => {
 	const items = ['book', 'pen', 'pencil'];
@@ -19,6 +25,7 @@ describe('intl-list', () => {
 			"book, pen, and pencil",
 			"book, pen, and pencil"
 		])
+		expect(l('en', items)).toEqual("book, pen, and pencil")
 	});
 	
 	it('should handle disjunctions', async () => {
@@ -31,6 +38,8 @@ describe('intl-list', () => {
 			"book, pen, or pencil",
 			"book, pen, or pencil"
 		])
+		expect(l('en', items, "or")).toEqual("book, pen, or pencil")
+		expect(l('en', items, "disjunction")).toEqual("book, pen, or pencil")
 	});
 	
 	it('should handle unit', async () => {
@@ -43,6 +52,8 @@ describe('intl-list', () => {
 			"book, pen, pencil",
 			"book, pen, pencil"
 		])
+		expect(l('en', items, "none")).toEqual("book, pen, pencil")
+		expect(l('en', items, "unit")).toEqual("book, pen, pencil")
 	});
 	
 	it('should handle style', async () => {
@@ -55,6 +66,11 @@ describe('intl-list', () => {
 		expect(cont.find('intl-list').map(d => d.content)).toEqual([
 			"book, pen, and pencil",
 			"book, pen, &amp; pencil",
+			"book, pen, pencil"
+		])
+		expect(["long", "short", "narrow"].map(style => l('en', items, "and", style as IntlListProps['style']))).toEqual([
+			"book, pen, and pencil",
+			"book, pen, & pencil",
 			"book, pen, pencil"
 		])
 	});

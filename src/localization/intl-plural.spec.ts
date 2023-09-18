@@ -4,16 +4,30 @@ import initPlural from './intl-plural';
 import {render} from "../testing";
 import {element, html} from "@beforesemicolon/html";
 import initLocale from "./intl-locale";
+import {TC} from '../utils';
 
 const CUBE = {
 	...cube,
-	html
+	html,
+	TC
 } as unknown as Cube
 
-initPlural(CUBE)
 initLocale(CUBE)
+const p = initPlural(CUBE)
 
 describe('intl-plural', () => {
+	const msgs = {
+		"cube-intl": {
+			plural: {
+				other: "th",
+				zero: "th",
+				one: "st",
+				two: "nd",
+				few: "rd",
+				many: "th",
+			}
+		}
+	}
 	beforeEach(() => {
 		jest.spyOn(window, 'fetch').mockImplementationOnce(() => {
 			return Promise.resolve({
@@ -37,6 +51,8 @@ describe('intl-plural', () => {
 			"",
 			""
 		])
+		// @ts-ignore
+		expect(p(msgs, 'en', 'simple', {zero: 'people', one: "person", other: 'person'})).toBe('')
 	});
 	
 	it('should render cardinal values', async () => {
@@ -52,6 +68,9 @@ describe('intl-plural', () => {
 			"people",
 			"person"
 		])
+		expect(p(msgs, 'en', 0, {zero: 'people', one: "person", other: 'people'})).toBe('people')
+		expect(p(msgs, 'en', 1, {zero: 'people', one: "person", other: 'people'})).toBe('person')
+		expect(p(msgs, 'en', 34, {zero: 'people', one: "person", other: 'people'})).toBe('people')
 	});
 	
 	it('should render ordinal values', async () => {
@@ -73,5 +92,11 @@ describe('intl-plural', () => {
 			'4<slot name="other">th</slot>',
 			'5<slot name="other">th</slot>'
 		])
+		
+		expect(p(msgs,'en', 1, {two: 'nd', one: "st", other: 'th'}, 'ordinal')).toBe('1st')
+		expect(p(msgs,'en', 2, {}, 'ordinal')).toBe('2nd')
+		expect(p(msgs,'en', 3, {}, 'ordinal')).toBe('3rd')
+		expect(p(msgs,'en', 4, {}, 'ordinal')).toBe('4th')
+		expect(p(msgs,'en', 5, {}, 'ordinal')).toBe('5th')
 	});
 })

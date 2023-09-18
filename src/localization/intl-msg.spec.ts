@@ -4,15 +4,17 @@ import initLocale from './intl-locale';
 import initMsg from './intl-msg';
 import {element, html} from "@beforesemicolon/html";
 import {render} from "../testing";
+import {TC} from "../utils";
 
 const CUBE = {
 	...cube,
 	element,
-	html
+	html,
+	TC
 } as unknown as Cube
 
 initLocale(CUBE)
-initMsg(CUBE)
+const m = initMsg(CUBE)
 
 describe('intl-msg', () => {
 	beforeEach(() => {
@@ -26,6 +28,13 @@ describe('intl-msg', () => {
 			} as Response)
 		});
 	})
+	
+	it('should handle translations correctly', () => {
+		expect(m({title: 'John Doe'}, 'title')).toBe('John Doe');
+		expect(m({name: 'John Doe'}, 'title')).toBe('title');
+		expect(m({greetings: 'Hello {name}'}, 'greetings')).toBe('Hello {name}');
+		expect(m({greetings: 'Hello {name}'}, 'greetings', {name: 'John Doe'})).toBe('Hello John Doe');
+	});
 	
 	it('should render text correctly', async () => {
 		const cont = await render(html`

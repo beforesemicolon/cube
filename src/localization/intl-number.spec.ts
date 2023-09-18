@@ -3,10 +3,28 @@ import * as cube from '../cube';
 import initNumber from './intl-number';
 import {render} from "../testing";
 import {html} from "@beforesemicolon/html";
+import {TC} from "../utils";
 
-initNumber(cube as unknown as Cube)
+const CUBE = {
+	...cube,
+	TC
+} as unknown as Cube
+
+initNumber(CUBE)
 
 describe('intl-number', () => {
+	it('should return empty for invalid value', async () => {
+		const cont = await render(html`
+			<intl-number>str</intl-number>
+			<intl-number value="str"></intl-number>
+		`);
+		
+		expect(cont.find('intl-number').map(d => d.content)).toEqual([
+			"",
+			""
+		])
+	});
+	
 	it('should handle decimal', async () => {
 		const cont = await render(html`
 			<intl-number>20.0</intl-number>

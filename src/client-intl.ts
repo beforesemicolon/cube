@@ -1,19 +1,19 @@
 import initIntl from './localization';
-import {TC} from './utils';
 
 // @ts-ignore
-if (window) {
-// @ts-ignore
+if (window.BFS.Cube) {
+	// @ts-ignore
+	const intl = initIntl(window.BFS.Cube)
+	// @ts-ignore
 	window.BFS = {
 		// @ts-ignore
 		...(window.BFS || {}),
 		Cube: {
 			// @ts-ignore
 			...(window.BFS.Cube || {}),
-			TC,
+			intl
 		}
 	}
-	
-	// @ts-ignore
-	initIntl(window.BFS.Cube)
+} else {
+	throw new Error('Failed to initialize cube-intl.')
 }

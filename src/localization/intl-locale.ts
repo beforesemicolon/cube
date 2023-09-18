@@ -1,27 +1,5 @@
-import {Cube, Props, ShadowRootMode} from "../types";
+import {Cube, ObjectLiteral, Props, ShadowRootMode} from "../types";
 import {config} from "../config";
-
-const defaultLocale = {
-	'cube-intl': {
-		year: {single: "year", plural: "years", narrow: "yr", short: "year"},
-		month: {single: "month", plural: "months", narrow: "m", short: "month"},
-		week: {single: "week", plural: "weeks", narrow: "week", short: "week"},
-		day: {single: "day", plural: "days", narrow: "day", short: "day"},
-		hour: {single: "hour", plural: "hours", narrow: "h", short: "hr"},
-		minute: {single: "minute", plural: "minutes", narrow: "min", short: "min"},
-		second: {single: "second", plural: "seconds", narrow: "s", short: "sec"},
-		millisecond: {single: "millisecond", plural: "milliseconds", narrow: "ms", short: "mils"},
-		nanosecond: {single: "nanosecond", plural: "nanoseconds", narrow: "ns", short: "nano"},
-		plural: {
-			other: "th",
-			zero: "th",
-			one: "st",
-			two: "nd",
-			few: "rd",
-			many: "th",
-		}
-	}
-}
 
 interface IntlLocaleProps {
 	src: string;
@@ -29,8 +7,30 @@ interface IntlLocaleProps {
 }
 
 export default ({register, template, onMount, createContext}: Cube) => {
+	let messages: ObjectLiteral = {
+		'cube-intl': {
+			year: {single: "year", plural: "years", narrow: "yr", short: "year"},
+			month: {single: "month", plural: "months", narrow: "m", short: "month"},
+			week: {single: "week", plural: "weeks", narrow: "week", short: "week"},
+			day: {single: "day", plural: "days", narrow: "day", short: "day"},
+			hour: {single: "hour", plural: "hours", narrow: "h", short: "hr"},
+			minute: {single: "minute", plural: "minutes", narrow: "min", short: "min"},
+			second: {single: "second", plural: "seconds", narrow: "s", short: "sec"},
+			millisecond: {single: "millisecond", plural: "milliseconds", narrow: "ms", short: "mils"},
+			nanosecond: {single: "nanosecond", plural: "nanoseconds", narrow: "ns", short: "nano"},
+			plural: {
+				other: "th",
+				zero: "th",
+				one: "st",
+				two: "nd",
+				few: "rd",
+				many: "th",
+			}
+		}
+	}
+	
 	const IntlLocale = (props: Props<IntlLocaleProps>) => {
-		const msgs = createContext("intl-msg", null);
+		const msgs = createContext<ObjectLiteral | null>("intl-msg", null);
 		
 		onMount(() => {
 			if (props.src()) {
@@ -43,10 +43,8 @@ export default ({register, template, onMount, createContext}: Cube) => {
 						throw new Error(`[intl-locale] Loading "${props.src()}" locale messages failed with status code ${res.status}`);
 					})
 					.then(data => {
-						msgs.update({
-							...defaultLocale,
-							...data
-						});
+						messages = {...messages, ...data};
+						msgs.update(messages);
 					})
 					.catch(console.error)
 			} else if (props.srcDir()) {
@@ -62,10 +60,8 @@ export default ({register, template, onMount, createContext}: Cube) => {
 						throw new Error(`[intl-locale] Loading "${src}" locale messages failed with status code ${res.status}`);
 					})
 					.then(data => {
-						msgs.update({
-							...defaultLocale,
-							...data
-						});
+						messages = {...messages, ...data};
+						msgs.update(messages);
 					})
 					.catch(console.error)
 			}
@@ -78,4 +74,13 @@ export default ({register, template, onMount, createContext}: Cube) => {
 		src: "",
 		srcDir: "./"
 	}, {mode: ShadowRootMode.NONE})
+	
+	return  {
+		get messages() {
+			return messages
+		},
+		get lang() {
+			return document.documentElement.lang || config.lang
+		}
+	}
 }

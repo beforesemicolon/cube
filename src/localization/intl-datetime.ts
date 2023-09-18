@@ -1,8 +1,7 @@
 import {Props, Cube, ShadowRootMode} from "../types";
-import {config} from "../config";
-import {conditionalField} from "../utils";
+import {conditionalField} from "./utils/conditional-field";
 
-interface IntlDatetimeProps {
+export interface IntlDatetimeProps {
 	hour12: boolean | undefined;
 	weekday: 'long' | 'short' | 'narrow' | undefined;
 	era: 'long' | 'short' | 'narrow' | undefined;
@@ -42,59 +41,8 @@ interface IntlDatetimeProps {
 		| undefined;
 }
 
-export default ({register, host, template, TC}: Cube) => {
-	const IntlDatetime = (props: Props<IntlDatetimeProps>) => {
-		const comp = host();
-		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
-		const content = comp.textContent;
-		
-		comp.innerHTML = '';
-		
-		const dateString = () => {
-			const dateTimeOptions = {
-				...conditionalField('weekday', props.weekday()),
-				...conditionalField('era', props.era()),
-				...conditionalField('year', props.year()),
-				...conditionalField('month', props.month()),
-				...conditionalField('day', props.day()),
-				...conditionalField('dayPeriod', props.dayPeriod()),
-				...conditionalField('hour', props.hour()),
-				...conditionalField('minute', props.minute()),
-				...conditionalField('second', props.second()),
-			}
-			
-			const fomatter = new Intl.DateTimeFormat(props.locale() || locale.language, {
-				hour12: props.hour12(),
-				...conditionalField('calendar', props.calendar()),
-				...conditionalField('hourCycle', props.hourCycle()),
-				...conditionalField('timeStyle', props.timeStyle()),
-				...conditionalField('dateStyle', props.dateStyle()),
-				...conditionalField('timeZone', props.timezone()),
-				...conditionalField('timezoneName', props.timezoneName()),
-				// if dateStyle or timeStyle is provided we cannot set individual time/date options
-				...(props.dateStyle() || props.timeStyle() ? {} : dateTimeOptions),
-			})
-			const value = props.value() || content || Date.now();
-			
-			try {
-				const date = TC.string(value) || TC.numeric(value)
-					? TC.numeric(value) ? new Date(Number(value)) : new Date(value)
-					: value;
-				
-				if (!TC.validDate(date)) {
-					throw new Error('Invalid Date')
-				}
-				
-				return fomatter.format(date);
-			} catch (e) {
-				return `[Invalid Date: ${value}]`
-			}
-		};
-		
-		template`${dateString}`;
-	}
-	
-	register<IntlDatetimeProps>(IntlDatetime, {
+export default ({register, host, template, config, TC}: Cube) => {
+	const intlDatetimeDefaultProps: IntlDatetimeProps = {
 		hour12: false,
 		hourCycle: 'h23',
 		weekday: 'short',
@@ -113,5 +61,80 @@ export default ({register, host, template, TC}: Cube) => {
 		timezone: undefined,
 		timezoneName: 'short',
 		value: "",
-	}, {mode: ShadowRootMode.NONE})
+	}
+	
+	const intlDatetime = (lang: string, value: string | number = '', opt?: Partial<Omit<IntlDatetimeProps, 'value' | 'locale'>>) => {
+		if(!TC.oneOf(value, TC.string, TC.number)) {
+			console.error('intl-datetime: invalid value', value);
+			return ''
+		}
+		
+		opt = {...intlDatetimeDefaultProps, ...opt}
+		
+		const dateTimeOptions = {
+			...conditionalField('weekday', opt.weekday),
+			...conditionalField('era', opt.era),
+			...conditionalField('year', opt.year),
+			...conditionalField('month', opt.month),
+			...conditionalField('day', opt.day),
+			...conditionalField('dayPeriod', opt.dayPeriod),
+			...conditionalField('hour', opt.hour),
+			...conditionalField('minute', opt.minute),
+			...conditionalField('second', opt.second),
+		}
+		
+		const dt = new Intl.DateTimeFormat(lang, {
+			hour12: opt.hour12,
+			...conditionalField('calendar', opt.calendar),
+			...conditionalField('hourCycle', opt.hourCycle),
+			...conditionalField('timeStyle', opt.timeStyle),
+			...conditionalField('dateStyle', opt.dateStyle),
+			...conditionalField('timeZone', opt.timezone),
+			...conditionalField('timezoneName', opt.timezoneName),
+			// if dateStyle or timeStyle is provided we cannot set individual time/date options
+			...(opt.dateStyle || opt.timeStyle ? {} : dateTimeOptions),
+		})
+		
+		try {
+			const date = TC.string(value) || TC.numeric(value)
+				? TC.numeric(value) ? new Date(Number(value)) : new Date(value)
+				: value;
+			
+			if (!TC.validDate(date)) {
+				throw new Error('Invalid Date')
+			}
+			
+			return dt.format(date);
+		} catch (e) {
+			return `[Invalid Date: ${value}]`
+		}
+	}
+	
+	const IntlDatetime = (props: Props<IntlDatetimeProps>) => {
+		const comp = host();
+		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
+		const content = comp.textContent;
+		
+		comp.innerHTML = '';
+		
+		const dateString = () => {
+			const value = props.value() || content || Date.now();
+			
+			return intlDatetime(
+				props.locale() || locale.language,
+				value,
+				Object.keys(props).reduce((acc, key) => {
+					// @ts-ignore
+					acc[key] = props[key]();
+					return acc;
+				}, {} as IntlDatetimeProps),
+			)
+		};
+		
+		template`${dateString}`;
+	}
+	
+	register<IntlDatetimeProps>(IntlDatetime, intlDatetimeDefaultProps, {mode: ShadowRootMode.NONE})
+	
+	return intlDatetime;
 }

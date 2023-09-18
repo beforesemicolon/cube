@@ -1,8 +1,8 @@
 import {Props, Cube, ShadowRootMode} from "../types";
 import {config} from "../config";
-import {conditionalField} from "../utils";
+import {conditionalField} from "./utils/conditional-field";
 
-interface IntlNumberProps {
+export interface IntlNumberProps {
 	value: number;
 	locale: string | undefined;
 	type: "decimal" | "currency" | "percent" | "unit";
@@ -26,7 +26,26 @@ interface IntlNumberProps {
 	decimalDigits: string | undefined; // how many decimal digits will be displayed
 }
 
-export default ({register, host, template}: Cube) => {
+export default ({register, host, template, TC}: Cube) => {
+	const defaultProps: IntlNumberProps = {
+		value: 0,
+		type: "decimal",
+		currency: undefined,
+		currencyDisplay: 'narrowSymbol',
+		currencySign: undefined,
+		signDisplay: undefined,
+		notation: undefined,
+		system: undefined,
+		unit: undefined,
+		unitStyle: 'narrow',
+		groupingStyle: "auto",
+		rounding: undefined,
+		roundingInc: undefined,
+		locale: undefined,
+		minDigits: undefined,
+		significantDigits: undefined,
+		decimalDigits: undefined,
+	}
 	const splitNumberString = (str: string): Array<number | undefined> => {
 		const [a, b]: Array<number | undefined> = String(str)
 			.split(',', 2)
@@ -47,6 +66,44 @@ export default ({register, host, template}: Cube) => {
 		return [a, b];
 	}
 	
+	const intlNumber = (locale: string, value: number, opt?: Omit<IntlNumberProps, 'value' | 'locale'>) => {
+		if (!TC.number(value)) {
+			console.error('intl-number: invalid value', value);
+			return '';
+		}
+		
+		opt = {...defaultProps, ...opt};
+		
+		const [minFracDig, maxFracDig] = splitNumberString(opt.decimalDigits || '')
+		const [minDig, maxDig] = splitNumberString(opt.significantDigits || '');
+		
+		const options: Intl.NumberFormatOptions = {
+			style: opt.type,
+			...(opt.type === "currency" ? {
+				...conditionalField('currency', opt.currency),
+				...conditionalField('currencyDisplay', opt.currencyDisplay),
+				...conditionalField('currencySign', opt.currencySign),
+			} : {}),
+			...(opt.type === "unit" ? {
+				...conditionalField('unit', opt.unit),
+				...conditionalField('unitDisplay', opt.unitStyle),
+			} : {}),
+			...conditionalField('signDisplay', opt.signDisplay),
+			...conditionalField('useGrouping', opt.groupingStyle),
+			...conditionalField('roundingMode', opt.rounding),
+			...conditionalField('roundingIncrement', opt.roundingInc),
+			...conditionalField('numberingSystem', opt.system),
+			...conditionalField('notation', opt.notation),
+			...conditionalField('minimumIntegerDigits', opt.minDigits),
+			...conditionalField('minimumFractionDigits', minFracDig),
+			...conditionalField('maximumFractionDigits', maxFracDig),
+			...conditionalField('minimumSignificantDigits', minDig),
+			...conditionalField('maximumSignificantDigits', maxDig)
+		};
+		
+		return new Intl.NumberFormat(locale, options).format(value)
+	}
+	
 	const IntlNumber = (props: Props<IntlNumberProps>) => {
 		const comp = host();
 		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
@@ -55,59 +112,19 @@ export default ({register, host, template}: Cube) => {
 		comp.innerHTML = '';
 		
 		const numb = () => {
-			const [minFracDig, maxFracDig] = splitNumberString(props.decimalDigits() || '')
-			const [minDig, maxDig] = splitNumberString(props.significantDigits() || '');
-			
-			const options: Intl.NumberFormatOptions = {
-				style: props.type(),
-				...(props.type() === "currency" ? {
-					...conditionalField('currency', props.currency()),
-					...conditionalField('currencyDisplay', props.currencyDisplay()),
-					...conditionalField('currencySign', props.currencySign()),
-				} : {}),
-				...(props.type() === "unit" ? {
-					...conditionalField('unit', props.unit()),
-					...conditionalField('unitDisplay', props.unitStyle()),
-				} : {}),
-				...conditionalField('signDisplay', props.signDisplay()),
-				...conditionalField('useGrouping', props.groupingStyle()),
-				...conditionalField('roundingMode', props.rounding()),
-				...conditionalField('roundingIncrement', props.roundingInc()),
-				...conditionalField('numberingSystem', props.system()),
-				...conditionalField('notation', props.notation()),
-				...conditionalField('minimumIntegerDigits', props.minDigits()),
-				...conditionalField('minimumFractionDigits', minFracDig),
-				...conditionalField('maximumFractionDigits', maxFracDig),
-				...conditionalField('minimumSignificantDigits', minDig),
-				...conditionalField('maximumSignificantDigits', maxDig)
-			};
-			
-			const n = new Intl.NumberFormat(props.locale() || locale.language, options)
-			const value = Number(props.value() || content);
-			
-			return n.format(value)
+			return intlNumber(props.locale() || locale.language,
+				Number(props.value() || content),
+				Object.keys(props).reduce((acc, key) => {
+					// @ts-ignore
+					acc[key] = props[key]();
+					return acc;
+				}, {} as IntlNumberProps),)
 		}
 		
 		template`${numb}`
 	}
 	
-	register<IntlNumberProps>(IntlNumber, {
-		value: 0,
-		type: "decimal",
-		currency: undefined,
-		currencyDisplay: 'narrowSymbol',
-		currencySign: undefined,
-		signDisplay: undefined,
-		notation: undefined,
-		system: undefined,
-		unit: undefined,
-		unitStyle: 'narrow',
-		groupingStyle: "auto",
-		rounding: undefined,
-		roundingInc: undefined,
-		locale: undefined,
-		minDigits: undefined,
-		significantDigits: undefined,
-		decimalDigits: undefined,
-	}, {mode: ShadowRootMode.NONE})
+	register<IntlNumberProps>(IntlNumber, defaultProps, {mode: ShadowRootMode.NONE})
+	
+	return intlNumber;
 }

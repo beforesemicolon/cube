@@ -1,12 +1,27 @@
 import {Cube} from "../types";
-import * as cube from '../index';
+import * as cube from '../cube';
 import initName from './intl-name';
 import {render} from "../testing";
 import {html} from "@beforesemicolon/html";
+import {TC} from "../utils";
 
-initName(cube as unknown as Cube)
+const CUBE = {
+	...cube,
+	TC
+} as unknown as Cube
+
+const n = initName(CUBE)
 
 describe('intl-name', () => {
+	it('should blank for no value', async () => {
+		const cont = await render(html`
+			<intl-name></intl-name>
+			<intl-name value=""></intl-name>
+		`);
+		
+		expect(cont.find('intl-name').map(d => d.content)).toEqual(["", ""])
+	});
+	
 	it('should handle language in different styles', async () => {
 		const cont = await render(html`
 			<intl-name type="language">en-US</intl-name>

@@ -1,19 +1,47 @@
 import {Cube, ObjectLiteral, Props} from "../types";
 import {config} from "../config";
 
-interface IntlPluralProps {
-	value: number | undefined;
+export interface PluralRules {
 	other: string;
 	zero: string;
 	one: string;
 	two: string;
 	few: string;
 	many: string;
+}
+
+export interface IntlPluralProps extends PluralRules {
+	value: number | undefined;
 	type: 'cardinal' | 'ordinal' | undefined;
 	locale: string | undefined;
 }
 
-export default ({register, host, template, html, useContext}: Cube) => {
+export default ({register, host, template, html, useContext, TC}: Cube) => {
+	const defaultPlurals: PluralRules = {
+		other: '',
+		zero: '',
+		one: '',
+		two: '',
+		few: '',
+		many: '',
+	}
+	const intlPlural = (msgs: ObjectLiteral, locale: string, value: number, rules: Partial<PluralRules> = defaultPlurals, type: IntlPluralProps['type'] = 'cardinal') => {
+		if(!TC.number(value)) {
+			console.error('intl-plural: invalid value', value);
+			return '';
+		}
+		
+		rules = {...defaultPlurals, ...msgs['cube-intl'].plural, ...rules};
+		const pr = new Intl.PluralRules(locale, {type});
+		const sel = pr.select(value);
+		
+		if (type === 'ordinal') {
+			return `${value}${rules[sel]}`;
+		}
+		
+		return rules[sel]
+	}
+	
 	const IntlPlural = (props: Props<IntlPluralProps>) => {
 		const comp = host();
 		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
@@ -23,7 +51,7 @@ export default ({register, host, template, html, useContext}: Cube) => {
 		const plural = () => {
 			const value = Number(props.value() ?? content);
 			
-			if (isNaN(value)) {
+			if (!TC.number(value)) {
 				return ''
 			}
 			
@@ -54,4 +82,6 @@ export default ({register, host, template, html, useContext}: Cube) => {
 		many: '',
 		type: 'cardinal',
 	})
+	
+	return intlPlural;
 }

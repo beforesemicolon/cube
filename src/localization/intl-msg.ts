@@ -6,12 +6,11 @@ interface IntlMsgProps {
 	values: Record<string, any>;
 }
 
-export default ({register, html, template, element, useContext, host}: Cube) => {
+export default ({register, html, template, element, useContext, host, TC}: Cube) => {
 	
 	const IntlMsg = (props: Props<IntlMsgProps>) => {
 		const comp = host();
 		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
-		
 		const msgs = useContext<ObjectLiteral>("intl-msg");
 		
 		const msg = () => {
@@ -31,13 +30,13 @@ export default ({register, html, template, element, useContext, host}: Cube) => 
 				return props.id();
 			}
 			
-			const values  = props.values();
+			const values = props.values();
 			
 			const pattern = /\{\s*([a-z0-9]+)\s*\}/g;
 			let txt = String(text)
 			let match = null;
 			
-			while((match = pattern.exec(String(txt))) !== null) {
+			while ((match = pattern.exec(String(txt))) !== null) {
 				const [_, key] = match;
 				const before = txt.substring(0, match.index);
 				
@@ -66,4 +65,18 @@ export default ({register, html, template, element, useContext, host}: Cube) => 
 		id: "",
 		values: {}
 	})
+	
+	return (msgs: ObjectLiteral, id: string, values: ObjectLiteral = {}) => {
+		const msg = msgs[id];
+		
+		if (msg) {
+			return TC.empty(values)
+				? msg
+				: msg.replace(/\{\s*([a-z0-9]+)\s*\}/g, (_: string, key: string) => {
+					return values[key];
+				});
+		}
+		
+		return id;
+	}
 }

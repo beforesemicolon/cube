@@ -1,77 +1,76 @@
 import {Props, Cube, ShadowRootMode, ObjectLiteral} from "../types";
 import {millisecondsToTimeParts} from "./utils/milliseconds-to-time-parts";
-import {config} from "../config";
 
 const allFields = new Set(['second', 'minute', 'hour', 'day', 'month', 'year'])
 
-interface IntlDurationProps {
+export interface IntlDurationProps {
 	value: number | undefined;
 	style: "narrow" | "short" | "long";
 	fields: '*' | 'second' | 'minute' | 'hour' | 'day' | 'month' | 'year';
 }
 
-export default ({register, host, template, useContext}: Cube) => {
+export default ({register, host, template, useContext, TC}: Cube) => {
+	const name = new Intl.DisplayNames('en', {
+		style: "long",
+		type: "dateTimeField",
+	});
+	// @ts-ignore
+	const list = new Intl.ListFormat('en', {
+		style: "long",
+		type: "conjunction",
+	})
+	
+	const getText = (msg: ObjectLiteral, value: number, key: string, style: IntlDurationProps['style']) => {
+		const cubeIntl = msg ? msg['cube-intl'] : null;
+		
+		if (cubeIntl && cubeIntl[key]) {
+			if (style === "narrow") {
+				return cubeIntl[key].narrow;
+			}
+			
+			if (style === "short") {
+				return cubeIntl[key].short;
+			}
+			
+			return value === 1
+				? cubeIntl[key].single
+				: cubeIntl[key].plural
+		}
+		
+		return name.of(key);
+	}
+	
+	const intlDuration = (msgs: ObjectLiteral, value: number, fields: IntlDurationProps['fields'] = "*", style: IntlDurationProps['style'] = "long") => {
+		if (!TC.number(value) || !TC.string(fields)) {
+			console.error("intl.duration: Invalid 'value' or 'fields'. Received: value=", value, ", fields=", fields, "");
+			return '';
+		}
+		
+		const parts = fields.trim() === "*"
+			? allFields
+			: new Set((fields || '').split(/\s+/g).map(s => s.trim()))
+		const tp = millisecondsToTimeParts(value, parts);
+		const gap = style === "narrow" ? "" : " "
+		
+		return list.format([
+			...((parts.has("year")) && tp.year ? [`${[tp.year]}${gap}${getText(msgs, tp.year, 'year', style)}`] : []),
+			...((parts.has("month")) && tp.month ? [`${[tp.month]}${gap}${getText(msgs, tp.month, 'month', style)}`] : []),
+			...((parts.has("day")) && tp.day ? [`${[tp.day]}${gap}${getText(msgs, tp.day, 'day', style)}`] : []),
+			...((parts.has("hour")) && tp.hour ? [`${[tp.hour]}${gap}${getText(msgs, tp.hour, 'hour', style)}`] : []),
+			...((parts.has("minute")) && tp.minute ? [`${[tp.minute]}${gap}${getText(msgs, tp.minute, 'minute', style)}`] : []),
+			...((parts.has("second")) && tp.second ? [`${[tp.second]}${gap}${getText(msgs, tp.second, 'second', style)}`] : []),
+		]);
+	}
+	
 	const IntlDuration = (props: Props<IntlDurationProps>) => {
 		const comp = host();
 		const msgsctx = useContext<ObjectLiteral>("intl-msg", true);
-		const locale = new Intl.Locale(document.documentElement.lang || config.lang);
 		const content = comp.textContent;
-		const name = new Intl.DisplayNames(locale.language, {
-			style: "long",
-			type: "dateTimeField",
-		});
-		// @ts-ignore
-		const list = new Intl.ListFormat(locale.language, {
-			style: "long",
-			type: "conjunction",
-		})
 		
 		comp.innerHTML = '';
 		
-		const getText = (value: number, key: string) => {
-			const msg = msgsctx.value();
-			const cubeIntl = msg ? (msg['cube-intl'] as Record<string, any>) : null;
-			
-			if (cubeIntl && cubeIntl[key]) {
-				if (props.style() === "narrow") {
-					return cubeIntl[key].narrow;
-				}
-				
-				if (props.style() === "short") {
-					return cubeIntl[key].short;
-				}
-				
-				return value === 1
-					? cubeIntl[key].single
-					: cubeIntl[key].plural
-			}
-			
-			return name.of(key);
-		}
-		
 		const duration = () => {
-			const fields = props.fields().trim() === "*"
-				? allFields
-				: new Set((props.fields() || '').split(/\s+/g).map(s => s.trim()))
-			let value = props.value() || content;
-			
-			if (!value) {
-			  return '';
-			}
-			
-			value = Number(value);
-			
-			const tp = millisecondsToTimeParts(value, fields);
-			const gap = props.style() === "narrow" ? "" : " "
-			
-			return list.format([
-				...((fields.has("year")) && tp.year ? [`${[tp.year]}${gap}${getText(tp.year, 'year')}`] : []),
-				...((fields.has("month")) && tp.month ? [`${[tp.month]}${gap}${getText(tp.month, 'month')}`] : []),
-				...((fields.has("day")) && tp.day ? [`${[tp.day]}${gap}${getText(tp.day, 'day')}`] : []),
-				...((fields.has("hour")) && tp.hour ? [`${[tp.hour]}${gap}${getText(tp.hour, 'hour')}`] : []),
-				...((fields.has("minute")) && tp.minute ? [`${[tp.minute]}${gap}${getText(tp.minute, 'minute')}`] : []),
-				...((fields.has("second")) && tp.second ? [`${[tp.second]}${gap}${getText(tp.second, 'second')}`] : []),
-			]);
+			return intlDuration(msgsctx.value() ?? {}, Number(props.value() || content), props.fields(), props.style());
 		}
 		
 		template`${duration}`;
@@ -82,4 +81,6 @@ export default ({register, host, template, useContext}: Cube) => {
 		style: "long",
 		fields: "*"
 	}, {mode: ShadowRootMode.NONE})
+	
+	return intlDuration;
 }

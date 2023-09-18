@@ -19,7 +19,7 @@ type RelUnit = "year"
 	| "second"
 	| "seconds"
 
-interface IntlRelTimeProps {
+export interface IntlRelTimeProps {
 	live: boolean;
 	showDecimals: false;
 	value: number | undefined;
@@ -112,7 +112,39 @@ const getUnitAndValue = (milliseconds: number, precision = 0): {
 	};
 }
 
-export default ({register, host, template, useValue, onMount}: Cube) => {
+export default ({register, host, template, useValue, onMount, TC}: Cube) => {
+	const defaultProps: IntlRelTimeProps = {
+		locale: undefined,
+		showDecimals: false,
+		live: false,
+		value: undefined,
+		numeric: false,
+		style: 'long',
+		unit: 'auto'
+	}
+	
+	const intlRelTime = (locale: string, value: number, opt: Partial<Omit<IntlRelTimeProps, 'locale' | 'value' | 'live'>> = defaultProps) => {
+		if (!TC.number(value)) {
+			console.error('intl-rel-time: invalid value', value);
+			return '';
+		}
+		
+		opt = {...defaultProps, ...opt};
+		
+		const precision = opt.showDecimals ? 1 : 0;
+		const relative = new Intl.RelativeTimeFormat(locale, {
+			style: opt.style,
+			numeric: opt.numeric ? 'always' : 'auto'
+		});
+		
+		if (opt.unit === "auto") {
+			const rel = getUnitAndValue(value - Date.now(), precision)
+			
+			return relative.format(rel.val, rel.unit)
+		}
+		
+		return relative.format(Number(value.toFixed(precision)), opt.unit as RelUnit)
+	}
 	
 	const IntlRelTime = (props: Props<IntlRelTimeProps>) => {
 		const comp = host();
@@ -176,13 +208,7 @@ export default ({register, host, template, useValue, onMount}: Cube) => {
 		template`${time}`;
 	}
 	
-	register<IntlRelTimeProps>(IntlRelTime, {
-		locale: undefined,
-		showDecimals: false,
-		live: false,
-		value: undefined,
-		numeric: false,
-		style: 'long',
-		unit: 'auto'
-	}, {mode: ShadowRootMode.NONE})
+	register<IntlRelTimeProps>(IntlRelTime, defaultProps, {mode: ShadowRootMode.NONE})
+	
+	return intlRelTime;
 }
