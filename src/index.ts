@@ -4,8 +4,7 @@ import initRouter from "./router";
 import initIntl from "./localization";
 
 initRouter(cube as unknown as Cube);
-initIntl(cube as unknown as Cube);
-
+export const intl = initIntl(cube as unknown as Cube);
 export * from "./types";
 export * from "./cube";
 export * from "./store";
