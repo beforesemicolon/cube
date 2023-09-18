@@ -57,7 +57,7 @@ export const store = <T>(name: string, data: T | null = null, mapper: (val: T) =
 }
 
 const getItemIdValue = <T extends ObjectLiteral>(item: T, identifierName = "id"): ListStoreItemID | null => {
-	if (TC.objectLiteral(item) && item.hasOwnProperty(identifierName)) {
+	if (TC.objectLiteral(item) && !TC.undefined(item[identifierName])) {
 		return item[identifierName] ?? null;
 	}
 	
