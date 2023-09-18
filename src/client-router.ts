@@ -1,8 +1,7 @@
 import initRouter, {goToPage, replacePage, previousPage, nextPage, onPageChange, isOnPage} from './router';
-import {TC} from './utils';
 
 // @ts-ignore
-if (window) {
+if (window.BFS.Cube) {
 // @ts-ignore
 	window.BFS = {
 		// @ts-ignore
@@ -16,10 +15,11 @@ if (window) {
 			nextPage,
 			onPageChange,
 			isOnPage,
-			TC
 		}
 	}
 	
 	// @ts-ignore
 	initRouter(window.BFS.Cube)
+} else {
+	throw new Error('Failed to initialize cube-router.')
 }
