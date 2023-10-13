@@ -2,10 +2,10 @@ import {Cube} from "../../types";
 import * as cube from '../../cube';
 import initWithRoute from './with-route';
 import {render, waitFor} from "../../testing";
-import {html, when} from "@beforesemicolon/html";
+import {html, when, state} from "@beforesemicolon/html";
 import {goToPage} from "../../router/pages";
 
-initWithRoute({...cube, html, when} as unknown as Cube)
+initWithRoute({...cube, html, when, state} as unknown as Cube)
 
 describe('WithRoute', () => {
 	beforeEach(() => {
@@ -34,20 +34,20 @@ describe('WithRoute', () => {
 		let slot = r2.find('slot')[0];
 		expect(slot.target.getAttribute('name')).toMatch(/\d+/)
 		expect(r2.toString()).toBe('<with-route path="/test" src="/test"></with-route>')
-		
+
 		expect(r2.find('slot[name="loading"]')[0]).not.toBeDefined();
-		
+
 		await waitFor(() => {
 			goToPage('/test');
 			// show loading slot
 			expect(r2.find('slot[name="loading"]')[0]).toBeDefined();
 		})
-		
+
 		// r1 slot gets a name to hide content
 		slot = r1.find('slot')[0];
 		expect(slot.target.getAttribute('name')).toMatch(/\d+/)
 		expect(r1.toString()).toBe('<with-route path="/">Hello World</with-route>')
-		
+
 		// r2 slot loses the name to show content
 		expect(r2.content.trim()).toBe('<slot></slot>')
 		// the content is placed inside

@@ -67,7 +67,8 @@ describe('store', () => {
 	});
 	
 	it('should throw error if using non-function to subscribe', () => {
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 		expect(() => todoStore.subscribe(null)).toThrowError('Invalid store subscribe handler. Received "null" but expected a function.')
 	});
 	

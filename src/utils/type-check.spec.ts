@@ -229,10 +229,12 @@ describe('TC', () => {
 			}
 		}
 		
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 		expect(TC.schema({})).toBeFalsy();
 		expect(TC.schema({x: 12}, {
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 			x: null
 		})).toBeFalsy();
 		

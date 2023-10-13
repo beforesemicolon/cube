@@ -1,36 +1,41 @@
-import {Cube, ObjectLiteral, Props} from "../../types";
-import {isOnPage} from "../utils/is-on-page";
-import {onPageChange, goToPage} from "../pages";
+import { Cube, ObjectLiteral, Props } from '../../types'
+import { isOnPage } from '../utils/is-on-page'
+import { onPageChange, goToPage } from '../pages'
 
-interface PageLinkProps {
-	path: string;
-	title: string;
-	state: ObjectLiteral;
+interface PageLinkProps extends ObjectLiteral {
+    path: string
+    title: string
+    state: ObjectLiteral
 }
 
-export default ({eventDispatch, onMount, register, template, useValue}: Cube) => {
-	const PageLink = (props: Props<PageLinkProps>) => {
-		const dispatch = eventDispatch();
-		const [active, setActive] = useValue(false);
-		const part = () => active() ? "anchor active" : "anchor";
+export default ({
+    eventDispatch,
+    onMount,
+    register,
+    template,
+    state,
+}: Cube) => {
+    const PageLink = (props: Props<PageLinkProps>) => {
+        const dispatch = eventDispatch()
+        const [part, setPart] = state('anchor')
 
-		onMount(() => {
-			const onRouteChange = () => {
-				const newActive = isOnPage(props.path());
-				setActive(newActive);
-				dispatch("active", newActive);
-			}
+        onMount(() => {
+            const onRouteChange = () => {
+                const newActive = isOnPage(props.path())
+                setPart(newActive ? 'anchor active' : 'anchor')
+                dispatch('active', newActive)
+            }
 
-			return onPageChange(onRouteChange);
-		})
+            return onPageChange(onRouteChange)
+        })
 
-		const handleClick = (event: Event) => {
-			event.preventDefault();
-			event.stopPropagation();
-			goToPage(props.path(), props.state(), props.title())
-		}
+        const handleClick = (event: Event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            goToPage(props.path(), props.state(), props.title())
+        }
 
-		template`
+        template`
 			<a
 				part="${part}"
 				href="${props.path}"
@@ -38,11 +43,11 @@ export default ({eventDispatch, onMount, register, template, useValue}: Cube) =>
 				>
 				<slot></slot>
 			</a>`
-	}
+    }
 
-	register<PageLinkProps>(PageLink, {
-		path: "",
-		title: "",
-		state: {}
-	});
+    register<PageLinkProps>(PageLink, {
+        path: '',
+        title: '',
+        state: {},
+    })
 }

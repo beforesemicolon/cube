@@ -2,7 +2,7 @@ import '../scripts/highlight/highlight.min.js';
 import snippets from './snippets.json' assert {type: 'json'};
 
 const {hljs, BFS} = window;
-const {register, template, html, useValue, when, host} = BFS.Cube;
+const {register, template, html, state, when, host} = BFS.Cube;
 
 
 export const langColor = {
@@ -23,7 +23,7 @@ const CodeSnippet = (props) => {
     comp.innerHTML = '';
     
     const code = hljs.highlight(snippet, {language: props.language()});
-    const [copyLabel, setCopyLabel] = useValue('Copy');
+    const [copyLabel, setCopyLabel] = state('Copy');
     let timer;
     
     const copyToClipboard = async () => {

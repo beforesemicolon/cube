@@ -1,6 +1,7 @@
-import {TC} from "./type-check";
+import { TC } from './type-check'
 
-const isObjectLiteralOrArray = (value: any) => TC.objectLiteral(value) || TC.array(value);
+const isObjectLiteralOrArray = (value: unknown) =>
+    TC.objectLiteral(value) || TC.array(value)
 
 /**
  * merge object literal or array in place unless newObj is true (false by default)
@@ -8,19 +9,20 @@ const isObjectLiteralOrArray = (value: any) => TC.objectLiteral(value) || TC.arr
  * @param b
  * @param newObj
  */
-export function mergeObjects(a: any, b: any, newObj = false) {
-	if (!isObjectLiteralOrArray(a) || !isObjectLiteralOrArray(b)) return b ?? a;
-	
-	if (newObj) {
-		a = TC.array(a) ? [...a] : {...a};
-	}
-	
-	for (const key in b) {
-		if (b.hasOwnProperty(key)) {
-			// @ts-ignore
-			a[key] = mergeObjects(a[key], b[key]);
-		}
-	}
-	
-	return a;
+export function mergeObjects(a: object, b: object, newObj = false) {
+    if (!isObjectLiteralOrArray(a) || !isObjectLiteralOrArray(b)) return b ?? a
+
+    if (newObj) {
+        a = TC.array(a) ? [...a] : { ...a }
+    }
+
+    for (const key in b) {
+        if (b.hasOwnProperty(key)) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            a[key] = mergeObjects(a[key], b[key])
+        }
+    }
+
+    return a
 }

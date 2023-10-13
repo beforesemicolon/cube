@@ -4,11 +4,12 @@ import initDuration, {IntlDurationProps} from './intl-duration';
 import initLocale from './intl-locale';
 import {render} from "../testing";
 import {TC} from "../utils";
-import {html} from "@beforesemicolon/html";
+import {html, state} from "@beforesemicolon/html";
 
 const CUBE = {
 	...cube,
-	TC
+	TC,
+	state
 } as unknown as Cube
 
 initLocale(CUBE)
@@ -36,7 +37,8 @@ describe('intl-duration', () => {
 			</intl-locale>`);
 		
 		expect(cont.find('intl-duration').map(d => d.content)).toEqual([""])
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 		expect(d(msgs)).toEqual("")
 	});
 	

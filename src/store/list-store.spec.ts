@@ -25,7 +25,8 @@ describe('listStore', () => {
 	});
 	
 	it('should create id for item without id', () => {
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 		const id = todoStore.createItem({text: 'test', completed: false});
 		
 		expect(todoStore.getItems()).toHaveLength(2)
@@ -111,7 +112,8 @@ describe('listStore', () => {
 	});
 	
 	it('should throw error if using non-function to subscribe', () => {
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 		expect(() => todoStore.subscribe(null)).toThrowError('Invalid store subscribe handler. Received "null" but expected a function.')
 	});
 })

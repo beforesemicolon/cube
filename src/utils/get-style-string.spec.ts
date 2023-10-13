@@ -15,15 +15,15 @@ describe('getStyleString', () => {
 	});
 
 	it('should return css inside a style tag id by the tag name', () => {
-		expect(getStyleString(style, 'test-tag')).toEqual('<style class="test-tag">:host { background: red; } :host ( .active ) { background: green; }</style>')
-		expect(getStyleString(style, 'test-tag', false)).toEqual('<style class="test-tag">test-tag { background: red; } test-tag.active { background: green; }</style>')
+		expect(getStyleString(style, 'test-tag')).toEqual('<style class="CUBE-test-tag">:host { background: red; } :host ( .active ) { background: green; }</style>')
+		expect(getStyleString(style, 'test-tag', false)).toEqual('<style class="CUBE-test-tag">test-tag { background: red; } test-tag.active { background: green; }</style>')
 	});
 	
 	it('should keep css inside a style tag id by the tag name', () => {
 		expect(getStyleString(`<style id="my-style" class="simple-style comp-one">${style}</style>`, 'test-tag'))
-			.toEqual('<style id="my-style" class="simple-style comp-one test-tag"> :host { background: red; } :host ( .active ) { background: green; } </style>')
+			.toEqual('<style id="my-style" class="simple-style comp-one CUBE-test-tag"> :host { background: red; } :host ( .active ) { background: green; } </style>')
 		expect(getStyleString(`<style id="my-style">${style}</style>`, 'test-tag', false))
-			.toEqual('<style id="my-style" class="test-tag">test-tag { background: red; } test-tag.active { background: green; }</style>')
+			.toEqual('<style id="my-style" class="CUBE-test-tag">test-tag { background: red; } test-tag.active { background: green; }</style>')
 	});
 	
 	it('should keep only link stylesheets', () => {
@@ -44,11 +44,11 @@ describe('getStyleString', () => {
 `, 'test-tag', false))
 			.toEqual(
 				'<link rel="stylesheet" href="./some/stye.css" class="test-tag">' +
-				'<style class="test-tag">test-tag { background: red; } test-tag.active { background: green; }test-tag { box-sizing: border-box; }</style>')
+				'<style class="CUBE-test-tag">test-tag { background: red; } test-tag.active { background: green; }test-tag { box-sizing: border-box; }</style>')
 	});
 	
 	it('should replace :host with tag name if no shadow root', () => {
 		expect(getStyleString(`<link rel="stylesheet" href="./some/stye.css">${style}`, 'test-tag', false))
-			.toEqual('<link rel="stylesheet" href="./some/stye.css" class="test-tag"><style class="test-tag">test-tag { background: red; } test-tag.active { background: green; }</style>')
+			.toEqual('<link rel="stylesheet" href="./some/stye.css" class="test-tag"><style class="CUBE-test-tag">test-tag { background: red; } test-tag.active { background: green; }</style>')
 	});
 });

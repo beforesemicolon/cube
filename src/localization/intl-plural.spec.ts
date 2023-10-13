@@ -2,13 +2,14 @@ import {Cube} from "../types";
 import * as cube from '../cube';
 import initPlural from './intl-plural';
 import {render} from "../testing";
-import {element, html} from "@beforesemicolon/html";
+import {state, html} from "@beforesemicolon/html";
 import initLocale from "./intl-locale";
 import {TC} from '../utils';
 
 const CUBE = {
 	...cube,
 	html,
+	state,
 	TC
 } as unknown as Cube
 
@@ -51,7 +52,8 @@ describe('intl-plural', () => {
 			"",
 			""
 		])
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 		expect(p(msgs, 'en', 'simple', {zero: 'people', one: "person", other: 'person'})).toBe('')
 	});
 	

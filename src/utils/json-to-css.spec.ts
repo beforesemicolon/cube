@@ -176,4 +176,33 @@ describe('JSONToCSS', () => {
 			}
 		}, 'comp-test', true)).toBe(':host {--color-grey-100: #222;}')
 	});
+	
+	it('should keep vadddriable', () => {
+		expect(JSONToCSS({
+			":host": {
+				"*": {
+					boxSizing: "border-box",
+				},
+				".todo-item": {
+					display: "flex",
+					background: "#fff",
+					padding: 15,
+					borderRadius: 5,
+					h3: {
+						margin: 0,
+					},
+					p: {
+						margin: "5px 0 0"
+					}
+				},
+				".todo-actions": {
+					borderTop: "1px solid #eee",
+					marginTop: 10,
+					padding: "10px 0 0",
+					display: "flex",
+					gap: 5
+				}
+			}
+		}, 'comp-test', true)).toBe(':host {} :host * {box-sizing: border-box;} :host .todo-item {display: flex;background: #fff;padding: 15px;border-radius: 5px;} :host .todo-item h3 {margin: 0px;} :host .todo-item p {margin: 5px 0 0;} :host .todo-actions {border-top: 1px solid #eee;margin-top: 10px;padding: 10px 0 0;display: flex;gap: 5px;}')
+	});
 })

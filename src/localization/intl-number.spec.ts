@@ -2,12 +2,13 @@ import {Cube} from "../types";
 import * as cube from '../cube';
 import initNumber from './intl-number';
 import {render} from "../testing";
-import {html} from "@beforesemicolon/html";
+import {html, state} from "@beforesemicolon/html";
 import {TC} from "../utils";
 
 const CUBE = {
 	...cube,
-	TC
+	TC,
+	state
 } as unknown as Cube
 
 initNumber(CUBE)

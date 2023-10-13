@@ -2,7 +2,7 @@ import {Cube} from "../types";
 import * as cube from '../cube';
 import initRelTime from './intl-rel-time';
 import {render, wait, waitFor} from "../testing";
-import {html} from "@beforesemicolon/html";
+import {html, state} from "@beforesemicolon/html";
 import {
 	ONE_HOUR_MS,
 	ONE_MINUTE_MS,
@@ -16,6 +16,7 @@ import {TC} from '../utils';
 
 const CUBE = {
 	...cube,
+	state,
 	TC
 } as unknown as Cube
 
@@ -32,7 +33,8 @@ describe('intl-rel-time', () => {
 		expect(cont.find('intl-rel-time').map(d => d.content)).toEqual([
 			"",
 		])
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 		expect(rel('en', ''))
 	});
 	

@@ -1196,16 +1196,19 @@ var hljs = (function () {
     class MultiRegex {
       constructor() {
         this.matchIndexes = {};
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
         this.regexes = [];
         this.matchAt = 1;
         this.position = 0;
       }
 
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
       addRule(re, opts) {
         opts.position = this.position++;
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
         this.matchIndexes[this.matchAt] = opts;
         this.regexes.push([opts, re]);
         this.matchAt += countMatchGroups(re) + 1;
@@ -1214,7 +1217,8 @@ var hljs = (function () {
       compile() {
         if (this.regexes.length === 0) {
           // avoids the need to check length every time exec is called
-          // @ts-ignore
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
           this.exec = () => null;
         }
         const terminators = this.regexes.map(el => el[1]);
@@ -1230,7 +1234,8 @@ var hljs = (function () {
 
         // eslint-disable-next-line no-undefined
         const i = match.findIndex((el, i) => i > 0 && el !== undefined);
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
         const matchData = this.matchIndexes[i];
         // trim off any earlier non-relevant match groups (ie, the other regex
         // match groups that make up the multi-matcher)
@@ -1273,9 +1278,11 @@ var hljs = (function () {
     */
     class ResumableMultiRegex {
       constructor() {
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
         this.rules = [];
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
         this.multiRegexes = [];
         this.count = 0;
 
@@ -1283,7 +1290,8 @@ var hljs = (function () {
         this.regexIndex = 0;
       }
 
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
       getMatcher(index) {
         if (this.multiRegexes[index]) return this.multiRegexes[index];
 
@@ -1302,7 +1310,8 @@ var hljs = (function () {
         this.regexIndex = 0;
       }
 
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
       addRule(re, opts) {
         this.rules.push([re, opts]);
         if (opts.type === "begin") this.count++;
@@ -2583,9 +2592,11 @@ var hljs = (function () {
     };
 
     for (const key in MODES) {
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
       if (typeof MODES[key] === "object") {
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
         deepFreeze(MODES[key]);
       }
     }

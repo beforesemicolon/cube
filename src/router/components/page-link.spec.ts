@@ -2,9 +2,9 @@ import {Cube} from "../../types";
 import * as cube from '../../cube';
 import initPageLink from './page-link';
 import {render} from "../../testing";
-import {html} from "@beforesemicolon/html";
+import {html, state} from "@beforesemicolon/html";
 
-initPageLink(cube as unknown as Cube)
+initPageLink({...cube, state} as unknown as Cube)
 
 describe('PageLink', () => {
 	it('should render correctly', async () => {
@@ -27,8 +27,8 @@ describe('PageLink', () => {
 		
 		l2.find('a')[0]?.target?.click()
 		
-		expect(l2ActiveMock).toHaveBeenCalledTimes(1)
-		expect(l1ActiveMock).toHaveBeenCalledTimes(1)
+		expect(l2ActiveMock).toHaveBeenCalledTimes(2)
+		expect(l1ActiveMock).toHaveBeenCalledTimes(2)
 		
 		expect(l1.content).toBe('<a part="anchor" href="/">\n' +
 			'\t\t\t\t<slot></slot>\n' +

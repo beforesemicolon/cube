@@ -247,12 +247,12 @@ const CounterApp = () => {
 }
 ```
 
-However, this is quite messy. Therefore, Cube gives you `useValue` that handles all that for you:
+However, this is quite messy. Therefore, Cube gives you `state` that handles all that for you:
 
 ```ts
 const CounterApp = () => {
     // get a getter and a setter functions for a value
-    let [count, updateCount] = useValue(0);
+    let [count, updateCount] = state(0);
     
     const countUp = () => {
       updateCount(count() + 1)
@@ -265,7 +265,7 @@ const CounterApp = () => {
 }
 ```
 
-The `useValue` will automatically trigger DOM update on changes but, it should not be used for everything.
+The `state` will automatically trigger DOM update on changes but, it should not be used for everything.
 You can still keep data as dynamic data and have a state that when changed will trigger DOM update causing 
 everything else to be considered.
 
@@ -278,7 +278,7 @@ name of the event all lowercase to match the native HTML pattern. The name of th
 custom event that particular component dispatches or any [native HTML element events](https://developer.mozilla.org/en-US/docs/Web/Events).
 
 ```ts
-const InputField = () => {
+const TextInput = () => {
     const dispatch = eventDispatch();
     
     const onChange = (event) => {

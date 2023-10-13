@@ -1,8 +1,8 @@
-const {register, template, repeat, html, useValue, when} = window.BFS?.Cube;
+const {register, template, repeat, html, state, when} = window.BFS?.Cube;
 
 const TicTacToe = (props) => {
-  const [currentPlayer, setCurrentPlayer] = useValue(props.startingPlayer());
-  const [finished, setFinished] = useValue(false);
+  const [currentPlayer, setCurrentPlayer] = state(props.startingPlayer());
+  const [finished, setFinished] = state(false);
   let winCells = [];
   let cellsData = Array.from({length: 9}, (_, i) => ({label: ''}));
   

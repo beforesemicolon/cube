@@ -1,6 +1,6 @@
 import {langColor} from './code-snippet.component.js';
 import snippets from './snippets.json' assert { type: 'json' };
-const {register, template, html, useValue, repeat} = window.BFS?.Cube;
+const {register, template, html, state, repeat} = window.BFS?.Cube;
 
 const optGapPattern = /[\s,]+(?=[^,\s]+)/
 
@@ -8,7 +8,7 @@ const CodePreview = (props) => {
   const snippet = snippets[props.preview()];
   const languages = () => [...props.lang().split(optGapPattern).map(s => s.trim()), "preview"];
   const names = () => props.name().split(optGapPattern).map(s => s.trim());
-  const [currentTab, setCurrentTab] = useValue(languages()[0]);
+  const [currentTab, setCurrentTab] = state(languages()[0]);
   
   const tab = (language) => html`
     <div class="tab ${language}"

@@ -1,1 +1,2 @@
-export const conditionalField = (key: string, value: unknown) => value === undefined ? {} : {[key]: value};
+export const conditionalField = (key: string, value: unknown) =>
+    value === undefined ? {} : { [key]: value }

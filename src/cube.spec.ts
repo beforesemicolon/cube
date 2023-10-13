@@ -8,12 +8,11 @@ import {
 	onMount,
 	onUpdate,
 	register,
-	template, useContext, createContext, onContextUpdate,
-	useValue
+	template, useContext, createContext, onContextUpdate, refs,
 } from "./cube";
 import {updateConfig} from './config';
-import {Props, ShadowRootMode} from "./types";
-import {element, html} from "@beforesemicolon/html";
+import {Props, ShadowRootMode, ObjectLiteral} from "./types";
+import {element, html, state} from "@beforesemicolon/html";
 import {render, wait, waitFor} from './testing';
 
 describe('cube', () => {
@@ -35,7 +34,8 @@ describe('cube', () => {
 		const MyComponent = () => {
 		};
 		
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 		const res = register(MyComponent, null);
 		
 		const calls = (customElements.define as jest.Mock).mock.calls;
@@ -86,7 +86,7 @@ describe('cube', () => {
 		const updateMock = jest.fn();
 		const domUpdateMock = jest.fn();
 		
-		interface ButtonProps {
+		interface ButtonProps extends ObjectLiteral {
 			type: "button" | "submit";
 			label: string;
 		}
@@ -223,9 +223,9 @@ describe('cube', () => {
 		expect(clickMock).toHaveBeenCalledWith(new CustomEvent("clicked"));
 	});
 	
-	it('should update template on change with useValue', async () => {
+	it('should update template on change with state', async () => {
 		const ChangeComponent = () => {
-			const [count, setCount] = useValue(0);
+			const [count, setCount] = state(0);
 			
 			template`<button onclick="${() => setCount(count() + 1)}">${count}</button>`
 		}
@@ -408,10 +408,6 @@ describe('cube', () => {
 			expect(() => eventDispatch()).toThrowError('Must NOT use "eventDispatch" outside of a component')
 		});
 		
-		it('useValue is used outside component', () => {
-			expect(() => useValue(12)).toThrowError('Must NOT use "useValue" outside of a component')
-		});
-		
 		it('host is used outside component', () => {
 			expect(() => host()).toThrowError('Must NOT use "host" outside of a component')
 		});
@@ -441,7 +437,7 @@ describe('cube', () => {
 			await render(NotInCtxOne);
 			await render(WrapperCtxComp);
 			
-			expect(onErrorMock).toHaveBeenCalledWith(new Error('Component "NOT-IN-CTX-ONE" is not in context of "ctx"'))
+			expect(onErrorMock).toHaveBeenCalledWith(new Error('Component "not-in-ctx-one" is not in context of "ctx"'))
 		});
 	})
 	
@@ -456,7 +452,7 @@ describe('cube', () => {
 		
 		const cont = await render(CSSComponent, {}, CSSComponentStyle);
 		
-		expect(cont.content).toBe('<style class="css-component">:host {display: block}</style>content')
+		expect(cont.content).toBe('<style class="CUBE-css-component">:host {display: block}</style>content')
 		
 		const CSSComponentStyle2 = () => {
 			return `<style>:host {display: block}</style>`
@@ -468,7 +464,7 @@ describe('cube', () => {
 		
 		const cont2 = await render(CSSComponent2, {}, CSSComponentStyle2);
 		
-		expect(cont2.content).toBe('<style class="css-component2">:host {display: block}</style>content')
+		expect(cont2.content).toBe('<style class="CUBE-css-component2">:host {display: block}</style>content')
 	});
 	
 	it('should handle CSS JSON', async () => {
@@ -486,7 +482,7 @@ describe('cube', () => {
 		
 		const cont = await render(JSONComponent, {}, JSONComponentStyle);
 		
-		expect(cont.content).toBe('<style class="json-component">:host {display: block;}</style>content')
+		expect(cont.content).toBe('<style class="CUBE-json-component">:host {display: block;}</style>content')
 	});
 	
 	it('should handle style with none mode', async () => {
@@ -505,19 +501,19 @@ describe('cube', () => {
 		const cont = await render(JSONGlobalComponent, {}, JSONComponentStyle, {mode: ShadowRootMode.NONE});
 		
 		expect(cont.content).toBe('content');
-		expect(document.head.querySelector('style[class="json-global-component"]')?.outerHTML)
-			.toBe('<style class="json-global-component">json-global-component {display: block;}</style>');
+		expect(document.head.querySelector('style[class="CUBE-json-global-component"]')?.outerHTML)
+			.toBe('<style class="CUBE-json-global-component">json-global-component {display: block;}</style>');
 	});
 	
 	it('should update style on props change', async () => {
-		interface CompProps {
+		interface CompProps extends ObjectLiteral {
 			disabled: boolean;
 		}
 		
 		const StyledCompStyle = jest.fn((props: Props<CompProps>) => {
 			return {
 				":host": {
-					opacity: props.disabled() ? 0.5 : 1
+					opacity: props.disabled() ? "0.5" : "1"
 				}
 			}
 		})
@@ -528,12 +524,12 @@ describe('cube', () => {
 		
 		expect(StyledCompStyle).toHaveBeenCalledTimes(1)
 		
-		expect(cont.content).toBe('<style class="styled-comp">:host {opacity: 1px;}</style>')
+		expect(cont.content).toBe('<style class="CUBE-styled-comp">:host {opacity: 1;}</style>')
 		
 		cont.target.disabled = true;
 		
 		expect(StyledCompStyle).toHaveBeenCalledTimes(2)
-		expect(cont.content).toBe('<style class="styled-comp">:host {opacity: 0.5px;}</style>')
+		expect(cont.content).toBe('<style class="CUBE-styled-comp">:host {opacity: 0.5;}</style>')
 	});
 	
 	it('should handle passing primitive to a component', async () => {
@@ -577,23 +573,25 @@ describe('cube', () => {
 		const refMock = jest.fn();
 		
 		const RefComponent = () => {
+			const ref = refs()
 			const el = element("p", {textContent: "sample"})
 			const markup = html`
 				<div ref="content">content</div>`
 			
-			const temp = template`${el}<button ref="btn">click me</button>${markup}`;
+			template`${el}<button ref="btn">click me</button>${markup}`;
 			
-			refMock(temp.refs)
+			onMount(() => {
+				refMock(ref('btn')[0])
+				refMock(ref('content')[0])
+			})
 		}
 		
 		const cont = await render(RefComponent);
 		
 		expect(cont.content).toBe('<p>sample</p><button>click me</button><div>content</div>')
 		
-		expect(refMock).toHaveBeenCalledWith({
-			btn: expect.any(Array),
-			content: expect.any(Array),
-		})
+		expect(refMock).toHaveBeenCalledWith(expect.any(HTMLButtonElement))
+		expect(refMock).toHaveBeenCalledWith(expect.any(HTMLDivElement))
 	});
 	
 	describe('should handle context', () => {
@@ -675,4 +673,3 @@ describe('cube', () => {
 	})
 	
 })
-

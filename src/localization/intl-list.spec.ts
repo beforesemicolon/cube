@@ -2,12 +2,13 @@ import {Cube} from "../types";
 import * as cube from '../cube';
 import initList, {IntlListProps} from './intl-list';
 import {render} from "../testing";
-import {html} from "@beforesemicolon/html";
+import {html, state} from "@beforesemicolon/html";
 import {TC} from "../utils";
 
 const CUBE = {
 	...cube,
-	TC
+	TC,
+	state
 } as unknown as Cube
 
 const l = initList(CUBE)
@@ -20,6 +21,7 @@ describe('intl-list', () => {
 			<intl-list items="${items}" type="conjunction"></intl-list>
 			<intl-list items="${items}" type="and"></intl-list>
 		`);
+		
 		
 		expect(cont.find('intl-list').map(d => d.content)).toEqual([
 			"book, pen, and pencil",

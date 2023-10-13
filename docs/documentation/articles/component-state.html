@@ -15,30 +15,30 @@ register(MyComponent)
 Cube has <a href="/documentation/expressions#dynamic-expression">dynamic expression</a> which you can use to mark
 places in the DOM that will react to internal changes.</p>
 
-<h3 id="usevalue-helper"><code>useValue</code> helper</h3>
-<p>The <code>useValue</code> helper is the closest thing that comes to local state management because it triggers
+<h3 id="state-helper"><code>state</code> helper</h3>
+<p>The <code>state</code> helper is the closest thing that comes to local state management because it triggers
 DOM update on every change.</p>
 
 <code-snippet language="javascript">
 const MyComponent = () => {
-  const [greeting, setGreeting] = useValue("Hello World");
+  const [greeting, setGreeting] = state("Hello World");
 
   template`<p>${greeting}</p>`;
 }
 
 register(MyComponent)
 </code-snippet>
-<p>The <code>useValue</code> helper takes an initial value and returns an array with a getter and a setter functions.</p>
+<p>The <code>state</code> helper takes an initial value and returns an array with a getter and a setter functions.</p>
 
 <p>In most cases you can do fine with <a href="#derived-state">derived states</a> therefore you should only need to
-use <code>useValue</code> when you need to manually trigger the DOM to change with a value.</p>
+use <code>state</code> when you need to manually trigger the DOM to change with a value.</p>
 <h3 id="derived-state">Derived state</h3>
 <p>You can also create internal setters for derived state which are simply functions that return a value and
    is used directly in the template.</p>
 
 <code-snippet language="javascript">
 const MyComponent = () => {
-  const [count, setCount] = useValue(0);
+  const [count, setCount] = state(0);
   // the limitMessage is read on every template update
   // and because it is a setter function (dynamic expression) it
   // will be called along with everything
@@ -58,7 +58,7 @@ const MyComponent = () => {
 
 <p>Every update causes every dynamic expression in the template to be called to check if value changed so
    the DOM can be updated accordingly. You can use this feature to create derived states which should be
-evaluated along with other state change saving you from creating many <code>useValue</code> data.</p>
+evaluated along with other state change saving you from creating many <code>state</code> data.</p>
 
 <p>This can also be used for props changes. Bellow is an alternative example using props.</p>
 

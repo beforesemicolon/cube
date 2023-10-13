@@ -2,15 +2,20 @@ import {mergeObjects} from './merge-objects';
 
 describe('mergeObjects', () => {
   it('should return second object if one is null or not an object', () => {
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     expect(mergeObjects(null, {b: 10})).toEqual({b: 10})
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     expect(mergeObjects(12, {b: 10})).toEqual({b: 10})
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     expect(mergeObjects('12', {b: 10})).toEqual({b: 10})
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     expect(mergeObjects(() => {}, {b: 10})).toEqual({b: 10})
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     expect(mergeObjects({a: 10}, null)).toEqual({a: 10})
   });
   

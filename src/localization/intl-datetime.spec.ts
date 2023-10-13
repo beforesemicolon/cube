@@ -2,12 +2,13 @@ import {Cube} from "../types";
 import * as cube from '../cube';
 import initDate from './intl-datetime';
 import {render} from "../testing";
-import {html} from "@beforesemicolon/html";
+import {html, state} from "@beforesemicolon/html";
 import {TC} from "../utils";
 
 const CUBE = {
 	...cube,
-	TC
+	TC,
+	state
 } as unknown as Cube
 
 const dt = initDate(CUBE)
@@ -37,7 +38,8 @@ describe('intl-datetimetime', () => {
 		expect(d1.content).not.toBe('')
 		expect(d1.content).not.toBe('[Invalid Date: ]')
 		expect(dt('en', '')).not.toBe('')
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 		expect(dt('en', null)).toBe('')
 	});
 	
@@ -143,7 +145,8 @@ describe('intl-datetimetime', () => {
 			{second: "numeric", value: "1694326144082"},
 			{second: "2-digit", value: "1694326144082"},
 		]
-			// @ts-ignore
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 			.map(({value, ...opt}) => dt('en', value, opt))).toEqual(expected)
 	});
 	
@@ -199,7 +202,8 @@ describe('intl-datetimetime', () => {
 			{dateStyle: "medium", timeStyle: "medium", value: "1694326144082"},
 			{dateStyle: "short", timeStyle: "short", value: "1694326144082"},
 		]
-			// @ts-ignore
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 			.map(({value, ...opt}) => dt('en', value, opt))).toEqual(expected)
 	});
 	
@@ -222,7 +226,8 @@ describe('intl-datetimetime', () => {
 			{hour12: "true", hourCycle: "h12", dayPeriod: "short", value: "1355716842000"},
 			{hour12: "true", hourCycle: "h12", dayPeriod: "narrow", value: "1355716842000"},
 		]
-			// @ts-ignore
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 			.map(({value, ...opt}) => dt('en', value, opt))).toEqual(expected)
 	});
 	
@@ -245,7 +250,8 @@ describe('intl-datetimetime', () => {
 			{hourCycle: "h12", hour12: "true", value: "1355716842000"},
 			{hourCycle: "h23", value: "1355716842000"},
 		]
-			// @ts-ignore
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 			.map(({value, ...opt}) => dt('en', value, opt))).toEqual(expected)
 	});
 	
@@ -271,7 +277,8 @@ describe('intl-datetimetime', () => {
 			{calendar: "islamic", locale: "ar", value: "1355716842000"},
 			{calendar: "gregory", value: "1355716842000"},
 		]
-			// @ts-ignore
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 			.map(({value, locale = 'en', ...opt}) => dt(locale, value, opt))).toEqual(expected)
 	});
 	
@@ -291,7 +298,8 @@ describe('intl-datetimetime', () => {
 			{timezone:"America/New_York", value: "1355716842000"},
 			{timezone:"UTC", value: "1355716842000"}
 		]
-			// @ts-ignore
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 			.map(({value, ...opt}) => dt('en', value, opt))).toEqual(expected)
 	});
 	

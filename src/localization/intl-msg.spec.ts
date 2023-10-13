@@ -2,7 +2,7 @@ import {Cube} from "../types";
 import * as cube from '../cube';
 import initLocale from './intl-locale';
 import initMsg from './intl-msg';
-import {element, html} from "@beforesemicolon/html";
+import {element, html, state} from "@beforesemicolon/html";
 import {render} from "../testing";
 import {TC} from "../utils";
 
@@ -10,7 +10,8 @@ const CUBE = {
 	...cube,
 	element,
 	html,
-	TC
+	TC,
+	state
 } as unknown as Cube
 
 initLocale(CUBE)
