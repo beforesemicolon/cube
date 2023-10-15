@@ -6,6 +6,8 @@ import {
     state,
     HtmlTemplate,
     effect,
+    helper,
+    Helper,
 } from '@beforesemicolon/html'
 
 import {
@@ -57,6 +59,8 @@ if (window) {
             html,
             element,
             state,
+            helper,
+            Helper,
             HtmlTemplate,
         },
     }
