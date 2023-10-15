@@ -36,7 +36,10 @@ function getPropertyCSS(
         cb(
             null,
             createPropertyBody(
-                prop.replace(/&/g, parentProp),
+                parentProp
+                    .split(',')
+                    .map((parent) => prop.replace(/&/g, parent))
+                    .join(','),
                 value as ObjectLiteral
             )
         )

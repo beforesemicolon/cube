@@ -169,6 +169,27 @@ describe('JSONToCSS', () => {
 		}, 'comp-test', true)).toBe('.box {display: inline-block;} .box__small {width: 50px;} .box__large {width: 150px;}')
 	});
 	
+	it('should handle deeply nested grouped selectors', () => {
+		expect(JSONToCSS({
+			'.box': {
+				display: 'inline-block',
+				'&.outline, &.text': {
+					background: 'none',
+					color: 'var(--color-dark-100, #000)',
+					'&:hover': {
+						background: 'var(--color-light-300, #eaeaea)',
+					},
+					'&:active, &:focus': {
+						background: 'var(--color-light-900, #eaeaea)',
+					},
+				},
+			}
+		}, 'comp-test', true)).toBe('.box {display: inline-block;} ' +
+			'.box.outline, .box.text {background: none;color: var(--color-dark-100, #000);} ' +
+			'.box.outline:hover, .box.text:hover {background: var(--color-light-300, #eaeaea);} ' +
+			'.box.outline:active, .box.outline:focus, .box.text:active,  .box.text:focus {background: var(--color-light-900, #eaeaea);}')
+	});
+	
 	it('should keep variable', () => {
 		expect(JSONToCSS({
 			":host": {
