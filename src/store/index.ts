@@ -70,6 +70,13 @@ export const store = <T>(
                 broadcast(data, name)
             }
         },
+        set: (newData: T | null) => {
+            if (newData !== data) {
+                data = newData
+
+                broadcast(data, name)
+            }
+        },
         subscribe: (sub: Subscriber<T>) => subscribe<T>(sub, name, data),
     }) as Store<unknown>
 

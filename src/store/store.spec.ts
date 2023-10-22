@@ -12,7 +12,17 @@ describe('store', () => {
 	it('should create store', () => {
 		expect(todoStore).toHaveProperty('update')
 		expect(todoStore).toHaveProperty('value')
+		expect(todoStore).toHaveProperty('set')
 		expect(todoStore).toHaveProperty('subscribe')
+	});
+	
+	it('should set store', () => {
+		todoStore.set([
+			{id: 1, text: 'sample', completed: true},
+		])
+		
+		expect(todoStore.value).toHaveLength(1)
+		expect(todoStore.value).toEqual([{id: 1, text: 'sample', completed: true}])
 	});
 	
 	it('should update store', () => {

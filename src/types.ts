@@ -115,6 +115,7 @@ export type Subscriber<T> = (data: T | null) => void
 export interface Store<T> {
     value: T | null
     update: (newData: T | null) => void
+    set: (newData: T | null) => void
     subscribe: (sub: Subscriber<T>) => () => void
 }
 
