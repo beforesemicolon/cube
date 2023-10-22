@@ -1,6 +1,6 @@
 {
   "name": "@beforesemicolon/cube",
-  "version": "0.1.15-beta",
+  "version": "0.1.16-beta",
   "description": "Function-oriented framework to create future-proof UI components and web applications.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -53,6 +53,6 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@beforesemicolon/html": "^0.1.38-beta"
+    "@beforesemicolon/html": "^0.1.39-beta"
   }
 }

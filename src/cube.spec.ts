@@ -12,7 +12,7 @@ import {
 } from "./cube";
 import {updateConfig} from './config';
 import {Props, ShadowRootMode, ObjectLiteral} from "./types";
-import {element, html, state} from "@beforesemicolon/html";
+import {element, html, state, when} from "@beforesemicolon/html";
 import {render, wait, waitFor} from './testing';
 
 describe('cube', () => {
@@ -548,8 +548,9 @@ describe('cube', () => {
 		expect(parent.content).toBe('<child-comp val="12"></child-comp>')
 		expect(parent.find('child-comp')[0].content).toBe('12')
 	});
+
 	
-	it('should handle passing non-primitive to a component', async () => {
+	it('should handle passing non-primitive value to a component', async () => {
 		const DeepComp = ({val}: Props<{ val: { sample: string } }>) => {
 			template`${() => val().sample}`
 		}
@@ -568,7 +569,38 @@ describe('cube', () => {
 		expect(el.content).toBe('<deep-comp val="{&quot;sample&quot;:12}"></deep-comp>')
 		expect(el.find('deep-comp')[0].content).toBe('12')
 	});
-	
+
+	it('should handle passing non-primitive value to a conditionally rendering component', async () => {
+		type obj = { sample: { x: 12} | null }
+
+		const ObjValue = (props: Props<obj>) => {
+			template`${() => props.sample()?.x}`
+		}
+
+		const MainApp = () => {
+			const [obj, setObj] = state<obj['sample']>(null);
+
+			onMount(() => {
+				setTimeout(() => {
+					setObj({x: 12})
+				}, 1000)
+			})
+
+			template`${when(obj, html`<obj-value sample="${obj}"></obj-value>`)}`
+		}
+
+
+		register<obj>(ObjValue, {sample: null});
+		const el = await render(MainApp)
+
+		expect(el.content).toBe('')
+
+		await wait(1000)
+
+		expect(el.content).toBe('<obj-value sample="{&quot;x&quot;:12}"></obj-value>')
+		expect(el.find('obj-value ')[0].content).toBe('12')
+	});
+
 	it('should get references of elements from template', async () => {
 		const refMock = jest.fn();
 		
