@@ -21,12 +21,19 @@ import {
 } from './cube'
 import { TC } from './utils/type-check'
 import { config } from './config'
+import type * as CSS from 'csstype'
+import { AtRules, HtmlAttributes, Pseudos, SvgAttributes } from 'csstype'
+
+interface CSSProperties extends CSS.Properties, CSS.PropertiesHyphen {}
 
 export interface StylesheetObject {
-    [k: string]: Partial<CSSStyleDeclaration> | StylesheetObject | number
+    [k: string | Pseudos | HtmlAttributes | SvgAttributes | AtRules]:
+        | CSSProperties
+        | StylesheetObject
 }
 
 export type Stylesheet = StylesheetObject | string
+
 export type Style<P> = (data: Props<P>) => Stylesheet
 export type Props<P> = {
     [K in keyof P]: () => P[K]
