@@ -1,6 +1,4 @@
-const jsdom = require('jsdom')
-const { JSDOM } = jsdom
-global.document = new JSDOM('').window.document
+require('global-jsdom/register')
 
 const { parse } = require('@beforesemicolon/html-parser')
 const fs = require('fs/promises')
@@ -39,7 +37,7 @@ const getNavObj = (anchorElement) => {
 }
 
 fs.readFile(DocumentHtmlPath, 'utf-8').then(async (content) => {
-    const doc = parse(content)
+    const doc = parse(content, document)
     const html = doc.querySelector('html')
     const article = doc.getElementById('doc-content')
     const docMenu = doc.getElementById('doc-menu')

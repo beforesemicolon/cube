@@ -17,7 +17,7 @@
     "build:client-router": "esbuild src/client-router.ts --bundle --minify --keep-names --sourcemap --target=esNext --outfile=dist/client-router.js",
     "build:client-store": "esbuild src/client-store.ts --bundle --minify --keep-names --sourcemap --target=esNext --outfile=dist/client-store.js",
     "build:client-intl": "esbuild src/client-intl.ts --bundle --minify --keep-names --sourcemap --target=esNext --outfile=dist/client-intl.js",
-    "build": "npm-run-all lint test build:docs && rm -rf dist && tsc && npm-run-all build:min build:client build:client-router build:client-store build:client-intl",
+    "build": "npm-run-all lint test && rm -rf dist && tsc && npm-run-all build:min build:client build:client-router build:client-store build:client-intl",
     "lint": "eslint ./src && prettier --check ./src",
     "format": "eslint ./src --fix && prettier --write ./src"
   },
@@ -43,6 +43,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-promise": "^6.1.1",
     "express": "^4.18.2",
+    "global-jsdom": "^9.1.0",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
     "jsdom": "^22.1.0",
