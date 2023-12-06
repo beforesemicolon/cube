@@ -4,7 +4,7 @@ import initDuration, {IntlDurationProps} from './intl-duration';
 import initLocale from './intl-locale';
 import {render} from "../testing";
 import {TC} from "../utils";
-import {html, state} from "@beforesemicolon/html";
+import {html, state} from "@beforesemicolon/markup";
 
 const CUBE = {
 	...cube,

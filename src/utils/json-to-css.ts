@@ -1,4 +1,4 @@
-import { turnCamelToKebabCasing } from '@beforesemicolon/html/dist/utils'
+import { turnCamelToKebabCasing } from '@beforesemicolon/markup/dist/utils'
 import { replaceCssHost } from './replace-css-host'
 import { ObjectLiteral, StylesheetObject } from '../types'
 import { TC } from './type-check'

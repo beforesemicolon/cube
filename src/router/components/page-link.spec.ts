@@ -2,7 +2,7 @@ import {Cube} from "../../types";
 import * as cube from '../../cube';
 import initPageLink from './page-link';
 import {render} from "../../testing";
-import {html, state} from "@beforesemicolon/html";
+import {html, state} from "@beforesemicolon/markup";
 
 initPageLink({...cube, state} as unknown as Cube)
 

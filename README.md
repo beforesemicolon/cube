@@ -90,7 +90,7 @@ const MyButton = () => {
 register(MyButton)
 ```
 
-Cube template is based on [@bfs/html](https://www.npmjs.com/package/@beforesemicolon/html) , and it is a powerful
+Cube template is based on [@bfs/html](https://www.npmjs.com/package/@beforesemicolon/markup) , and it is a powerful
 reactive templating system that does not everything you need for templating. 
 
 Check this amazing [Todo App](https://stackblitz.com/edit/web-platform-lvonxr?file=app.js) built just with this templating library.
@@ -110,7 +110,7 @@ Button.render(document.body)
 Button({type: "button", content: "click me"}).render(document.body)
 ```
 
-To learn more about Cube template check [@bfs/html docs](https://www.npmjs.com/package/@beforesemicolon/html)
+To learn more about Cube template check [@bfs/html docs](https://www.npmjs.com/package/@beforesemicolon/markup)
 which Cube is built on.
 
 ### Props
@@ -338,7 +338,7 @@ const TodoStatus = (props) => {
 }
 ```
 
-But Cube exposes a `when` helper which does all these by default. [Learn more about it](https://www.npmjs.com/package/@beforesemicolon/html#when)
+But Cube exposes a `when` helper which does all these by default. [Learn more about it](https://www.npmjs.com/package/@beforesemicolon/markup#when)
 
 ```ts
 const TodoStatus = (props) => {
@@ -353,7 +353,7 @@ const TodoStatus = (props) => {
 
 ### Conditional Attributes
 Cube handles conditional attributes by prefixing any attributes with `attr` and providing a condition.
-[Learn more](https://www.npmjs.com/package/@beforesemicolon/html#the-attr-attribute)
+[Learn more](https://www.npmjs.com/package/@beforesemicolon/markup#the-attr-attribute)
 
 ```ts
 const MyButton = () => {
@@ -401,7 +401,7 @@ const TodoApp = () => {
 ```
 
 But when it comes to composing lists and dynamic data Cube exposes the `repeat` helper
-that handles everything for you. [Learn more](https://www.npmjs.com/package/@beforesemicolon/html#repeat)
+that handles everything for you. [Learn more](https://www.npmjs.com/package/@beforesemicolon/markup#repeat)
 
 ```ts
 const TodoApp = () => {

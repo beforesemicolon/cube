@@ -12,7 +12,7 @@ import {
 } from "./cube";
 import {updateConfig} from './config';
 import {Props, ShadowRootMode, ObjectLiteral} from "./types";
-import {element, html, state, when} from "@beforesemicolon/html";
+import {element, html, state, when} from "@beforesemicolon/markup";
 import {render, wait, waitFor} from './testing';
 
 describe('cube', () => {

@@ -2,7 +2,7 @@ import { Props, Cube } from '../../types'
 import { pathStringToPattern } from '../utils/path-string-to-pattern'
 import { getPathMatchParams } from '../utils/get-path-match-params'
 import { onPageChange } from '../pages'
-import { is, isNot } from '../../helpers/is'
+import { is, isNot } from '@beforesemicolon/markup'
 
 interface WithRouteProps {
     path: string

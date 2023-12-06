@@ -2,7 +2,7 @@ import {Cube} from "../types";
 import * as cube from '../cube';
 import initName from './intl-name';
 import {render} from "../testing";
-import {html, state} from "@beforesemicolon/html";
+import {html, state} from "@beforesemicolon/markup";
 import {TC} from "../utils";
 
 const CUBE = {

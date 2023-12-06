@@ -1,4 +1,4 @@
-import { element, HtmlTemplate } from '@beforesemicolon/html'
+import { element, HtmlTemplate } from '@beforesemicolon/markup'
 import { register } from '../cube'
 import {
     ComponentOptions,

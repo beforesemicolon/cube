@@ -1,10 +1,10 @@
-import { HtmlTemplate, state } from '@beforesemicolon/html'
+import { HtmlTemplate, state } from '@beforesemicolon/markup'
 import {
     booleanAttributes,
     jsonParse,
     turnCamelToKebabCasing,
     turnKebabToCamelCasing,
-} from '@beforesemicolon/html/dist/utils'
+} from '@beforesemicolon/markup/dist/utils'
 import { getStyleString, JSONToCSS, TC } from './utils'
 import {
     ComponentOptions,
@@ -254,42 +254,6 @@ function createComponentClass<P extends ObjectLiteral>(
             #observer: MutationObserver | null = null
             __ROOT__: ShadowRoot | undefined
 
-            getStyle() {
-                let style: Stylesheet = ''
-
-                if (TC.function(stylesheet)) {
-                    style = stylesheet(this.#readonlyProps)
-
-                    if (style) {
-                        style = TC.objectLiteral(style)
-                            ? `<style class="${styleClsName}">${JSONToCSS(
-                                  style,
-                                  tagName,
-                                  mode !== ShadowRootMode.NONE
-                              )}</style>`
-                            : TC.string(style)
-                            ? getStyleString(
-                                  style,
-                                  tagName.toLowerCase(),
-                                  mode !== ShadowRootMode.NONE
-                              )
-                            : ''
-                    }
-                }
-
-                return style
-            }
-
-            updateStyle() {
-                const style = this.getStyle()
-                if (this.#styleElement) {
-                    const div = document.createElement('div')
-                    div.innerHTML = style
-                    this.#styleElement.innerHTML =
-                        div.querySelector('style')?.innerHTML ?? ''
-                }
-            }
-
             constructor() {
                 super()
 
@@ -347,10 +311,68 @@ function createComponentClass<P extends ObjectLiteral>(
                 }
             }
 
+            getStyle() {
+                let style: Stylesheet = ''
+
+                if (TC.function(stylesheet)) {
+                    style = stylesheet(this.#readonlyProps)
+
+                    if (style) {
+                        style = TC.objectLiteral(style)
+                            ? `<style class="${styleClsName}">${JSONToCSS(
+                                  style,
+                                  tagName,
+                                  mode !== ShadowRootMode.NONE
+                              )}</style>`
+                            : TC.string(style)
+                            ? getStyleString(
+                                  style,
+                                  tagName.toLowerCase(),
+                                  mode !== ShadowRootMode.NONE
+                              )
+                            : ''
+                    }
+                }
+
+                return style
+            }
+
+            updateStyle() {
+                const style = this.getStyle()
+                if (this.#styleElement) {
+                    const div = document.createElement('div')
+                    div.innerHTML = style
+                    this.#styleElement.innerHTML =
+                        div.querySelector('style')?.innerHTML ?? ''
+                }
+            }
+
             async connectedCallback() {
                 requestAnimationFrame(() => {
                     try {
-                        if (!this.#renderedBefore) {
+                        if (this.#renderedBefore) {
+                            // verify that the component was mounted in context and
+                            // onPageChange it to all context it needs
+                            this.#handlers.contextMap.forEach((val, name) => {
+                                try {
+                                    const ctx =
+                                        CTX.getContextHost(name, this) ?? null
+                                    val.inContext = true
+                                    val.ctx = ctx
+                                    val.ctx?.subs.add(
+                                        this.#handlers.contextUpdate
+                                    )
+                                } catch (e) {
+                                    console.error(
+                                        `Component "${tagName}" is no longer in context of "${name}"`
+                                    )
+                                    // set inContext to false in case there is something trying to
+                                    // read or update the context. only components in context can do that
+                                    val.inContext = false
+                                    this.#handlers.error?.(e as Error)
+                                }
+                            })
+                        } else {
                             currentComponent = this.#handlers
                             comp(this.#readonlyProps)
                             currentComponent = null
@@ -379,32 +401,9 @@ function createComponentClass<P extends ObjectLiteral>(
                                         ) as HTMLStyleElement
                                 }
                             }
-
-                            this.#handlers.template?.render(this.#shadowRoot)
-                        } else {
-                            // verify that the component was mounted in context and
-                            // onPageChange it to all context it needs
-                            this.#handlers.contextMap.forEach((val, name) => {
-                                try {
-                                    const ctx =
-                                        CTX.getContextHost(name, this) ?? null
-                                    val.inContext = true
-                                    val.ctx = ctx
-                                    val.ctx?.subs.add(
-                                        this.#handlers.contextUpdate
-                                    )
-                                } catch (e) {
-                                    console.error(
-                                        `Component "${tagName}" is no longer in context of "${name}"`
-                                    )
-                                    // set inContext to false in case there is something trying to
-                                    // read or update the context. only components in context can do that
-                                    val.inContext = false
-                                    this.#handlers.error?.(e as Error)
-                                }
-                            })
-                            this.#handlers.template?.update()
                         }
+
+                        this.#handlers.template?.render(this.#shadowRoot, true)
 
                         if (TC.function(this.#handlers.domUpdate)) {
                             const observerOptions = {
@@ -454,6 +453,7 @@ function createComponentClass<P extends ObjectLiteral>(
                             val.ctx?.subs.delete(this.#handlers.contextUpdate)
                         })
                         this.#handlers.destroy?.()
+                        this.#handlers.template?.unmount()
                         this.#observer?.disconnect()
                     } catch (e) {
                         this.#handlers.error?.(e as Error)

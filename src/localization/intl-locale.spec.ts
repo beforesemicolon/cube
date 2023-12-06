@@ -3,7 +3,7 @@ import * as cube from '../cube';
 
 import initLocale from './intl-locale';
 import {render} from "../testing";
-import {html} from "@beforesemicolon/html";
+import {html} from "@beforesemicolon/markup";
 
 const locale = initLocale(cube as unknown as Cube)
 

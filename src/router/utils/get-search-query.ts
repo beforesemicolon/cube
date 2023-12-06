@@ -1,4 +1,4 @@
-import { jsonParse } from '@beforesemicolon/html/dist/utils'
+import { jsonParse } from '@beforesemicolon/markup/dist/utils'
 import { ObjectLiteral } from '../../types'
 
 export const getSearchQuery = <T extends Record<string, string>>(): T => {

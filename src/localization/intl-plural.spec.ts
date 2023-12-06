@@ -2,7 +2,7 @@ import {Cube} from "../types";
 import * as cube from '../cube';
 import initPlural from './intl-plural';
 import {render} from "../testing";
-import {state, html} from "@beforesemicolon/html";
+import {state, html} from "@beforesemicolon/markup";
 import initLocale from "./intl-locale";
 import {TC} from '../utils';
 

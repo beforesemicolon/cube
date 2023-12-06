@@ -1,6 +1,6 @@
 import { isOnPage } from './utils/is-on-page'
 import { getSearchQuery } from './utils/get-search-query'
-import { jsonStringify } from '@beforesemicolon/html/dist/utils'
+import { jsonStringify } from '@beforesemicolon/markup/dist/utils'
 import { TC } from '../utils'
 import { ObjectLiteral } from '../types'
 

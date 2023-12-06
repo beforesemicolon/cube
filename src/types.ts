@@ -7,7 +7,7 @@ import {
     element,
     effect,
     state,
-} from '@beforesemicolon/html'
+} from '@beforesemicolon/markup'
 import {
     eventDispatch,
     host,
