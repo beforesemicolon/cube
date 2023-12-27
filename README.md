@@ -52,7 +52,7 @@ const {template, register} = window.BFS.Cube;
 > - [Create a component](#create-a-component)
 > - [Create Elements](#create-elements)
 > - [Props](#props)
-> - [Component Options](#component-options)
+> - [HTMLComponentElement Options](#component-options)
 > - [Lifecycles](#lifecycles)
 > - [State](#state)
 > - [Events](#events)
@@ -167,7 +167,7 @@ Recommended would be to split the data into their primitive values instead like 
 <todo-item name="sample" status="pending"></todo-item>
 ```
 
-### Component Options
+### HTMLComponentElement Options
 Web components are rendered with [shadow root](https://developer.mozilla.org/en-US/docs/Web/API/Element/shadowRoot) in 
 [open mode](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/mode). Cube allows you to change these options:
 - [mode](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/mode): 'open', 'closed' or 'none'

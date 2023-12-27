@@ -1,8 +1,8 @@
-<h2>Component Creation</h2>
+<h2>HTMLComponentElement Creation</h2>
 <p>Cube is web UI framework. Although it creates web components first, it can be used to create any type of
 components. It really depends on which way you prefer.</p>
 
-<h3 id="cube-component">Cube Component</h3>
+<h3 id="cube-component">Cube HTMLComponentElement</h3>
 <p>Cube components are simply functions you can register as a web components.</p>
 
 <code-snippet language="javascript">
@@ -29,7 +29,7 @@ component and also the only one that allows you to use native web component APIs
 	<a href="https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/mode">open mode</a>. You can change this
 by playing with the configuration of the component to even remove the shadow root. <a href="/documentation/register">Learn more</a>.</p>
 
-<h4 id="component-name">Component name</h4>
+<h4 id="component-name">HTMLComponentElement name</h4>
 <p>The name of the function you use to create components is very important. Cube will use the function name
 to define the tag name of the component element.</p>
 
@@ -42,7 +42,7 @@ to define the tag name of the component element.</p>
 	<a href="https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name">valid name</a> specifications.
 An error will be thrown if this is not the case.</p>
 
-<h3 id="function-component">Function Component</h3>
+<h3 id="function-component">Function HTMLComponentElement</h3>
 <p>What if you don't want web components? Well, Cube templating system is the most powerful part of the framework
 ,and you can use it by itself.</p>
 
@@ -63,7 +63,7 @@ MyComponent.render(document.body); // append it to the document
 <code-snippet>
 npm install @beforesemicolon/markup
 </code-snippet>
-<h3 id="native-web-component">Native Web Component</h3>
+<h3 id="native-web-component">Native Web HTMLComponentElement</h3>
 <p>One thing that Cube simplifies a lot is the way you create web components natively. As a matter of fact, Cube
 use various techniques to handle all the complexity behind the scenes.</p>
 

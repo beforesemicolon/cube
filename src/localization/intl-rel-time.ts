@@ -1,4 +1,5 @@
-import { Props, Cube, ShadowRootMode } from '../types'
+import { Cube, ShadowRootModeEnum } from '../types'
+import { Props } from '@beforesemicolon/web-component'
 import {
     ONE_HOUR_MS,
     ONE_MINUTE_MS,
@@ -241,7 +242,7 @@ export default ({ register, host, template, state, onMount, TC }: Cube) => {
     }
 
     register<IntlRelTimeProps>(IntlRelTime, defaultProps, {
-        mode: ShadowRootMode.NONE,
+        mode: ShadowRootModeEnum.NONE,
     })
 
     return intlRelTime

@@ -20,4 +20,5 @@ afterAll(() => {
 
 beforeEach(() => {
   console.error.mockClear();
+  document.body.innerHTML = ''
 })

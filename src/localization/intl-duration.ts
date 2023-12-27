@@ -1,5 +1,6 @@
-import { Props, Cube, ShadowRootMode, ObjectLiteral } from '../types'
+import { Cube, ShadowRootModeEnum } from '../types'
 import { millisecondsToTimeParts } from './utils/milliseconds-to-time-parts'
+import { Props, ObjectLiteral } from '@beforesemicolon/web-component'
 
 const allFields = new Set(['second', 'minute', 'hour', 'day', 'month', 'year'])
 
@@ -137,7 +138,7 @@ export default ({ register, host, template, useContext, TC }: Cube) => {
             style: 'long',
             fields: '*',
         },
-        { mode: ShadowRootMode.NONE }
+        { mode: ShadowRootModeEnum.NONE }
     )
 
     return intlDuration

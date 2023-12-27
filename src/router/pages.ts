@@ -1,8 +1,8 @@
 import { isOnPage } from './utils/is-on-page'
 import { getSearchQuery } from './utils/get-search-query'
-import { jsonStringify } from '@beforesemicolon/markup/dist/utils'
+import { jsonStringify } from '@beforesemicolon/web-component'
 import { TC } from '../utils'
-import { ObjectLiteral } from '../types'
+import { ObjectLiteral } from '@beforesemicolon/web-component'
 
 const routeListeners: Set<
     (pathname: string, query: Record<string, string>) => void

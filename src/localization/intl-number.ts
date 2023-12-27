@@ -1,6 +1,7 @@
-import { Props, Cube, ShadowRootMode } from '../types'
+import { Cube, ShadowRootModeEnum } from '../types'
 import { config } from '../config'
 import { conditionalField } from './utils/conditional-field'
+import { Props } from '@beforesemicolon/web-component'
 
 export interface IntlNumberProps {
     value: number
@@ -168,7 +169,7 @@ export default ({ register, host, template, TC }: Cube) => {
     }
 
     register<IntlNumberProps>(IntlNumber, defaultProps, {
-        mode: ShadowRootMode.NONE,
+        mode: ShadowRootModeEnum.NONE,
     })
 
     return intlNumber

@@ -16,7 +16,7 @@ import {
     effect,
     helper,
     Helper,
-} from '@beforesemicolon/markup'
+} from '@beforesemicolon/web-component'
 
 import {
     register,

@@ -1,4 +1,4 @@
-import { Props, Cube, ShadowRootMode } from '../types'
+import { Cube, ShadowRootModeEnum } from '../types'
 import { conditionalField } from './utils/conditional-field'
 
 export interface IntlDatetimeProps {
@@ -153,7 +153,7 @@ export default ({ register, host, template, config, TC }: Cube) => {
     }
 
     register<IntlDatetimeProps>(IntlDatetime, intlDatetimeDefaultProps, {
-        mode: ShadowRootMode.NONE,
+        mode: ShadowRootModeEnum.NONE,
     })
 
     return intlDatetime

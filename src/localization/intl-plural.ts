@@ -1,5 +1,6 @@
-import { Cube, ObjectLiteral, Props } from '../types'
+import { Cube } from '../types'
 import { config } from '../config'
+import { Props, ObjectLiteral } from '@beforesemicolon/web-component'
 
 export interface PluralRules {
     other: string

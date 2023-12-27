@@ -1,5 +1,5 @@
 import {render, wait, waitFor} from './index';
-import {element, html} from "@beforesemicolon/markup";
+import {element, html} from "@beforesemicolon/web-component";
 import {template} from "../cube";
 
 describe('testing', () => {

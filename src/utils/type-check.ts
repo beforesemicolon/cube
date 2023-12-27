@@ -1,4 +1,4 @@
-import { ObjectLiteral } from '../types'
+import { ObjectLiteral } from '@beforesemicolon/web-component'
 
 interface Schema {
     [key: string]: ((x: unknown) => boolean) | Schema

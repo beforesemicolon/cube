@@ -1,5 +1,6 @@
 import { CurrentComponent, Context, ContextModel } from './types'
 import { TC } from './utils'
+import { ObjectLiteral } from '@beforesemicolon/web-component'
 
 const CONTEXT: WeakMap<HTMLElement, Context<unknown>> = new WeakMap()
 
@@ -30,7 +31,9 @@ const getContextHost = (name: string, ancestor: HTMLElement) => {
     }
 }
 
-export default (currentComponent: () => CurrentComponent | null) => {
+export default (
+    currentComponent: () => CurrentComponent<ObjectLiteral> | null
+) => {
     const createContext = <T>(
         name: string,
         data: T,

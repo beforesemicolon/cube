@@ -2,7 +2,7 @@ import {Cube} from "../../types";
 import * as cube from '../../cube';
 import initWithRoute from './with-route';
 import {render, waitFor} from "../../testing";
-import {html, when, state} from "@beforesemicolon/markup";
+import {html, when, state} from "@beforesemicolon/web-component";
 import {goToPage} from "../../router/pages";
 
 initWithRoute({...cube, html, when, state} as unknown as Cube)

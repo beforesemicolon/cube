@@ -1,5 +1,6 @@
-import { Props, Cube, ShadowRootMode, ObjectLiteral } from '../types'
+import { Cube, ShadowRootModeEnum } from '../types'
 import { config } from '../config'
+import { Props, ObjectLiteral } from '@beforesemicolon/web-component'
 
 export interface IntlListProps {
     items: Array<string> | undefined
@@ -54,7 +55,7 @@ export default ({ register, template }: Cube) => {
             style: 'long',
             locale: undefined,
         },
-        { mode: ShadowRootMode.NONE }
+        { mode: ShadowRootModeEnum.NONE }
     )
 
     return intlList

@@ -1,8 +1,8 @@
-import { Config, ShadowRootMode } from './types'
+import { Config, ShadowRootModeEnum } from './types'
 import { TC } from './utils'
 
 const defaultOptions: Config = {
-    mode: ShadowRootMode.OPEN,
+    mode: ShadowRootModeEnum.OPEN,
     delegatesFocus: false,
     lang: 'en',
     onError: console.error,
@@ -15,12 +15,12 @@ export function updateConfig(opt: Partial<Config> = defaultOptions) {
                 defaultOptions.mode =
                     opt.mode &&
                     [
-                        ShadowRootMode.OPEN,
-                        ShadowRootMode.CLOSED,
-                        ShadowRootMode.NONE,
+                        ShadowRootModeEnum.OPEN,
+                        ShadowRootModeEnum.CLOSED,
+                        ShadowRootModeEnum.NONE,
                     ].includes(opt.mode)
                         ? opt.mode
-                        : ShadowRootMode.OPEN
+                        : ShadowRootModeEnum.OPEN
                 break
             case 'delegatesFocus':
                 defaultOptions.delegatesFocus = TC.boolean(opt.delegatesFocus)

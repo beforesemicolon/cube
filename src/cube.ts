@@ -1,30 +1,34 @@
-import { HtmlTemplate, state } from '@beforesemicolon/markup'
 import {
+    HtmlTemplate,
+    state,
     booleanAttributes,
     jsonParse,
     turnCamelToKebabCasing,
     turnKebabToCamelCasing,
-} from '@beforesemicolon/markup/dist/utils'
+    WebComponent,
+    Props,
+    ObjectInterface,
+    ObjectLiteral,
+} from '@beforesemicolon/web-component'
+
 import { getStyleString, JSONToCSS, TC } from './utils'
 import {
     ComponentOptions,
     CurrentComponent,
     FnComponent,
-    ObjectLiteral,
-    Props,
-    ShadowRootMode,
+    ShadowRootModeEnum,
     Style,
     Stylesheet,
 } from './types'
 import { config } from './config'
 import initContext from './context'
 
-let currentComponent: CurrentComponent | null = null
+let currentComponent: CurrentComponent<ObjectLiteral> | null = null
 const CTX = initContext(() => currentComponent)
 
 export const { useContext, createContext, onContextUpdate } = CTX
 
-export function register<P extends ObjectLiteral>(
+export function register<P extends ObjectInterface<P>>(
     comp: FnComponent<P>,
     props: P = {} as P,
     styleOrOptions: Style<P> | ComponentOptions = config,
@@ -43,7 +47,7 @@ export function register<P extends ObjectLiteral>(
     const tagName = turnCamelToKebabCasing(comp.name || '')
 
     if (!tagName) {
-        throw new Error('Component render function must have a name')
+        throw new Error('HTMLComponentElement render function must have a name')
     }
 
     createComponentClass<P>(tagName, {
@@ -75,7 +79,7 @@ export const onMount = (cb: () => void) => {
 }
 
 export const onUpdate = (
-    cb: (propName: string, newValue: unknown, oldValue: unknown) => void
+    cb: (propName: unknown, newValue: unknown, oldValue: unknown) => void
 ) => {
     if (currentComponent) {
         if (currentComponent.update === null) {
@@ -180,16 +184,16 @@ export const refs = () => {
     throw new Error('Must NOT use "refs" outside of a component')
 }
 
-function createComponentClass<P extends ObjectLiteral>(
+function createComponentClass<P extends ObjectInterface<P>>(
     tagName: string,
     {
         delegatesFocus = false,
-        mode = ShadowRootMode.OPEN,
+        mode = ShadowRootModeEnum.OPEN,
         props,
         comp,
         stylesheet,
     }: {
-        mode?: ShadowRootMode
+        mode?: ShadowRootModeEnum
         delegatesFocus?: boolean
         props: P
         comp: FnComponent<P>
@@ -198,304 +202,168 @@ function createComponentClass<P extends ObjectLiteral>(
 ) {
     const CLS = customElements.get(tagName)
 
-    const styleClsName = `CUBE-${tagName}`
-
     if (!CLS) {
-        class WebComponent extends HTMLElement {
-            static observedAttributes: Array<string> = Object.keys(props).map(
-                turnCamelToKebabCasing
-            )
-            static readonly tagName = tagName
-            tagName = tagName
-            #renderedBefore = false
-            #shadowRoot: ShadowRoot | HTMLElement
-            #handlers: CurrentComponent = {
-                destroy: null,
-                mount: null,
-                update: null,
-                domUpdate: null,
-                adoption: null,
-                error: config.onError,
-                dispatchEvent: (e: CustomEvent) => {
-                    this.dispatchEvent(e)
-                },
-                contextMap: new Map(),
-                contextUpdate: () => {
-                    this.#handlers.template?.update()
-                },
-                template: null,
-                self: this,
-            }
-            #styleElement?: HTMLStyleElement
-            #props: P = structuredClone(props)
-            #propKeys = Object.keys(this.#props)
-            #propsState = this.#propKeys.reduce(
-                (acc, key: keyof P) => {
-                    const [get, set] = state<unknown>(this.#props[key])
-                    acc[key] = { get, set }
-                    return acc
-                },
-                {} as Record<
-                    keyof P,
-                    {
-                        get: ReturnType<typeof state>[0]
-                        set: ReturnType<typeof state>[1]
+        const propsClone = structuredClone(props)
+        const propKeys = Object.keys(propsClone)
+
+        return customElements.define(
+            tagName,
+            class extends WebComponent<P> {
+                static readonly tagName = tagName
+                static readonly observedAttributes: Array<string> = Object.keys(
+                    props
+                ).map((s) => s.toLowerCase())
+                delegatesFocus = delegatesFocus
+                mode = mode as ShadowRootMode
+                shadow = mode !== ShadowRootModeEnum.NONE
+                tagName = tagName
+                stylesheet = this.getStyle()
+                #renderedBefore = false
+                #observer: MutationObserver | null = null
+                #handlers: CurrentComponent<P> = {
+                    destroy: null,
+                    mount: null,
+                    update: null,
+                    domUpdate: null,
+                    adoption: null,
+                    error: config.onError,
+                    dispatchEvent: (e: CustomEvent) => {
+                        this.dispatchEvent(e)
+                    },
+                    contextMap: new Map(),
+                    contextUpdate: () => {
+                        this.#handlers.template?.update()
+                    },
+                    template: null,
+                    self: this,
+                }
+
+                constructor() {
+                    super()
+
+                    // initialize prop values
+                    propKeys.forEach((key) => {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        this[key] = propsClone[key]
+                    })
+                }
+
+                getStyle() {
+                    let style: Stylesheet = ''
+
+                    if (TC.function(stylesheet)) {
+                        style = stylesheet(this.props)
+
+                        if (style) {
+                            style = TC.objectLiteral(style)
+                                ? JSONToCSS(style, tagName, this.shadow)
+                                : TC.string(style)
+                                ? getStyleString(
+                                      style,
+                                      tagName.toLowerCase(),
+                                      this.shadow
+                                  )
+                                : ''
+                        }
                     }
-                >
-            )
 
-            #readonlyProps = this.#propKeys.reduce(
-                (acc, key: keyof P) => {
-                    acc[key] = this.#propsState[key].get
-                    return acc
-                },
-                {} as Record<keyof P, ReturnType<typeof state>[0]>
-            ) as Props<P>
-            #observer: MutationObserver | null = null
-            __ROOT__: ShadowRoot | undefined
+                    return style
+                }
 
-            constructor() {
-                super()
+                connectedCallback() {
+                    currentComponent = this.#handlers
+                    comp(this.props)
+                    currentComponent = null
+                    super.connectedCallback()
+                }
 
-                this.#propKeys.forEach((key) => {
-                    Object.defineProperty(this, key, {
-                        get() {
-                            return this.#propsState[key].get()
-                        },
-                        set(newValue: unknown) {
-                            // ignore attribute value that hasn't been parsed to their real value yet
-                            // this can happen after string parsed to node and before executables are collected
-                            if (!/{{val[\d+]}}/.test(String(newValue))) {
-                                const oldValue = this.#propsState[key].get()
-
-                                if (newValue !== oldValue) {
-                                    this.#propsState[key].set(newValue)
-
-                                    // only perform DOM updates while mounted
-                                    if (
-                                        this.isConnected &&
-                                        this.#renderedBefore
-                                    ) {
-                                        try {
-                                            this.#handlers.update?.(
-                                                key,
-                                                newValue,
-                                                oldValue
-                                            )
-                                            // only update style if it is a callback expecting arguments
-                                            // otherwise it is an indication that the style does not use the props values
-                                            if (
-                                                TC.function(stylesheet) &&
-                                                stylesheet.length > 0
-                                            ) {
-                                                this.updateStyle()
-                                            }
-                                        } catch (e) {
-                                            this.#handlers.error?.(e as Error)
-                                        }
-                                    }
-                                }
+                onMount() {
+                    if (this.#renderedBefore) {
+                        // verify that the component was mounted in context and
+                        // onPageChange it to all context it needs
+                        this.#handlers.contextMap.forEach((val, name) => {
+                            try {
+                                const ctx =
+                                    CTX.getContextHost(name, this) ?? null
+                                val.inContext = true
+                                val.ctx = ctx
+                                val.ctx?.subs.add(this.#handlers.contextUpdate)
+                            } catch (e) {
+                                console.error(
+                                    `Component "${tagName}" is no longer in context of "${name}"`
+                                )
+                                // set inContext to false in case there is something trying to
+                                // read or update the context. only components in context can do that
+                                val.inContext = false
+                                this.#handlers.error?.(e as Error)
                             }
-                        },
-                    })
-                })
-
-                if (mode === ShadowRootMode.NONE) {
-                    this.#shadowRoot = this
-                } else {
-                    this.#shadowRoot = this.attachShadow({
-                        mode,
-                        delegatesFocus,
-                    })
-                    this.__ROOT__ = this.#shadowRoot
-                }
-            }
-
-            getStyle() {
-                let style: Stylesheet = ''
-
-                if (TC.function(stylesheet)) {
-                    style = stylesheet(this.#readonlyProps)
-
-                    if (style) {
-                        style = TC.objectLiteral(style)
-                            ? `<style class="${styleClsName}">${JSONToCSS(
-                                  style,
-                                  tagName,
-                                  mode !== ShadowRootMode.NONE
-                              )}</style>`
-                            : TC.string(style)
-                            ? getStyleString(
-                                  style,
-                                  tagName.toLowerCase(),
-                                  mode !== ShadowRootMode.NONE
-                              )
-                            : ''
+                        })
                     }
-                }
 
-                return style
-            }
+                    if (TC.function(this.#handlers.domUpdate)) {
+                        const observerOptions = {
+                            childList: true,
+                            subtree: true,
+                            attributes: true,
+                        }
 
-            updateStyle() {
-                const style = this.getStyle()
-                if (this.#styleElement) {
-                    const div = document.createElement('div')
-                    div.innerHTML = style
-                    this.#styleElement.innerHTML =
-                        div.querySelector('style')?.innerHTML ?? ''
-                }
-            }
-
-            async connectedCallback() {
-                requestAnimationFrame(() => {
-                    try {
-                        if (this.#renderedBefore) {
-                            // verify that the component was mounted in context and
-                            // onPageChange it to all context it needs
-                            this.#handlers.contextMap.forEach((val, name) => {
+                        this.#observer = new MutationObserver((records) => {
+                            if (this.isConnected) {
                                 try {
-                                    const ctx =
-                                        CTX.getContextHost(name, this) ?? null
-                                    val.inContext = true
-                                    val.ctx = ctx
-                                    val.ctx?.subs.add(
-                                        this.#handlers.contextUpdate
+                                    this.#handlers.domUpdate?.(
+                                        new Set(
+                                            records.map((rec) => rec.target)
+                                        )
                                     )
                                 } catch (e) {
-                                    console.error(
-                                        `Component "${tagName}" is no longer in context of "${name}"`
-                                    )
-                                    // set inContext to false in case there is something trying to
-                                    // read or update the context. only components in context can do that
-                                    val.inContext = false
                                     this.#handlers.error?.(e as Error)
                                 }
-                            })
-                        } else {
-                            currentComponent = this.#handlers
-                            comp(this.#readonlyProps)
-                            currentComponent = null
-
-                            const style = this.getStyle()
-
-                            if (style) {
-                                if (mode === ShadowRootMode.NONE) {
-                                    const styleEl = document.head.querySelector(
-                                        `[class*="${styleClsName}"]`
-                                    ) as HTMLStyleElement
-
-                                    if (!styleEl) {
-                                        document.head.insertAdjacentHTML(
-                                            'beforeend',
-                                            style
-                                        )
-                                    }
-
-                                    this.#styleElement = styleEl
-                                } else {
-                                    this.#shadowRoot.innerHTML = style
-                                    this.#styleElement =
-                                        this.#shadowRoot.querySelector(
-                                            `[class*="${styleClsName}"]`
-                                        ) as HTMLStyleElement
-                                }
                             }
-                        }
-
-                        this.#handlers.template?.render(this.#shadowRoot, true)
-
-                        if (TC.function(this.#handlers.domUpdate)) {
-                            const observerOptions = {
-                                childList: true,
-                                subtree: true,
-                                attributes: true,
-                            }
-
-                            this.#observer = new MutationObserver((records) => {
-                                if (this.isConnected) {
-                                    try {
-                                        this.#handlers.domUpdate?.(
-                                            new Set(
-                                                records.map((rec) => rec.target)
-                                            )
-                                        )
-                                    } catch (e) {
-                                        this.#handlers.error?.(e as Error)
-                                    }
-                                }
-                            })
-
-                            this.#observer.observe(
-                                this.#shadowRoot,
-                                observerOptions
-                            )
-                        }
-
-                        const destroy = this.#handlers.mount?.() || null
-
-                        if (!this.#handlers.destroy && TC.function(destroy)) {
-                            this.#handlers.destroy = destroy
-                        }
-
-                        this.#renderedBefore = true
-                    } catch (e) {
-                        this.#handlers.error?.(e as Error)
-                    }
-                })
-            }
-
-            async disconnectedCallback() {
-                requestAnimationFrame(() => {
-                    try {
-                        // unsubscribe from unknown existing context
-                        this.#handlers.contextMap.forEach((val) => {
-                            val.ctx?.subs.delete(this.#handlers.contextUpdate)
                         })
-                        this.#handlers.destroy?.()
-                        this.#handlers.template?.unmount()
-                        this.#observer?.disconnect()
-                    } catch (e) {
-                        this.#handlers.error?.(e as Error)
-                    }
-                })
-            }
 
-            async attributeChangedCallback(
-                name: string,
-                oldValue: unknown,
-                newValue: unknown
-            ) {
-                // ignore attribute value that hasn't been parsed to their real value yet
-                // this can happen after string parsed to node and before executables are collected
-                if (!/{{val[\d+]}}/.test(String(newValue))) {
-                    const propName = turnKebabToCamelCasing(name)
-
-                    if (
-                        !newValue &&
-                        TC.boolean(this.#props[propName]) &&
-                        name in booleanAttributes
-                    ) {
-                        newValue = this.hasAttribute(name)
+                        this.#observer.observe(
+                            this.shadowRoot ?? this,
+                            observerOptions
+                        )
                     }
 
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    this[propName] = jsonParse(newValue)
+                    const destroy = this.#handlers.mount?.() || null
+
+                    if (!this.#handlers.destroy && TC.function(destroy)) {
+                        this.#handlers.destroy = destroy
+                    }
+
+                    this.#renderedBefore = true
+                }
+
+                onDestroy() {
+                    this.#handlers.contextMap.forEach((val) => {
+                        val.ctx?.subs.delete(this.#handlers.contextUpdate)
+                    })
+                    this.#observer?.disconnect()
+                    this.#handlers.destroy?.()
+                }
+
+                onUpdate(key: keyof P, newValue: unknown, oldValue: unknown) {
+                    this.#handlers.update?.(key, newValue, oldValue)
+                    if (TC.function(stylesheet) && stylesheet.length > 0) {
+                        this.updateStylesheet(this.getStyle())
+                    }
+                }
+
+                onAdoption() {
+                    this.#handlers.adoption?.()
+                }
+
+                onError(error: Error) {
+                    this.#handlers.error?.(error)
+                }
+
+                render() {
+                    return this.#handlers.template ?? ''
                 }
             }
-
-            async adoptedCallback() {
-                requestAnimationFrame(() => {
-                    try {
-                        this.#handlers.adoption?.()
-                    } catch (e) {
-                        this.#handlers.error?.(e as Error)
-                    }
-                })
-            }
-        }
-
-        return customElements.define(tagName, WebComponent)
+        )
     }
 }

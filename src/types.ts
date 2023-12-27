@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 import {
     HtmlTemplate,
     repeat,
@@ -7,7 +6,8 @@ import {
     element,
     effect,
     state,
-} from '@beforesemicolon/markup'
+    Props,
+} from '@beforesemicolon/web-component'
 import {
     eventDispatch,
     host,
@@ -32,21 +32,18 @@ export interface StylesheetObject {
         | StylesheetObject
 }
 
-export type Stylesheet = StylesheetObject | string
+export type Stylesheet = StylesheetObject | string | CSSStyleSheet
 
 export type Style<P> = (data: Props<P>) => Stylesheet
-export type Props<P> = {
-    [K in keyof P]: () => P[K]
-}
 export type FnComponent<P> = (props: Props<P>) => void
-export enum ShadowRootMode {
+export enum ShadowRootModeEnum {
     OPEN = 'open',
     CLOSED = 'closed',
     NONE = 'none',
 }
 
 export interface ComponentOptions {
-    mode?: ShadowRootMode
+    mode?: ShadowRootModeEnum
     delegatesFocus?: boolean
 }
 
@@ -54,16 +51,14 @@ export interface Config extends ComponentOptions {
     lang: string
     onError: (e: Error) => void
 }
-
-export type ObjectLiteral = Record<string | number | symbol, any>
-export interface CurrentComponent {
+export interface CurrentComponent<P> {
     destroy: (() => void) | null
     mount: (() => void | (() => void)) | null
     adoption: (() => void) | null
     error: ((err: Error) => void) | null
     domUpdate: ((nodes: Set<Node>) => void) | null
     update:
-        | ((propName: string, newValue: unknown, oldValue: unknown) => void)
+        | ((propName: keyof P, newValue: unknown, oldValue: unknown) => void)
         | null
     contextUpdate: (
         propName: string,
@@ -91,10 +86,6 @@ export interface ContextModel<T> {
 }
 
 export type Context<T> = Record<string, ContextModel<T>>
-
-export type WebComponent<P extends ObjectLiteral> = HTMLElement & {
-    [key in keyof P]: P[string]
-}
 
 export interface Cube {
     register: typeof register

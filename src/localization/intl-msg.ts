@@ -1,9 +1,10 @@
-import { Cube, ObjectLiteral, Props } from '../types'
+import { Cube } from '../types'
 import { config } from '../config'
+import { ObjectLiteral, Props } from '@beforesemicolon/web-component'
 
 interface IntlMsgProps {
     id: string
-    values: ObjectLiteral
+    values: ObjectInterface<unknown>
 }
 
 export default ({

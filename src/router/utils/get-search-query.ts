@@ -1,5 +1,5 @@
-import { jsonParse } from '@beforesemicolon/markup/dist/utils'
-import { ObjectLiteral } from '../../types'
+import { jsonParse } from '@beforesemicolon/web-component'
+import { ObjectLiteral } from '@beforesemicolon/web-component'
 
 export const getSearchQuery = <T extends Record<string, string>>(): T => {
     const searchParams = new URLSearchParams(window.location.search)

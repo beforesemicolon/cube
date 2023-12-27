@@ -2,7 +2,7 @@ import {Cube} from "../types";
 import * as cube from '../cube';
 import initRelTime from './intl-rel-time';
 import {render, wait, waitFor} from "../testing";
-import {html, state} from "@beforesemicolon/markup";
+import {html, state} from "@beforesemicolon/web-component";
 import {
 	ONE_HOUR_MS,
 	ONE_MINUTE_MS,

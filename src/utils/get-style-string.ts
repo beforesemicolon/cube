@@ -15,17 +15,9 @@ export function getStyleString(
 
     div.innerHTML = stylesheet
     const styleTag = document.createElement('style')
-    const links: HTMLLinkElement[] = []
 
     Array.from(div.childNodes).forEach((child) => {
-        if (
-            child.nodeName === 'LINK' &&
-            ((child as HTMLLinkElement).getAttribute('rel') || '').trim() ===
-                'stylesheet'
-        ) {
-            ;(child as HTMLLinkElement).classList.add(tagName)
-            links.push(child as HTMLLinkElement)
-        } else if (child.nodeName === '#text') {
+        if (child.nodeName === '#text') {
             if (!hasShadowRoot) {
                 ;(child as Text).nodeValue = replaceCssHost(
                     (child as Text).nodeValue ?? '',
@@ -58,8 +50,5 @@ export function getStyleString(
 
     styleTag.classList.add(`CUBE-${tagName}`)
 
-    return (
-        links.map((el) => el.outerHTML).join('') +
-        ((styleTag.textContent ?? '').trim().length ? styleTag.outerHTML : '')
-    )
+    return styleTag.textContent ?? ''
 }

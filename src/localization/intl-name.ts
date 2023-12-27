@@ -1,5 +1,6 @@
-import { Props, Cube, ShadowRootMode } from '../types'
+import { Cube, ShadowRootModeEnum } from '../types'
 import { config } from '../config'
+import { Props } from '@beforesemicolon/web-component'
 
 export interface IntlNameProps {
     value: string
@@ -61,7 +62,7 @@ export default ({ register, host, template, TC }: Cube) => {
             style: 'long',
             locale: undefined,
         },
-        { mode: ShadowRootMode.NONE }
+        { mode: ShadowRootModeEnum.NONE }
     )
 
     return intlName

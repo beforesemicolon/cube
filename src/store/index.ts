@@ -1,11 +1,6 @@
-import {
-    Subscriber,
-    Store,
-    ListStore,
-    ListStoreItemID,
-    ObjectLiteral,
-} from '../types'
+import { Subscriber, Store, ListStore, ListStoreItemID } from '../types'
 import { TC, mergeObjects } from '../utils'
+import { ObjectInterface } from '@beforesemicolon/web-component'
 
 const subs: Record<string, Set<Subscriber<unknown>>> = {}
 const stores: Record<string, Store<unknown> | ListStore<unknown>> = {}
@@ -83,7 +78,7 @@ export const store = <T>(
     return stores[name] as Store<T>
 }
 
-const getItemIdValue = <T extends ObjectLiteral>(
+const getItemIdValue = <T extends ObjectInterface<T>>(
     item: T,
     identifierName = 'id'
 ): ListStoreItemID | null => {
@@ -94,7 +89,7 @@ const getItemIdValue = <T extends ObjectLiteral>(
     return null
 }
 
-export const listStore = <T extends ObjectLiteral>(
+export const listStore = <T extends ObjectInterface<T>>(
     name: string,
     data: Array<T> = [],
     identifierName = 'id'

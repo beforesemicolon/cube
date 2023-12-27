@@ -1,6 +1,7 @@
-import { Cube, ObjectLiteral, Props } from '../../types'
+import { Cube } from '../../types'
 import { isOnPage } from '../utils/is-on-page'
 import { onPageChange, goToPage } from '../pages'
+import { Props, ObjectLiteral } from '@beforesemicolon/web-component'
 
 interface PageLinkProps extends ObjectLiteral {
     path: string

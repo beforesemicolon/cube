@@ -1,21 +1,24 @@
-import { element, HtmlTemplate } from '@beforesemicolon/markup'
+import {
+    element,
+    HtmlTemplate,
+    ObjectInterface,
+    WebComponent,
+} from '@beforesemicolon/web-component'
 import { register } from '../cube'
 import {
     ComponentOptions,
     FnComponent,
-    ObjectLiteral,
-    ShadowRootMode,
+    ShadowRootModeEnum,
     Style,
-    WebComponent,
 } from '../types'
 import { TC } from '../utils'
 
 const defaultOptions: ComponentOptions = {
-    mode: ShadowRootMode.OPEN,
+    mode: ShadowRootModeEnum.OPEN,
     delegatesFocus: false,
 }
 
-class ComponentControl<P extends ObjectLiteral> {
+class ComponentControl<P extends ObjectInterface<P>> {
     constructor(public target: WebComponent<P>) {}
 
     /**
@@ -71,7 +74,7 @@ class ComponentControl<P extends ObjectLiteral> {
     }
 }
 
-export const render = async <P extends ObjectLiteral>(
+export const render = async <P extends ObjectInterface<P>>(
     el: Element | HTMLElement | Node | HtmlTemplate | string | FnComponent<P>,
     props: P = {} as P,
     styleOrOptions: Style<P> | ComponentOptions = {},

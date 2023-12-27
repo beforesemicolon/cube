@@ -1,5 +1,6 @@
-import { Cube, ObjectLiteral, Props, ShadowRootMode } from '../types'
+import { Cube, ShadowRootModeEnum } from '../types'
 import { config } from '../config'
+import { Props, ObjectLiteral } from '@beforesemicolon/web-component'
 
 interface IntlLocaleProps {
     src: string
@@ -117,7 +118,7 @@ export default ({ register, template, onMount, createContext }: Cube) => {
             src: '',
             srcDir: './',
         },
-        { mode: ShadowRootMode.NONE }
+        { mode: ShadowRootModeEnum.NONE }
     )
 
     return {

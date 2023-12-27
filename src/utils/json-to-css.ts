@@ -1,6 +1,9 @@
-import { turnCamelToKebabCasing } from '@beforesemicolon/markup/dist/utils'
+import {
+    turnCamelToKebabCasing,
+    ObjectLiteral,
+} from '@beforesemicolon/web-component'
 import { replaceCssHost } from './replace-css-host'
-import { ObjectLiteral, StylesheetObject } from '../types'
+import { StylesheetObject } from '../types'
 import { TC } from './type-check'
 
 type callback = (str: string | null, declaration?: string) => void
