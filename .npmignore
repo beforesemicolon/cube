@@ -12,3 +12,7 @@ server
 .eslintignore
 .prettierrc
 .eslintrc.js
+renovate.json
+.renovaterc.json
+.renovaterc
+renovate.json5
