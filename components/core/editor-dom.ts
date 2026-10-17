@@ -16,6 +16,7 @@ export function safeHref(value: unknown, base = typeof document === 'undefined' 
 }
 export const editorCSS = `
 :host{display:inline-block;max-inline-size:100%;color:${v('--color-foreground')};font:400 var(--component-font-size,12px)/var(--component-line-height,1.4) ${v('--typography-body-font-family')};--cb-height:var(--component-control-height,28px);vertical-align:middle}
+:host([hidden]){display:none!important}
 :host([data-size=xs]){--cb-height:var(--component-control-height-xs,24px)}
 :host([data-size=sm]){--cb-height:var(--component-control-height-sm,28px)}
 :host([data-size=md]){--cb-height:var(--component-control-height-md,36px)}

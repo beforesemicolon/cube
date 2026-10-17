@@ -34,4 +34,7 @@ jobs:
             dist/build-report.json
             test-results/
             playwright-report/
+            design/figma-layers/Studio/01/Actions.png
+            design/figma-layers/Studio/02/Inputs.png
+            design/figma-layers/Studio/03/Color & style.png
           retention-days: 7
