@@ -1,0 +1,29 @@
+import {test,expect} from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
+import {chartExamples,type ChartExampleName} from '../../stories/fixtures/chart-types.js'
+for(const appearance of ['light','dark'])for(const type of Object.keys(chartExamples) as ChartExampleName[])test(`${type} renders with real ECharts and shared controls in ${appearance}`,async({page})=>{
+    await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/tests/browser/fixture.html')
+    await page.waitForFunction(()=>!!customElements.get('cb-cartesian-chart'))
+    await page.locator('#theme').evaluate((n:any,mode)=>n.appearance=mode,appearance)
+    const example=chartExamples[type]
+    await page.evaluate(({tag,props})=>{const n=document.createElement(tag);Object.assign(n,props);document.querySelector('#fixture')!.append(n)},example)
+    const chart=page.locator(example.tag);await expect(chart.locator('[part=plot] svg')).toBeVisible()
+    const toggle=chart.locator('cb-toggle-button[part=legend-item]').first();await expect(toggle).toBeVisible()
+    const button=toggle.getByRole('button');await button.click();await expect(button).toHaveAttribute('aria-pressed','false');await button.click();await expect(button).toHaveAttribute('aria-pressed','true')
+    const nav=chart.locator('[part=navigator]').getByRole('button');await nav.focus();await page.keyboard.press('ArrowRight');await expect(chart.locator('[part=details]')).not.toBeEmpty()
+    await chart.locator('summary').click();await expect(chart.getByRole('table')).toBeVisible();await chart.locator('summary').click()
+    const violations=await new AxeBuilder({page}).include(example.tag).analyze();expect(violations.violations).toEqual([])
+    await page.setViewportSize({width:390,height:844});await expect(chart.locator('[part=plot] svg')).toBeVisible()
+    expect(await chart.evaluate(n=>n.scrollWidth<=n.clientWidth+1)).toBe(true)
+    await chart.screenshot({path:`test-results/${type}-${appearance}.png`})
+})
+test('media players compose the library icon buttons, range inputs and selects',async({page})=>{
+    await page.goto('/tests/browser/fixture.html');await page.waitForFunction(()=>!!customElements.get('cb-audio-player'))
+    await page.evaluate(async()=>{const {silentAudio}=await import('/stories/helpers.ts');const n=document.createElement('cb-audio-player');Object.assign(n,{src:silentAudio(8),mediaTitle:'Recording'});document.querySelector('#fixture')!.append(n)})
+    const player=page.locator('cb-audio-player');await expect(player.locator('cb-icon-button[part=play]')).toBeVisible();await expect(player.locator('cb-slider[part=seek]')).toBeVisible();await expect(player.locator('cb-select[part=rate]')).toBeVisible()
+    await expect.poll(()=>player.locator('audio').evaluate((n:HTMLAudioElement)=>n.duration)).toBe(8)
+    const seek=player.getByRole('slider',{name:'Playback position',exact:true});await seek.focus();await page.keyboard.press('ArrowRight');expect(await player.locator('audio').evaluate((n:HTMLAudioElement)=>n.currentTime)).toBeGreaterThan(0)
+    await player.getByRole('combobox',{name:'Playback speed'}).selectOption('1.5');await expect.poll(()=>player.locator('audio').evaluate((n:HTMLAudioElement)=>n.playbackRate)).toBe(1.5)
+    await page.locator('#theme').evaluate((n:any)=>n.appearance='dark');await expect(player.locator('[part=player]')).toHaveCSS('background-color','rgb(29, 33, 36)')
+    await page.setViewportSize({width:320,height:844});expect(await player.evaluate(n=>n.scrollWidth<=n.clientWidth+1)).toBe(true)
+})

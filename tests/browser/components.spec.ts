@@ -18,7 +18,7 @@ test('actual ECharts SVG, keyboard navigation, pinning and legend filtering',asy
     await page.evaluate(()=>{const c=document.createElement('cb-cartesian-chart');Object.assign(c,{heading:'Activity',series:[{id:'a',name:'One',data:[1,2,3]},{id:'b',name:'Two',type:'column',data:[4,5,6]}],zoomable:true});document.querySelector('#fixture')!.append(c)})
     const chart=page.locator('cb-cartesian-chart')
     await expect(chart.locator('[part="plot"] svg')).toBeVisible()
-    const nav=chart.locator('[part="navigator"]');await nav.focus();await page.keyboard.press('ArrowRight')
+    const nav=chart.locator('[part="navigator"]').getByRole('button');await nav.focus();await page.keyboard.press('ArrowRight')
     await expect(chart.locator('[part="details"]')).toContainText('Value: 2')
     await page.keyboard.press('Enter');await expect(nav).toHaveAttribute('aria-pressed','true')
     await page.keyboard.press('Escape');await expect(nav).toHaveAttribute('aria-pressed','false')

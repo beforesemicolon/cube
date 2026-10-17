@@ -1,4 +1,6 @@
-import { button, commonCSS, el, label, sheet } from '../core/dom.js'
+import { createButton,createToggleButton,createIconButton,actionLabel } from '../actions/create.js'
+import type { ToggleButton } from '../actions/toggle-button/index.js'
+import { commonCSS, el, label, sheet } from '../core/dom.js'
 import { bool, clamp, finite, record, text } from '../core/value.js'
 import { lightTokens, token as v } from '../theme/tokens.js'
 import { chartEngine, type ChartInstance } from './engine.js'
@@ -11,13 +13,13 @@ export class ChartView {
     private plot = el('div', 'plot'); private legend = el('div', 'legend'); private state = el('p', 'status')
     private details = el('p', 'details'); private instructions = el('p', 'instructions'); private actions = el('div', 'actions')
     private data = el('details', 'data'); private summary = el('summary', 'data-summary'); private table = el('table', 'table')
-    private navigator = button('navigator', () => this.pin()); private retry = button('retry', () => { this.failure = false; this.owner.emit('cb-retry'); this.refresh() })
-    private all = button('show-all', () => this.owner.showAll(this.model?.legend.map(i => i.id) ?? []))
-    private unpin = button('unpin', () => { this.owner.pinned = false; this.showDetails() })
-    private zoomIn = button('zoom-in', () => this.zoom(.75)); private zoomOut = button('zoom-out', () => this.zoom(1.25)); private reset = button('reset-zoom', () => this.zoom(0))
+    private navigator = createToggleButton('navigator', () => this.pin()); private retry = createButton('retry', () => { this.failure = false; this.owner.emit('cb-retry'); this.refresh() })
+    private all = createButton('show-all', () => this.owner.showAll(this.model?.legend.map(i => i.id) ?? []))
+    private unpin = createButton('unpin', () => { this.owner.pinned = false; this.showDetails() })
+    private zoomIn = createIconButton('zoom-in','plus', () => this.zoom(.75)); private zoomOut = createIconButton('zoom-out','minus', () => this.zoom(1.25)); private reset = createIconButton('reset-zoom','reset', () => this.zoom(0))
     private instance?: ChartInstance
     private alive = false; private revision = 0; private scheduled = false; private failure = false; private loadingEngine = false
-    private model?: ChartModel; private legends = new Map<string, HTMLButtonElement>(); private tableKey = ''
+    private model?: ChartModel; private legends = new Map<string, ToggleButton>(); private tableKey = ''
     private observer?: ResizeObserver; private mutations?: MutationObserver; private scheme?: MediaQueryList; private reduced?: MediaQueryList
     private windowChange = () => this.refresh()
     private zoomRange: [number, number] = [0, 100]
@@ -26,7 +28,7 @@ export class ChartView {
         this.title.id = `${id}-title`; this.description.id = `${id}-description`; this.instructions.id = `${id}-keys`
         this.group.setAttribute('role', 'group'); this.plot.setAttribute('aria-hidden', 'true')
         this.legend.setAttribute('role', 'group'); this.state.setAttribute('role', 'status'); this.details.setAttribute('role', 'status')
-        this.navigator.setAttribute('aria-describedby', this.instructions.id)
+        // The reused button owns its description inside its own shadow root.
         this.navigator.addEventListener('keydown', event => {
             if (!this.model) return
             if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)) {
@@ -39,10 +41,11 @@ export class ChartView {
         this.group.append(this.title, this.description, this.legend, this.plot, this.state, this.actions, this.instructions, this.details, this.data)
         this.root.append(sheet(commonCSS + `
 [part=chart]{padding:${v('--spacing-lg')};border:1px solid ${v('--color-separator')};border-radius:${v('--radius-md')};background:${v('--color-surface')}}
-[part=title]{font-weight:600;font-size:1.15em}[part=description],[part=instructions]{color:${v('--color-muted-foreground')}}
+[part=title]{font-weight:600;font-size:var(--component-title-font-size,14px)}[part=description],[part=instructions]{color:${v('--color-muted-foreground')}}
 [part=legend]{display:flex;flex-wrap:wrap;gap:${v('--spacing-sm')};margin-block:${v('--spacing-sm')}}
-[part=legend-item]{display:inline-flex;align-items:center;gap:${v('--spacing-sm')}}[part=legend-item][aria-pressed=true]{background:${v('--color-selection')}}
-[part=legend-swatch]{inline-size:12px;block-size:12px;border:1px solid currentColor}
+[part=legend-item]{display:inline-flex;max-inline-size:100%}
+[part=legend-swatch]{display:inline-block;inline-size:var(--component-chart-swatch-size,10px);block-size:var(--component-chart-swatch-size,10px);border:1px solid currentColor;border-radius:var(--component-chart-swatch-radius,2px)}
+cb-toggle-button[part=navigator]::part(description){position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 [part=plot]{width:100%;height:${v('--component-chart-height')};min-width:0}
 [part=instructions]{font-size:.85em}[part=details]{min-height:1.5em}
 [part=data]{overflow:auto}[part=data-summary]{cursor:pointer;min-height:${v('--component-control-height')};padding:${v('--spacing-sm')}}
@@ -83,7 +86,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
         // Resolve var() aliases through a real CSS property, as SVG/canvas engines do not resolve token strings.
         const probe = el('span', 'color-probe'); probe.hidden = true; this.group.append(probe)
         const color = (key: string) => { probe.style.color = ''; probe.style.color = `var(${key}, ${lightTokens[key]})`; return getComputedStyle(probe).color }
-        const skin = { palette: [1,2,3,4,5,6].map(n => color(`--custom-chart-series-${n}`)), text: color('--color-foreground'), muted: color('--color-muted-foreground'), border: color('--color-separator'), surface: color('--color-surface'), font: read('--typography-body-font-family'), fontSize: parseFloat(read('--component-chart-font-size')) || 12, reducedMotion: this.reduced?.matches ?? false }
+        const skin = { palette: [1,2,3,4,5,6].map(n => color(`--custom-chart-series-${n}`)), text: color('--color-foreground'), muted: color('--color-muted-foreground'), border: color('--color-separator'), surface: color('--color-surface'), font: read('--typography-body-font-family'), fontSize: parseFloat(read('--component-chart-font-size')) || 12, motionDuration: cssMilliseconds(read('--motion-duration-normal')), reducedMotion: this.reduced?.matches ?? false }
         probe.remove(); return skin
     }
     private async draw(): Promise<void> {
@@ -93,7 +96,8 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
         this.title.textContent = heading; this.title.hidden = !heading; this.description.textContent = description; this.description.hidden = !description
         label(this.group, heading || copy.chart); this.group.setAttribute('aria-describedby', this.description.id)
         label(this.legend, copy.legend); this.summary.textContent = copy.table; this.instructions.textContent = copy.instructions
-        for (const [node, value] of [[this.navigator, copy.navigate],[this.retry,copy.retry],[this.all,copy.showAll],[this.unpin,copy.unpin],[this.zoomIn,copy.zoomIn],[this.zoomOut,copy.zoomOut],[this.reset,copy.resetZoom]] as const) { node.textContent = value; label(node, value) }
+        for (const [node, value] of [[this.navigator, copy.navigate],[this.retry,copy.retry],[this.all,copy.showAll],[this.unpin,copy.unpin],[this.zoomIn,copy.zoomIn],[this.zoomOut,copy.zoomOut],[this.reset,copy.resetZoom]] as const) { Object.assign(node,{locale:this.owner.locale,labels:this.owner.labels});actionLabel(node,value) }
+        this.navigator.description=copy.instructions
         if (typeof this.owner.height === 'number' && Number.isFinite(this.owner.height)) this.plot.style.height = `${clamp(this.owner.height, 160, 1200)}px`
         else this.plot.style.removeProperty('height')
         this.renderLegend(); this.showDetails(); if (this.data.open) this.renderTable()
@@ -118,13 +122,12 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
             this.instance.on('datazoom', event => {
                 const input = record(event), batch = Array.isArray(input.batch) ? record(input.batch[0]) : input
                 if (typeof batch.start !== 'number' || typeof batch.end !== 'number' || !Number.isFinite(batch.start) || !Number.isFinite(batch.end)) return
-                const start = clamp(batch.start, 0, 100), end = clamp(batch.end, start, 100)
-                if (start === this.zoomRange[0] && end === this.zoomRange[1]) return
-                this.zoomRange = [start, end]
-                this.owner.emit('cb-zoom-change', { start, end })
+                const next: [number, number] = [clamp(batch.start, 0, 100), clamp(batch.end, 0, 100)]
+                if (next[0] === this.zoomRange[0] && next[1] === this.zoomRange[1]) return
+                this.zoomRange = next; this.owner.emit('cb-zoom-change', { start: next[0], end: next[1] })
             })
         }
-        this.instance?.setOption(this.model.option, { notMerge: true })
+        this.instance!.setOption(this.model.option, { notMerge: true })
         this.plot.querySelector('svg')?.setAttribute('part', 'graphic')
         if (bool(this.owner.zoomable) && !this.model.pie) this.applyZoom()
         this.showDetails(true)
@@ -150,15 +153,15 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
         for (const [index, item] of this.model.legend.entries()) {
             let node = this.legends.get(item.id)
             if (!node) {
-                node = button('legend-item', () => {
+                node = createToggleButton('legend-item', () => {
                     const current = this.model?.legend.find(i => i.id === item.id)
                     if (current) this.owner.setItemVisible(current.id, !current.visible, this.model!.legend.map(i => i.id))
                 })
-                node.append(el('span', 'legend-swatch'), el('span', 'legend-label')); this.legends.set(item.id, node)
+                const swatch=el('span','legend-swatch');swatch.slot='prefix';swatch.setAttribute('aria-hidden','true');node.append(swatch);this.legends.set(item.id,node)
             }
-            node.setAttribute('aria-pressed', String(item.visible)); label(node, item.name)
+            node.pressed=item.visible;Object.assign(node,{locale:this.owner.locale,labels:this.owner.labels});actionLabel(node,item.name)
             ;(node.children[0] as HTMLElement).style.backgroundColor = item.color
-            node.children[1].textContent = item.name
+            // Label rendering belongs to cb-toggle-button.
             if (this.legend.children[index] !== node) this.legend.insertBefore(node, this.legend.children[index] ?? null)
         }
     }
@@ -176,8 +179,8 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
         if (!this.model) return
         const selected = this.owner.selected(this.model), m = this.owner.chartLabels
         this.details.textContent = selected ? `${this.owner.pinned ? m.pinned + ': ' : ''}${this.owner.pointText(selected)}` : ''
-        label(this.navigator, selected ? `${m.navigate}: ${this.owner.pointText(selected)}` : m.navigate)
-        this.navigator.setAttribute('aria-pressed', String(this.owner.pinned)); this.unpin.hidden = !this.owner.pinned
+        this.navigator.accessibleLabel=selected ? `${m.navigate}: ${this.owner.pointText(selected)}` : m.navigate
+        this.navigator.pressed=this.owner.pinned; this.unpin.hidden = !this.owner.pinned
         if (selected && highlight && this.instance) {
             this.instance.dispatchAction({ type: 'downplay' }); this.instance.dispatchAction({ type: 'highlight', seriesId: selected.seriesId, dataIndex: selected.index })
         }
@@ -206,3 +209,5 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
     }
     private applyZoom(): void { this.instance?.dispatchAction({ type: 'dataZoom', start: this.zoomRange[0], end: this.zoomRange[1] }) }
 }
+
+function cssMilliseconds(value:string):number{const duration=parseFloat(value);if(!Number.isFinite(duration)||duration<0)return 160;return Math.min(2000,value.trim().endsWith('ms')?duration:duration*1000)}

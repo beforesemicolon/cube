@@ -2,7 +2,7 @@ import '../components/client.js'
 export function preview(tag: string, args: Record<string, unknown>, appearance: string) {
     const provider = document.createElement('cb-theme-provider')
     Object.assign(provider, { appearance })
-    const wrapper = document.createElement('div'); wrapper.style.maxWidth = '960px'
+    const wrapper = document.createElement('div'); wrapper.style.cssText = 'max-width:960px;width:100%;padding:16px;box-sizing:border-box;background:var(--color-background);color:var(--color-foreground)'
     const node = document.createElement(tag); Object.assign(node, args); wrapper.append(node); provider.append(wrapper)
     return provider
 }

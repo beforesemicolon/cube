@@ -1,9 +1,8 @@
 name: Cube design system
 on:
   push:
-    branches: [main]
+    branches: [feat/cube-design-system]
   pull_request:
-    branches: [main]
 permissions:
   contents: read
 concurrency:
@@ -22,6 +21,7 @@ jobs:
       - run: npm run build:package
       - run: npm run test:exports
       - run: npm run build:storybook
+      - run: npm run test:catalog
       - run: npm run build:docs
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser

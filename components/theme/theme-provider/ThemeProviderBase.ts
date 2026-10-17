@@ -29,6 +29,8 @@ export abstract class ThemeProviderBase extends Component<ThemeProviderProps> {
             const mode = this.appearance === 'dark' || (this.appearance !== 'light' && this.query?.matches) ? 'dark' : 'light'
             const values = flattenTheme(this.loaded, mode)
             this.restore()
+            this.original.set('color-scheme',[this.style.getPropertyValue('color-scheme'),this.style.getPropertyPriority('color-scheme')])
+            this.style.setProperty('color-scheme',mode)
             for (const [name, value] of Object.entries(values)) {
                 this.original.set(name, [this.style.getPropertyValue(name), this.style.getPropertyPriority(name)])
                 this.style.setProperty(name, value)

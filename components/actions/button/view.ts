@@ -1,6 +1,6 @@
 import type { ButtonBase } from './ButtonBase.js'
 import { el, fragment, sheet, slot, editorCSS, aria, uid } from '../../core/editor-dom.js'
-import { createIcon, iconPaths } from '../../icons/paths.js'
+import { createIcon, iconPaths } from '../../icons/registry.js'
 import { bool, text } from '../../core/value.js'
 export const buttonCSS=editorCSS+`
 :host{display:inline-block}[part~=control]{display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-sm,8px);text-decoration:none;vertical-align:middle;max-inline-size:100%;font-weight:500;min-inline-size:var(--cb-height)}

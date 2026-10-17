@@ -1,10 +1,11 @@
+import { componentEntries,componentGroups } from './component-entries.js'
+import { iconPaths } from '../components/icons/registry.js'
 import { buildBrowser, buildModules } from '@beforesemicolon/builder'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import type { Plugin } from 'esbuild'
 import { cubeTheme, flattenTheme } from '../components/theme/tokens.js'
-import { mediaIconPaths } from '../components/media/icons.js'
 await rm('dist', { recursive: true, force: true })
 await mkdir('dist', { recursive: true })
 execFileSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'), '--emitDeclarationOnly'], { stdio: 'inherit' })
@@ -19,7 +20,7 @@ const externalRuntime: Plugin = {
             : `export async function loadECharts(){const value=globalThis.echarts;if(!value?.init)throw new Error('Load echarts/dist/echarts.min.js or configureChartEngine before mounting a chart.');return value;}` }))
     },
 }
-const entries = ['media/audio-player', 'media/video-player', 'charts/cartesian-chart', 'charts/pie-chart', 'theme/theme-provider', 'media', 'charts', 'theme']
+const entries = [...componentEntries.map(c => c.path),...componentGroups]
 const sizes: Record<string, number> = {}
 for (const entry of ['', ...entries]) {
     const result = await buildBrowser({ entry: resolve(entry ? `components/${entry}/index.ts` : 'components/client.ts'), out: entry ? `dist/${entry}/client.js` : 'dist/client.js', esbuildOptions: {
@@ -45,5 +46,5 @@ for (const mode of ['light', 'dark'] as const) {
     await writeFile(`dist/themes/${mode}.css`, `:root{${declarations(mode)}}\n`)
 }
 await writeFile('dist/themes/cube.css', `:root{${declarations('light')}}@media(prefers-color-scheme:dark){:root{${declarations('dark')}}}[data-theme="light"]{${declarations('light')}}[data-theme="dark"]{${declarations('dark')}}\n`)
-for (const [name, d] of Object.entries(mediaIconPaths)) await writeFile(`dist/icons/${name}.svg`, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${d}" fill="${name==='play'?'currentColor':'none'}" stroke="currentColor" stroke-width="${name==='pause'?4:1.5}" stroke-linecap="round" stroke-linejoin="round"/></svg>\n`)
+for (const [name, d] of Object.entries(iconPaths)) await writeFile(`dist/icons/${name}.svg`, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>\n`)
 await writeFile('dist/build-report.json', JSON.stringify({ external: ['@beforesemicolon/web-component', 'echarts'], browserBytes: sizes }, null, 2) + '\n')

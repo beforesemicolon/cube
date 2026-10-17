@@ -1,10 +1,13 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite'
+import type { Meta,StoryObj } from '@storybook/web-components-vite'
 import { preview } from './helpers.js'
-const meta: Meta = {title:'Charts/PieChart',tags:['autodocs'],args:{heading:'Traffic sources',description:'Illustrative data',series:{data:[{id:'direct',name:'Direct',value:48},{id:'search',name:'Search',value:32},{id:'social',name:'Social',value:20}]}},render:(args,c)=>preview('cb-pie-chart',args,c.globals.appearance)}
+import { chartExamples } from './fixtures/chart-types.js'
+import { exerciseChart } from './chart-interactions.js'
+const meta:Meta={title:'Charts/PieChart',tags:['autodocs'],args:{...chartExamples.pie.props,locale:'en'},argTypes:{variant:{control:'select',options:['pie','donut']},locale:{control:'select',options:['en','pt','es','fr','zh']}},parameters:{docs:{description:{component:'Pie and donut are variants of one component, not separate plotting implementations. Segment controls are Cube toggle buttons, with keyboard exploration and an accessible data table.'}}},render:(args,c)=>preview('cb-pie-chart',args,c.globals.appearance)}
 export default meta
-type Story = StoryObj
-export const Pie: Story = {}
-export const Donut: Story = {args:{variant:'donut',innerTitle:'100',innerDescription:'Total visits'}}
-export const AllZero: Story = {args:{series:{data:[{id:'a',name:'A',value:0},{id:'b',name:'B',value:0}]}}}
-export const Invalid: Story = {args:{series:{data:[{id:'a',value:-2},{id:'b',value:NaN}]}}}
-export const ControlledFilter: Story = {args:{visibleSegments:['direct','search']}}
+type Story=StoryObj
+const play:Story['play']=async({canvasElement})=>exerciseChart(canvasElement)
+export const Pie:Story={args:chartExamples.pie.props,play}
+export const Donut:Story={args:chartExamples.donut.props,play}
+export const AllZero:Story={args:{series:{data:[{id:'a',name:'A',value:0},{id:'b',name:'B',value:0}]}}}
+export const Invalid:Story={args:{series:{data:[{id:'a',value:-2},{id:'b',value:NaN}]}}}
+export const ControlledFilter:Story={args:{visibleSegments:['direct','search']}}

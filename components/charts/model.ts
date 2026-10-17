@@ -5,14 +5,14 @@ export interface Datum { x?: number | string | Date; y?: number | null; size?: n
 export interface Series { id?: string; name?: string; type?: 'line' | 'spline' | 'area' | 'areaspline' | 'bar' | 'column' | 'scatter' | 'bubble' | 'errorbar' | 'x-threshold' | 'y-threshold'; data?: Array<number | null | Datum>; color?: string; linkedTo?: string; yAxis?: string; value?: number }
 export interface Segment { id?: string; name?: string; value?: number | null; y?: number | null; color?: string }
 export interface PieSeries { id?: string; name?: string; type?: 'pie' | 'donut'; data?: Segment[] }
-export interface ChartSkin { palette: string[]; text: string; muted: string; border: string; surface: string; font: string; fontSize: number; reducedMotion: boolean }
+export interface ChartSkin { palette: string[]; text: string; muted: string; border: string; surface: string; font: string; fontSize: number; reducedMotion: boolean; motionDuration?: number }
 export interface ChartPoint { key: string; itemId: string; seriesId: string; seriesName: string; index: number; x: string | number; y: number | null; low?: number; high?: number; size?: number; percentage?: number }
 export interface LegendItem { id: string; name: string; color: string; visible: boolean }
 export interface ChartModel { option: Record<string, unknown>; points: ChartPoint[]; legend: LegendItem[]; issues: string[]; empty: boolean; noMatch: boolean; pie: boolean }
 export interface CartesianOptions { series?: Series[]; xAxis?: Axis; yAxis?: Axis | Axis[]; inverted?: boolean; stacking?: 'normal' | false; zoomable?: boolean }
 export interface PieOptions { series?: PieSeries | null; variant?: 'pie' | 'donut'; innerTitle?: string; innerDescription?: string }
 const number = (v: unknown): number | null => typeof v === 'number' && Number.isFinite(v) ? v : null
-const base = (skin: ChartSkin) => ({ animation: !skin.reducedMotion, color: skin.palette, backgroundColor: 'transparent', textStyle: { color: skin.text, fontFamily: skin.font, fontSize: skin.fontSize }, tooltip: { show: false }, aria: { enabled: false } })
+const base = (skin: ChartSkin) => ({ animation: !skin.reducedMotion, animationDuration: skin.motionDuration ?? 160, animationDurationUpdate: skin.motionDuration ?? 160, animationEasing: 'cubicOut', color: skin.palette, backgroundColor: 'transparent', textStyle: { color: skin.text, fontFamily: skin.font, fontSize: skin.fontSize }, tooltip: { show: false }, aria: { enabled: false } })
 function identity(value: Record<string, unknown>, i: number, seen: Set<string>, issues: string[]): string | null {
     const id = text(value.id) || text(value.name) || String(i + 1)
     if (seen.has(id)) { issues.push(`duplicate-id:${id}`); return null }
@@ -103,7 +103,7 @@ export function cartesianModel(input: CartesianOptions, skin: ChartSkin, visible
             ...(type === 'area' || type === 'areaspline' ? { areaStyle: { opacity: .2 } } : {}),
             ...(input.stacking === 'normal' && ['bar', 'column', 'area', 'areaspline'].includes(type) ? { stack: `stack-${yi}` } : {}),
         }
-        if (type === 'bubble') options.symbolSize = (value: number[]) => Math.max(4, Math.min(64, Math.sqrt(Math.max(0, finite(value[2]))) * 2))
+        if (type === 'bubble') options.symbolSize = (value: number[]) => finite(value[2])<=0?0:Math.max(4, Math.min(64, Math.sqrt(finite(value[2])) * 2))
         if (type === 'errorbar') {
             options.encode = inverted ? { x: [1, 2], y: 0 } : { x: 0, y: [1, 2] }
             options.renderItem = (_params: unknown, api: { value(i: number): number; coord(value: number[]): number[] }) => {

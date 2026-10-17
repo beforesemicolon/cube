@@ -1,82 +1,73 @@
-import { button, commonCSS, el, label, sheet } from '../core/dom.js'
+import { commonCSS,el,label,sheet } from '../core/dom.js'
 import { text } from '../core/value.js'
 import { token as v } from '../theme/tokens.js'
+import { createIconButton,actionLabel } from '../actions/create.js'
+import type { Slider } from '../inputs/slider/index.js'
+import type { Select } from '../inputs/select/index.js'
+import '../inputs/slider/index.js'
+import '../inputs/select/index.js'
+import '../icons/registry.js'
 import type { MediaBase } from './MediaBase.js'
-import { clock, type PlaybackState } from './controller.js'
-import { mediaIconPaths as paths } from './icons.js'
-// Original SVG paths. Accessible names belong to the buttons, not decorative glyphs.
+import { clock,type PlaybackState } from './controller.js'
 
-export function mediaIcon(name: keyof typeof paths): SVGSVGElement {
-    const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), path = document.createElementNS(ns, 'path')
-    svg.setAttribute('part', 'icon'); svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('width', '20'); svg.setAttribute('height', '20')
-    svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false')
-    path.setAttribute('part', 'icon-path'); path.setAttribute('d', paths[name]); path.setAttribute('stroke', 'currentColor')
-    path.setAttribute('stroke-width', name === 'pause' ? '4' : '1.5'); path.setAttribute('fill', name === 'play' ? 'currentColor' : 'none')
-    path.setAttribute('stroke-linecap', 'round'); path.setAttribute('stroke-linejoin', 'round'); svg.append(path); return svg
-}
-export function mediaView(owner: MediaBase, kind: 'audio' | 'video') {
-    const root = document.createDocumentFragment(), group = el('section', 'player'), media = el(kind, 'media')
-    const title = el('div', 'title'), controls = el('div', 'actions controls'), status = el('p', 'status')
-    group.setAttribute('role', 'group'); status.setAttribute('role', 'status')
-    const play = button('play', () => { if (media.paused) void owner.play(); else owner.pause() })
-    const stop = button('stop', () => owner.stop()), backward = button('backward', () => owner.backward()), forward = button('forward', () => owner.forward())
-    const mute = button('mute', () => owner.setMuted(!media.muted)), fullscreen = button('fullscreen', () => void owner.fullscreen())
-    const seek = el('input', 'seek'); seek.type = 'range'; seek.step = '0.1'; seek.min = '0'; seek.max = '0'; seek.value = '0'
-    const volume = el('input', 'volume'); volume.type = 'range'; volume.min = '0'; volume.max = '1'; volume.step = '.05'; volume.value = '1'
-    const rate = el('select', 'rate'), captions = el('select', 'captions'), time = el('output', 'time')
-    for (const n of [.5, .75, 1, 1.25, 1.5, 2]) { const o = el('option', 'rate-option', `${n}×`); o.value = String(n); rate.append(o) }
-    rate.value = '1'
-    seek.addEventListener('input', () => owner.seek(Number(seek.value)))
-    volume.addEventListener('input', () => owner.setVolume(Number(volume.value)))
-    rate.addEventListener('change', () => owner.setRate(Number(rate.value)))
-    captions.addEventListener('change', () => {
-        Array.from(media.textTracks).forEach((track, i) => { track.mode = i === Number(captions.value) ? 'showing' : 'disabled' })
-    })
-    stop.append(mediaIcon('stop')); backward.append(mediaIcon('backward')); forward.append(mediaIcon('forward')); fullscreen.append(mediaIcon('fullscreen'))
-    controls.append(backward, play, stop, forward, time, seek, mute, volume, rate)
-    if (kind === 'video') controls.append(captions, fullscreen)
-    const transcript = el('slot', 'transcript'); transcript.name = 'transcript'
-    group.append(title, media, controls, status, transcript)
-    root.append(sheet(commonCSS + `
+/** Composition only: transport, sliders and selectors are the same Cube controls used elsewhere. */
+export function mediaView(owner:MediaBase,kind:'audio'|'video'){
+    const root=document.createDocumentFragment(),group=el('section','player'),media=el(kind,'media')
+    const title=el('div','title'),controls=el('div','controls'),transport=el('div','transport'),settings=el('div','settings'),timeline=el('div','timeline'),status=el('p','status')
+    group.setAttribute('role','group');status.setAttribute('role','status')
+    const play=createIconButton('play','play',()=>{if(media.paused)void owner.play();else owner.pause()});play.variant='primary'
+    const stop=createIconButton('stop','stop',()=>owner.stop()),backward=createIconButton('backward','backward',()=>owner.backward()),forward=createIconButton('forward','forward',()=>owner.forward())
+    const mute=createIconButton('mute','volume',()=>owner.setMuted(!media.muted)),fullscreen=createIconButton('fullscreen','fullscreen',()=>void owner.fullscreen())
+    const seek=document.createElement('cb-slider') as Slider;seek.setAttribute('part','seek');seek.setAttribute('exportparts','control:seek-control');Object.assign(seek,{step:.1,min:0,max:0,value:0})
+    const volume=document.createElement('cb-slider') as Slider;volume.setAttribute('part','volume');volume.setAttribute('exportparts','control:volume-control');Object.assign(volume,{min:0,max:1,step:.05,value:1})
+    const rate=document.createElement('cb-select') as Select, captions=document.createElement('cb-select') as Select
+    rate.setAttribute('part','rate');rate.setAttribute('exportparts','control:rate-control');captions.setAttribute('part','captions');captions.setAttribute('exportparts','control:captions-control')
+    const time=el('output','time');time.setAttribute('aria-live','off')
+    seek.addEventListener('cb-input',event=>{event.stopPropagation();owner.seek(Number((event as CustomEvent).detail.value))})
+    volume.addEventListener('cb-input',event=>{event.stopPropagation();owner.setVolume(Number((event as CustomEvent).detail.value))})
+    rate.addEventListener('cb-change',event=>{event.stopPropagation();owner.setRate(Number((event as CustomEvent).detail.value))})
+    captions.addEventListener('cb-change',event=>{event.stopPropagation();Array.from(media.textTracks).forEach((track,i)=>track.mode=i===Number((event as CustomEvent).detail.value)?'showing':'disabled')})
+    transport.append(backward,play,stop,forward);settings.append(mute,volume,rate)
+    if(kind==='video')settings.append(captions,fullscreen)
+    timeline.append(seek,time);controls.append(transport,settings)
+    const transcript=el('slot','transcript');transcript.name='transcript'
+    group.append(title,media,timeline,controls,status,transcript)
+    root.append(sheet(commonCSS+`
 [part=player]{background:${v('--color-surface')};border:1px solid ${v('--color-separator')};border-radius:${v('--radius-md')};padding:${v('--spacing-md')}}
-[part=title]{font-weight:600;margin-bottom:${v('--spacing-sm')}}
-video{display:block;width:100%;aspect-ratio:${v('--component-media-aspect-ratio')};background:${v('--color-background')};object-fit:contain}
+[part=title]{font-weight:600;font-size:var(--component-title-font-size,14px);margin-block-end:${v('--spacing-sm')}}
+video{display:block;inline-size:100%;aspect-ratio:${v('--component-media-aspect-ratio')};background:${v('--color-background')};object-fit:contain;border-radius:${v('--radius-sm')}}
 audio{display:none}
-[part~=controls]{margin-top:${v('--spacing-sm')}}
-[part=seek]{flex:1 1 140px}[part=volume]{width:80px}[part=time]{font-family:${v('--typography-mono-font-family')};font-size:.85em}
-[part=status]{margin-top:${v('--spacing-sm')}}
+[part=timeline]{display:flex;align-items:center;gap:${v('--spacing-md')};margin-block:${v('--spacing-sm')}}
+[part=seek]{flex:1;min-inline-size:0}
+[part=time]{flex:none;font:var(--component-caption-font-size,11px)/1.4 ${v('--typography-mono-font-family')};color:${v('--color-muted-foreground')}}
+[part=controls],[part=transport],[part=settings]{display:flex;align-items:center;gap:${v('--spacing-xs')};flex-wrap:wrap}
+[part=controls]{justify-content:space-between;gap:${v('--spacing-sm')}}
+[part=volume]{inline-size:var(--component-media-volume-width,72px);min-inline-size:0;margin-inline-end:${v('--spacing-xs')}}
+[part=rate]{inline-size:var(--component-media-rate-width,72px)}
+[part=captions]{max-inline-size:var(--component-media-captions-width,128px)}
+[part=status]{margin-block-start:${v('--spacing-sm')}}
 :host(:fullscreen){background:${v('--color-background')};display:grid;place-items:center}
-@container(max-width:480px){[part=seek]{flex-basis:100%;order:10}[part~=controls]{gap:${v('--spacing-xs')}}}
-`), group)
-    let captionKey = ''
-    return { root, media, update(state: PlaybackState) {
-        const m = owner.mediaLabels, source = !!media.getAttribute('src')
-        label(group, text(owner.mediaTitle) || m[kind]); label(media, text(owner.mediaTitle) || m[kind])
-        title.textContent = text(owner.mediaTitle); title.hidden = !title.textContent
-        label(play, state.paused ? m.play : m.pause); play.replaceChildren(mediaIcon(state.paused ? 'play' : 'pause'))
-        label(stop, m.stop); label(backward, m.backward); label(forward, m.forward)
-        label(mute, state.muted ? m.unmute : m.mute); mute.replaceChildren(mediaIcon(state.muted ? 'muted' : 'volume'))
-        mute.setAttribute('aria-pressed', String(state.muted)); label(volume, m.volume); label(rate, m.rate); label(seek, m.seek)
-        label(captions, m.captions); label(fullscreen, document.fullscreenElement === owner ? m.exitFullscreen : m.fullscreen)
-        fullscreen.hidden = kind !== 'video' || !document.fullscreenEnabled || !owner.requestFullscreen
-        play.disabled = stop.disabled = !source
-        backward.disabled = forward.disabled = seek.disabled = state.seekEnd <= state.seekStart || !source
-        seek.min = String(state.seekStart); seek.max = String(Math.max(state.seekStart, state.seekEnd))
-        if (!seek.matches(':active')) seek.value = String(state.position)
-        seek.setAttribute('aria-valuetext', `${clock(state.position)} / ${Number.isFinite(state.duration) ? clock(state.duration) : m.live}`)
-        if (!volume.matches(':active')) volume.value = String(state.volume)
-        rate.value = String(state.rate)
-        time.textContent = `${clock(state.position)} / ${Number.isFinite(state.duration) ? clock(state.duration) : state.duration === Infinity ? m.live : '0:00'}`
-        status.textContent = owner.hasPlaybackError || state.error ? m.mediaError : !source ? m.mediaEmpty : state.buffering ? m.buffering : ''
-        status.hidden = !status.textContent
-        const tracks = Array.from(media.querySelectorAll('track')), key = JSON.stringify([m.captionsOff, tracks.map(t => [t.src, t.srclang, t.label])])
-        if (key !== captionKey) {
-            captionKey = key; captions.replaceChildren()
-            const off = el('option', 'caption-option', m.captionsOff); off.value = '-1'; captions.append(off)
-            tracks.forEach((track, i) => { const o = el('option', 'caption-option', track.label || track.srclang); o.value = String(i); captions.append(o) })
-            captions.value = String(Array.from(media.textTracks).findIndex(t => t.mode === 'showing'))
-        }
-        if (captions !== owner.shadowRoot?.activeElement) captions.value = String(Array.from(media.textTracks).findIndex(t => t.mode === 'showing'))
-        captions.hidden = !tracks.length
-    } }
+@container(max-width:360px){[part=timeline]{gap:${v('--spacing-sm')}}[part=settings]{flex:1;justify-content:flex-end}[part=volume]{inline-size:var(--component-media-volume-compact-width,48px)}}
+`),group)
+    let captionKey='',rateLocale: string | undefined
+    return {root,media,update(state:PlaybackState){
+        const m=owner.mediaLabels,source=!!media.getAttribute('src')
+        label(group,text(owner.mediaTitle)||m[kind]);label(media,text(owner.mediaTitle)||m[kind]);title.textContent=text(owner.mediaTitle);title.hidden=!title.textContent
+        for(const node of [play,stop,backward,forward,mute,fullscreen,seek,volume,rate,captions])Object.assign(node,{locale:owner.locale,labels:owner.labels})
+        actionLabel(play,state.paused?m.play:m.pause);play.icon=state.paused?'play':'pause';actionLabel(stop,m.stop);actionLabel(backward,m.backward);actionLabel(forward,m.forward)
+        actionLabel(mute,state.muted?m.unmute:m.mute);mute.icon=state.muted?'muted':'volume'
+        actionLabel(fullscreen,document.fullscreenElement===owner?m.exitFullscreen:m.fullscreen);fullscreen.hidden=kind!=='video'||!document.fullscreenEnabled||!owner.requestFullscreen
+        play.disabled=stop.disabled=!source;backward.disabled=forward.disabled=seek.disabled=state.seekEnd<=state.seekStart||!source
+        Object.assign(seek,{accessibleLabel:m.seek,min:state.seekStart,max:Math.max(state.seekStart,state.seekEnd),valueText:`${clock(state.position)} / ${Number.isFinite(state.duration)?clock(state.duration):m.live}`})
+        if(!seek.interacting)seek.value=state.position
+        volume.accessibleLabel=m.volume;if(!volume.interacting)volume.value=state.volume
+        rate.accessibleLabel=m.rate;captions.accessibleLabel=m.captions
+        if(rateLocale!==owner.locale){rateLocale=owner.locale;let format:(value:number)=>string=String;try{const formatter=new Intl.NumberFormat(owner.locale||'en');format=n=>formatter.format(n)}catch{/* Invalid locales use numerical fallback. */}rate.options=[.5,.75,1,1.25,1.5,2].map(n=>({value:String(n),label:`${format(n)}×`}))}
+        rate.value=String(state.rate)
+        time.textContent=`${clock(state.position)} / ${Number.isFinite(state.duration)?clock(state.duration):state.duration===Infinity?m.live:'0:00'}`
+        status.textContent=owner.hasPlaybackError||state.error?m.mediaError:!source?m.mediaEmpty:state.buffering?m.buffering:'';status.hidden=!status.textContent
+        const tracks=Array.from(media.querySelectorAll('track')),key=JSON.stringify([m.captionsOff,tracks.map(t=>[t.src,t.srclang,t.label])])
+        if(key!==captionKey){captionKey=key;captions.options=[{value:'-1',label:m.captionsOff},...tracks.map((track,i)=>({value:String(i),label:track.label||track.srclang}))]}
+        captions.value=String(Array.from(media.textTracks).findIndex(t=>t.mode==='showing'));captions.hidden=!tracks.length
+    }}
 }

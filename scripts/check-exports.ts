@@ -1,3 +1,4 @@
+import { componentEntries,componentGroups } from './component-entries.js'
 import assert from 'node:assert/strict'
 import { readFile, access } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -13,5 +14,5 @@ assert.equal(typeof esm.loadComponent, 'function'); assert.equal(typeof cjs.load
 assert.equal(esm.lightTokens['--color-primary'], cjs.lightTokens['--color-primary'])
 await assert.rejects(esm.loadComponent('audio-player'), /DOM/)
 const report = JSON.parse(await readFile(new URL('../dist/build-report.json', import.meta.url), 'utf8'))
-assert.equal(Object.keys(report.browserBytes).length,9)
-console.log('ESM/CJS SSR-safe root imports, export targets and 9 external-runtime browser entries verified.')
+assert.equal(Object.keys(report.browserBytes).length,1+componentEntries.length+componentGroups.length)
+console.log(`ESM/CJS SSR-safe root imports, export targets and ${Object.keys(report.browserBytes).length} external-runtime browser entries verified.`)

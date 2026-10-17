@@ -1,49 +1,49 @@
-# Media and chart implementation / visual reference contract
+# Media and charts — implementation and review contract
 
-## Four new families
+## Source of truth
 
-`AudioPlayer` / `cb-audio-player`, `VideoPlayer` / `cb-video-player`, `CartesianChart` / `cb-cartesian-chart`, and `PieChart` / `cb-pie-chart` extend the original 237-entry inventory to 241. Pie and donut are variants of one component, not two separate implementations.
+Use the user-uploaded references in `design/figma-layers/Studio`, especially `01/Actions.png`, `02/Inputs.png`, and `03/Color & style.png`. Live Figma access is not required. The exported sheets cover the original editor families; dedicated media/chart sheets are not present in this upload. Do not claim a pixel-for-pixel media/chart sign-off based only on these files.
 
-**Figma status: blocked, not imported.** The connected Starter account refused the read/write attempt because its tool quota was exhausted. Target file: https://www.figma.com/design/VlYmoSr1h9l4W2efP6JwoX . Preserve this blocker until native references are actually added and reviewed.
+Storybook exposes the uploaded sheets under **Design references**, the working primitives under **Shared controls**, and runtime compositions under **Media**, **Charts**, and **Examples**. Runtime screenshots are generated from the actual components in browser tests, not substituted static mockups.
 
-## Cloudscape functional analysis
+## Eight required chart options, two public components
 
-Inspected on 2026-10-17: the public component guidance and the `cloudscape-design/chart-components` Cartesian, pie and shared-core TypeScript interfaces. The current package wraps Highcharts; Cube uses Apache ECharts under an independent adapter. This is not a drop-in Cloudscape API or a pixel-for-pixel clone.
+| Story | Tag | Configuration |
+| --- | --- | --- |
+| Bar | `cb-cartesian-chart` | `series[].type = 'bar'` |
+| Line | `cb-cartesian-chart` | `series[].type = 'line'` |
+| Mixed line and bar | `cb-cartesian-chart` | Different `type` values within the same series array |
+| Area | `cb-cartesian-chart` | `series[].type = 'area'` |
+| Bubble | `cb-cartesian-chart` | `series[].type = 'bubble'`, data includes `x`, `y`, `size` |
+| Scatter | `cb-cartesian-chart` | `series[].type = 'scatter'`, data includes `x`, `y` |
+| Pie | `cb-pie-chart` | `variant = 'pie'` |
+| Donut | `cb-pie-chart` | `variant = 'donut'`, optional center title and description |
 
-| Capability | This increment |
-| --- | --- |
-| Mixed line/spline/area/bar/column series | Implemented by `cartesianModel` |
-| Scatter and bubble size | Implemented; bubble size is bounded square-root mapping |
-| Category/time/linear/log axes, titles/bounds/formatters | Implemented; invalid numeric/log data reported |
-| Two value axes and inverted orientation | Implemented |
-| Ordinary stacked columns/bars/areas | Implemented; percentage stacking is not included |
-| X/Y thresholds and linked error ranges | Implemented as markLine/custom primitives |
-| Controlled/uncontrolled legend filtering | Implemented with stable IDs and proposed-change events |
-| Hover, click selection and pinnable details | Implemented as a DOM details region, not Cloudscape React tooltip slots |
-| Zoom/reset and responsive resize | Implemented; browser/engine tests still required before release |
-| Pie/donut, visible-segment percentages, center text | Implemented; zero/negative/nonfinite data never creates fake sectors |
-| Loading, empty, no-match, error and retry | Implemented; application-controlled error state remains application-owned |
-| Keyboard navigation and accessible data table | Implemented DOM controls; automated/manual conformance is not assumed |
-| Rich React tooltip/render slots, zones, arbitrary Highcharts options | Not exposed |
-| Server-side chart image rendering | Not implemented |
-| Maps, network graphs, Sankey, radar and all possible chart types | Outside these two component contracts |
+`inverted = true` also supports horizontal bars. Both chart classes use the same `ChartBase`, `ChartView`, theme adapter and lazy Apache ECharts engine. There are no separate plotting implementations for each story. A machine-checked fixture feeds both the stories and tests so that examples cannot silently drift from the documented contract.
 
-Source interfaces:
-https://github.com/cloudscape-design/chart-components/blob/main/src/cartesian-chart/interfaces.ts
-https://github.com/cloudscape-design/chart-components/blob/main/src/pie-chart/interfaces.ts
-https://github.com/cloudscape-design/chart-components/blob/main/src/core/interfaces.ts
+Cloudscape's public Cartesian and pie interfaces are functional references, not copied React components or a promise of drop-in API compatibility. Cube remains web-component-based and uses Apache ECharts. No Highcharts dependency is added.
 
-## Figma sheets to add after the quota clears
+## Composition rules
 
-Each family needs light/dark appearances, 320px narrow and 640px comfortable examples, anatomy and part labels, state diagrams, keyboard instructions and error/empty behavior. Match the existing neutral Cube palette and 6px controls; charts use the six shared series tokens rather than Cloudscape's branded colors.
+- Audio/video transport buttons use `cb-icon-button`.
+- Seek and volume controls use the same `cb-slider` available independently in the library.
+- Playback speed and captions use the same `cb-select` available independently.
+- Chart legend filtering and keyboard exploration use `cb-toggle-button`.
+- Chart retry, show-all and unpin actions use `cb-button`; zoom uses `cb-icon-button`.
+- Native audio/video nodes retain playback state. ECharts remains responsible for plotting geometry; do not implement a second chart renderer.
+- Keep the semantic native data table until the library's table component is implemented. Do not invent a placeholder `cb-table` solely to claim composition.
+- Composite components translate child events to their domain API and forward styling with `exportparts`. Shared changes to focus, disabled behavior, labels, icons and tokens must update composites automatically.
 
-- Audio: empty, ready, playing, paused, ended, buffering, disabled seek, live and error. A quiet wrapping transport row with play/pause, stop, ±seek, time, volume, mute and speed. Preserve 36px control height and visible focus; touch layouts may enlarge targets.
-- Video: the same transport states plus poster, captions, focused controls and fullscreen. Caption/track source and transcript are content responsibilities. Do not put controls over unreadable moving imagery without a stable surface.
-- Cartesian: line, mixed bar/line, stacked area/columns, horizontal bars, scatter/bubble, error ranges, thresholds, selection/pinned details, zoomed, loading, empty, no-match and error. Keep series names and patterns/shapes as well as color.
-- Pie: pie, donut with center text, focused/selected segment, filtering, narrow layout, loading, all-zero/empty and invalid data. The denominator is visible valid values and must be explained in documentation.
+## Visual behavior
 
-Storybook includes representative states for all four. The browser visual test creates `test-results/media-charts-light.png` and `...-dark.png` using actual component renderers when it runs successfully. These screenshots are runtime review artifacts, not claims that native editable Figma components exist.
+Shared tokens define neutral surfaces, 6px control and 10px panel corners, 28px compact controls, 12px UI text and 16px outline icons. Themes provide light/dark values and native `color-scheme`; media rate/caption popups inherit that appearance. Player controls wrap on narrow containers. Chart engines receive the same text/series colors and 160ms motion token; reduced motion disables animation. Editor appearance must not change the contents of a video poster or source media.
 
-## Verification
+## Validation gates
 
-Pure controller/model/theme tests run without browser or chart-engine stubs. Actual component, CDN, accessibility and screenshot tests require the installed dependencies and Playwright browser. Build/Storybook/docs output must be checked in CI. Test configuration is not evidence of a passing test; record actual run results in the PR.
+- Pure tests validate all eight model configurations, shared input normalization, theme colors and motion policy.
+- Actual-browser tests exercise every chart type in light and dark with ECharts SVG output, shared legend controls, keyboard navigation, data tables, axe checks and narrow-container screenshots.
+- Built Storybook is launched in the test run. Each required chart's `play` function must finish successfully; a catalog entry alone is insufficient.
+- Audio and video stories include playable, locally generated fixtures, not just empty media panels. No camera or microphone access is requested.
+- Per-component/category CDN output keeps WebComponent and ECharts external. SSR-safe root imports and all package export targets are checked.
+
+A configured test is not a passing result. Record the actual workflow outcome on PR #62. The full editor component inventory is still being implemented; this contract does not claim the other families are finished.

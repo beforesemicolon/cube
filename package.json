@@ -5,134 +5,67 @@
   "description": "Cube by Before Semicolon — headless and themed web components for visual editors",
   "license": "BSD-3-Clause",
   "author": "Elson Correia",
-  "engines": {
-    "node": ">=22.13.0"
-  },
+  "engines": {"node": ">=22.13.0"},
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
-    },
-    "./core": {
-      "types": "./dist/types/core/Component.d.ts",
-      "import": "./dist/esm/core/Component.js",
-      "require": "./dist/cjs/core/Component.js"
-    },
-    "./media": {
-      "types": "./dist/types/media/index.d.ts",
-      "import": "./dist/esm/media/index.js",
-      "require": "./dist/cjs/media/index.js"
-    },
-    "./charts": {
-      "types": "./dist/types/charts/index.d.ts",
-      "import": "./dist/esm/charts/index.js",
-      "require": "./dist/cjs/charts/index.js"
-    },
-    "./theme": {
-      "types": "./dist/types/theme/index.d.ts",
-      "import": "./dist/esm/theme/index.js",
-      "require": "./dist/cjs/theme/index.js"
-    },
-    "./media/audio-player": {
-      "types": "./dist/types/media/audio-player/index.d.ts",
-      "import": "./dist/esm/media/audio-player/index.js",
-      "require": "./dist/cjs/media/audio-player/index.js"
-    },
-    "./media/audio-player/base": {
-      "types": "./dist/types/media/audio-player/AudioPlayerBase.d.ts",
-      "import": "./dist/esm/media/audio-player/AudioPlayerBase.js",
-      "require": "./dist/cjs/media/audio-player/AudioPlayerBase.js"
-    },
-    "./media/video-player": {
-      "types": "./dist/types/media/video-player/index.d.ts",
-      "import": "./dist/esm/media/video-player/index.js",
-      "require": "./dist/cjs/media/video-player/index.js"
-    },
-    "./media/video-player/base": {
-      "types": "./dist/types/media/video-player/VideoPlayerBase.d.ts",
-      "import": "./dist/esm/media/video-player/VideoPlayerBase.js",
-      "require": "./dist/cjs/media/video-player/VideoPlayerBase.js"
-    },
-    "./charts/cartesian-chart": {
-      "types": "./dist/types/charts/cartesian-chart/index.d.ts",
-      "import": "./dist/esm/charts/cartesian-chart/index.js",
-      "require": "./dist/cjs/charts/cartesian-chart/index.js"
-    },
-    "./charts/cartesian-chart/base": {
-      "types": "./dist/types/charts/cartesian-chart/CartesianChartBase.d.ts",
-      "import": "./dist/esm/charts/cartesian-chart/CartesianChartBase.js",
-      "require": "./dist/cjs/charts/cartesian-chart/CartesianChartBase.js"
-    },
-    "./charts/pie-chart": {
-      "types": "./dist/types/charts/pie-chart/index.d.ts",
-      "import": "./dist/esm/charts/pie-chart/index.js",
-      "require": "./dist/cjs/charts/pie-chart/index.js"
-    },
-    "./charts/pie-chart/base": {
-      "types": "./dist/types/charts/pie-chart/PieChartBase.d.ts",
-      "import": "./dist/esm/charts/pie-chart/PieChartBase.js",
-      "require": "./dist/cjs/charts/pie-chart/PieChartBase.js"
-    },
-    "./theme/theme-provider": {
-      "types": "./dist/types/theme/theme-provider/index.d.ts",
-      "import": "./dist/esm/theme/theme-provider/index.js",
-      "require": "./dist/cjs/theme/theme-provider/index.js"
-    },
-    "./themes/*": "./dist/themes/*",
-    "./dist/*": "./dist/*",
-    "./package.json": "./package.json"
+    ".": {"types":"./dist/types/index.d.ts","import":"./dist/esm/index.js","require":"./dist/cjs/index.js"},
+    "./core": {"types":"./dist/types/core/Component.d.ts","import":"./dist/esm/core/Component.js","require":"./dist/cjs/core/Component.js"},
+    "./actions": {"types":"./dist/types/actions/index.d.ts","import":"./dist/esm/actions/index.js","require":"./dist/cjs/actions/index.js"},
+    "./icons": {"types":"./dist/types/icons/index.d.ts","import":"./dist/esm/icons/index.js","require":"./dist/cjs/icons/index.js"},
+    "./inputs": {"types":"./dist/types/inputs/index.d.ts","import":"./dist/esm/inputs/index.js","require":"./dist/cjs/inputs/index.js"},
+    "./media": {"types":"./dist/types/media/index.d.ts","import":"./dist/esm/media/index.js","require":"./dist/cjs/media/index.js"},
+    "./charts": {"types":"./dist/types/charts/index.d.ts","import":"./dist/esm/charts/index.js","require":"./dist/cjs/charts/index.js"},
+    "./theme": {"types":"./dist/types/theme/index.d.ts","import":"./dist/esm/theme/index.js","require":"./dist/cjs/theme/index.js"},
+    "./actions/button": {"types":"./dist/types/actions/button/index.d.ts","import":"./dist/esm/actions/button/index.js","require":"./dist/cjs/actions/button/index.js"},
+    "./actions/button/base": {"types":"./dist/types/actions/button/ButtonBase.d.ts","import":"./dist/esm/actions/button/ButtonBase.js","require":"./dist/cjs/actions/button/ButtonBase.js"},
+    "./actions/icon-button": {"types":"./dist/types/actions/icon-button/index.d.ts","import":"./dist/esm/actions/icon-button/index.js","require":"./dist/cjs/actions/icon-button/index.js"},
+    "./actions/icon-button/base": {"types":"./dist/types/actions/icon-button/IconButtonBase.d.ts","import":"./dist/esm/actions/icon-button/IconButtonBase.js","require":"./dist/cjs/actions/icon-button/IconButtonBase.js"},
+    "./actions/toggle-button": {"types":"./dist/types/actions/toggle-button/index.d.ts","import":"./dist/esm/actions/toggle-button/index.js","require":"./dist/cjs/actions/toggle-button/index.js"},
+    "./actions/toggle-button/base": {"types":"./dist/types/actions/toggle-button/ToggleButtonBase.d.ts","import":"./dist/esm/actions/toggle-button/ToggleButtonBase.js","require":"./dist/cjs/actions/toggle-button/ToggleButtonBase.js"},
+    "./actions/link": {"types":"./dist/types/actions/link/index.d.ts","import":"./dist/esm/actions/link/index.js","require":"./dist/cjs/actions/link/index.js"},
+    "./actions/link/base": {"types":"./dist/types/actions/link/LinkBase.d.ts","import":"./dist/esm/actions/link/LinkBase.js","require":"./dist/cjs/actions/link/LinkBase.js"},
+    "./actions/link-button": {"types":"./dist/types/actions/link-button/index.d.ts","import":"./dist/esm/actions/link-button/index.js","require":"./dist/cjs/actions/link-button/index.js"},
+    "./actions/link-button/base": {"types":"./dist/types/actions/link-button/LinkButtonBase.d.ts","import":"./dist/esm/actions/link-button/LinkButtonBase.js","require":"./dist/cjs/actions/link-button/LinkButtonBase.js"},
+    "./icons/icon": {"types":"./dist/types/icons/icon/index.d.ts","import":"./dist/esm/icons/icon/index.js","require":"./dist/cjs/icons/icon/index.js"},
+    "./icons/icon/base": {"types":"./dist/types/icons/icon/IconBase.d.ts","import":"./dist/esm/icons/icon/IconBase.js","require":"./dist/cjs/icons/icon/IconBase.js"},
+    "./inputs/slider": {"types":"./dist/types/inputs/slider/index.d.ts","import":"./dist/esm/inputs/slider/index.js","require":"./dist/cjs/inputs/slider/index.js"},
+    "./inputs/slider/base": {"types":"./dist/types/inputs/slider/SliderBase.d.ts","import":"./dist/esm/inputs/slider/SliderBase.js","require":"./dist/cjs/inputs/slider/SliderBase.js"},
+    "./inputs/select": {"types":"./dist/types/inputs/select/index.d.ts","import":"./dist/esm/inputs/select/index.js","require":"./dist/cjs/inputs/select/index.js"},
+    "./inputs/select/base": {"types":"./dist/types/inputs/select/SelectBase.d.ts","import":"./dist/esm/inputs/select/SelectBase.js","require":"./dist/cjs/inputs/select/SelectBase.js"},
+    "./media/audio-player": {"types":"./dist/types/media/audio-player/index.d.ts","import":"./dist/esm/media/audio-player/index.js","require":"./dist/cjs/media/audio-player/index.js"},
+    "./media/audio-player/base": {"types":"./dist/types/media/audio-player/AudioPlayerBase.d.ts","import":"./dist/esm/media/audio-player/AudioPlayerBase.js","require":"./dist/cjs/media/audio-player/AudioPlayerBase.js"},
+    "./media/video-player": {"types":"./dist/types/media/video-player/index.d.ts","import":"./dist/esm/media/video-player/index.js","require":"./dist/cjs/media/video-player/index.js"},
+    "./media/video-player/base": {"types":"./dist/types/media/video-player/VideoPlayerBase.d.ts","import":"./dist/esm/media/video-player/VideoPlayerBase.js","require":"./dist/cjs/media/video-player/VideoPlayerBase.js"},
+    "./charts/cartesian-chart": {"types":"./dist/types/charts/cartesian-chart/index.d.ts","import":"./dist/esm/charts/cartesian-chart/index.js","require":"./dist/cjs/charts/cartesian-chart/index.js"},
+    "./charts/cartesian-chart/base": {"types":"./dist/types/charts/cartesian-chart/CartesianChartBase.d.ts","import":"./dist/esm/charts/cartesian-chart/CartesianChartBase.js","require":"./dist/cjs/charts/cartesian-chart/CartesianChartBase.js"},
+    "./charts/pie-chart": {"types":"./dist/types/charts/pie-chart/index.d.ts","import":"./dist/esm/charts/pie-chart/index.js","require":"./dist/cjs/charts/pie-chart/index.js"},
+    "./charts/pie-chart/base": {"types":"./dist/types/charts/pie-chart/PieChartBase.d.ts","import":"./dist/esm/charts/pie-chart/PieChartBase.js","require":"./dist/cjs/charts/pie-chart/PieChartBase.js"},
+    "./theme/theme-provider": {"types":"./dist/types/theme/theme-provider/index.d.ts","import":"./dist/esm/theme/theme-provider/index.js","require":"./dist/cjs/theme/theme-provider/index.js"},
+    "./theme/theme-provider/base": {"types":"./dist/types/theme/theme-provider/ThemeProviderBase.d.ts","import":"./dist/esm/theme/theme-provider/ThemeProviderBase.js","require":"./dist/cjs/theme/theme-provider/ThemeProviderBase.js"},
+    "./themes/*":"./dist/themes/*",
+    "./icons/*":"./dist/icons/*",
+    "./dist/*":"./dist/*",
+    "./package.json":"./package.json"
   },
-  "files": [
-    "dist",
-    "design",
-    "README.md",
-    "MIGRATION.md",
-    "THIRD_PARTY.md"
-  ],
-  "sideEffects": [
-    "./dist/client.js",
-    "./dist/**/client.js",
-    "./dist/esm/**/index.js",
-    "./dist/cjs/**/index.js"
-  ],
+  "files": ["dist","README.md","MIGRATION.md","THIRD_PARTY.md","LICENSE"],
+  "sideEffects": ["./components/**/index.ts","./components/client.ts","./components/icons/registry.ts","./dist/client.js","./dist/**/client.js","./dist/esm/**/index.js","./dist/cjs/**/index.js","./dist/esm/icons/registry.js","./dist/cjs/icons/registry.js"],
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "test": "tsc -p tsconfig.unit.json && node --test .test-output/tests/*.spec.js",
-    "build": "tsx scripts/build.ts",
-    "build:package": "npm run typecheck && npm test && npm run build",
-    "storybook": "storybook dev -p 6006",
-    "build:storybook": "storybook build",
-    "test:browser": "playwright test",
-    "dev": "vite --host 127.0.0.1",
-    "test:exports": "tsx scripts/check-exports.ts",
-    "build:docs": "tsx scripts/build-docs.ts"
+    "typecheck":"tsc --noEmit",
+    "test":"tsc -p tsconfig.unit.json && node --test .test-output/tests/*.spec.js",
+    "build":"tsx scripts/build.ts",
+    "build:package":"npm run typecheck && npm test && npm run build",
+    "storybook":"storybook dev -p 6006",
+    "start":"storybook dev -p 6006",
+    "build:storybook":"storybook build",
+    "test:catalog":"tsx scripts/check-catalog.ts",
+    "test:browser":"playwright test",
+    "dev":"vite --host 127.0.0.1",
+    "test:exports":"tsx scripts/check-exports.ts",
+    "build:docs":"tsx scripts/build-docs.ts"
   },
-  "dependencies": {
-    "@beforesemicolon/web-component": "^1.21.0",
-    "echarts": "6.1.0"
-  },
-  "devDependencies": {
-    "@beforesemicolon/builder": "^2.0.1",
-    "@beforesemicolon/site-builder": "^1.12.0",
-    "@types/node": "^22.0.0",
-    "typescript": "^5.9.3",
-    "tsx": "^4.20.0",
-    "esbuild": "^0.28.0",
-    "vite": "^7.0.0",
-    "storybook": "^10.6.0",
-    "@storybook/web-components-vite": "^10.6.0",
-    "@storybook/addon-a11y": "^10.6.0",
-    "@storybook/addon-docs": "^10.6.0",
-    "lit": "^3.3.0",
-    "@playwright/test": "^1.55.0",
-    "@axe-core/playwright": "^4.10.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/beforesemicolon/cube.git"
-  }
+  "dependencies":{"@beforesemicolon/web-component":"^1.21.0","echarts":"6.1.0"},
+  "devDependencies":{"@beforesemicolon/builder":"^2.0.1","@beforesemicolon/site-builder":"^1.12.0","@types/node":"^22.0.0","typescript":"^5.9.3","tsx":"^4.20.0","esbuild":"^0.28.0","vite":"^7.0.0","storybook":"^10.6.0","@storybook/web-components-vite":"^10.6.0","@storybook/addon-a11y":"^10.6.0","@storybook/addon-docs":"^10.6.0","lit":"^3.3.0","@playwright/test":"^1.55.0","@axe-core/playwright":"^4.10.2"},
+  "repository":{"type":"git","url":"https://github.com/beforesemicolon/cube.git"}
 }
