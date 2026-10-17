@@ -18,6 +18,14 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-audit --no-fund
+      - name: Capture isolated review workspace
+        run: |
+          tar -czf /tmp/cube-workspace.tgz components scripts stories tests design docs-cube .storybook package.json package-lock.json tsconfig.json tsconfig.unit.json playwright.config.ts site.config.json node_modules LICENSE README.md MIGRATION.md THIRD_PARTY.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cube-review-workspace
+          path: /tmp/cube-workspace.tgz
+          retention-days: 1
       - run: npm run build:package
       - run: npm run test:exports
       - run: npm run build:storybook
