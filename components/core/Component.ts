@@ -1,11 +1,11 @@
 import { WebComponent } from '@beforesemicolon/web-component'
 import { messages, type Messages } from '../locales/index.js'
 import { text } from './value.js'
-export interface CommonProps { locale?: string; labels?: Partial<Messages> }
+export interface CommonProps { locale?: string; labels?: Partial<Messages> & Record<string, string | undefined> }
 export abstract class Component<P extends CommonProps = CommonProps> extends WebComponent<P> {
     static observedAttributes = ['locale', 'labels']
     locale = 'en'
-    labels: Partial<Messages> = {}
+    labels: Partial<Messages> & Record<string, string | undefined> = {}
     private disposers: Array<() => void> = []
     protected get copy(): Messages { return messages(this.locale, this.labels) }
     protected mount(): void {}
