@@ -17,7 +17,7 @@ test('slider and select use native form association, keyboard editing, reset and
     await page.getByRole('combobox',{name:'Speed'}).selectOption('2')
     expect(await page.locator('form').evaluate((n:HTMLFormElement)=>Object.fromEntries(new FormData(n)))).toEqual({volume:'55',speed:'2'})
     await page.locator('form').evaluate((n:HTMLFormElement)=>n.reset());await expect(range).toHaveValue('50');await expect(page.getByRole('combobox',{name:'Speed'})).toHaveValue('1')
-    await page.locator('#controls').evaluate((n:HTMLFieldSetElement)=>n.disabled=true);await expect(range).toBeDisabled();await expect(page.getByRole('combobox',{name:'Speed'})).toBeDisabled()
+    await page.locator('#controls').evaluate((n:HTMLFieldSetElement)=>n.disabled=true);await expect(range).toBeDisabled();await expect(page.getByRole('combobox',{name:'Speed'})).toBeDisabled();await page.locator('#controls').evaluate((n:HTMLFieldSetElement)=>n.disabled=false);await expect(range).toBeEnabled();await expect(page.getByRole('combobox',{name:'Speed'})).toBeEnabled()
 })
 test('shared button and anchor renderer preserve keyboard and cancelable action behavior',async({page})=>{
     await start(page)
@@ -25,4 +25,9 @@ test('shared button and anchor renderer preserve keyboard and cancelable action 
     const button=page.getByRole('button',{name:'Run action'});await button.focus();await page.keyboard.press('Space');expect(await page.evaluate(()=>(window as any).actionCount)).toBe(1)
     await page.locator('cb-link-button').evaluate(n=>n.addEventListener('cb-before-action',e=>e.preventDefault()))
     await page.keyboard.press('Enter');expect(await page.evaluate(()=>(window as any).actionCount)).toBe(1)
+})
+
+test('false disabled attributes re-enable composed form-associated controls',async({page})=>{
+    await start(page);await page.evaluate(()=>{const button=document.createElement('cb-icon-button');Object.assign(button,{accessibleLabel:'Play',icon:'play',disabled:true});document.querySelector('#fixture')!.append(button)})
+    const button=page.getByRole('button',{name:'Play',exact:true});await expect(button).toBeDisabled();await page.locator('cb-icon-button').evaluate((n:any)=>n.disabled=false);await expect(button).toBeEnabled();await button.focus();await expect(button).toBeFocused();await expect(page.locator('cb-icon-button')).not.toHaveAttribute('disabled')
 })

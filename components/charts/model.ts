@@ -9,8 +9,8 @@ export interface ChartSkin { palette: string[]; text: string; muted: string; bor
 export interface ChartPoint { key: string; itemId: string; seriesId: string; seriesName: string; index: number; x: string | number; y: number | null; low?: number; high?: number; size?: number; percentage?: number }
 export interface LegendItem { id: string; name: string; color: string; visible: boolean }
 export interface ChartModel { option: Record<string, unknown>; points: ChartPoint[]; legend: LegendItem[]; issues: string[]; empty: boolean; noMatch: boolean; pie: boolean }
-export interface CartesianOptions { series?: Series[]; xAxis?: Axis; yAxis?: Axis | Axis[]; inverted?: boolean; stacking?: 'normal' | false; zoomable?: boolean }
-export interface PieOptions { series?: PieSeries | null; variant?: 'pie' | 'donut'; innerTitle?: string; innerDescription?: string }
+export interface CartesianOptions { series?: Series[]; xAxis?: Axis; yAxis?: Axis | Axis[]; inverted?: boolean; stacking?: 'normal' | false; zoomable?: boolean; patterns?:boolean }
+export interface PieOptions { series?: PieSeries | null; variant?: 'pie' | 'donut'; innerTitle?: string; innerDescription?: string; patterns?:boolean }
 const number = (v: unknown): number | null => typeof v === 'number' && Number.isFinite(v) ? v : null
 const base = (skin: ChartSkin) => ({ animation: !skin.reducedMotion, animationDuration: skin.motionDuration ?? 160, animationDurationUpdate: skin.motionDuration ?? 160, animationEasing: 'cubicOut', color: skin.palette, backgroundColor: 'transparent', textStyle: { color: skin.text, fontFamily: skin.font, fontSize: skin.fontSize }, tooltip: { show: false }, aria: { enabled: false } })
 function identity(value: Record<string, unknown>, i: number, seen: Set<string>, issues: string[]): string | null {
@@ -97,7 +97,7 @@ export function cartesianModel(input: CartesianOptions, skin: ChartSkin, visible
         if (!shown) continue
         const options: Record<string, unknown> = { id, name, data, ...(inverted ? { xAxisIndex: yi } : { yAxisIndex: yi }),
             type: ['bar', 'column'].includes(type) ? 'bar' : ['bubble', 'scatter'].includes(type) ? 'scatter' : type === 'errorbar' ? 'custom' : 'line',
-            itemStyle: { color, decal: { symbol: ['rect', 'circle', 'triangle'][i % 3], dashArrayX: [1, 0], dashArrayY: [2, 6], color: skin.surface } },
+            itemStyle: { color, ...(bool(input.patterns)?{decal: { symbol: ['rect', 'circle', 'triangle'][i % 3], dashArrayX: [1, 0], dashArrayY: [2, 6], color: skin.surface }}:{}) },
             lineStyle: { color, type: i % 2 ? 'dashed' : 'solid' }, symbol: ['circle', 'rect', 'triangle', 'diamond'][i % 4],
             connectNulls: false, emphasis: { focus: 'series' }, smooth: type === 'spline' || type === 'areaspline',
             ...(type === 'area' || type === 'areaspline' ? { areaStyle: { opacity: .2 } } : {}),
@@ -139,7 +139,7 @@ export function pieModel(input: PieOptions, skin: ChartSkin, visible?: ReadonlyS
         const percentage = scaledTotal ? (d.value / maximum) / scaledTotal * 100 : 0
         points.push({ key: d.id, itemId: d.id, seriesId: id, seriesName: d.name, index: i, x: d.name, y: d.value, percentage })
         return { id: d.id, name: d.name, value: maximum ? d.value / maximum : 0,
-            itemStyle: { color: d.color, borderColor: skin.surface, borderWidth: 2, decal: { symbol: i % 2 ? 'circle' : 'rect', dashArrayX: [1, 0], dashArrayY: [2, 7], color: skin.surface } } }
+            itemStyle: { color: d.color, borderColor: skin.surface, borderWidth: 2, ...(bool(input.patterns)?{decal: { symbol: i % 2 ? 'circle' : 'rect', dashArrayX: [1, 0], dashArrayY: [2, 7], color: skin.surface }}:{}) } }
     })
     const donut = input.variant === 'donut' || (input.variant !== 'pie' && s.type === 'donut')
     return { option: { ...base(skin), series: [{ id, name, type: 'pie', radius: donut ? ['52%', '78%'] : ['0%', '78%'],

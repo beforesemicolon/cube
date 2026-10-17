@@ -1,5 +1,5 @@
 import { UIComponent, type UIProps } from '../../core/UIComponent.js'
-import { bool, text } from '../../core/value.js'
+import { bool, scalarText } from '../../core/value.js'
 export interface ButtonProps extends UIProps {
     variant?: 'primary'|'secondary'|'outline'|'ghost'|'destructive'; loading?:boolean; icon?:string
     type?:'button'|'submit'|'reset'; name?:string; value?:string; formNoValidate?:boolean
@@ -8,10 +8,9 @@ export abstract class ButtonBase<P extends ButtonProps = ButtonProps> extends UI
     static formAssociated=true
     static observedAttributes=[...UIComponent.observedAttributes,'variant','loading','icon','type','name','value','form-no-validate']
     variant:ButtonProps['variant']='secondary';loading=false;icon='';type:ButtonProps['type']='button';name='';value='';formNoValidate=false
-    private fieldsetDisabled=false
     protected abstract actionElement(): HTMLElement | undefined
-    protected get unavailable():boolean { return super.unavailable||bool(this.loading)||this.fieldsetDisabled }
-    formDisabledCallback(disabled:boolean):void { this.fieldsetDisabled=disabled;if(this.mounted){this.syncCommon();this.syncView()} }
+    protected get unavailable():boolean { return super.unavailable||bool(this.loading)||this.matches(':disabled') }
+    formDisabledCallback(_disabled:boolean):void { if(this.mounted){this.syncCommon();this.syncView()} }
     get form():HTMLFormElement|null { return this.internals?.form??null }
     focus(options?:FocusOptions):void { const control=this.actionElement();if(control)control.focus(options);else super.focus(options) }
     click():void { if(!this.unavailable)this.actionElement()?.click() }
@@ -23,7 +22,7 @@ export abstract class ButtonBase<P extends ButtonProps = ButtonProps> extends UI
         if(form&&this.type==='reset')form.reset()
         if(form&&this.type==='submit'){
             // A native temporary submitter preserves name/value, validation and submitter semantics.
-            const proxy=this.ownerDocument.createElement('button');proxy.type='submit';proxy.name=text(this.name);proxy.value=text(this.value);proxy.formNoValidate=bool(this.formNoValidate);proxy.hidden=true
+            const proxy=this.ownerDocument.createElement('button');proxy.type='submit';proxy.name=scalarText(this.name);proxy.value=scalarText(this.value);proxy.formNoValidate=bool(this.formNoValidate);proxy.hidden=true
             form.append(proxy)
             try { form.requestSubmit(proxy) } finally { proxy.remove() }
         }

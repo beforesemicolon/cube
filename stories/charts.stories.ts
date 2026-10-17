@@ -4,7 +4,7 @@ import { chartExamples } from './fixtures/chart-types.js'
 import { exerciseChart } from './chart-interactions.js'
 const meta:Meta={
     title:'Charts/CartesianChart',tags:['autodocs'],args:{...chartExamples.line.props,height:320,locale:'en'},
-    argTypes:{locale:{control:'select',options:['en','pt','es','fr','zh']},height:{control:{type:'number',min:160,max:1200}},status:{control:'select',options:['finished','loading','error']},inverted:{control:'boolean'},zoomable:{control:'boolean'}},
+    argTypes:{locale:{control:'select',options:['en','pt','es','fr','zh']},height:{control:{type:'number',min:160,max:1200}},status:{control:'select',options:['finished','loading','error']},inverted:{control:'boolean'},zoomable:{control:'boolean'},patterns:{control:'boolean'}},
     parameters:{docs:{description:{component:'One Cartesian component supports bar, line, mixed line/bar, area, bubble and scatter series. Cube buttons and toggles compose the controls; Apache ECharts draws the plot. Switch the appearance toolbar for light and dark. Values, labels, axes, stacking and data are editable in Controls.'}}},
     render:(args,c)=>preview('cb-cartesian-chart',args,c.globals.appearance),
 }
@@ -26,3 +26,4 @@ export const Loading:Story={args:{status:'loading'}}
 export const Empty:Story={args:{series:[]}}
 export const NoMatch:Story={args:{visibleSeries:[]}}
 export const Error:Story={args:{status:'error'}}
+export const PatternedSeries:Story={args:{...chartExamples.mixed.props,patterns:true},play}

@@ -4,13 +4,14 @@ import type { ChartModel, ChartPoint, ChartSkin } from './model.js'
 export interface ChartProps extends CommonProps {
     heading?: string; description?: string; status?: 'finished' | 'loading' | 'error'
     height?: number; visibleSeries?: string[] | null; visibleSegments?: string[] | null; zoomable?: boolean
-    valueFormatter?: ((value: number) => string) | null
+    valueFormatter?: ((value: number) => string) | null; patterns?:boolean
 }
 export abstract class ChartBase<P extends ChartProps = ChartProps> extends Component<P> {
-    static observedAttributes = [...Component.observedAttributes, 'heading', 'description', 'status', 'height', 'visible-series', 'visible-segments', 'zoomable', 'value-formatter']
+    static observedAttributes = [...Component.observedAttributes, 'heading', 'description', 'status', 'height', 'visible-series', 'visible-segments', 'zoomable', 'value-formatter','patterns']
     heading = ''; description = ''; status: 'finished' | 'loading' | 'error' = 'finished'; height: number | undefined = undefined
     visibleSeries: string[] | null = null; visibleSegments: string[] | null = null; zoomable = false
     valueFormatter: ((value: number) => string) | null = null
+    patterns=false
     private hiddenItems = new Set<string>()
     private currentKey: string | null = null
     pinned = false

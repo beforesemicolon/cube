@@ -17,3 +17,7 @@ export function mediaURL(value: unknown, base: string): string {
     }
     return url.href
 }
+
+/** Native-control text values may be parsed back from attributes as numbers or booleans. */
+export const scalarText = (value: unknown, fallback = ''): string =>
+    typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value) ? String(value) : fallback

@@ -36,14 +36,14 @@ Cloudscape's public Cartesian and pie interfaces are functional references, not 
 
 ## Visual behavior
 
-Shared tokens define neutral surfaces, 6px control and 10px panel corners, 28px compact controls, 12px UI text and 16px outline icons. Themes provide light/dark values and native `color-scheme`; media rate/caption popups inherit that appearance. Player controls wrap on narrow containers. Chart engines receive the same text/series colors and 160ms motion token; reduced motion disables animation. Editor appearance must not change the contents of a video poster or source media.
+Shared tokens define neutral surfaces, 6px control and 10px panel corners, 28px compact controls, 12px UI text and 16px outline icons. Themes provide light/dark values and native `color-scheme`; media rate/caption popups inherit that appearance. Player controls wrap on narrow containers. Chart engines receive the same text/series colors and 160ms motion token; reduced motion disables animation. Solid fills are the default; optional patterns supplement color when requested. All series remain legible before interaction; emphasis and keyboard instructions appear only when relevant. Editor appearance must not change the contents of a video poster or source media.
 
 ## Validation gates
 
 - Pure tests validate all eight model configurations, shared input normalization, theme colors and motion policy.
 - Actual-browser tests exercise every chart type in light and dark with ECharts SVG output, shared legend controls, keyboard navigation, data tables, axe checks and narrow-container screenshots.
 - Built Storybook is launched in the test run. Each required chart's `play` function must finish successfully; a catalog entry alone is insufficient.
-- Audio and video stories include playable, locally generated fixtures, not just empty media panels. No camera or microphone access is requested.
+- Audio and video stories include playable, original offline fixtures, not just empty media panels. The checked-in original four-second WebM has a finite seekable duration. No camera, microphone, external media service or MediaRecorder permission is required.
 - Per-component/category CDN output keeps WebComponent and ECharts external. SSR-safe root imports and all package export targets are checked.
 
 A configured test is not a passing result. Record the actual workflow outcome on PR #62. The full editor component inventory is still being implemented; this contract does not claim the other families are finished.

@@ -1,4 +1,4 @@
-import { clamp, finite, record, text, bool } from '../core/value.js'
+import { clamp, finite, record, text, bool, scalarText } from '../core/value.js'
 export interface RangeOptions { min?:number; max?:number; step?:number|'any'; value?:number }
 export interface NormalizedRange { min:number; max:number; step:number|'any'; value:number; percent:number }
 export function normalizeRange(input:RangeOptions):NormalizedRange {
@@ -16,7 +16,7 @@ export function normalizeOptions(input:unknown):Array<Required<SelectOption>> {
         if(typeof raw!=='string'&&(raw===null||typeof raw!=='object'||Array.isArray(raw)))return []
         const item=typeof raw==='string'?{value:raw,label:raw}:record(raw)
         if(!Object.hasOwn(item,'value')&&!text(item.label))return []
-        const value=text(item.value,text(item.label)),label=text(item.label,value)
+        const value=scalarText(item.value,scalarText(item.label)),label=scalarText(item.label,value)
         if(seen.has(value))return [];seen.add(value)
         return [{value,label,disabled:bool(item.disabled),group:text(item.group)}]
     })

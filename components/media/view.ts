@@ -1,5 +1,5 @@
 import { commonCSS,el,label,sheet } from '../core/dom.js'
-import { text } from '../core/value.js'
+import { text,bool } from '../core/value.js'
 import { token as v } from '../theme/tokens.js'
 import { createIconButton,actionLabel } from '../actions/create.js'
 import type { Slider } from '../inputs/slider/index.js'
@@ -57,7 +57,9 @@ audio{display:none}
         actionLabel(play,state.paused?m.play:m.pause);play.icon=state.paused?'play':'pause';actionLabel(stop,m.stop);actionLabel(backward,m.backward);actionLabel(forward,m.forward)
         actionLabel(mute,state.muted?m.unmute:m.mute);mute.icon=state.muted?'muted':'volume'
         actionLabel(fullscreen,document.fullscreenElement===owner?m.exitFullscreen:m.fullscreen);fullscreen.hidden=kind!=='video'||!document.fullscreenEnabled||!owner.requestFullscreen
-        play.disabled=stop.disabled=!source;backward.disabled=forward.disabled=seek.disabled=state.seekEnd<=state.seekStart||!source
+        for(const control of [play,stop])if(bool(control.disabled)!==!source)control.disabled=!source
+        const noSeek=state.seekEnd<=state.seekStart||!source
+        for(const control of [backward,forward,seek])if(bool(control.disabled)!==noSeek)control.disabled=noSeek
         Object.assign(seek,{accessibleLabel:m.seek,min:state.seekStart,max:Math.max(state.seekStart,state.seekEnd),valueText:`${clock(state.position)} / ${Number.isFinite(state.duration)?clock(state.duration):m.live}`})
         if(!seek.interacting)seek.value=state.position
         volume.accessibleLabel=m.volume;if(!volume.interacting)volume.value=state.volume

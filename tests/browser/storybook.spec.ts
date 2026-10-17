@@ -6,3 +6,9 @@ for(const [id,name]of required)test(`built Storybook: ${name} finishes its inter
     await expect(page.locator(tag+'[data-story-ready=true]')).toBeVisible({timeout:20000})
     await expect(page.locator(tag+' [part=plot] svg')).toBeVisible()
 })
+
+for(const [id,tag]of [['audio','cb-audio-player'],['video','cb-video-player']])test(`built Storybook: ${id} really plays and stops`,async({page})=>{
+    await page.goto(`http://127.0.0.1:6006/iframe.html?id=media-players--${id}&viewMode=story`)
+    await expect(page.locator(tag+'[data-story-ready=true]')).toBeVisible({timeout:20000})
+    await expect(page.locator(tag+' cb-icon-button[part=play]').getByRole('button')).toBeEnabled()
+})

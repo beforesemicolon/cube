@@ -15,4 +15,13 @@ layout: document
 - [CartesianChart](/documentation/cartesian-chart)
 - [PieChart](/documentation/pie-chart)
 
-{{t.cube.figma}}
+## Storybook
+
+```sh
+npm install
+npm run storybook
+```
+
+`Charts / CartesianChart` · `Charts / PieChart` · `Media / Players` · `Shared controls`
+
+`Design references / Uploaded sheets`

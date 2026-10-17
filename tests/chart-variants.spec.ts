@@ -20,3 +20,12 @@ test('all chart options use theme colors and honor reduced-motion instead of the
     assert.deepEqual(model.option.color,skin.palette);assert.equal(model.option.animationDuration,120);assert.equal(model.option.animationDurationUpdate,120)
     assert.equal(cartesianModel(chartExamples.bar.props,skin).option.animation,false)
 })
+
+test('solid default plots stay quiet; patterns are an explicit option on both chart models',()=>{
+    const normal=cartesianModel(chartExamples.bar.props,skin).option.series as any[]
+    const patterned=cartesianModel({...chartExamples.bar.props,patterns:true},skin).option.series as any[]
+    assert.equal(normal[0].itemStyle.decal,undefined);assert.ok(patterned[0].itemStyle.decal)
+    const pie=pieModel(chartExamples.pie.props,skin).option.series as any[]
+    const piePattern=pieModel({...chartExamples.pie.props,patterns:true},skin).option.series as any[]
+    assert.equal(pie[0].data[0].itemStyle.decal,undefined);assert.ok(piePattern[0].data[0].itemStyle.decal)
+})

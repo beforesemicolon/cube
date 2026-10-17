@@ -19,6 +19,7 @@ export class ChartView {
     private zoomIn = createIconButton('zoom-in','plus', () => this.zoom(.75)); private zoomOut = createIconButton('zoom-out','minus', () => this.zoom(1.25)); private reset = createIconButton('reset-zoom','reset', () => this.zoom(0))
     private instance?: ChartInstance
     private alive = false; private revision = 0; private scheduled = false; private failure = false; private loadingEngine = false
+    private keyboardActive=false; private hoverActive=false
     private model?: ChartModel; private legends = new Map<string, ToggleButton>(); private tableKey = ''
     private observer?: ResizeObserver; private mutations?: MutationObserver; private scheme?: MediaQueryList; private reduced?: MediaQueryList
     private windowChange = () => this.refresh()
@@ -29,6 +30,8 @@ export class ChartView {
         this.group.setAttribute('role', 'group'); this.plot.setAttribute('aria-hidden', 'true')
         this.legend.setAttribute('role', 'group'); this.state.setAttribute('role', 'status'); this.details.setAttribute('role', 'status')
         // The reused button owns its description inside its own shadow root.
+        this.navigator.addEventListener('focusin',()=>{this.keyboardActive=true;this.showDetails(true)})
+        this.navigator.addEventListener('focusout',()=>{this.keyboardActive=false;if(!this.owner.pinned&&!this.hoverActive)this.instance?.dispatchAction({type:'downplay'});this.updateStatus()})
         this.navigator.addEventListener('keydown', event => {
             if (!this.model) return
             if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)) {
@@ -119,18 +122,20 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
             this.instance = engine.init(this.plot, undefined, { renderer: 'svg' })
             this.instance.on('click', event => this.pick(event, true))
             this.instance.on('mouseover', event => { if (!this.owner.pinned) this.pick(event, false) })
+            this.instance.on('globalout',()=>{this.hoverActive=false;if(!this.owner.pinned&&!this.keyboardActive)this.instance?.dispatchAction({type:'downplay'});this.updateStatus()})
             this.instance.on('datazoom', event => {
                 const input = record(event), batch = Array.isArray(input.batch) ? record(input.batch[0]) : input
                 if (typeof batch.start !== 'number' || typeof batch.end !== 'number' || !Number.isFinite(batch.start) || !Number.isFinite(batch.end)) return
-                const next: [number, number] = [clamp(batch.start, 0, 100), clamp(batch.end, 0, 100)]
-                if (next[0] === this.zoomRange[0] && next[1] === this.zoomRange[1]) return
-                this.zoomRange = next; this.owner.emit('cb-zoom-change', { start: next[0], end: next[1] })
+                const start = clamp(batch.start, 0, 100), end = clamp(batch.end, start, 100)
+                if (start === this.zoomRange[0] && end === this.zoomRange[1]) return
+                this.zoomRange = [start, end]
+                this.owner.emit('cb-zoom-change', { start, end })
             })
         }
-        this.instance!.setOption(this.model.option, { notMerge: true })
+        this.instance?.setOption(this.model.option, { notMerge: true })
         this.plot.querySelector('svg')?.setAttribute('part', 'graphic')
         if (bool(this.owner.zoomable) && !this.model.pie) this.applyZoom()
-        this.showDetails(true)
+        this.showDetails(this.owner.pinned||this.keyboardActive||this.hoverActive)
     }
     private updateStatus(): void {
         const m = this.owner.chartLabels, model = this.model
@@ -139,12 +144,13 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
         this.plot.hidden = !!status
         this.group.setAttribute('aria-busy', String(this.owner.status === 'loading' || this.loadingEngine))
         this.retry.hidden = !this.failure && this.owner.status !== 'error'
-        this.navigator.disabled = !!status || !model?.points.some(p => p.y !== null)
-        this.instructions.hidden = this.navigator.disabled
+        const unavailable = !!status || !model?.points.some(p => p.y !== null)
+        if(bool(this.navigator.disabled)!==unavailable)this.navigator.disabled=unavailable
+        this.instructions.hidden = this.navigator.disabled || !this.keyboardActive
         this.all.hidden = !model?.legend.some(i => !i.visible)
         const zoom = !model?.pie && bool(this.owner.zoomable) && !status
         this.zoomIn.hidden = this.zoomOut.hidden = this.reset.hidden = !zoom
-        this.details.hidden = !!status; this.data.hidden = !model?.points.length
+        this.details.hidden = !!status || !(this.owner.pinned||this.keyboardActive||this.hoverActive); this.data.hidden = !model?.points.length
     }
     private renderLegend(): void {
         if (!this.model) return
@@ -168,7 +174,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
     private pick(event: unknown, pinned: boolean): void {
         if (!this.model) return
         const point = this.owner.enginePoint(this.model, event)
-        if (point) { this.owner.select(point, pinned); this.showDetails(true) }
+        if (point) { this.hoverActive=true;this.owner.select(point, pinned); this.showDetails(true) }
     }
     private pin(): void {
         if (!this.model) return
@@ -184,6 +190,8 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
         if (selected && highlight && this.instance) {
             this.instance.dispatchAction({ type: 'downplay' }); this.instance.dispatchAction({ type: 'highlight', seriesId: selected.seriesId, dataIndex: selected.index })
         }
+        if(this.instance&&!this.owner.pinned&&!this.keyboardActive&&!this.hoverActive)this.instance.dispatchAction({type:'downplay'})
+        this.updateStatus()
     }
     private renderTable(): void {
         if (!this.model) return
