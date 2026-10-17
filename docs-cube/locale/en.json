@@ -1,0 +1,29 @@
+{
+  "cube": {
+    "title": "Cube by Before Semicolon",
+    "intro": "A headless, themeable web-component library for visual editors. This prerelease implements media players, two chart families and shared foundations; the remaining design inventory is still in progress.",
+    "guide": "Installation and architecture",
+    "guideBody": "Import individual component entrypoints to register cb-* tags automatically. Headless base entrypoints do not register elements. The root package exposes DOM-free data utilities and loadComponent for lazy browser loading. Concrete HTMLElement classes require a DOM, including in Node or Deno.",
+    "runtime": "Browser scripts require the web-component runtime first. Charts also need the ECharts runtime, or a custom configureChartEngine loader. Media-only scripts do not load ECharts. The current npm release has not been replaced by this branch.",
+    "theme": "Themes",
+    "themeBody": "ThemeProvider accepts a site-builder ThemeDefinitionV1 document through theme or src. appearance accepts light, dark or system. CSS token names match site-builder; nested providers create explicit scopes. JSON theme files and CSS are generated into dist/themes.",
+    "source": "Source and captions",
+    "mediaApi": "Both players accept src, mediaTitle, muted, autoplay, loop, preload, seekStep, playbackRate, locale and labels. Video also accepts poster and tracks. All props are optional; autoplay is off by default. Methods: play, pause, stop, seek, backward, forward, setVolume, setMuted and setRate. Video supports fullscreen where the browser permits it.",
+    "chartApi": "CartesianChart accepts series, xAxis, yAxis, inverted, stacking and zoomable. Series types include line, spline, area, areaspline, bar, column, scatter, bubble, errorbar, x-threshold and y-threshold. Use stable series IDs. A secondary value axis is selected by its ID. Null values remain gaps; invalid values emit cb-error rather than becoming invented data.",
+    "pieApi": "PieChart accepts a series containing named data segments, plus variant (pie or donut), innerTitle and innerDescription. Each segment has an id, name and value (or y). Zero-only datasets render an empty state. Negative and non-finite values are rejected gracefully. Percentages use the visible-data total.",
+    "commonCharts": "Both charts support heading, description, height, status, locale, labels and valueFormatter. visibleSeries or visibleSegments makes filtering controlled; otherwise visibility is managed internally. Reassign data props after edits. cb-select reports point selection, cb-visibility-change reports filters, cb-retry requests a retry and cb-error reports recoverable errors.",
+    "access": "Accessibility and styling",
+    "accessBody": "Controls use native buttons, ranges and selects with injectable translated labels. Charts provide keyboard point navigation, visible legend controls, persistent details and a data table. Reduced motion is respected. Authors must supply meaningful data names, captions and transcripts. Automated checks do not replace screen-reader and usability review.",
+    "parts": "Media styling parts: player, media, title, controls, play, stop, backward, forward, seek, time, volume, mute, rate, captions, fullscreen, status and transcript. Chart parts: chart, title, description, legend, legend-item, plot, graphic, navigator, details, data, table and table-cell. Use theme variables and ::part; do not target the chart engine’s private markup.",
+    "example": "Example",
+    "audio": "AudioPlayer",
+    "audioBody": "A simple audio transport with play/pause, stop, configurable seek steps, volume and playback speed. A missing source shows a safe empty state. Backward and forward seek within the current media; they are not playlist navigation.",
+    "video": "VideoPlayer",
+    "videoBody": "The same transport for video, with a poster, optional caption tracks and feature-detected fullscreen. The native media node survives prop and playback updates, so controls do not restart playback.",
+    "cartesian": "CartesianChart",
+    "cartesianBody": "A single component for common Cartesian visualizations, powered by Apache ECharts. The functional reference is Cloudscape’s Cartesian chart; this is not a React wrapper or a pixel-for-pixel copy.",
+    "pie": "PieChart and donut",
+    "pieBody": "One component for pie and donut views, with filtering, segment details and optional center content. ECharts is loaded only when a populated chart mounts.",
+    "figma": "Figma references for these four additions remain pending because the connected plan’s tool-call quota is exhausted. Storybook provides the runnable visual reference in this branch."
+  }
+}

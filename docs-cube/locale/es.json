@@ -1,0 +1,29 @@
+{
+  "cube": {
+    "title": "Cube por Before Semicolon",
+    "intro": "Biblioteca de componentes web con lógica independiente de la presentación y temas para editores visuales. Esta versión preliminar incluye reproductores, dos familias de gráficos y fundamentos compartidos; el resto sigue en desarrollo.",
+    "guide": "Instalación y arquitectura",
+    "guideBody": "Importa entradas individuales para registrar automáticamente etiquetas cb-*. Las clases base no registran elementos. La raíz ofrece utilidades sin DOM y loadComponent para carga diferida. Las clases HTMLElement concretas requieren un DOM, también en Node o Deno.",
+    "runtime": "Carga primero el runtime web-component. Los gráficos requieren además ECharts o un cargador configureChartEngine. Los scripts de medios no cargan ECharts. Esta rama no ha sustituido la versión publicada en npm.",
+    "theme": "Temas",
+    "themeBody": "ThemeProvider acepta ThemeDefinitionV1 de site-builder mediante theme o src. appearance admite light, dark o system. Las variables CSS conservan los nombres de site-builder; los proveedores anidados crean ámbitos explícitos. Los archivos se generan en dist/themes.",
+    "source": "Fuente y subtítulos",
+    "mediaApi": "Ambos aceptan src, mediaTitle, muted, autoplay, loop, preload, seekStep, playbackRate, locale y labels. El vídeo añade poster y tracks. Todas las propiedades son opcionales; autoplay está desactivado por defecto. Métodos: play, pause, stop, seek, backward, forward, setVolume, setMuted y setRate. Fullscreen depende del navegador.",
+    "chartApi": "CartesianChart acepta series, xAxis, yAxis, inverted, stacking y zoomable. Tipos: line, spline, area, areaspline, bar, column, scatter, bubble, errorbar, x-threshold y y-threshold. Usa IDs estables; el segundo eje de valores se selecciona por ID. Null conserva huecos; los valores inválidos emiten cb-error sin inventar datos.",
+    "pieApi": "PieChart acepta series, variant (pie o donut), innerTitle e innerDescription. Cada segmento tiene id, name y value (o y). Solo ceros produce un estado vacío. Los valores negativos o no finitos se rechazan de forma recuperable. Los porcentajes usan el total visible.",
+    "commonCharts": "Ambos admiten heading, description, height, status, locale, labels y valueFormatter. visibleSeries o visibleSegments activa filtrado controlado; de lo contrario, la visibilidad es interna. Reasigna las propiedades tras editar datos. Eventos: cb-select para selección, cb-visibility-change para filtros, cb-retry para reintentos y cb-error para errores recuperables.",
+    "access": "Accesibilidad y estilos",
+    "accessBody": "Controles nativos con etiquetas traducibles. Los gráficos incluyen navegación por teclado, leyenda accesible, detalles persistentes y tabla de datos. Se respeta el movimiento reducido. El autor debe aportar nombres significativos, subtítulos y transcripciones. Las pruebas automáticas no sustituyen la revisión con lectores de pantalla y usuarios.",
+    "parts": "Partes multimedia: player, media, title, controls, play, stop, backward, forward, seek, time, volume, mute, rate, captions, fullscreen, status y transcript. Partes de gráficos: chart, title, description, legend, legend-item, plot, graphic, navigator, details, data, table y table-cell. Usa variables y ::part, no la estructura privada del motor.",
+    "example": "Ejemplo",
+    "audio": "AudioPlayer",
+    "audioBody": "Reproductor sencillo con reproducir/pausar, detener, saltos configurables, volumen y velocidad. Sin fuente muestra un estado vacío seguro. Backward y forward buscan dentro del contenido actual, no cambian de pista.",
+    "video": "VideoPlayer",
+    "videoBody": "El mismo transporte para vídeo con portada, subtítulos y pantalla completa cuando está disponible. El nodo nativo se conserva al cambiar propiedades, sin reiniciar la reproducción.",
+    "cartesian": "CartesianChart",
+    "cartesianBody": "Un componente para visualizaciones cartesianas habituales mediante Apache ECharts. La referencia funcional es Cloudscape; no es un adaptador React ni una copia visual exacta.",
+    "pie": "PieChart y donut",
+    "pieBody": "Un componente para gráficos circulares y de anillo, con filtros, detalles y centro opcional. ECharts solo se carga al montar un gráfico con datos.",
+    "figma": "Las cuatro referencias Figma están pendientes por agotamiento de la cuota de la conexión. Storybook ofrece la referencia visual ejecutable de esta rama."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "cube": {
+    "title": "Cube · Before Semicolon",
+    "intro": "面向可视化编辑器的 Web 组件库，逻辑与渲染分离并支持主题。此预发布版本实现媒体播放器、两类图表及共享基础设施，其余设计清单仍在开发中。",
+    "guide": "安装与架构",
+    "guideBody": "导入单个组件入口会自动注册 cb-* 标签。无界面基类入口不会注册元素。包的根入口提供无需 DOM 的数据工具和用于浏览器延迟加载的 loadComponent。具体 HTMLElement 类需要 DOM，Node 和 Deno 环境也不例外。",
+    "runtime": "浏览器脚本必须先加载 web-component 运行时。图表还需要 ECharts 或自定义 configureChartEngine 加载器。仅媒体脚本不会加载 ECharts。此分支尚未替换 npm 上发布的版本。",
+    "theme": "主题",
+    "themeBody": "ThemeProvider 通过 theme 或 src 接受 site-builder ThemeDefinitionV1。appearance 支持 light、dark 或 system。CSS 变量名与 site-builder 一致；嵌套提供器创建明确的作用域。JSON 主题和 CSS 生成到 dist/themes。",
+    "source": "媒体来源与字幕",
+    "mediaApi": "两个播放器都支持 src、mediaTitle、muted、autoplay、loop、preload、seekStep、playbackRate、locale 和 labels。视频另支持 poster 和 tracks。所有属性都可省略，默认不自动播放。方法包括 play、pause、stop、seek、backward、forward、setVolume、setMuted 和 setRate。浏览器允许时可使用 fullscreen。",
+    "chartApi": "CartesianChart 支持 series、xAxis、yAxis、inverted、stacking 和 zoomable。系列类型包括 line、spline、area、areaspline、bar、column、scatter、bubble、errorbar、x-threshold 和 y-threshold。请使用稳定 ID；第二数值轴通过 ID 指定。Null 保留空缺，无效值触发 cb-error，不会编造数据。",
+    "pieApi": "PieChart 支持包含命名片段的 series，以及 variant（pie 或 donut）、innerTitle 和 innerDescription。片段具有 id、name、value（或 y）。全零数据呈现空状态。负数与非有限数会被安全拒绝。百分比以可见数据之和为分母。",
+    "commonCharts": "两个图表都支持 heading、description、height、status、locale、labels 和 valueFormatter。设置 visibleSeries 或 visibleSegments 后，筛选由调用方控制；否则组件自行管理。修改数据后请重新赋值。cb-select 表示选择，cb-visibility-change 表示筛选，cb-retry 请求重试，cb-error 报告可恢复错误。",
+    "access": "无障碍与样式",
+    "accessBody": "使用原生按钮、滑块和选择框，标签可注入翻译。图表提供键盘点导航、可见图例、持续显示的详情和数据表，并尊重减少动态效果设置。作者应提供有意义的数据名称、字幕与文字稿。自动测试不能替代屏幕阅读器及可用性评估。",
+    "parts": "媒体样式部件：player、media、title、controls、play、stop、backward、forward、seek、time、volume、mute、rate、captions、fullscreen、status、transcript。图表部件：chart、title、description、legend、legend-item、plot、graphic、navigator、details、data、table、table-cell。使用主题变量与 ::part，不要依赖引擎私有标记。",
+    "example": "示例",
+    "audio": "AudioPlayer",
+    "audioBody": "简洁音频控件，包括播放/暂停、停止、可配置跳转、音量和速度。没有来源时安全显示空状态。Backward 和 forward 在当前媒体内跳转，而非切换播放列表项目。",
+    "video": "VideoPlayer",
+    "videoBody": "相同的视频传输控件，增加封面、可选字幕和支持检测后的全屏功能。属性和播放状态更新不会重建原生媒体节点或重新开始播放。",
+    "cartesian": "CartesianChart",
+    "cartesianBody": "基于 Apache ECharts 的单一组件，覆盖常见笛卡尔图表。功能参考 Cloudscape，但不使用 React 包装器，也不逐像素复制其外观。",
+    "pie": "PieChart 与环形图",
+    "pieBody": "一个组件实现饼图和环形图，支持筛选、片段详情及可选中心内容。仅在挂载有数据的图表时加载 ECharts。",
+    "figma": "由于连接方案的工具调用配额已耗尽，这四项 Figma 参考仍待添加。此分支的 Storybook 提供可运行的视觉参考。"
+  }
+}
