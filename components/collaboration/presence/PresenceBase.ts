@@ -1,10 +1,64 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { finite, scalarText } from '../../core/value.js'
+import type { AvatarStatus } from '../../data-display/avatar/AvatarBase.js'
 
-export interface PresenceProps extends StudioProps {}
+export interface PresenceItem {
+    id: string
+    label: string
+    accessibleLabel?: string
+    description?: string
+    src?: string
+    initials?: string
+    color?: string
+    status?: AvatarStatus
+    statusLabel?: string
+    disabled?: boolean
+}
 
-/** Headless behavior for the Presence component. */
-export abstract class PresenceBase extends StudioComponentBase<PresenceProps> {
-    readonly componentName = 'presence'
-    readonly componentKind: StudioKind = 'collaboration'
+export interface PresenceProps extends UIProps {
+    items?: readonly PresenceItem[]
+    maxVisible?: number
+    summary?: string
+    overflowLabel?: string
+    emptyLabel?: string
+}
+
+/** Headless collaborator-list behavior shared by Presence renderers. */
+export abstract class PresenceBase extends UIComponent<PresenceProps> {
+    static observedAttributes = [
+        ...UIComponent.observedAttributes,
+        'items', 'max-visible', 'summary', 'overflow-label', 'empty-label',
+    ]
+
+    items: readonly PresenceItem[] = []
+    maxVisible = 2
+    summary = ''
+    overflowLabel = ''
+    emptyLabel = ''
+
+    get presenceItems(): readonly PresenceItem[] { return Array.isArray(this.items) ? this.items : [] }
+    get visibleItems(): readonly PresenceItem[] { return this.presenceItems.slice(0, Math.max(1, Math.floor(finite(this.maxVisible, 2)))) }
+    get hiddenItems(): readonly PresenceItem[] { return this.presenceItems.slice(this.visibleItems.length) }
+    get summaryText(): string { return scalarText(this.summary) }
+    get emptyText(): string { return scalarText(this.emptyLabel) }
+    get presenceLabel(): string { return this.accessibleName() }
+    overflowText(count = this.hiddenItems.length): string {
+        return scalarText(this.overflowLabel).replaceAll('{count}', String(count)) || `+${count}`
+    }
+
+    activate(item: PresenceItem, originalEvent?: Event): boolean {
+        if (this.unavailable || item.disabled) return false
+        const detail = { item, value: item.id, originalEvent }
+        if (!this.request('cb-before-action', detail)) return false
+        this.emit('cb-action', detail)
+        return true
+    }
+
+    activateOverflow(originalEvent?: Event): boolean {
+        if (this.unavailable || !this.hiddenItems.length) return false
+        const detail = { items: this.hiddenItems, count: this.hiddenItems.length, originalEvent }
+        if (!this.request('cb-before-overflow', detail)) return false
+        this.emit('cb-overflow', detail)
+        return true
+    }
 }

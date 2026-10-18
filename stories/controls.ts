@@ -88,6 +88,7 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
 }
 
 const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly ControlOption[]>>>> = {
+    'cb-avatar': { status: ['none', 'online', 'idle', 'busy', 'offline'] },
     'cb-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-icon-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-button-group': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
@@ -168,6 +169,14 @@ const descriptions: Readonly<Record<string, string>> = {
     firstDayOfWeek: 'Weekday used as the first calendar column, from 0 (Sunday) through 6 (Saturday).',
     icon: 'Icon name displayed by the control.',
     items: 'Editable item collection. Add, remove, reorder, label, value, or disable entries here.',
+    name: 'Identity name used to generate fallback initials and accessible text.',
+    src: 'Image source. When absent or unavailable, the avatar displays initials.',
+    initials: 'Optional initials override. Otherwise initials are derived from the name.',
+    color: 'Avatar fallback surface color.',
+    statusLabel: 'Localized description of the visible presence status.',
+    decorative: 'Hides the avatar from assistive technology when adjacent text already names the person.',
+    summary: 'Localized participant summary displayed beside the avatar group.',
+    overflowLabel: 'Localized accessible label for hidden participants. Supports {count}.',
     label: 'Visible component label.',
     menuLabel: 'Accessible label for the split button menu trigger.',
     messages: 'Editable Flashbar notification queue.',
@@ -258,12 +267,12 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     activation: 'automatic', align: 'stretch', appearance: 'system', autoFlow: 'row', autocomplete: 'list',
     allowAlpha: 'true', allowSampler: 'true', autoplay: 'false', busy: 'false', checked: 'false', closeOnBackdrop: 'true', collapseAt: "''",
     crossOrigin: "''", decorative: 'false', destructive: 'false', disabled: 'false', disableContentPadding: 'false', dismissible: 'true',
-    expanded: 'false', firstDayOfWeek: '0', height: 'auto', invalid: 'false', items: '[]',
+    expanded: 'false', firstDayOfWeek: '0', height: 'auto', initials: "''", invalid: 'false', items: '[]',
     loading: 'false', loop: 'false', max: '100', maxRecent: '8', maxVisible: '4', messages: '[]', min: '0',
-    modalSize: 'md', multi: 'false', multiple: 'false', muted: 'false', native: 'false', open: 'false', options: '[]',
+    modalSize: 'md', multi: 'false', multiple: 'false', muted: 'false', native: 'false', open: 'false', options: '[]', overflowLabel: "''",
     orientation: 'horizontal', patterns: 'false', placement: 'bottom-start', playbackRate: '1', position: 'top-end',
     preload: 'metadata', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', searchable: 'auto', searchThreshold: '10', seekStep: '10',
-    recentColors: '[]', series: '[]', size: 'sm', status: 'finished', step: '1', stops: '[]', swatches: '[]', theme: 'null', tracks: '[]', units: '[]', value: "''",
+    recentColors: '[]', series: '[]', size: 'sm', src: "''", status: 'finished', statusLabel: "''", step: '1', stops: '[]', summary: "''", swatches: '[]', theme: 'null', tracks: '[]', units: '[]', value: "''",
     visibleSegments: 'null', visibleSeries: 'null', wrap: 'false', xAxis: '{}', yAxis: '{}', zoomable: 'false',
     animated: 'true', controls: 'true', currentTime: '0', duration: '4', grid: 'true', maxZoom: '400', minZoom: '25', pannable: 'true', playing: 'false',
     selectable: 'true', selected: 'false', showChrome: 'true', showCursor: 'true', showDimensions: 'true', showOrientationControl: 'true', snap: '0.1', zoom: '100', zoomStep: '10',
@@ -275,17 +284,17 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     accessibleLabel: '', actionLabel: '', actionValue: '', activation: 'automatic', align: 'stretch', allowAlpha: true, allowSampler: true, appearance: 'system',
     angle: 90, autoFlow: 'row', autocomplete: 'list', autoplay: false, background: '', blockSize: '', border: '', busy: false, controls: true, currentTime: 0, cursorX: 0, cursorY: 0,
     cancelLabel: '', checked: false, closeLabel: '', closeOnBackdrop: true, code: '', codeLanguage: 'html', collapsible: false, collapseAt: '', columns: '',
-    confirmLabel: '', content: '', copiedLabel: '', copyLabel: '', crossOrigin: '', decorative: false, delay: 0,
+    color: '', confirmLabel: '', content: '', copiedLabel: '', copyLabel: '', crossOrigin: '', decorative: false, delay: 0,
     description: '', destructive: false, disabled: false, disableContentPadding: false, dismissible: true, download: '', emptyLabel: '', error: '',
     device: 'desktop', duration: 4, errorText: '', expanded: false, extent: 'farthest-corner', firstDayOfWeek: 0, formNoValidate: false, gap: '', grid: true, heading: '', height: 320,
-    href: '', icon: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
+    href: '', icon: '', initials: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
     keys: '', label: '', loading: false, loop: false, margin: '', max: 100, maxBlockSize: '', maxInlineSize: '',
     majorStep: 100, maxItems: 4, maxRecent: 8, maxVisible: 4, maxZoom: 400, mediaTitle: '', menuLabel: '', min: 0, minorDivisions: 10, minZoom: 25, minBlockSize: '', minInlineSize: '',
-    modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal', originX: 0, originY: 0,
+    modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal', originX: 0, originY: 0, overflowLabel: '',
     overflow: '', padding: '', page: 1, patterns: false, placement: 'bottom-start', placeholder: '', playbackRate: 1,
     popupControls: '', popupExpanded: false, popupType: '', position: 'top-end', poster: '', preload: 'metadata', searchLabel: '', searchable: 'auto', searchPlaceholder: '', searchThreshold: 10,
     pannable: true, playing: false, pressed: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
-    seekStep: 10, selectionCount: 0, shape: 'circle', siblings: 1, size: 'sm', src: '', status: '', step: 1, target: '_self',
+    seekStep: 10, selectionCount: 0, shape: 'circle', siblings: 1, size: 'sm', src: '', status: '', statusLabel: '', step: 1, summary: '', target: '_self',
     selectable: true, selected: false, showChrome: true, showCursor: true, showDimensions: true, showOrientationControl: true, snap: .1,
     totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', width: 640, wrap: false, x: 0, x1: .25, x2: .25, y: 0, y1: .1, y2: 1, zoom: 100, zoomStep: 10, zoomable: false,
     animated: true, headingLevel: 2, lines: 3, loadingRows: 5, resizable: true, rowActivation: false, selectionMode: 'none',
@@ -293,10 +302,12 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
 }
 
 const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue>>>> = {
+    'cb-avatar': { status: 'none' },
     'cb-accordion': { variant: 'simple' },
     'cb-expandable-section': { variant: 'default' },
     'cb-gradient-editor': { type: 'linear', shape: 'circle', extent: 'farthest-corner', position: 'center' },
     'cb-device-frame': { device: 'desktop', orientation: 'landscape' },
+    'cb-presence': { maxVisible: 2 },
     'cb-button': { variant: 'secondary' },
     'cb-button-group': { variant: 'secondary' },
     'cb-link': { variant: 'secondary' },
@@ -350,6 +361,7 @@ function controlFor(tag: string, property: string): StoryControl['control'] {
     if (property === 'valueFormatter') return 'select'
     if (property === 'value' && numericValueTags.has(tag)) return numberControl(property)
     if (property === 'value' && colorValueTags.has(tag)) return 'color'
+    if (property === 'color') return 'color'
     if ((property === 'min' || property === 'max') && dateBoundTags.has(tag)) return 'text'
     if (optionsFor(tag, property)) return 'select'
     if (tag === 'cb-skeleton' && (property === 'rows' || property === 'columns')) return { type: 'number', min: 1, max: 12, step: 1 }
@@ -362,7 +374,7 @@ function controlFor(tag: string, property: string): StoryControl['control'] {
 
 function typeSummary(tag: string, property: string, control: StoryControl['control'], options: readonly ControlOption[] | undefined): string {
     if (property === 'valueFormatter') return '(value: number) => string'
-    if (property === 'items') return 'Item[]'
+    if (property === 'items') return tag === 'cb-presence' ? 'PresenceItem[]' : 'Item[]'
     if (property === 'stops') return 'GradientStop[]'
     if (tag === 'cb-table' && property === 'columns') return 'TableColumn[]'
     if (['selectedKeys', 'expandedIds', 'expandedKeys', 'collapsedGroupKeys', 'swatches', 'recentColors'].includes(property)) return 'string[]'

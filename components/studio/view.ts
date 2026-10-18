@@ -48,9 +48,6 @@ textarea[part~=control]{min-block-size:calc(var(--cb-height) * 2.4);resize:verti
 [part~=list][data-layout=grid]{grid-template-columns:repeat(3,minmax(72px,1fr));gap:8px;padding:8px;max-block-size:none}
 [part~=list][data-layout=grid] [part~=item]{display:grid;justify-items:start;gap:8px;min-block-size:82px;padding:10px;border-color:var(--color-separator);background:var(--color-surface-muted)}
 [part~=list][data-layout=grid] [part~=item-icon]{inline-size:28px;block-size:28px;color:var(--color-primary)}
-[part~=list][data-layout=presence]{display:flex;align-items:center;gap:0;padding:8px;overflow:visible}
-[part~=list][data-layout=presence] [part~=item]{position:relative;display:grid;place-items:center;inline-size:30px;min-inline-size:30px;block-size:30px;min-block-size:30px;margin-inline-start:-6px;padding:0;border:2px solid var(--color-surface);border-radius:50%;background:var(--color-selection);color:var(--color-signal-text);font-weight:700}
-[part~=list][data-layout=presence] [part~=item]:first-child{margin-inline-start:0}
 [part~=panel],[part~=shell],[part~=canvas],[part~=display],[part~=editor],[part~=collaboration]{border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);padding:var(--spacing-md,12px);min-inline-size:0}
 [part~=panel-header]{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-sm,8px);padding-block-end:var(--spacing-sm,8px);border-block-end:1px solid var(--color-separator)}
 [part~=content]{display:block;min-block-size:var(--cb-height);padding-block:var(--spacing-sm,8px)}
@@ -131,13 +128,12 @@ const gridCollections = new Set([
     'symbol-library', 'variants',
 ])
 
-function collectionLayout(name: string): 'default' | 'segmented' | 'trail' | 'table' | 'tree' | 'grid' | 'presence' {
+function collectionLayout(name: string): 'default' | 'segmented' | 'trail' | 'table' | 'tree' | 'grid' {
     if (segmentedCollections.has(name)) return 'segmented'
     if (trailCollections.has(name)) return 'trail'
     if (name === 'table') return 'table'
     if (name === 'tree' || name === 'layer-tree') return 'tree'
     if (gridCollections.has(name)) return 'grid'
-    if (name === 'presence') return 'presence'
     return 'default'
 }
 
@@ -152,10 +148,6 @@ function iconFor(name: string, itemId: string): string {
     if (itemId === 'delete') return 'close'
     if (itemId === 'duplicate') return 'copy'
     return 'file'
-}
-
-function initials(label: string): string {
-    return label.split(/\s+/).map(part => part.charAt(0)).join('').slice(0, 2).toUpperCase()
 }
 
 type StudioTextKey = 'nameLabel' | 'metadataLabel' | 'unitLabel' | 'decrementLabel' | 'incrementLabel' | 'fileLabel' | 'fileRequirements'
@@ -202,22 +194,16 @@ function listView(host: StudioComponentBase, role: 'listbox' | 'tree' = 'listbox
             button.disabled = host.studioDisabled() || item.disabled === true
             button.setAttribute('role', role === 'tree' ? 'treeitem' : 'option')
             aria(button, 'aria-selected', selected(host, item))
-            if (layout === 'presence') {
-                button.textContent = initials(item.label)
-                button.title = item.description ? `${item.label} — ${item.description}` : item.label
-                button.setAttribute('aria-label', button.title)
-            } else {
-                const main = el('span', 'item-main')
-                if (layout === 'grid' || layout === 'tree' || ['menu', 'nested-menu', 'canvas-menu', 'activity-log'].includes(host.componentName)) {
-                    main.append(createIcon(iconFor(host.componentName, item.id), 'item-icon icon'))
-                }
-                const copy = el('span', 'item-copy')
-                copy.append(el('span', 'item-label', item.label))
-                main.append(copy)
-                button.append(main)
-                if (layout === 'trail' && item !== items.at(-1)) button.append(el('span', 'separator', '›'))
-                else if (item.description) button.append(el('span', 'item-description description', item.description))
+            const main = el('span', 'item-main')
+            if (layout === 'grid' || layout === 'tree' || ['menu', 'nested-menu', 'canvas-menu', 'activity-log'].includes(host.componentName)) {
+                main.append(createIcon(iconFor(host.componentName, item.id), 'item-icon icon'))
             }
+            const copy = el('span', 'item-copy')
+            copy.append(el('span', 'item-label', item.label))
+            main.append(copy)
+            button.append(main)
+            if (layout === 'trail' && item !== items.at(-1)) button.append(el('span', 'separator', '›'))
+            else if (item.description) button.append(el('span', 'item-description description', item.description))
             button.addEventListener('click', event => host.activate(item, event))
             node.append(button)
         }
@@ -263,8 +249,6 @@ function displayContent(host: StudioComponentBase): HTMLElement {
     const value = host.studioTextValue() || host.studioLabel()
     if (host.componentName === 'badge') {
         const badge = el('span', 'token badge', value); badge.setAttribute('role', 'status'); content.append(badge)
-    } else if (host.componentName === 'avatar') {
-        const avatar = el('span', 'empty-illustration avatar', initials(value)); avatar.setAttribute('role', 'img'); avatar.setAttribute('aria-label', value); content.append(avatar, el('span', 'item-label', value))
     } else if (host.componentName.includes('preview') || host.componentName.includes('thumbnail')) {
         content.append(el('div', 'preview-block', value))
     } else if (host.componentName === 'diff-preview') {

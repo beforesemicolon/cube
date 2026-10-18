@@ -72,7 +72,10 @@ const javascriptExample = [
 
 export const Badge: Story = componentStory('cb-badge', { label: 'Badge', value: 'Example', status: 'Ready' })
 
-export const Avatar: Story = componentStory('cb-avatar', { label: 'Avatar', value: 'Example', status: 'Ready' })
+export const Avatar: Story = componentStory('cb-avatar', {
+    name: 'Elson Correia', accessibleLabel: 'Elson Correia', src: '', initials: '', color: '', size: 'sm',
+    status: 'online', statusLabel: 'Online', decorative: false,
+})
 
 export const Card: Story = componentStory('cb-card', { label: 'Card', actionLabel: 'Open', expanded: true })
 

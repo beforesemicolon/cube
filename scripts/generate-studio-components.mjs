@@ -159,7 +159,7 @@ const catalog = `import type { StudioBoardItem, StudioDefinition } from './types
 await mkdir(resolve('components/studio'), { recursive: true })
 await writeFile(resolve('components/studio/catalog.ts'), catalog)
 
-const handBuiltComponents = new Set(['code-preview', 'combobox', 'date-picker', 'time-picker', 'unit-input'])
+const handBuiltComponents = new Set(['avatar', 'code-preview', 'combobox', 'date-picker', 'presence', 'time-picker', 'unit-input'])
 const componentTextProps = {
     stepper: [['decrementLabel', 'decrement-label'], ['incrementLabel', 'increment-label']],
     'file-picker': [['fileLabel', 'file-label'], ['fileRequirements', 'file-requirements']],
@@ -215,6 +215,7 @@ const sampleByKind = {
 }
 
 const foundationStoryArgs = {
+    avatar: `{ name: 'Elson Correia', accessibleLabel: 'Elson Correia', src: '', initials: '', color: '', size: 'sm', status: 'online', statusLabel: 'Online', decorative: false }`,
     'unit-input': `{ label: 'Unit input', value: 24, min: 0, max: 100, step: 1, unit: 'px', units: [{ value: 'px', label: 'px' }, { value: '%', label: '%' }, { value: 'rem', label: 'rem' }, { value: 'vw', label: 'vw' }], unitLabel: 'Unit' }`,
     stepper: `{ label: 'Stepper', value: 24, min: 0, max: 100, step: 1, decrementLabel: 'Decrease', incrementLabel: 'Increase' }`,
     'file-picker': `{ label: 'File picker', fileLabel: 'Choose a file', fileRequirements: 'Select a file from your device' }`,
@@ -248,6 +249,7 @@ const foundationStoryArgs = {
     grid: `{ columns: 'repeat(3,minmax(0,1fr))', rows: '', gap: '8px', autoFlow: 'row', align: 'stretch', justify: 'stretch' }`,
     divider: `{ orientation: 'horizontal', decorative: false }`,
     flashbar: `{ accessibleLabel: 'Notifications', position: 'top-end', maxVisible: 4, messages: [{ id: 'saved', type: 'success', heading: 'Changes saved', message: 'Your project is up to date.', dismissLabel: 'Dismiss', dismissible: true, duration: 0 }] }`,
+    presence: `{ accessibleLabel: 'Active collaborators', items: [{ id:'elson', label:'Elson Correia', initials:'EC', status:'online', statusLabel:'Online', accessibleLabel:'Elson Correia, online' }, { id:'maya', label:'Maya Adams', initials:'MA', status:'online', statusLabel:'Online', accessibleLabel:'Maya Adams, online' }, { id:'ana', label:'Ana Martins', initials:'AM', status:'idle', statusLabel:'Idle', accessibleLabel:'Ana Martins, idle' }], maxVisible: 2, summary: '3 participants', overflowLabel: '{count} more participants', emptyLabel: 'No active collaborators' }`,
     icon: `{ label: 'Settings', name: 'settings', size: 'md', disabled: false }`,
     'theme-provider': `{ appearance: 'system', src: '', theme: null }`,
 }

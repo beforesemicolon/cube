@@ -92,6 +92,27 @@ test('built Storybook: Skeleton has visible loading shapes and complete controls
     for(const name of ['variant','lines','rows','columns','animated','accessibleLabel']) await expect(panel.getByText(name,{exact:true}).first()).toBeVisible({timeout:20000})
 })
 
+test('built Storybook: Avatar and Presence render distinct identity primitives',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=data-display--avatar&viewMode=story')
+    const avatar=page.locator('cb-avatar')
+    await expect(avatar.getByRole('img',{name:'Elson Correia, Online'})).toBeVisible({timeout:20000})
+    await expect(avatar.locator('[part~=initials]')).toHaveAttribute('data-initials','EC')
+    await expect(avatar.locator('[part~=status]')).toHaveAttribute('data-status','online')
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=collaboration--presence&viewMode=story')
+    const presence=page.locator('cb-presence')
+    await expect(presence.getByRole('group',{name:'Active collaborators'})).toBeVisible({timeout:20000})
+    await expect(presence.locator('cb-avatar')).toHaveCount(3)
+    await expect(presence.locator('[part~=summary]')).toHaveText('5 participants')
+    await expect(presence.getByRole('button',{name:'3 more participants'})).toBeVisible()
+    await presence.getByRole('button',{name:'Elson Correia, online'}).focus()
+    await expect(presence.getByRole('button',{name:'Elson Correia, online'})).toBeFocused()
+
+    await page.goto('http://127.0.0.1:6006/?path=/story/data-display--avatar&addonPanel=storybook/controls/panel')
+    const panel=page.getByRole('tabpanel',{name:/Controls/})
+    for(const name of ['name','src','initials','color','size','status','statusLabel','decorative']) await expect(panel.getByText(name,{exact:true}).first()).toBeVisible({timeout:20000})
+})
+
 test('built Storybook: chart actions and labeled data table disclosure render',async({page})=>{
     await page.goto('http://127.0.0.1:6006/iframe.html?id=charts--zoomable-mixed&viewMode=story')
     const chart=page.locator('cb-cartesian-chart')
