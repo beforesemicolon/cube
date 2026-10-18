@@ -169,6 +169,60 @@ test('built Storybook: readiness components expose their complete prop surfaces'
     }
 })
 
+test('built Storybook: every component category inherits the global appearance', async ({ page }) => {
+    const categoryStories = [
+        ['action--button', 'cb-button'],
+        ['form--text-input', 'cb-text-input'],
+        ['layout--box', 'cb-box'],
+        ['navigation--link', 'cb-link'],
+        ['overlay--tooltip', 'cb-tooltip'],
+        ['feedback--status', 'cb-status'],
+        ['data-display--badge', 'cb-badge'],
+        ['media--empty-audio', 'cb-audio-player'],
+        ['charts--loading', 'cb-cartesian-chart'],
+        ['styling--color-picker', 'cb-color-picker'],
+        ['editor--property-group', 'cb-property-group'],
+        ['collaboration--presence', 'cb-presence'],
+        ['icons--icon', 'cb-icon'],
+        ['examples--field-states', 'cb-text-input'],
+    ] as const
+    for (const [story, tag] of categoryStories) {
+        await page.goto(`http://127.0.0.1:6006/iframe.html?id=${story}&viewMode=story&globals=appearance:dark`)
+        const provider = page.locator('cb-theme-provider').first()
+        await expect(provider).toHaveCSS('color-scheme', 'dark')
+        const component = page.locator(tag).first()
+        await expect(component).toBeAttached()
+        await expect.poll(() => component.evaluate(element => getComputedStyle(element).getPropertyValue('--color-background').trim())).toBe('#141719')
+    }
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=form--text-input&viewMode=story&globals=appearance:light')
+    await expect(page.locator('cb-theme-provider').first()).toHaveCSS('color-scheme', 'light')
+    await expect.poll(() => page.locator('cb-text-input').evaluate(element => getComputedStyle(element).getPropertyValue('--color-background').trim())).toBe('#F2F3F2')
+})
+
+test('built Storybook: code editor selection keeps selected text visible', async ({ page }) => {
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=form--code-editor&viewMode=story&globals=appearance:dark')
+    const editor = page.locator('cb-code-editor')
+    const control = editor.getByRole('textbox', { name: 'Validation function' })
+    await expect(control).toBeVisible()
+    const selection = await control.evaluate(element => {
+        element.focus()
+        element.setSelectionRange(0, element.value.length)
+        const style = getComputedStyle(element, '::selection')
+        return {
+            selectedLength: element.selectionEnd - element.selectionStart,
+            valueLength: element.value.length,
+            color: style.color,
+            fill: style.getPropertyValue('-webkit-text-fill-color'),
+            background: style.backgroundColor,
+        }
+    })
+    expect(selection.selectedLength).toBe(selection.valueLength)
+    expect(selection.color).not.toBe('rgba(0, 0, 0, 0)')
+    expect(selection.fill).not.toBe('transparent')
+    expect(selection.background).not.toBe('rgba(0, 0, 0, 0)')
+})
+
 test('built Storybook: readiness component stories remain directly interactive', async ({ page }) => {
     await page.goto('http://127.0.0.1:6006/iframe.html?id=data-display--file-browser&viewMode=story')
     const browser = page.locator('cb-file-browser')

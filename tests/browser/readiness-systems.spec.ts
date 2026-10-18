@@ -175,8 +175,26 @@ test('code, JSON, property, and canvas primitives are interactive and render mea
     })
     const code = page.locator('#fixture > cb-code-editor')
     await expect(code.locator('.hljs-keyword')).toContainText('const')
-    await code.getByRole('textbox', { name: 'TypeScript source' }).press('End')
+    const codeControl = code.getByRole('textbox', { name: 'TypeScript source' })
+    await codeControl.press('End')
     await expect(code.locator('[part~=position]')).toContainText('Line 1')
+    const codeSelection = await codeControl.evaluate(control => {
+        control.setSelectionRange(0, control.value.length)
+        const selectionStyle = getComputedStyle(control, '::selection')
+        return {
+            start: control.selectionStart,
+            end: control.selectionEnd,
+            length: control.value.length,
+            color: selectionStyle.color,
+            fill: selectionStyle.getPropertyValue('-webkit-text-fill-color'),
+            background: selectionStyle.backgroundColor,
+        }
+    })
+    expect(codeSelection.start).toBe(0)
+    expect(codeSelection.end).toBe(codeSelection.length)
+    expect(codeSelection.color).not.toBe('rgba(0, 0, 0, 0)')
+    expect(codeSelection.fill).not.toBe('transparent')
+    expect(codeSelection.background).not.toBe('rgba(0, 0, 0, 0)')
     const json = page.locator('cb-json-editor')
     await json.getByRole('button', { name: 'Format JSON' }).click()
     expect(await json.getByRole('textbox', { name: 'JSON configuration' }).inputValue()).toContain('\n')

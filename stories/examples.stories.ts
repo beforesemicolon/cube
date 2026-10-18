@@ -1,21 +1,12 @@
-import type { Decorator, Meta, StoryObj } from '@storybook/web-components-vite'
+import type { Meta, StoryObj } from '@storybook/web-components-vite'
 import type { AccordionItem } from '../components/data-display/accordion/base.js'
 import type { TableColumn, TableRecord } from '../components/data-display/table/base.js'
 import { createFlashbar, configureFlashbarHost } from '../components/feedback/flashbar/service.js'
 import { showModal } from '../components/overlay/modal/service.js'
 import '../components/client.js'
 
-const withTheme: Decorator = (Story, context) => {
-    const provider = document.createElement('cb-theme-provider')
-    Object.assign(provider, { appearance: context.globals.appearance })
-    const rendered = Story()
-    if (rendered instanceof Node) provider.append(rendered)
-    return provider
-}
-
 const meta: Meta = {
     title: 'Examples',
-    decorators: [withTheme],
     parameters: { docs: { description: { component: 'Application-level compositions built from Cube components. These are examples, not additional custom elements.' } } },
 }
 export default meta

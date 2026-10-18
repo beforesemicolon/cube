@@ -231,14 +231,12 @@ function wireInteraction(tag: string, node: HTMLElement, wrapper: HTMLElement): 
     wrapper.append(node)
 }
 
-export function preview(tag: string, args: PreviewArgs, appearance: string) {
-    const provider = document.createElement('cb-theme-provider')
-    Object.assign(provider, { appearance })
+export function preview(tag: string, args: PreviewArgs) {
     const wrapper = document.createElement('div'); wrapper.style.cssText = 'min-height:140px;max-width:960px;width:100%;padding:24px;box-sizing:border-box;background:var(--color-background);color:var(--color-foreground)'
     const node = document.createElement(tag); seedPreview(tag, node); Object.assign(node, fieldControlTags.has(tag) ? controlArgs(args) : args)
     const presentation = fieldControlTags.has(tag) ? fieldFor(node, args) : node
-    wireInteraction(tag, presentation, wrapper); provider.append(wrapper)
-    return provider
+    wireInteraction(tag, presentation, wrapper)
+    return wrapper
 }
 export function silentAudio(seconds = 4): string {
     const samples = Math.round(8000 * seconds), data = new Uint8Array(44 + samples * 2), view = new DataView(data.buffer)

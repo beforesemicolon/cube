@@ -20,7 +20,7 @@ const css = editorCSS + syntaxCSS + `
 [part~=gutter]{margin:0;padding:var(--spacing-sm,8px);border-inline-end:1px solid var(--color-separator);background:var(--color-surface-muted);color:var(--color-muted-foreground);font:400 var(--component-code-font-size,12px)/1.65 var(--typography-mono-font-family);text-align:end;user-select:none;white-space:pre}
 [part~=editing-layer]{position:relative;min-inline-size:0;overflow:hidden}[part~=highlight],[part~=control]{font:400 var(--component-code-font-size,12px)/1.65 var(--typography-mono-font-family);tab-size:var(--code-tab-size,2);white-space:pre;margin:0;padding:var(--spacing-sm,8px);border:0;border-radius:0;min-block-size:var(--code-min-height);max-block-size:var(--code-max-height);overflow:auto}
 [part~=highlight]{position:absolute;inset:0;pointer-events:none;color:var(--color-foreground)}[part~=control]{position:relative;inline-size:100%;resize:none;background:transparent;color:transparent;caret-color:var(--color-foreground);-webkit-text-fill-color:transparent;outline:0}
-[part~=control]::selection{background:var(--color-selection);-webkit-text-fill-color:transparent}:host([data-wrap]) [part~=highlight],:host([data-wrap]) [part~=control]{white-space:pre-wrap;overflow-wrap:anywhere}
+[part~=control]::selection{background:var(--component-code-selection-background,var(--color-selection));color:var(--component-code-selection-foreground,var(--color-foreground));-webkit-text-fill-color:var(--component-code-selection-foreground,var(--color-foreground));text-shadow:none}:host([data-wrap]) [part~=highlight],:host([data-wrap]) [part~=control]{white-space:pre-wrap;overflow-wrap:anywhere}
 :host([data-invalid]) [part~=shell]{border-color:var(--color-danger)}
 `
 

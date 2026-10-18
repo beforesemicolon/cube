@@ -566,6 +566,6 @@ export function componentStory(tag: string, args: StoryArgs): StoryObj {
         args: storyArgsFor(tag, args),
         argTypes: controlsFor(tag),
         parameters: { componentTag: tag },
-        render: (storyArgs, context) => preview(tag, storyArgs, context.globals.appearance),
+        render: storyArgs => preview(tag, storyArgs),
     }
 }

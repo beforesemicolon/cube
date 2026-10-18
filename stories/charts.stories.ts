@@ -7,7 +7,7 @@ const chartText={accessibleLabel:'Chart',loadingText:'Loading chart',emptyText:'
 const meta:Meta={
     title:'Charts',tags:['autodocs'],args:{...chartText,...chartExamples.line.props,height:320},
     parameters:{docs:{description:{component:'Cartesian, pie and donut visualizations share Cube controls, theme tokens, accessibility behavior and Apache ECharts rendering. Switch the appearance toolbar for light and dark; values, labels, axes, stacking and data remain editable in Controls.'}}},
-    render:(args,c)=>preview('cb-cartesian-chart',args,c.globals.appearance),
+    render:args=>preview('cb-cartesian-chart',args),
 }
 export default meta
 type Story=StoryObj
@@ -33,7 +33,7 @@ export const NoMatch:Story=cartesian({visibleSeries:[]})
 export const Error:Story=cartesian({status:'error'})
 export const PatternedSeries:Story=cartesian({...chartExamples.mixed.props,patterns:true},true)
 
-const renderPie:NonNullable<Story['render']>=(args,context)=>preview('cb-pie-chart',args,context.globals.appearance)
+const renderPie:NonNullable<Story['render']>=args=>preview('cb-pie-chart',args)
 function pie(args:StoryArgs,interactive=false):Story{return{args:storyArgsFor('cb-pie-chart',{...chartText,...chartExamples.pie.props,...args}),argTypes:pieArgTypes,render:renderPie,...(interactive?{play}:{})}}
 export const Pie:Story=pie({...chartExamples.pie.props},true)
 export const Donut:Story=pie({...chartExamples.donut.props},true)
