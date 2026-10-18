@@ -322,7 +322,7 @@ function panelContent(host: StudioComponentBase): HTMLElement {
 
 export function createStudioView(host: StudioComponentBase): StudioView {
     const fieldControl = fieldControlKinds.has(host.componentKind)
-    const root = el('div', `root ${host.componentName}`)
+    const root = el('div', 'root')
     root.dataset.component = host.componentName
     const labelRow = el('div', 'label-row row')
     const label = el('label', 'label')
@@ -620,6 +620,16 @@ export function createStudioView(host: StudioComponentBase): StudioView {
         updateBody = (): void => { canvas.setAttribute('aria-label', host.studioAccessibleName()); aria(canvas, 'aria-disabled', host.studioDisabled() ? true : null); canvas.tabIndex = host.studioDisabled() ? -1 : 0 }
         body.append(canvas)
         control = canvas
+    } else if (host.componentKind === 'display') {
+        const display = el('div', 'display')
+        display.dataset.component = host.componentName
+        display.setAttribute('role', 'group')
+        updateBody = (): void => {
+            display.replaceChildren(displayContent(host))
+            display.setAttribute('aria-label', host.studioAccessibleName())
+        }
+        body.append(display)
+        control = display
     } else {
         const region = el('section', `${host.componentKind} panel`)
         region.dataset.component = host.componentName
@@ -631,11 +641,9 @@ export function createStudioView(host: StudioComponentBase): StudioView {
         const content = el('div', 'content composed-content')
         const renderGeneratedContent = (): HTMLElement => host.componentKind === 'editor'
             ? createEditorContent(host)
-            : host.componentKind === 'display'
-                ? displayContent(host)
-                : host.componentKind === 'shell'
-                    ? shellContent(host)
-                    : panelContent(host)
+            : host.componentKind === 'shell'
+                ? shellContent(host)
+                : panelContent(host)
         content.append(generatedContent, suppliedContent)
         header.append(heading, action)
         region.append(header, content)

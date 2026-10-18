@@ -77,6 +77,37 @@ test('representative Studio controls expose keyboard semantics, parts, theme inh
     await expect(page.locator('cb-artboard').locator('[part~="canvas"]')).toHaveCSS('background-color', 'rgb(29, 33, 36)')
 })
 
+test('generated data displays only render containers that belong to the component', async ({ page }) => {
+    await page.evaluate(() => {
+        const list = document.createElement('cb-list') as HTMLElement & {
+            label: string
+            items: ReadonlyArray<{ id: string; label: string }>
+        }
+        list.label = 'Project pages'
+        list.items = [{ id: 'home', label: 'Home' }, { id: 'pricing', label: 'Pricing' }]
+        const badge = document.createElement('cb-badge') as HTMLElement & { label: string; value: string }
+        badge.label = 'Status'
+        badge.value = 'Ready'
+        const description = document.createElement('cb-description-row') as HTMLElement & { label: string; value: string }
+        description.label = 'Owner'
+        description.value = 'Maya Chen'
+        const card = document.createElement('cb-card') as HTMLElement & { label: string }
+        card.label = 'Project summary'
+        document.querySelector('#fixture')?.append(list, badge, description, card)
+    })
+
+    const list = page.locator('cb-list')
+    const root = list.locator('[part~="root"]')
+    await expect(root).toHaveAttribute('part', 'root')
+    await expect(list.locator('[part~="list"]')).toHaveCount(1)
+    await expect(root).toHaveCSS('border-top-width', '0px')
+    await expect(list.locator('[part~="list"]')).toHaveCSS('border-top-width', '1px')
+
+    await expect(page.locator('cb-badge').locator('[part~="panel"]')).toHaveCount(0)
+    await expect(page.locator('cb-description-row').locator('[part~="panel"]')).toHaveCount(0)
+    await expect(page.locator('cb-card').locator('[part~="panel"]')).toHaveCount(1)
+})
+
 test('text input and textarea keep a usable minimum width without overflowing narrow containers', async ({ page }) => {
     await page.evaluate(() => {
         const input = document.createElement('cb-text-input') as HTMLElement & { value: string }
