@@ -3,13 +3,20 @@ export type PopupPlacement = 'bottom-start'|'bottom-end'|'top-start'|'top-end'
 export class PopupController {
     private cleanup: Array<()=>void> = []
     private shown = false
-    constructor(private popup:HTMLElement,private anchor:HTMLElement,private onDismiss:()=>void,private placement:()=>PopupPlacement=()=> 'bottom-start') {}
+    constructor(
+        private popup:HTMLElement,
+        private anchor:HTMLElement,
+        private onDismiss:()=>void,
+        private placement:()=>PopupPlacement=()=> 'bottom-start',
+        private matchAnchorWidth=false,
+    ) {}
     show(point?:{x:number;y:number}):void {
         if(this.shown)return
         this.shown=true;this.popup.hidden=false;this.popup.setAttribute('popover','manual')
         if(typeof this.popup.showPopover==='function'&&!this.popup.matches(':popover-open'))this.popup.showPopover()
         const place=()=>{
             const rect=this.anchor.getBoundingClientRect(),p=this.placement(),view=this.popup.ownerDocument.defaultView??window
+            if(this.matchAnchorWidth)this.popup.style.minWidth=`${rect.width}px`
             const bounds=this.popup.getBoundingClientRect(),maxW=view.innerWidth,maxH=view.innerHeight
             let left=point?.x??(p.endsWith('end')?rect.right-bounds.width:rect.left)
             let top=point?.y??(p.startsWith('top')?rect.top-bounds.height-6:rect.bottom+6)
@@ -26,7 +33,7 @@ export class PopupController {
         if(typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(place);observer.observe(this.popup);observer.observe(this.anchor);this.cleanup.push(()=>observer.disconnect())}
     }
     hide(restoreFocus=false):void {
-        if(!this.shown)return
+        if(!this.shown){this.popup.hidden=true;return}
         this.shown=false;this.cleanup.splice(0).forEach(fn=>fn())
         if(typeof this.popup.hidePopover==='function'&&this.popup.matches(':popover-open'))this.popup.hidePopover()
         this.popup.hidden=true;if(restoreFocus&&this.anchor.isConnected)this.anchor.focus()

@@ -16,9 +16,9 @@ export interface StudioView {
 
 const studioCSS = editorCSS + `
 :host{inline-size:var(--component-studio-inline-size,auto);min-inline-size:0;container-type:inline-size}
-:host([data-kind=text]),:host([data-kind=textarea]),:host([data-kind=number]),:host([data-kind=search]),:host([data-kind=select]),:host([data-kind=range]),:host([data-kind=file]),:host([data-kind=color]),:host([data-kind=tokens]){inline-size:var(--component-studio-control-width,320px)}
-:host([data-kind=collection]),:host([data-kind=collaboration]),:host([data-kind=status]),:host([data-kind=progress]),:host([data-kind=display]),:host([data-kind=panel]),:host([data-kind=editor]){inline-size:var(--component-studio-panel-width,360px)}
-:host([data-kind=canvas]),:host([data-kind=shell]){inline-size:var(--component-studio-canvas-width,520px)}
+:host([data-kind=text]),:host([data-kind=textarea]),:host([data-kind=number]),:host([data-kind=search]),:host([data-kind=select]),:host([data-kind=range]),:host([data-kind=file]),:host([data-kind=color]),:host([data-kind=tokens]){inline-size:min(100%,var(--component-studio-control-width,320px))}
+:host([data-kind=collection]),:host([data-kind=collaboration]),:host([data-kind=status]),:host([data-kind=progress]),:host([data-kind=display]),:host([data-kind=panel]),:host([data-kind=editor]){inline-size:min(100%,var(--component-studio-panel-width,360px))}
+:host([data-kind=canvas]),:host([data-kind=shell]){inline-size:min(100%,var(--component-studio-canvas-width,520px))}
 [part~=root]{display:grid;gap:var(--spacing-xs,4px);min-inline-size:0}
 [part~=label-row]{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-sm,8px);min-inline-size:0}
 [part~=body]{min-inline-size:0}

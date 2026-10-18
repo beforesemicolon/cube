@@ -8,9 +8,9 @@ import { TableBase, type TableCellContent, type TableColumn, type TableRowModel 
 
 const css = editorCSS + `
 :host{display:block;inline-size:100%;min-inline-size:0;container-type:inline-size}
-[part~=root]{display:grid;min-inline-size:0;border:1px solid var(--component-table-border,${v('--color-separator')});border-radius:var(--component-table-radius,var(--radius-md));background:var(--component-table-background,${v('--color-surface')});box-shadow:var(--component-table-shadow,none);overflow:hidden}
+[part~=root]{display:grid;min-inline-size:0;contain:paint;border:1px solid var(--component-table-border,${v('--color-separator')});border-radius:var(--component-table-radius,var(--radius-md));background:var(--component-table-background,${v('--color-surface')});box-shadow:var(--component-table-shadow,none);overflow:hidden}
 [part~=header],[part~=footer]{display:block}:host(:not(:has([slot=header]))) [part~=header],:host(:not(:has([slot=footer]))) [part~=footer]{display:none}
-[part~=viewport]{overflow:auto;max-block-size:var(--component-table-max-height,none);overscroll-behavior:contain;scrollbar-gutter:stable}
+[part~=viewport]{inline-size:100%;min-inline-size:0;max-inline-size:100%;overflow:auto;max-block-size:var(--component-table-max-height,none);overscroll-behavior:contain;scrollbar-gutter:stable}
 [part~=viewport]:focus-visible{outline:var(--focus-ring);outline-offset:-2px}
 [part~=table]{border-collapse:separate;border-spacing:0;table-layout:fixed;inline-size:100%;min-inline-size:var(--table-resolved-min-width,var(--component-table-min-width,640px));color:${v('--color-foreground')}}
 [part~=caption]{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}

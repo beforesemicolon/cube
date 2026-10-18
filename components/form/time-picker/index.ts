@@ -2,13 +2,14 @@ import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet, uid } from '../../core/editor-dom.js'
 import { createIcon } from '../../icons/paths.js'
 import { bool, text } from '../../core/value.js'
+import { PopupController } from '../../core/popup.js'
 import { TimePickerBase } from './TimePickerBase.js'
 
 const css = editorCSS + `
 :host{display:inline-block;inline-size:var(--component-time-picker-width,220px)}
 [part~=field]{position:relative;display:grid;gap:var(--spacing-xs,4px)}
 [part~=trigger]{display:flex;align-items:center;justify-content:space-between;inline-size:100%;text-align:start}
-[part~=popup]{position:absolute;z-index:var(--z-index-dropdown,1000);inset:calc(100% + 4px) 0 auto;max-block-size:240px;overflow:auto;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
+[part~=popup]{z-index:var(--z-index-dropdown,1000);max-block-size:240px;overflow:auto;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
 [part~=option]{inline-size:100%;border-color:transparent;background:transparent;text-align:start}
 [part~=option][aria-selected=true]{background:var(--color-selection);color:var(--color-signal-text)}
 [part~=native]{inline-size:100%;color-scheme:inherit}
@@ -19,6 +20,7 @@ export class TimePicker extends TimePickerBase {
     private trigger?: HTMLButtonElement
     private valueNode?: HTMLElement
     private popup?: HTMLElement
+    private popupController?: PopupController
     private labelNode?: HTMLLabelElement
     private descriptionNode?: HTMLElement
     private errorNode?: HTMLElement
@@ -51,10 +53,12 @@ export class TimePicker extends TimePickerBase {
     }
 
     protected mount(): void {
+        if (this.popup && this.trigger) {
+            this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false), () => 'bottom-start', true)
+            this.cleanup(() => this.popupController?.dispose())
+        }
         super.mount()
-        this.listen(this.ownerDocument, 'pointerdown', event => {
-            if (!event.composedPath().includes(this)) this.setOpen(false, event)
-        })
+        this.syncPopup()
     }
     protected fieldElement(): HTMLInputElement | undefined { return this.nativeControl }
 
@@ -63,7 +67,6 @@ export class TimePicker extends TimePickerBase {
         const native = bool(this.native)
         this.nativeControl.hidden = !native
         this.trigger.hidden = native
-        this.popup.hidden = native || !this.open
         this.nativeControl.value = this.value
         this.nativeControl.min = this.min
         this.nativeControl.max = this.max
@@ -105,6 +108,13 @@ export class TimePicker extends TimePickerBase {
         aria(this.trigger, 'aria-describedby', describedBy)
         aria(this.nativeControl, 'aria-describedby', describedBy)
         aria(this.trigger, 'aria-invalid', error ? true : null)
+        this.syncPopup()
+    }
+
+    private syncPopup(): void {
+        if (!this.popup) return
+        if (bool(this.native) || !bool(this.open)) this.popupController?.hide(); else this.popupController?.show()
+        if (!this.popupController) this.popup.hidden = bool(this.native) || !bool(this.open)
     }
 
     focus(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.trigger)?.focus(options) }

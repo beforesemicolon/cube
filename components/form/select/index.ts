@@ -2,13 +2,14 @@ import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet, uid } from '../../core/editor-dom.js'
 import { createIcon } from '../../icons/paths.js'
 import { bool, text } from '../../core/value.js'
+import { PopupController } from '../../core/popup.js'
 import { SelectBase } from './SelectBase.js'
 
 const css = editorCSS + `
 :host{display:inline-block;inline-size:var(--component-select-width,240px)}[part~=field]{position:relative;display:grid;gap:var(--spacing-xs,4px)}
 [part~=trigger]{display:flex;align-items:center;justify-content:space-between;gap:8px;inline-size:100%;text-align:start}[part~=value][data-placeholder]{color:var(--color-muted-foreground)}
 [part~=value]{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-[part~=popup]{position:absolute;z-index:var(--z-index-dropdown,1000);inset:calc(100% + 4px) 0 auto;display:grid;gap:4px;max-block-size:280px;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
+[part~=popup]{z-index:var(--z-index-dropdown,1000);display:grid;gap:4px;max-block-size:280px;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
 [part~=search-wrap]{display:flex;padding:2px}
 [part~=search]{inline-size:100%;min-block-size:var(--cb-height);padding-inline:10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);color:var(--color-foreground);font:inherit}
 [part~=search]:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset)}
@@ -30,6 +31,7 @@ export class Select extends SelectBase {
     private titleNode?: HTMLLabelElement
     private descriptionNode?: HTMLElement
     private errorNode?: HTMLElement
+    private popupController?: PopupController
     private query = ''
 
     render(): Node {
@@ -63,10 +65,12 @@ export class Select extends SelectBase {
     }
 
     protected mount(): void {
+        if (this.popup && this.trigger) {
+            this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false), () => 'bottom-start', true)
+            this.cleanup(() => this.popupController?.dispose())
+        }
         super.mount()
-        this.listen(this.ownerDocument, 'pointerdown', event => {
-            if (!event.composedPath().includes(this)) this.setOpen(false, event)
-        })
+        this.syncPopup()
     }
     protected fieldElement(): HTMLSelectElement | undefined { return this.nativeControl }
 
@@ -94,7 +98,7 @@ export class Select extends SelectBase {
         }
         const labels = options.filter(option => selection.includes(option.value)).map(option => option.label)
         this.valueNode.textContent = labels.join(', ') || placeholder; this.valueNode.toggleAttribute('data-placeholder', labels.length === 0)
-        const native = bool(this.native); this.trigger.hidden = native; this.popup.hidden = native || !bool(this.open); this.nativeControl.hidden = !native
+        const native = bool(this.native); this.trigger.hidden = native; this.nativeControl.hidden = !native
         this.searchWrap.hidden = !searching
         this.searchInput.value = this.query
         this.searchInput.placeholder = text(this.searchPlaceholder)
@@ -118,6 +122,14 @@ export class Select extends SelectBase {
         const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))); this.errorNode.textContent = error ? this.validationMessage : ''; this.errorNode.hidden = !error
         const describedBy = [text(this.description) ? this.descriptionNode.id : '', error ? this.errorNode.id : ''].filter(Boolean).join(' ') || null
         aria(this.trigger, 'aria-describedby', describedBy); aria(this.nativeControl, 'aria-describedby', describedBy); aria(this.trigger, 'aria-invalid', error ? true : null)
+        this.syncPopup()
+    }
+
+    private syncPopup(): void {
+        if (!this.popup) return
+        if (bool(this.native) || !bool(this.open)) this.popupController?.hide()
+        else this.popupController?.show()
+        if (!this.popupController) this.popup.hidden = bool(this.native) || !bool(this.open)
     }
 
     private multipleFormValue(values: readonly string[]): FormData { const data = new FormData(); if (this.name) for (const value of values) data.append(this.name, value); return data }
