@@ -49,22 +49,24 @@ test('built Storybook: Button exposes optional pressed state and variant example
     await expect(destructive).toHaveAttribute('aria-pressed','false')
 })
 
-test('Storybook Actions records Cube events and their detail payloads',async({page})=>{
-    await page.goto('http://127.0.0.1:6006/?path=/story/action--button&addonPanel=storybook/actions/panel')
+test('Storybook exposes Actions and records Cube event detail payloads',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/?path=/story/data-display--list')
     const story=page.frameLocator('#storybook-preview-iframe')
-    await page.getByRole('tab',{name:/Actions/}).click()
+    const actionsTab=page.getByRole('tab',{name:/Actions/})
+    await expect(actionsTab).toBeVisible({timeout:20000})
+    await actionsTab.click()
     const panel=page.getByRole('tabpanel',{name:/Actions/})
-    await expect(panel.getByRole('button',{name:'Clear'})).toBeVisible({timeout:20000})
-    const button=story.getByRole('button',{name:'Button'})
-    await expect(button).toBeVisible()
+    const item=story.getByRole('option',{name:'Secondary item'})
+    await expect(item).toBeVisible()
     await expect(async()=>{
-        await button.click()
+        await item.click()
         await expect(panel).toContainText('cb-before-action',{timeout:1000})
     }).toPass({timeout:15000})
     await expect(panel).toContainText('cb-action')
-    await expect(panel).toContainText('cb-button')
+    await expect(panel).toContainText('cb-list')
     await panel.getByRole('treeitem',{name:/detail: Object/}).last().click()
-    await expect(panel).toContainText('add-section')
+    await expect(panel).toContainText(/value:\s*"two"/)
+    await expect(panel.getByRole('button',{name:'Clear'})).toBeVisible()
 })
 
 test('built Storybook: layout panel stories expose working controls',async({page})=>{
