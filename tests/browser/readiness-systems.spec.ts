@@ -69,6 +69,10 @@ test('editable label, masked input, editable list, and linked values expose dist
     expect(await list.evaluate((node: HTMLElement & { items: Array<{ label: string }> }) => node.items.map(item => item.label))).toEqual(['/pricing', '/company', '/blog'])
 
     const linked = page.locator('cb-linked-values')
+    const linkSwitch = linked.locator('cb-icon-button[part="link"]')
+    await expect(linkSwitch).toHaveCount(1)
+    await expect(linkSwitch.getByRole('button', { name: 'Unlink dimensions' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(linkSwitch.locator('[part~="label"]')).toHaveAttribute('part', /sr-only/)
     await linked.evaluate((node: HTMLElement & { setFirst(value: number): boolean }) => node.setFirst(640))
     await expect(linked).toHaveJSProperty('firstValue', 640)
     await expect(linked).toHaveJSProperty('secondValue', 360)

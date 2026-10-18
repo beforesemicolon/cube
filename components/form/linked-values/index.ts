@@ -1,7 +1,7 @@
 import '../number-input/index.js'
-import '../../action/button/index.js'
+import '../../action/icon-button/index.js'
 import type { NumberInput } from '../number-input/index.js'
-import type { Button } from '../../action/button/index.js'
+import type { IconButton } from '../../action/icon-button/index.js'
 import { actionLabel } from '../../action/create.js'
 import { register } from '../../core/Component.js'
 import { editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
@@ -20,7 +20,7 @@ export class LinkedValues extends LinkedValuesBase {
     private secondLabelNode?: HTMLElement
     private first?: NumberInput
     private second?: NumberInput
-    private link?: Button
+    private link?: IconButton
     render(): Node {
         this.group = el('div', 'group')
         this.group.setAttribute('role', 'group')
@@ -34,7 +34,7 @@ export class LinkedValues extends LinkedValuesBase {
         this.secondLabelNode.addEventListener('click', () => this.second?.focus())
         firstField.append(this.firstLabelNode, this.first)
         secondField.append(this.secondLabelNode, this.second)
-        this.link = document.createElement('cb-button') as Button; this.link.setAttribute('part', 'link')
+        this.link = document.createElement('cb-icon-button') as IconButton; this.link.setAttribute('part', 'link')
         this.first.addEventListener('cb-change', event => this.setFirst(finite((event as CustomEvent<{ value: number }>).detail.value), event))
         this.second.addEventListener('cb-change', event => this.setSecond(finite((event as CustomEvent<{ value: number }>).detail.value), event))
         this.link.addEventListener('cb-change', event => this.setLinked(bool((event as CustomEvent<{ pressed: boolean }>).detail.pressed), event))
