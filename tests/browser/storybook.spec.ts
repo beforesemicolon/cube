@@ -31,6 +31,23 @@ test('built Storybook: Icon Button and Flashbar share the action primitive',asyn
     await expect(dismiss.getByRole('button',{name:'Dismiss'})).toBeVisible()
 })
 
+test('built Storybook: Button exposes optional pressed state and variant examples stay interactive',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/?path=/story/action--button&addonPanel=storybook/controls/panel')
+    const panel=page.getByRole('tabpanel',{name:/Controls/})
+    await expect(panel.getByText('pressed',{exact:true})).toBeVisible({timeout:20000})
+    await expect(panel.getByText('variant',{exact:true}).first()).toBeVisible()
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--button-pressed-states&viewMode=story')
+    const primary=page.getByRole('button',{name:'Preview'})
+    const destructive=page.getByRole('button',{name:'Block publishing'})
+    await expect(primary).toHaveAttribute('aria-pressed','true')
+    await expect(destructive).toHaveAttribute('aria-pressed','true')
+    await primary.click()
+    await expect(primary).toHaveAttribute('aria-pressed','false')
+    await destructive.click()
+    await expect(destructive).toHaveAttribute('aria-pressed','false')
+})
+
 test('built Storybook: layout panel stories expose working controls',async({page})=>{
     await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--collapsible-sidebar&viewMode=story')
     const sidebar=page.locator('cb-collapsible-sidebar')

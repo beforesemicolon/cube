@@ -1,5 +1,5 @@
-import { createButton,createToggleButton,createIconButton,actionLabel } from '../action/create.js'
-import type { ToggleButton } from '../action/toggle-button/index.js'
+import { createButton,createPressedButton,createIconButton,actionLabel } from '../action/create.js'
+import type { Button } from '../action/button/index.js'
 import { commonCSS, el, label, sheet } from '../core/dom.js'
 import { bool, clamp, finite, record, text } from '../core/value.js'
 import { lightTokens, token as v } from '../theme/tokens.js'
@@ -18,14 +18,14 @@ export class ChartView {
     private details = el('p', 'details'); private instructions = el('p', 'instructions'); private actions = el('div', 'actions')
     private data = document.createElement('cb-expandable-section') as ExpandableSection
     private table = document.createElement('cb-table') as Table
-    private navigator = createToggleButton('navigator', () => this.pin()); private retry = createButton('retry', () => { this.failure = false; this.owner.emit('cb-retry'); this.refresh() })
+    private navigator = createPressedButton('navigator', () => this.pin()); private retry = createButton('retry', () => { this.failure = false; this.owner.emit('cb-retry'); this.refresh() })
     private all = createButton('show-all', () => this.owner.showAll(this.model?.legend.map(i => i.id) ?? []))
     private unpin = createButton('unpin', () => { this.owner.pinned = false; this.showDetails() })
     private zoomIn = createIconButton('zoom-in','plus', () => this.zoom(.75)); private zoomOut = createIconButton('zoom-out','minus', () => this.zoom(1.25)); private reset = createIconButton('reset-zoom','reset', () => this.zoom(0))
     private instance?: ChartInstance
     private alive = false; private revision = 0; private scheduled = false; private failure = false; private loadingEngine = false
     private keyboardActive=false; private hoverActive=false
-    private model?: ChartModel; private legends = new Map<string, ToggleButton>(); private tableKey = ''
+    private model?: ChartModel; private legends = new Map<string, Button>(); private tableKey = ''
     private observer?: ResizeObserver; private mutations?: MutationObserver; private scheme?: MediaQueryList; private reduced?: MediaQueryList
     private windowChange = () => this.refresh()
     private zoomRange: [number, number] = [0, 100]
@@ -57,7 +57,7 @@ export class ChartView {
 [part=legend]{display:flex;flex-wrap:wrap;gap:${v('--spacing-sm')};margin-block:${v('--spacing-sm')}}
 [part=legend-item]{display:inline-flex;max-inline-size:100%}
 [part=legend-swatch]{display:inline-block;inline-size:var(--component-chart-swatch-size,10px);block-size:var(--component-chart-swatch-size,10px);border:1px solid currentColor;border-radius:var(--component-chart-swatch-radius,2px)}
-cb-toggle-button[part=navigator]::part(description){position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+cb-button[part=navigator]::part(description){position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 [part=plot]{width:100%;height:${v('--component-chart-height')};min-width:0}
 [part=instructions]{font-size:.85em}[part=details]{min-height:1.5em}
 cb-expandable-section[part=data]{margin-block-start:${v('--spacing-sm')}}
@@ -170,7 +170,7 @@ cb-table[part=data-table]{--component-table-min-width:100%;--component-table-max
         for (const [index, item] of this.model.legend.entries()) {
             let node = this.legends.get(item.id)
             if (!node) {
-                node = createToggleButton('legend-item', () => {
+                node = createPressedButton('legend-item', () => {
                     const current = this.model?.legend.find(i => i.id === item.id)
                     if (current) this.owner.setItemVisible(current.id, !current.visible, this.model!.legend.map(i => i.id))
                 })
@@ -178,7 +178,7 @@ cb-table[part=data-table]{--component-table-min-width:100%;--component-table-max
             }
             node.pressed=item.visible;actionLabel(node,item.name)
             ;(node.children[0] as HTMLElement).style.backgroundColor = item.color
-            // Label rendering belongs to cb-toggle-button.
+            // Label rendering belongs to the shared button primitive.
             if (this.legend.children[index] !== node) this.legend.insertBefore(node, this.legend.children[index] ?? null)
         }
     }

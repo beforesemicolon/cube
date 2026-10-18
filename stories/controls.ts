@@ -93,7 +93,6 @@ const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly Contr
     'cb-icon-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-button-group': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-link': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
-    'cb-toggle-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-cartesian-chart': { status: ['finished', 'loading', 'error'], stacking: [false, 'normal'] },
     'cb-pie-chart': { status: ['finished', 'loading', 'error'], variant: ['pie', 'donut'] },
     'cb-collapsible-sidebar': { placement: ['start', 'end'] },
@@ -200,6 +199,7 @@ const descriptions: Readonly<Record<string, string>> = {
     allowAlpha: 'Enables transparency editing and eight-digit HEX values.',
     allowSampler: 'Shows the screen color sampler when the browser supports it.',
     native: 'Uses the browser-native control instead of the themed Cube renderer.',
+    pressed: 'When defined, gives the button persistent toggle state and exposes aria-pressed. Leave undefined for a normal action button.',
     recentColors: 'Controlled list of colors most recently committed in the picker.',
     open: 'Controls whether the popup or overlay is open.',
     options: 'Editable option collection. Add, remove, relabel, value, or disable options here.',
@@ -313,7 +313,7 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     loading: 'false', loop: 'false', max: '100', maxRecent: '8', maxVisible: '4', messages: '[]', min: '0',
     modalSize: 'md', multi: 'false', multiple: 'false', muted: 'false', native: 'false', open: 'false', options: '[]', overflowLabel: "''",
     orientation: 'horizontal', patterns: 'false', placement: 'bottom-start', playbackRate: '1', position: 'top-end',
-    preload: 'metadata', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', searchable: 'auto', searchThreshold: '10', seekStep: '10',
+    preload: 'metadata', pressed: 'undefined', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', searchable: 'auto', searchThreshold: '10', seekStep: '10',
     recentColors: '[]', series: '[]', size: 'sm', src: "''", status: 'finished', statusLabel: "''", step: '1', stops: '[]', summary: "''", swatches: '[]', theme: 'null', tracks: '[]', units: '[]', value: "''",
     visibleSegments: 'null', visibleSeries: 'null', wrap: 'false', xAxis: '{}', yAxis: '{}', zoomable: 'false',
     animated: 'true', controls: 'true', currentTime: '0', duration: '4', grid: 'true', maxZoom: '400', minZoom: '25', pannable: 'true', playing: 'false',
@@ -339,7 +339,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal', originX: 0, originY: 0, overflowLabel: '',
     overflow: '', padding: '', page: 1, patterns: false, placement: 'bottom-start', placeholder: '', playbackRate: 1,
     popupControls: '', popupExpanded: false, popupType: '', position: 'top-end', poster: '', preload: 'metadata', searchLabel: '', searchable: 'auto', searchPlaceholder: '', searchThreshold: 10,
-    pannable: true, playing: false, pressed: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
+    pannable: true, playing: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
     seekStep: 10, selectionCount: 0, shape: 'circle', siblings: 1, size: 'sm', src: '', status: '', statusLabel: '', step: 1, summary: '', target: '_self',
     selectable: true, selected: false, showChrome: true, showCursor: true, showDimensions: true, showOrientationControl: true, snap: .1,
     totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', width: 640, wrap: false, x: 0, x1: .25, x2: .25, y: 0, y1: .1, y2: 1, zoom: 100, zoomStep: 10, zoomable: false,
@@ -361,7 +361,6 @@ const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue
     'cb-button': { variant: 'secondary' },
     'cb-button-group': { variant: 'secondary' },
     'cb-link': { variant: 'secondary' },
-    'cb-toggle-button': { variant: 'secondary' },
     'cb-cartesian-chart': { status: 'finished', stacking: false, inverted: false },
     'cb-pie-chart': { status: 'finished', variant: 'pie' },
     'cb-skeleton': { variant: 'text', rows: 3, columns: 3 },
@@ -516,7 +515,7 @@ export function storyArgsFor(tag: string, args: StoryArgs): StoryArgs {
     const defaults: StoryArgs = {}
     for (const property of Object.keys(controlsFor(tag))) {
         const value = defaultValueFor(tag, property)
-        if (value !== undefined) defaults[property] = value
+        if (value !== undefined || property === 'pressed') defaults[property] = value
     }
     return { ...defaults, ...args }
 }

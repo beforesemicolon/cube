@@ -1,7 +1,7 @@
 import '../number-input/index.js'
-import '../../action/toggle-button/index.js'
+import '../../action/button/index.js'
 import type { NumberInput } from '../number-input/index.js'
-import type { ToggleButton } from '../../action/toggle-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { actionLabel } from '../../action/create.js'
 import { register } from '../../core/Component.js'
 import { editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
@@ -17,13 +17,13 @@ export class LinkedValues extends LinkedValuesBase {
     private group?: HTMLElement
     private first?: NumberInput
     private second?: NumberInput
-    private link?: ToggleButton
+    private link?: Button
     render(): Node {
         this.group = el('div', 'group')
         this.group.setAttribute('role', 'group')
         this.first = document.createElement('cb-number-input') as NumberInput; this.first.setAttribute('part', 'first')
         this.second = document.createElement('cb-number-input') as NumberInput; this.second.setAttribute('part', 'second')
-        this.link = document.createElement('cb-toggle-button') as ToggleButton; this.link.setAttribute('part', 'link')
+        this.link = document.createElement('cb-button') as Button; this.link.setAttribute('part', 'link')
         this.first.addEventListener('cb-change', event => this.setFirst(finite((event as CustomEvent<{ value: number }>).detail.value), event))
         this.second.addEventListener('cb-change', event => this.setSecond(finite((event as CustomEvent<{ value: number }>).detail.value), event))
         this.link.addEventListener('cb-change', event => this.setLinked(bool((event as CustomEvent<{ pressed: boolean }>).detail.pressed), event))

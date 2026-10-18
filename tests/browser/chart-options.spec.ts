@@ -11,7 +11,7 @@ for(const appearance of ['light','dark'])for(const type of Object.keys(chartExam
     const example=chartExamples[type]
     await page.evaluate(({example,chartText})=>{const n=document.createElement(example.tag);Object.assign(n,chartText,example.props);document.querySelector('#fixture')!.append(n)},{example,chartText})
     const chart=page.locator(example.tag);await expect(chart.locator('[part=plot] svg')).toBeVisible()
-    const toggle=chart.locator('cb-toggle-button[part=legend-item]').first();await expect(toggle).toBeVisible()
+    const toggle=chart.locator('cb-button[part=legend-item]').first();await expect(toggle).toBeVisible()
     const button=toggle.getByRole('button');await button.click();await expect(button).toHaveAttribute('aria-pressed','false');await button.click();await expect(button).toHaveAttribute('aria-pressed','true')
     const before=await chart.locator('[part=details]').textContent();const nav=chart.locator('[part=navigator]').getByRole('button');await nav.focus();await expect(nav).toBeFocused();await page.keyboard.press('ArrowRight');await expect(chart.locator('[part=details]')).not.toHaveText(before??'')
     const disclosure=chart.getByRole('button',{name:/^View data table/});await disclosure.focus();await page.keyboard.press('Enter');await expect(chart.locator('cb-table').getByRole('table',{name:'View data table'})).toBeVisible()

@@ -52,6 +52,21 @@ function component<T extends HTMLElement>(tag: string, props: Record<string, str
     return node
 }
 
+export const ButtonPressedStates: Story = {
+    name: 'Action / Button pressed states',
+    render: () => {
+        const row = component('cb-row', { gap: '8px', wrap: true })
+        row.append(
+            component('cb-button', { label: 'Bold', pressed: false, variant: 'secondary' }),
+            component('cb-button', { label: 'Preview', pressed: true, variant: 'primary' }),
+            component('cb-button', { label: 'Outline guides', pressed: true, variant: 'outline' }),
+            component('cb-button', { label: 'Snap to grid', pressed: true, variant: 'ghost' }),
+            component('cb-button', { label: 'Block publishing', pressed: true, variant: 'destructive' }),
+        )
+        return compactSurface(row)
+    },
+}
+
 export const MultiSelection: Story = {
     name: 'Form / Multi-selection',
     render: () => compactSurface(component('cb-select', {

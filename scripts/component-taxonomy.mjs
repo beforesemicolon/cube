@@ -33,7 +33,7 @@ export const componentCategoryTitles = {
 }
 
 const actionComponents = new Set([
-    'button', 'icon-button', 'toggle-button', 'link-button', 'split-button', 'button-group', 'toolbar', 'action-bar',
+    'button', 'icon-button', 'link-button', 'split-button', 'button-group', 'toolbar', 'action-bar',
     'shortcut', 'floating-toolbar', 'undo-redo', 'shortcuts',
 ])
 const navigationComponents = new Set([

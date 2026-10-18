@@ -3,7 +3,6 @@ import { studioComponentLoaders } from './studio/public-registry.js'
 /** Safe to import before a DOM exists. Each lazy entry registers itself when loaded. */
 export const componentLoaders = {
     'button': () => import('./action/button/index.js'),
-    'toggle-button': () => import('./action/toggle-button/index.js'),
     'link': () => import('./navigation/link/index.js'),
     'split-button': () => import('./action/split-button/index.js'),
     'button-group': () => import('./action/button-group/index.js'),

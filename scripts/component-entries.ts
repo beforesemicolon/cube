@@ -2,7 +2,6 @@ import { studioEntries, studioGroups } from '../components/studio/catalog.js'
 
 const foundationEntries = [
     {path:'action/button',name:'button',className:'Button'},
-    {path:'action/toggle-button',name:'toggle-button',className:'ToggleButton'},
     {path:'navigation/link',name:'link',className:'Link'},
     {path:'action/split-button',name:'split-button',className:'SplitButton'},
     {path:'action/button-group',name:'button-group',className:'ButtonGroup'},

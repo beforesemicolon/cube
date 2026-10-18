@@ -29,6 +29,47 @@ test('segmented control and tabs support selection and keyboard roving focus', a
     await expect(page.getByRole('tab', { name: 'Preview' })).toHaveAttribute('aria-selected', 'true')
 })
 
+test('button only becomes a toggle when pressed is defined and preserves every variant', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        interface TestButton extends HTMLElement { label: string; pressed?: boolean; variant: string }
+        const action = document.createElement('cb-button') as TestButton
+        action.id = 'action-button'
+        action.label = 'Run action'
+        action.addEventListener('cb-action', () => { action.dataset.actionCount = String(Number(action.dataset.actionCount ?? 0) + 1) })
+        const primary = document.createElement('cb-button') as TestButton
+        primary.id = 'primary-toggle'
+        Object.assign(primary, { label: 'Pin preview', pressed: false, variant: 'primary' })
+        primary.addEventListener('cb-change', () => { primary.dataset.changeCount = String(Number(primary.dataset.changeCount ?? 0) + 1) })
+        const destructive = document.createElement('cb-button') as TestButton
+        Object.assign(destructive, { label: 'Block publishing', pressed: false, variant: 'destructive' })
+        destructive.addEventListener('cb-change', () => { destructive.dataset.changeCount = String(Number(destructive.dataset.changeCount ?? 0) + 1) })
+        document.querySelector('#fixture')?.append(action, primary, destructive)
+    })
+
+    const action = page.getByRole('button', { name: 'Run action' })
+    await expect(action).not.toHaveAttribute('aria-pressed')
+    await action.click()
+    await expect(page.locator('#action-button')).toHaveAttribute('data-action-count', '1')
+
+    for (const [label, expectedBackground] of [['Pin preview', 'rgb(29, 80, 179)'], ['Block publishing', 'rgb(180, 35, 60)']] as const) {
+        const control = page.getByRole('button', { name: label })
+        await expect(control).toHaveAttribute('aria-pressed', 'false')
+        await control.click()
+        await expect(control).toHaveAttribute('aria-pressed', 'true')
+        await expect.poll(() => control.evaluate(node => getComputedStyle(node).backgroundColor)).toBe(expectedBackground)
+        await expect.poll(() => control.evaluate(node => getComputedStyle(node).boxShadow)).toContain('inset')
+    }
+    await expect(page.locator('cb-button[pressed=true]')).toHaveCount(2)
+    await expect(page.locator('cb-button[pressed=true]').first()).toHaveAttribute('data-change-count', '1')
+    await page.locator('#primary-toggle').evaluate(element => element.addEventListener('cb-before-change', event => event.preventDefault(), { once: true }))
+    await page.getByRole('button', { name: 'Pin preview' }).click()
+    await expect(page.getByRole('button', { name: 'Pin preview' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.locator('#primary-toggle')).toHaveAttribute('data-change-count', '1')
+    const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
+    expect(audit.violations).toEqual([])
+})
+
 test('button group owns its buttons and renders one continuous control', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {

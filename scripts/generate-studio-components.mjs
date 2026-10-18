@@ -137,7 +137,7 @@ const studioBoardItems = [
     ...definitions.map(({board,category,name,title}) => ({board,category,name,title})),
 ]
 const existingCategoryExports = {
-    action: ["export * from './button/index.js'", "export * from './toggle-button/index.js'", "export * from './split-button/index.js'", "export * from './button-group/index.js'", "export * from './toolbar/index.js'", "export * from './action-bar/index.js'", "export * from './shortcut/index.js'"],
+    action: ["export * from './button/index.js'", "export * from './split-button/index.js'", "export * from './button-group/index.js'", "export * from './toolbar/index.js'", "export * from './action-bar/index.js'", "export * from './shortcut/index.js'"],
     form: ["export * from './slider/index.js'", "export * from './select/index.js'", "export * from './radio-group/index.js'", "export * from './calendar/index.js'", "export { normalizeRange, normalizeOptions } from './model.js'"],
     layout: ["export * from './box/index.js'", "export * from './row/index.js'", "export * from './col/index.js'", "export * from './grid/index.js'", "export * from './divider/index.js'"],
     navigation: ["export * from './link/index.js'", "export * from './segmented-control/index.js'", "export * from './tabs/index.js'", "export * from './breadcrumb/index.js'", "export * from './menu/index.js'", "export * from './pagination/index.js'"],
@@ -222,7 +222,6 @@ const foundationStoryArgs = {
     table: `{ label: 'Table', value: 'one', items, emptyLabel: 'No items', nameLabel: 'Name', metadataLabel: 'Details' }`,
     button: `{ label: 'Button', value: 'add-section', variant: 'primary', icon: 'plus', loading: false }`,
     'split-button': `{ label: 'Split button', actionValue: 'create', menuLabel: 'More create actions', items, open: false, placement: 'bottom-start', loading: false }`,
-    'toggle-button': `{ label: 'Toggle button', pressed: true, variant: 'secondary', icon: '' }`,
     'button-group': `{ label: 'Clipboard actions', orientation: 'horizontal', variant: 'secondary', items: [{ id: 'copy', label: 'Copy' }, { id: 'paste', label: 'Paste' }, { id: 'duplicate', label: 'Duplicate' }] }`,
     toolbar: `{ label: 'Toolbar', orientation: 'horizontal' }`,
     'action-bar': `{ label: 'Action bar', selectionCount: 3, busy: false, status: '3 layers selected' }`,
@@ -267,7 +266,7 @@ const storyExtras = [
     {category:'icons',name:'icon',title:'Icon',kind:'display',className:'Icon'},
     {category:'theme',name:'theme-provider',title:'Theme provider',kind:'panel',className:'ThemeProvider'},
 ]
-const reusedStoryDefinitions = reusedDefinitions.filter(reused => !definitions.some(definition => definition.name === reused.name) && reused.name !== 'icon-button')
+const reusedStoryDefinitions = reusedDefinitions.filter(reused => !definitions.some(definition => definition.name === reused.name) && !['icon-button', 'toggle-button'].includes(reused.name))
 const storyDefinitions = [...publicDefinitions, ...reusedStoryDefinitions, ...storyExtras]
 const formStoryOrder = ['text-input','textarea','number-input','unit-input','combobox','checkbox','radio-group','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input','select','slider','calendar']
 const orderDefinitions = (category, entries) => category !== 'form' ? entries : [...entries].sort((left, right) => formStoryOrder.indexOf(left.name) - formStoryOrder.indexOf(right.name))
@@ -308,7 +307,11 @@ for (const category of documentationCategories) {
     const key = documentationKeys[category]
     const order = 20 + documentationCategories.indexOf(category)
     const categoryNote = category === 'form' ? '\n{{t.cube.formNative}}\n' : ''
-    const categoryDetails = category === 'form' ? '\n\n{{t.cube.unitInputBody}}\n\n{{t.cube.selectBody}}' : ''
+    const categoryDetails = category === 'form'
+        ? '\n\n{{t.cube.unitInputBody}}\n\n{{t.cube.selectBody}}'
+        : category === 'action'
+            ? "\n\nSet a button's optional `pressed` property when the action represents a persistent on/off state. The same `<cb-button>` then exposes `aria-pressed`, toggles on click or keyboard activation, and emits `cb-change`. Leave `pressed` undefined for a normal action button that emits `cb-action`."
+            : ''
     const markdown = `---\nname: '{{t.cube.${key}}}'\ntitle: '{{t.cube.${key}}}'\npath: /documentation/${category}\nlayout: document\norder: ${order}\n---\n\n# {{t.cube.${key}}}\n\n{{t.cube.studioCatalogBody}}\n${categoryNote}\n:::cube studio-${category}\n:::\n\n| Component | Custom element | Package entry |\n| --- | --- | --- |\n${rows}${categoryDetails}\n\n## API\n\n{{t.cube.studioCatalogApi}}\n`
     await writeFile(resolve('docs-cube/documentation', `${category}.md`), markdown)
 }

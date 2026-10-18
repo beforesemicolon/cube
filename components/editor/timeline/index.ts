@@ -1,7 +1,7 @@
 import { actionLabel, createIconButton } from '../../action/create.js'
 import type { IconButton } from '../../action/icon-button/index.js'
-import type { ToggleButton } from '../../action/toggle-button/index.js'
-import '../../action/toggle-button/index.js'
+import type { Button } from '../../action/button/index.js'
+import '../../action/button/index.js'
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { bool, finite } from '../../core/value.js'
@@ -32,7 +32,7 @@ const css = editorCSS + `
 @container(max-width:520px){[part~=ruler-row],[part~=track]{grid-template-columns:84px minmax(360px,1fr)}[part~=playhead]{inset-inline-start:calc(84px + (100% - 84px) * var(--cb-playhead))}}
 `
 
-interface DragState { readonly trackId: string; readonly keyframeId: string; readonly pointerId: number; readonly lane: HTMLElement; readonly button: ToggleButton }
+interface DragState { readonly trackId: string; readonly keyframeId: string; readonly pointerId: number; readonly lane: HTMLElement; readonly button: Button }
 
 export class Timeline extends TimelineBase {
     private rootNode?: HTMLElement
@@ -135,8 +135,8 @@ export class Timeline extends TimelineBase {
         return row
     }
 
-    private renderKeyframe(track: TimelineTrack, keyframe: TimelineKeyframe, lane: HTMLElement, duration: number): ToggleButton {
-        const button = document.createElement('cb-toggle-button') as ToggleButton
+    private renderKeyframe(track: TimelineTrack, keyframe: TimelineKeyframe, lane: HTMLElement, duration: number): Button {
+        const button = document.createElement('cb-button') as Button
         button.setAttribute('part', 'keyframe')
         button.setAttribute('exportparts', 'control:keyframe-control,label:keyframe-label')
         button.variant = 'ghost'
