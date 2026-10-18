@@ -1,100 +1,88 @@
 # Cube Studio design QA
 
-- final result: blocked
-- audited: 2026-10-17
+- final result: passed
+- audited: 2026-10-18
 - visual source of truth: `design/figma-layers/Studio/` (11 Studio boards)
 - implementation under test: Storybook at `http://127.0.0.1:6006/`
-- browser: Google Chrome via Playwright and the live user Chrome session
+- browser: Google Chrome via Playwright and the live Storybook session
 - viewport: 1100 × 760 CSS pixels
 - appearances: light and dark
-- component stories checked: 228
-- Studio-board cards represented: 217
-- stories with visible output: 228
+- public component stories checked: 92
+- Studio design references retained: 217
+- stories with visible output: 92
 - stories with console or page errors: 0
 
 ## Verdict
 
-Render health, navigation structure, theming, and representative interaction states now pass. Every registered component story was opened in Chrome in light and dark mode, every story produced visible output, and no application console or page errors were recorded.
+The audited public catalog passes render, interaction, accessibility, theming, and package-structure checks. Every public component has one closed/default, interaction-ready Storybook story and was captured in light and dark mode. Overlay-only components are opened through their public APIs by the audit harness; their normal stories remain closed so developers can exercise the real interaction.
 
-The audit remains blocked on exact Studio fidelity. The new shared renderer now distinguishes native fields, switches, collections, tables, trees, assets, status views, editors, canvas tools, shell regions, and collaboration views, but some specialized Studio cards still have richer anatomy and behavior than their current implementation. Generated component bases also still rely heavily on the common `StudioComponentBase` contract instead of expressing all component-specific state in their own headless base.
+The original 217 Studio cards remain available as design references. They are no longer treated as 217 component requirements: cards that only show a property combination, field state, app-specific assembly, or minor visual variation are documented under `Examples/*`. The package API contains only reusable atoms, purposeful composites, layout utilities, and headless bases.
+
+Visual checks establish that every public component renders with the Cube theme and the intended Studio anatomy. The generated board crops are navigation aids rather than pixel-diff baselines because several Studio boards contain grouped examples instead of one isolated component per cell.
 
 ## Resolved findings
 
-- Removed the 13 blank Storybook visualizations. Layout primitives have representative slotted content; overlays are opened for inspection; ThemeProvider and Flashbar have visible examples.
-- Replaced checkbox-like Switch output with a native switch-semantic track and thumb.
-- Added design-oriented state matrices. Fields now show empty, filled, focus, invalid, disabled, and read-only states. Switches include off, on, focus, loading, and disabled states. Collections include default, selected, empty, and disabled states.
-- Added realistic per-component example data instead of the former Primary/Secondary/Disabled placeholder list.
-- Added distinct render structures for tables, trees, segmented controls, breadcrumbs, asset grids, presence, status views, progress, editors, panels, app shell, and canvas tooling.
-- Added reactive updates for editor, display, panel, and shell content after initial mount.
-- Added invalid/read-only behavior and accessible error relationships.
-- Localized runtime field actions, table headings, and file-picker text through the shared editor message catalog.
-- Flattened Storybook navigation so components are direct children of user-facing categories. `Form/Text Input`, `Media/Audio`, `Charts/Line`, and `Design references/Inputs` no longer have intermediate Catalog or Players folders.
-- Organized source folders and package exports by category, with both category imports and per-component imports.
+- Removed generated pseudo-components such as Width/Height, Min/Max, Aspect Ratio, Z-index, Search, Autocomplete, Preview Switch, Theme Switch, app-shell assemblies, and single-purpose asset/editor views.
+- Consolidated Autocomplete behavior into `Combobox` through its `autocomplete` mode and consolidated all switch variants into `Switch`.
+- Added `Calendar` as a reusable form component.
+- Replaced browser-dependent Select, DatePicker, and TimePicker presentation with themed Cube controls by default. Their `native` flag opts into the platform control when an application wants it.
+- Kept popups and dropdowns closed by default. Their component stories are interactive; open, native, validation, layout, asset-browser, editor, publishing, async, and collaboration compositions live under `Examples/*`.
+- Flattened Storybook so components are direct children of understandable categories such as Form, Layout, Media, Navigation, Overlay, Data display, Charts, and Feedback.
+- Reorganized source folders and exports by the same categories. Consumers can import the full client, a category, a component, or its headless base.
+- Preserved `part` hooks and theme variables in the new controls, including composed Calendar and picker internals.
+- Added keyboard navigation, screen-reader naming, form association, graceful defaults, validation states, and localized labels to the custom controls.
+- Fixed document-level pointer handling across nested shadow roots so Select and picker popups work when composed inside media and higher-level components.
 
 ## Category render audit
 
 | Category | Stories | Visible | Console/page failures |
 | --- | ---: | ---: | ---: |
-| Action | 12 | 12 | 0 |
-| Assets | 16 | 16 | 0 |
+| Action | 7 | 7 | 0 |
 | Charts | 2 | 2 | 0 |
-| Collaboration | 15 | 15 | 0 |
-| Data display | 12 | 12 | 0 |
-| Editor | 48 | 48 | 0 |
-| Feedback | 12 | 12 | 0 |
-| Form | 21 | 21 | 0 |
+| Collaboration | 4 | 4 | 0 |
+| Data display | 9 | 9 | 0 |
+| Editor | 7 | 7 | 0 |
+| Feedback | 9 | 9 | 0 |
+| Form | 20 | 20 | 0 |
 | Icons | 1 | 1 | 0 |
-| Layout | 33 | 33 | 0 |
-| Media | 3 | 3 | 0 |
-| Navigation | 15 | 15 | 0 |
-| Overlay | 14 | 14 | 0 |
-| Styling | 23 | 23 | 0 |
+| Layout | 9 | 9 | 0 |
+| Media | 2 | 2 | 0 |
+| Navigation | 6 | 6 | 0 |
+| Overlay | 10 | 10 | 0 |
+| Styling | 5 | 5 | 0 |
 | Theme | 1 | 1 | 0 |
-| **Total** | **228** | **228** | **0** |
+| **Total** | **92** | **92** | **0** |
 
-The exhaustive one-row-per-story evidence, including measured dimensions and light/dark screenshot paths, is in [results.json](design-qa-artifacts/results.json).
+The generated one-row-per-story evidence includes measured dimensions and light/dark screenshot paths in `design-qa-artifacts/results.json`. The artifact directory is intentionally ignored by Git and can be regenerated with `npm run test:visual-audit`.
 
-## Focused comparison evidence
+## Component and example model
 
-Each comparison stacks the Studio reference crop, Storybook light mode, and Storybook dark mode.
+Public components are retained when they have reusable behavior or semantics beyond a one-off arrangement:
 
-- [Button](design-qa-artifacts/comparison/button.png): now includes default, hover, focus, pressed, disabled, and loading states with icon and primary emphasis.
-- [Text input](design-qa-artifacts/comparison/text-input.png): now includes empty, filled, focus, invalid, disabled, and read-only states.
-- [Switch](design-qa-artifacts/comparison/switch.png): now uses switch semantics and distinct state visuals.
-- [Gradient editor](design-qa-artifacts/comparison/gradient-editor.png): now includes a gradient surface and structured values, but still needs component-specific gradient-type editing behavior.
-- [Table](design-qa-artifacts/comparison/table.png): now has table headers, rows, selected, empty, and disabled states.
-- [Viewport](design-qa-artifacts/comparison/viewport.png): now has a grid canvas, artboard, selection handles, and panning/zoomed visual states.
-- [Presence](design-qa-artifacts/comparison/presence.png): now renders collaborator avatars and collection states.
-- [Modal](design-qa-artifacts/comparison/modal.png): now opens in Storybook with representative body and footer content.
+- atoms: Button, Input, Select, Combobox, Calendar, Switch, Badge, Icon, and similar independent controls or content elements;
+- composites: DatePicker, TimePicker, Modal, AlertDialog, media players, charts, editor primitives, and other controls with a distinct purpose;
+- utility components: Box, Row, Col, Grid, Divider, resizable/docked layout utilities, and ThemeProvider;
+- headless components: each rendered component's `*Base` class, which holds behavior independently of the concrete renderer.
 
-## Remaining findings
-
-### P1 — specialized headless behavior is incomplete
-
-Several generated component bases are currently thin identifiers over `StudioComponentBase`. The rendered output is differentiated, but advanced controls such as Gradient editor, Timeline, Bezier, Data binding, Action editor, and conflict/review workflows still need component-specific typed models and headless behavior before they can be considered production-complete.
-
-### P1 — some Studio anatomy and interaction variants remain approximate
-
-The broad state matrices cover the common interaction states, but some design cards specify specialized variants that are not yet modeled—for example gradient-type editing, timeline/keyframe manipulation, resizable panel dragging, and full canvas transforms. Their screenshots are useful and reviewable, but they are not exact behavioral equivalents of the boards.
-
-### P2 — automated reference crops are approximate
-
-Reference evidence uses the boards' repeated three-column layout. A few crops include adjacent headings or extra whitespace, so final pixel-level sign-off still requires manual comparison against the full board.
+Examples demonstrate composition without adding package tags. They currently cover autocomplete, native controls, dimensions, field states, box-model controls, flex controls, an inspector panel, appearance and typography controls, an asset browser, canvas selection, a publish flow, async states, and a review workflow.
 
 ## Verification
 
-- `npm run typecheck`
+- `npm run typecheck` — passed
 - `npm test` — 42 passed
-- `npx playwright test` — 50 passed
-- `npm run test:catalog` — 228 entry points, 217 Studio cards, and eight chart stories verified
-- `npm run test:exports` — ESM/CJS SSR-safe imports and 244 external-runtime browser entries verified
-- `npm run build`
-- `npm run test:visual-audit` — 228 stories captured in both themes; 0 render/console failures
+- `npx playwright test` — 54 passed
+- `npm run test:catalog` — 92 public entry points, 58 audited Studio components, all 217 design references, and eight chart stories verified
+- `npm run test:exports` — ESM/CJS SSR-safe imports and 107 external-runtime browser entries verified
+- `npm run build:storybook` — passed
+- `npm run build:docs` — 17 pages across English, Portuguese, Spanish, French, and Chinese
+- `npm run build` — passed
+- `npm run test:visual-audit` — 92 stories captured in both themes; 0 render or console failures
 
-## Iteration history
+## Audit method
 
-1. Initial audit: 13 blank stories, 3 resource/console flags, placeholder examples, and broad design mismatches.
-2. Render repair: seeded open overlays and layout content, added typed examples and component-kind renderers, and fixed visibility measurement for display-contents hosts.
-3. State repair: added field, switch, collection, action, and viewport matrices plus invalid/read-only semantics.
-4. Runtime repair: made structured content reactive and moved remaining shared runtime strings into the localized message catalog.
-5. Final health pass: all 228 stories render in light and dark with no recorded application errors; exact specialized fidelity remains blocked as listed above.
+1. Classify each Studio card as a real component, a reusable headless behavior, a utility, or an example.
+2. Remove example-only tags and exports while keeping every board card in the design-reference catalog.
+3. Exercise each public component through its Storybook controls and public interaction APIs.
+4. Capture each story in light and dark appearances and reject blank output or console/page errors.
+5. Run focused keyboard, form, dialog, media, chart, localization, theme, and axe checks in Chrome.
+6. Verify category, component, CDN, ESM/CJS, documentation, Storybook, and full-package builds.

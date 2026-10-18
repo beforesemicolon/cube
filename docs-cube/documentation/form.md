@@ -10,6 +10,8 @@ order: 21
 
 {{t.cube.studioCatalogBody}}
 
+{{t.cube.formNative}}
+
 :::cube studio-form
 :::
 
@@ -19,9 +21,7 @@ order: 21
 | Textarea | `<cb-textarea>` | `@beforesemicolon/cube/form/textarea` |
 | Number input | `<cb-number-input>` | `@beforesemicolon/cube/form/number-input` |
 | Unit input | `<cb-unit-input>` | `@beforesemicolon/cube/form/unit-input` |
-| Search | `<cb-search>` | `@beforesemicolon/cube/form/search` |
 | Combobox | `<cb-combobox>` | `@beforesemicolon/cube/form/combobox` |
-| Autocomplete | `<cb-autocomplete>` | `@beforesemicolon/cube/form/autocomplete` |
 | Multi select | `<cb-multi-select>` | `@beforesemicolon/cube/form/multi-select` |
 | Checkbox | `<cb-checkbox>` | `@beforesemicolon/cube/form/checkbox` |
 | Radio | `<cb-radio>` | `@beforesemicolon/cube/form/radio` |
@@ -36,6 +36,7 @@ order: 21
 | Masked input | `<cb-masked-input>` | `@beforesemicolon/cube/form/masked-input` |
 | Select | `<cb-select>` | `@beforesemicolon/cube/form/select` |
 | Slider | `<cb-slider>` | `@beforesemicolon/cube/form/slider` |
+| Calendar | `<cb-calendar>` | `@beforesemicolon/cube/form/calendar` |
 
 ## API
 

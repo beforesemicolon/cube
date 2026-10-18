@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright'
 
 test.beforeEach(async ({ page }) => {
     await page.goto('/tests/browser/fixture.html')
-    await page.waitForFunction(() => Boolean(customElements.get('cb-approval')))
+    await page.waitForFunction(() => Boolean(customElements.get('cb-text-input')))
 })
 
 test('every Studio design entry registers and mounts without missing-property failures', async ({ page }) => {
@@ -36,9 +36,9 @@ test('every Studio design entry registers and mounts without missing-property fa
             componentErrors,
         }
     })
-    expect(result.definitions).toBe(193)
-    expect(result.registered).toBe(193)
-    expect(result.mounted).toBe(193)
+    expect(result.definitions).toBe(58)
+    expect(result.registered).toBe(58)
+    expect(result.mounted).toBe(58)
     expect(result.componentErrors).toEqual([])
     expect(pageErrors).toEqual([])
 })
@@ -48,7 +48,7 @@ test('representative Studio controls expose keyboard semantics, parts, theme inh
         const fixture = document.querySelector<HTMLElement>('#fixture')!
         const text = document.createElement('cb-text-input') as HTMLElement & { label: string; value: string }
         text.label = 'Layer name'; text.value = 'Hero'
-        const collection = document.createElement('cb-layer-tree') as HTMLElement & { label: string; items: ReadonlyArray<{ id: string; label: string }> }
+        const collection = document.createElement('cb-tree') as HTMLElement & { label: string; items: ReadonlyArray<{ id: string; label: string }> }
         collection.label = 'Layers'; collection.items = [{id:'hero',label:'Hero'},{id:'copy',label:'Copy'}]
         const canvas = document.createElement('cb-artboard') as HTMLElement & { label: string; accessibleLabel: string }
         canvas.label = 'Artboard'; canvas.accessibleLabel = 'Homepage artboard'
@@ -60,7 +60,7 @@ test('representative Studio controls expose keyboard semantics, parts, theme inh
     await input.press('Tab')
     await expect(page.locator('cb-text-input')).toHaveJSProperty('value', 'Navigation')
 
-    const treeItems = page.locator('cb-layer-tree').getByRole('treeitem')
+    const treeItems = page.locator('cb-tree').getByRole('treeitem')
     await treeItems.first().focus()
     await page.keyboard.press('ArrowDown')
     await expect(treeItems.nth(1)).toBeFocused()

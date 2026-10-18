@@ -17,16 +17,10 @@ export const List: Story = { args: { label: 'List', value: 'one', items }, rende
 
 export const DescriptionRow: Story = { args: { label: 'Description row', value: 'Example', status: 'Ready' }, render: (args, context) => preview('cb-description-row', args, context.globals.appearance) }
 
-export const PropertyRow: Story = { args: { label: 'Property row', actionLabel: 'Edit', value: '12 px' }, render: (args, context) => preview('cb-property-row', args, context.globals.appearance) }
-
 export const Table: Story = { args: { label: 'Table', value: 'one', items }, render: (args, context) => preview('cb-table', args, context.globals.appearance) }
 
 export const Tree: Story = { args: { label: 'Tree', value: 'one', items }, render: (args, context) => preview('cb-tree', args, context.globals.appearance) }
 
 export const Accordion: Story = { args: { label: 'Accordion', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-accordion', args, context.globals.appearance) }
 
-export const Stat: Story = { args: { label: 'Stat', value: 'Ready', status: 'Updated' }, render: (args, context) => preview('cb-stat', args, context.globals.appearance) }
-
 export const CodePreview: Story = { args: { label: 'Code preview', code: '<cb-button label="Save"></cb-button>', codeLanguage: 'html' }, render: (args, context) => preview('cb-code-preview', args, context.globals.appearance) }
-
-export const ActivityLog: Story = { args: { label: 'Activity log', value: 'one', items }, render: (args, context) => preview('cb-activity-log', args, context.globals.appearance) }

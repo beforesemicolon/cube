@@ -29,6 +29,11 @@ interface RenderBounds {
     readonly height: number
 }
 
+interface AuditableOverlayElement extends HTMLElement {
+    show?: () => boolean | void
+    showAt?: (x: number, y: number) => void
+}
+
 const boards: Readonly<Record<string, BoardConfig>> = {
     actions: {
         file: '01/Actions.png', width: 3376, height: 5304,
@@ -113,12 +118,23 @@ function createReferenceCrop(component: string): string | undefined {
     return target
 }
 
+async function openForAudit(element: ReturnType<Page['locator']>, component: string): Promise<void> {
+    if (!['context-menu', 'command-palette', 'modal', 'alert-dialog'].includes(component)) return
+    await element.evaluate(async (host: AuditableOverlayElement, componentName: string) => {
+        await customElements.whenDefined(host.localName)
+        if (componentName === 'context-menu') host.showAt?.(48, 48)
+        else host.show?.()
+        await new Promise<void>(resolveFrame => requestAnimationFrame(() => resolveFrame()))
+    }, component)
+}
+
 async function captureAppearance(page: Page, storyId: string, component: string, appearance: 'light' | 'dark', target: string): Promise<{ rendered: boolean; width: number; height: number }> {
     await page.goto(`http://127.0.0.1:6006/iframe.html?id=${storyId}&viewMode=story&globals=appearance:${appearance}`, { waitUntil: 'domcontentloaded' })
     const selector = `cb-${component}`
     const element = page.locator(selector).first()
     let attached = true
     try { await element.waitFor({ state: 'attached', timeout: 2_000 }) } catch { attached = false }
+    if (attached) await openForAudit(element, component)
     const box = attached ? await element.evaluate<RenderBounds | null>((host: Element) => {
         const direct = host.getBoundingClientRect()
         if (direct.width > 0 && direct.height > 0) return { width: direct.width, height: direct.height }

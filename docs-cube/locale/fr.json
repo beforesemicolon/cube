@@ -1,7 +1,7 @@
 {
   "cube": {
     "title": "Cube par Before Semicolon",
-    "intro": "Bibliothèque de composants web à logique indépendante du rendu et thèmes pour éditeurs visuels. Les composants sont organisés en actions, formulaires, mise en page, navigation, superpositions, retours, affichage des données, médias, graphiques, styles, éditeur, ressources, collaboration, icônes et thèmes.",
+    "intro": "Bibliothèque de composants web à logique indépendante du rendu et thèmes pour éditeurs visuels. Les composants sont organisés en actions, formulaires, mise en page, navigation, superpositions, retours, affichage des données, médias, graphiques, styles, éditeur, collaboration, icônes et thèmes.",
     "guide": "Installation et architecture",
     "guideBody": "Importez les entrées individuelles pour enregistrer automatiquement les balises cb-*. Les classes de base ne les enregistrent pas. La racine fournit des utilitaires sans DOM et loadComponent pour le chargement différé. Les classes HTMLElement concrètes nécessitent un DOM, y compris sous Node ou Deno.",
     "runtime": "Chargez le runtime web-component en premier. Les graphiques nécessitent aussi ECharts ou un chargeur configureChartEngine. Les scripts multimédias ne chargent pas ECharts. Cette branche ne remplace pas la version publiée sur npm.",
@@ -39,6 +39,7 @@
     "figma": "Les planches Studio dans design/figma-layers constituent la référence visuelle ; Storybook fournit la référence exécutable des composants.",
     "categoryAction": "Actions",
     "categoryForm": "Formulaires",
+    "formNative": "Select, DatePicker et TimePicker utilisent le rendu cohérent de Cube par défaut. Ajoutez l’indicateur native uniquement lorsque le sélecteur natif du navigateur est préférable. Combobox fournit les comportements de liste et d’autocomplétion via la propriété autocomplete, et Calendar est aussi disponible comme composant autonome.",
     "studioLayout": "Mise en page",
     "categoryNavigation": "Navigation",
     "categoryOverlay": "Superpositions",
@@ -49,7 +50,7 @@
     "categoryEditor": "Éditeur",
     "categoryAssets": "Ressources",
     "categoryCollaboration": "Collaboration",
-    "studioCatalogBody": "Cette catégorie implémente la planche Studio correspondante sous forme d’éléments cb-* qui s’enregistrent à l’import. Chaque composant possède une entrée navigateur indépendante, une base headless typée, un rendu piloté par le thème, des parties CSS stables, un comportement adaptatif et une visualisation Storybook.",
+    "studioCatalogBody": "Cette catégorie auditée contient des éléments cb-* réutilisables qui s’enregistrent à l’import. Les compositions visuelles des planches Studio sont documentées comme exemples plutôt que transformées en composants en double. Chaque composant réel possède une entrée navigateur indépendante, une base headless typée, un rendu piloté par le thème, des parties CSS stables, un comportement adaptatif et une story Storybook interactive.",
     "studioCatalogApi": "Toutes les propriétés sont facultatives. Fournissez label, accessible-label, description, status, action-label, empty-label et le texte des éléments dans la langue active. Les composants interactifs émettent les événements annulables cb-before-change ou cb-before-action avant cb-change ou cb-action. Importez l’entrée du composant pour l’enregistrer, ou son entrée /base pour fournir un autre rendu."
   }
 }

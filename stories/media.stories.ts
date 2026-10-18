@@ -1,7 +1,6 @@
 import type { Meta,StoryObj } from '@storybook/web-components-vite'
 import { expect,userEvent,waitFor } from 'storybook/test'
 import { preview,silentAudio } from './helpers.js'
-import '../components/media/media-preview/index.js'
 const meta:Meta={title:'Media',tags:['autodocs'],args:{mediaTitle:'Studio recording',seekStep:10,locale:'en'},argTypes:{locale:{control:'select',options:['en','pt','es','fr','zh']},seekStep:{control:{type:'number',min:1,max:60}}},parameters:{docs:{description:{component:'Transport buttons are cb-icon-button; timeline and volume are cb-slider; speed and captions are cb-select. Native audio/video elements retain playback state. Themes and CSS parts are inherited. The video example uses an original four-second offline clip with finite seekable duration.'}}},render:(args,c)=>preview('cb-audio-player',args,c.globals.appearance)}
 export default meta
 type Story=StoryObj
@@ -30,4 +29,3 @@ export const Video:Story={render:(args,c)=>video(args,c.globals.appearance),play
 }}
 export const VideoWithCaptions:Story={render:(args,c)=>video(args,c.globals.appearance,true)}
 export const EmptyVideo:Story={render:(args,c)=>preview('cb-video-player',{...args,poster:'/poster.svg'},c.globals.appearance)}
-export const MediaPreview:Story={args:{label:'Media preview',value:'Example',status:'Ready'},render:(args,c)=>preview('cb-media-preview',args,c.globals.appearance)}

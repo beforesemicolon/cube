@@ -1,7 +1,7 @@
 {
   "cube": {
     "title": "Cube por Before Semicolon",
-    "intro": "Biblioteca de componentes web com lógica sem apresentação obrigatória e temas para editores visuais. Os componentes estão organizados em ações, formulários, layout, navegação, sobreposições, feedback, exibição de dados, mídia, gráficos, estilos, editor, recursos, colaboração, ícones e temas.",
+    "intro": "Biblioteca de componentes web com lógica sem apresentação obrigatória e temas para editores visuais. Os componentes estão organizados em ações, formulários, layout, navegação, sobreposições, feedback, exibição de dados, mídia, gráficos, estilos, editor, colaboração, ícones e temas.",
     "guide": "Instalação e arquitetura",
     "guideBody": "Importe os pontos de entrada individuais para registar automaticamente as etiquetas cb-*. As classes base não registam elementos. A raiz do pacote oferece utilitários de dados sem DOM e loadComponent para carregamento diferido no navegador. As classes HTMLElement concretas exigem um DOM, também em Node ou Deno.",
     "runtime": "Os scripts de navegador exigem primeiro o runtime web-component. Os gráficos também exigem ECharts ou um carregador configureChartEngine. Os scripts apenas de multimédia não carregam ECharts. Esta branch não substituiu a versão publicada no npm.",
@@ -39,6 +39,7 @@
     "figma": "Os painéis Studio em design/figma-layers são a referência visual; o Storybook fornece a referência executável dos componentes.",
     "categoryAction": "Ações",
     "categoryForm": "Formulários",
+    "formNative": "Select, DatePicker e TimePicker usam a renderização consistente do Cube por padrão. Adicione a flag native apenas quando preferir o seletor nativo do browser. Combobox fornece os comportamentos de lista e preenchimento automático através da propriedade autocomplete, e Calendar também está disponível como componente independente.",
     "studioLayout": "Layout",
     "categoryNavigation": "Navegação",
     "categoryOverlay": "Sobreposições",
@@ -49,7 +50,7 @@
     "categoryEditor": "Editor",
     "categoryAssets": "Recursos",
     "categoryCollaboration": "Colaboração",
-    "studioCatalogBody": "Esta categoria implementa o painel de design Studio correspondente como elementos cb-* autorregistáveis. Cada componente tem uma entrada de browser independente, uma base headless tipada, renderização baseada no tema, partes CSS estáveis, comportamento responsivo e uma visualização no Storybook.",
+    "studioCatalogBody": "Esta categoria auditada contém elementos cb-* reutilizáveis e autorregistáveis. As composições visuais dos painéis Studio são documentadas como exemplos, em vez de se tornarem componentes duplicados. Cada componente real tem uma entrada de browser independente, uma base headless tipada, renderização baseada no tema, partes CSS estáveis, comportamento responsivo e uma história interativa no Storybook.",
     "studioCatalogApi": "Todas as propriedades são opcionais. Forneça label, accessible-label, description, status, action-label, empty-label e o texto dos itens no idioma ativo. Os componentes interativos emitem cb-before-change ou cb-before-action canceláveis antes de cb-change ou cb-action. Importe a entrada do componente para o registar, ou a entrada /base para fornecer outro renderer."
   }
 }

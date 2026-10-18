@@ -22,10 +22,7 @@ order: 25
 | Spinner | `<cb-spinner>` | `@beforesemicolon/cube/feedback/spinner` |
 | Toast | `<cb-toast>` | `@beforesemicolon/cube/feedback/toast` |
 | Alert | `<cb-alert>` | `@beforesemicolon/cube/feedback/alert` |
-| Validation | `<cb-validation>` | `@beforesemicolon/cube/feedback/validation` |
 | Banner | `<cb-banner>` | `@beforesemicolon/cube/feedback/banner` |
-| Save status | `<cb-save-status>` | `@beforesemicolon/cube/feedback/save-status` |
-| Publish status | `<cb-publish-status>` | `@beforesemicolon/cube/feedback/publish-status` |
 | Flashbar | `<cb-flashbar>` | `@beforesemicolon/cube/feedback/flashbar` |
 
 ## API

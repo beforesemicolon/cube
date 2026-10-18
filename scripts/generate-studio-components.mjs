@@ -90,6 +90,19 @@ const definitions = groups.flatMap(([board, entries]) => entries.map(([name, tit
     kind,
     className: pascal(name),
 })))
+// Only these Figma cards define reusable public components. Every other card is
+// retained as a design reference and documented as an application-level example.
+const publicStudioComponentNames = new Set([
+    'text-input','textarea','number-input','unit-input','combobox','multi-select','checkbox','radio','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input',
+    'color-picker','color-swatch','eyedropper','gradient-editor','gradient-stops',
+    'collapsible-sidebar','resizable-panel','docked-panel','panel-header',
+    'badge','avatar','card','list','description-row','table','tree','accordion','code-preview',
+    'status','empty-state','skeleton','progress','spinner','toast','alert','banner',
+    'popover','drawer','hover-card','bottom-sheet',
+    'viewport','artboard','rulers','device-frame','expression','bezier','timeline',
+    'presence','remote-cursor','comment-pin','comment-thread',
+])
+const publicDefinitions = definitions.filter(definition => publicStudioComponentNames.has(definition.name))
 const quote = value => `'${value.replaceAll("'", "\\'")}'`
 const reusedBoardItems = {
     actions: [
@@ -124,8 +137,8 @@ const studioBoardItems = [
     ...definitions.map(({board,category,name,title}) => ({board,category,name,title})),
 ]
 const existingCategoryExports = {
-    action: ["export * from './button/index.js'", "export * from './icon-button/index.js'", "export * from './toggle-button/index.js'", "export * from './link-button/index.js'", "export * from './split-button/index.js'", "export * from './button-group/index.js'", "export * from './toolbar/index.js'", "export * from './action-bar/index.js'", "export * from './shortcut/index.js'"],
-    form: ["export * from './slider/index.js'", "export * from './select/index.js'", "export { normalizeRange, normalizeOptions } from './model.js'"],
+    action: ["export * from './button/index.js'", "export * from './toggle-button/index.js'", "export * from './split-button/index.js'", "export * from './button-group/index.js'", "export * from './toolbar/index.js'", "export * from './action-bar/index.js'", "export * from './shortcut/index.js'"],
+    form: ["export * from './slider/index.js'", "export * from './select/index.js'", "export * from './calendar/index.js'", "export { normalizeRange, normalizeOptions } from './model.js'"],
     layout: ["export * from './box/index.js'", "export * from './row/index.js'", "export * from './col/index.js'", "export * from './grid/index.js'", "export * from './divider/index.js'"],
     navigation: ["export * from './link/index.js'", "export * from './segmented-control/index.js'", "export * from './tabs/index.js'", "export * from './breadcrumb/index.js'", "export * from './menu/index.js'", "export * from './pagination/index.js'"],
     overlay: ["export * from './context-menu/index.js'", "export * from './dropdown/index.js'", "export * from './command-palette/index.js'", "export * from './tooltip/index.js'", "export * from './modal/index.js'", "export * from './alert-dialog/index.js'"],
@@ -138,13 +151,15 @@ const documentationKeys = {
     assets:'categoryAssets', collaboration:'categoryCollaboration',
 }
 const definitionGroups = componentCategoryOrder
-    .map(category => [category, definitions.filter(definition => definition.category === category)])
+    .map(category => [category, publicDefinitions.filter(definition => definition.category === category)])
     .filter(([, entries]) => entries.length > 0)
 
-const catalog = `import type { StudioBoardItem, StudioDefinition } from './types.js'\n\nexport const studioDefinitions = [\n${definitions.map(d => `    { board:${quote(d.board)}, category:${quote(d.category)}, name:${quote(d.name)}, className:${quote(d.className)}, title:${quote(d.title)}, kind:${quote(d.kind)} },`).join('\n')}\n] as const satisfies readonly StudioDefinition[]\n\nexport const studioBoardItems = [\n${studioBoardItems.map(item => `    { board:${quote(item.board)}, category:${quote(item.category)}, name:${quote(item.name)}, title:${quote(item.title)} },`).join('\n')}\n] as const satisfies readonly StudioBoardItem[]\n\nexport const studioGroups = [${definitionGroups.map(([name]) => quote(name)).join(', ')}] as const\nexport const studioEntries = studioDefinitions.map(({category,name,className}) => ({path:\`${'${category}'}/${'${name}'}\`,name,className}))\n`
+const publicNamesSource = [...publicStudioComponentNames].map(quote).join(',')
+const catalog = `import type { StudioBoardItem, StudioDefinition } from './types.js'\n\nconst allStudioDefinitions = [\n${definitions.map(d => `    { board:${quote(d.board)}, category:${quote(d.category)}, name:${quote(d.name)}, className:${quote(d.className)}, title:${quote(d.title)}, kind:${quote(d.kind)} },`).join('\n')}\n] as const satisfies readonly StudioDefinition[]\n\nconst allStudioBoardItems = [\n${studioBoardItems.map(item => `    { board:${quote(item.board)}, category:${quote(item.category)}, name:${quote(item.name)}, title:${quote(item.title)} },`).join('\n')}\n] as const satisfies readonly StudioBoardItem[]\n\nexport const publicStudioComponentNames: ReadonlySet<string> = new Set([${publicNamesSource}])\nexport const studioDefinitions = allStudioDefinitions.filter(definition => publicStudioComponentNames.has(definition.name))\nexport const studioBoardItems = allStudioBoardItems.filter(item => publicStudioComponentNames.has(item.name))\nexport const studioDesignReferences = allStudioBoardItems\nexport const studioGroups = [${definitionGroups.map(([name]) => quote(name)).join(', ')}] as const\nexport const studioEntries = studioDefinitions.map(({category,name,className}) => ({path:\`${'${category}'}/${'${name}'}\`,name,className}))\n`
 await mkdir(resolve('components/studio'), { recursive: true })
 await writeFile(resolve('components/studio/catalog.ts'), catalog)
 
+const handBuiltComponents = new Set(['code-preview', 'combobox', 'date-picker', 'time-picker'])
 for (const [category, entries] of definitionGroups) {
     const categoryDir = resolve('components', category)
     await mkdir(categoryDir, { recursive: true })
@@ -152,7 +167,7 @@ for (const [category, entries] of definitionGroups) {
     for (const {name, title, kind, className} of entries) {
         const dir = resolve(categoryDir, name)
         await mkdir(dir, { recursive: true })
-        if (name === 'code-preview') {
+        if (handBuiltComponents.has(name)) {
             exports.push(`export * from './${name}/index.js'`)
             continue
         }
@@ -164,8 +179,8 @@ for (const [category, entries] of definitionGroups) {
     await writeFile(resolve(categoryDir, 'index.ts'), exports.join('\n') + '\n')
 }
 
-const loaders = `export const studioComponentLoaders = {\n${definitions.map(d => `    '${d.name}': () => import('../${d.category}/${d.name}/index.js'),`).join('\n')}\n} as const\n`
-await writeFile(resolve('components/studio/registry.ts'), loaders)
+const loaders = `/** Lazy registrations for public Studio-derived components only. */\nexport const studioComponentLoaders = {\n${publicDefinitions.map(d => `    '${d.name}': () => import('../${d.category}/${d.name}/index.js'),`).join('\n')}\n} as const\n`
+await writeFile(resolve('components/studio/public-registry.ts'), loaders)
 
 const sampleByKind = {
     text: `{ label: '${'${title}'}', value: '12 px', placeholder: '${'${title}'}' }`,
@@ -190,7 +205,7 @@ const sampleByKind = {
 }
 
 const storyExtras = [
-    {category:'action',name:'link-button',title:'Link button',kind:'text',className:'LinkButton'},
+    {category:'form',name:'calendar',title:'Calendar',kind:'display',className:'Calendar'},
     {category:'layout',name:'box',title:'Box',kind:'panel',className:'Box'},
     {category:'layout',name:'row',title:'Row',kind:'collection',className:'Row'},
     {category:'layout',name:'col',title:'Col',kind:'collection',className:'Col'},
@@ -201,8 +216,8 @@ const storyExtras = [
     {category:'icons',name:'icon',title:'Icon',kind:'display',className:'Icon'},
     {category:'theme',name:'theme-provider',title:'Theme provider',kind:'panel',className:'ThemeProvider'},
 ]
-const reusedStoryDefinitions = reusedDefinitions.filter(reused => !definitions.some(definition => definition.name === reused.name))
-const storyDefinitions = [...definitions, ...reusedStoryDefinitions, ...storyExtras]
+const reusedStoryDefinitions = reusedDefinitions.filter(reused => !definitions.some(definition => definition.name === reused.name) && reused.name !== 'icon-button')
+const storyDefinitions = [...publicDefinitions, ...reusedStoryDefinitions, ...storyExtras]
 const storyGroups = componentCategoryOrder
     .map(category => [category, storyDefinitions.filter(definition => definition.category === category)])
     .filter(([, entries]) => entries.length > 0 && !['media', 'charts'].includes(entries[0].category))
@@ -212,13 +227,21 @@ for (const [category, entries] of storyGroups) {
     const story = `import type { Meta, StoryObj } from '@storybook/web-components-vite'\nimport { preview } from './helpers.js'\nimport '../components/${category}/index.js'\n\nconst meta: Meta = { title: '${categoryTitle}', tags: ['autodocs'], parameters: { docs: { description: { component: '${categoryTitle} components with headless bases, themed parts, standalone imports and browser bundles.' } } } }\nexport default meta\ntype Story = StoryObj\nconst items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]\n\n${entries.map(({name, title, kind, className}) => {
         const args = name === 'code-preview'
             ? `{ label: 'Code preview', code: '<cb-button label="Save"></cb-button>', codeLanguage: 'html' }`
-            : sampleByKind[kind].replaceAll('${title}', title)
+            : name === 'combobox'
+                ? `{ label: 'Font family', placeholder: 'Search fonts', open: false, autocomplete: 'list', options: [{ value: 'inter', label: 'Inter' }, { value: 'source-sans', label: 'Source Sans 3' }] }`
+                : name === 'calendar' || name === 'date-picker'
+                    ? `{ label: '${title}', value: '2026-10-18'${name === 'date-picker' ? ', native: false, open: false' : ", firstDayOfWeek: 0, min: '', max: ''"} }`
+                    : name === 'time-picker'
+                        ? `{ label: 'Time picker', value: '09:30', step: 1800, native: false, open: false, min: '', max: '' }`
+                        : name === 'select'
+                            ? `{ label: 'Select', value: 'desktop', placeholder: 'Choose a device', native: false, open: false, multiple: false, options: [{ value: 'desktop', label: 'Desktop' }, { value: 'mobile', label: 'Mobile' }] }`
+                            : sampleByKind[kind].replaceAll('${title}', title)
         return `export const ${className}: Story = { args: ${args}, render: (args, context) => preview('cb-${name}', args, context.globals.appearance) }`
     }).join('\n\n')}\n`
     await writeFile(resolve('stories', `${category}.stories.ts`), story)
 }
 
-const summaryDefinitions = [...definitions, ...reusedStoryDefinitions, ...storyExtras]
+const summaryDefinitions = [...publicDefinitions, ...reusedStoryDefinitions, ...storyExtras]
     .filter(definition => !['icons', 'theme'].includes(definition.category))
 const summary = summaryDefinitions.reduce((result, definition) => {
     result[definition.category] ??= []
@@ -233,8 +256,9 @@ for (const category of documentationCategories) {
     const rows = entries.map(entry => `| ${entry.title} | \`<cb-${entry.name}>\` | \`@beforesemicolon/cube/${category}/${entry.name}\` |`).join('\n')
     const key = documentationKeys[category]
     const order = 20 + documentationCategories.indexOf(category)
-    const markdown = `---\nname: '{{t.cube.${key}}}'\ntitle: '{{t.cube.${key}}}'\npath: /documentation/${category}\nlayout: document\norder: ${order}\n---\n\n# {{t.cube.${key}}}\n\n{{t.cube.studioCatalogBody}}\n\n:::cube studio-${category}\n:::\n\n| Component | Custom element | Package entry |\n| --- | --- | --- |\n${rows}\n\n## API\n\n{{t.cube.studioCatalogApi}}\n`
+    const categoryNote = category === 'form' ? '\n{{t.cube.formNative}}\n' : ''
+    const markdown = `---\nname: '{{t.cube.${key}}}'\ntitle: '{{t.cube.${key}}}'\npath: /documentation/${category}\nlayout: document\norder: ${order}\n---\n\n# {{t.cube.${key}}}\n\n{{t.cube.studioCatalogBody}}\n${categoryNote}\n:::cube studio-${category}\n:::\n\n| Component | Custom element | Package entry |\n| --- | --- | --- |\n${rows}\n\n## API\n\n{{t.cube.studioCatalogApi}}\n`
     await writeFile(resolve('docs-cube/documentation', `${category}.md`), markdown)
 }
 
-console.log(`Generated ${definitions.length} Studio component families in ${definitionGroups.length} consumer categories.`)
+console.log(`Generated ${publicDefinitions.length} audited Studio component families and retained ${studioBoardItems.length} design references.`)

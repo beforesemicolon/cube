@@ -2,7 +2,7 @@
 
 A TypeScript, headless-first web-component library for visual editors. This is the **0.3.0 alpha implementation branch**, not a published release.
 
-The implementation covers 217 reusable components from the eleven Studio design boards, plus Cube-specific wrapper-free layout primitives, LinkButton, Flashbar, media players, Cartesian and pie charts, icons, and `ThemeProvider`. Preview and theme switching are usage contexts for the generic `Switch`, not separate components. The package exposes 228 independently loadable component entries across category folders. Each concrete component registers its `cb-*` element when imported. Every component has a headless base, exposes styling parts, and consumes site-builder-compatible theme variables.
+The eleven Studio boards contain 217 visual references. An explicit audit separates those references into 92 independently loadable component entries and application-level composition examples; a Figma card is no longer treated as a component merely because it has a name. Preview and theme switching are usage contexts for `Switch`; autocomplete is a `Combobox` mode; dimensions, aspect ratio and z-index are examples assembled from form and layout primitives. Each concrete component registers its `cb-*` element when imported, has a headless base, exposes styling parts, and consumes site-builder-compatible theme variables.
 
 ## Develop
 
@@ -62,7 +62,9 @@ Build the package first. These are distribution paths, not a claim that this alp
 </cb-theme-provider>
 ```
 
-Use `dist/client.js` for the complete implemented catalog, a category path such as `dist/form/client.js`, or an independent path such as `dist/navigation/menu/client.js`. The public categories are `action`, `form`, `layout`, `navigation`, `overlay`, `feedback`, `data-display`, `media`, `charts`, `styling`, `editor`, `assets`, `collaboration`, `icons`, and `theme`. Every component receives its own browser bundle. Browser exports live in `BFS.CUBE`. Repeated same-version scripts do not register tags twice. Do not mix different Cube versions in one custom-element registry.
+Use `dist/client.js` for the complete implemented catalog, a category path such as `dist/form/client.js`, or an independent path such as `dist/navigation/menu/client.js`. The public categories are `action`, `form`, `layout`, `navigation`, `overlay`, `feedback`, `data-display`, `media`, `charts`, `styling`, `editor`, `collaboration`, `icons`, and `theme`. Every component receives its own browser bundle. Browser exports live in `BFS.CUBE`. Repeated same-version scripts do not register tags twice. Do not mix different Cube versions in one custom-element registry.
+
+`Select`, `DatePicker` and `TimePicker` use consistent Cube-rendered controls by default. Set `native` only when the browser-provided selector is desired. `Calendar` can also be imported independently, while `Combobox` supports list and autocomplete behavior through its `autocomplete` property.
 
 The WebComponent runtime is **external**, not compiled into Cube's browser scripts. Chart scripts also keep ECharts external: load `echarts/dist/echarts.min.js` before mounting a chart, or configure a promise-based loader with `BFS.CUBE.configureChartEngine`. Module consumers lazily import the ECharts dependency on the first chart render. Media-only scripts never load charting code.
 
@@ -114,6 +116,6 @@ Action parts include semantic surfaces such as `control`, `trigger`, `popup`, `m
 
 ## Scope and status
 
-This remains an alpha increment of the larger Cube rewrite. The full Studio inventory is implemented and indexed from `components/studio/catalog.ts`; Storybook and the localized documentation site provide category-level visualizers. The source boards in `design/figma-layers/Studio` remain the visual acceptance reference. Legacy `src/`, `docs/` and old build scripts remain for comparison but are excluded from the new package and build.
+This remains an alpha increment of the larger Cube rewrite. The full 217-item Studio inventory remains indexed as design references in `components/studio/catalog.ts`; only the audited reusable subset is published as components. Storybook provides one interaction-ready story per component plus a separate application-composition gallery, and the localized documentation site provides category-level visualizers. The source boards in `design/figma-layers/Studio` remain the visual acceptance reference. Legacy `src/`, `docs/` and old build scripts remain for comparison but are excluded from the new package and build.
 
 No npm release, production deployment or main-branch merge is performed by this implementation.

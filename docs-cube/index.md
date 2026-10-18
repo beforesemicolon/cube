@@ -22,6 +22,6 @@ npm install
 npm run storybook
 ```
 
-`Action` · `Form` · `Layout` · `Navigation` · `Overlay` · `Feedback` · `Data display` · `Media` · `Charts` · `Styling` · `Editor` · `Assets` · `Collaboration`
+`Action` · `Form` · `Layout` · `Navigation` · `Overlay` · `Feedback` · `Data display` · `Media` · `Charts` · `Styling` · `Editor` · `Collaboration`
 
 `Design references / Uploaded sheets`

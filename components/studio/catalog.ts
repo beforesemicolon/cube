@@ -1,6 +1,6 @@
 import type { StudioBoardItem, StudioDefinition } from './types.js'
 
-export const studioDefinitions = [
+const allStudioDefinitions = [
     { board:'inputs', category:'form', name:'text-input', className:'TextInput', title:'Text input', kind:'text' },
     { board:'inputs', category:'form', name:'textarea', className:'Textarea', title:'Textarea', kind:'textarea' },
     { board:'inputs', category:'form', name:'number-input', className:'NumberInput', title:'Number input', kind:'number' },
@@ -196,7 +196,7 @@ export const studioDefinitions = [
     { board:'collaboration-ai', category:'collaboration', name:'approval', className:'Approval', title:'Approval', kind:'editor' },
 ] as const satisfies readonly StudioDefinition[]
 
-export const studioBoardItems = [
+const allStudioBoardItems = [
     { board:'actions', category:'action', name:'button', title:'Button' },
     { board:'actions', category:'action', name:'icon-button', title:'Icon button' },
     { board:'actions', category:'action', name:'split-button', title:'Split button' },
@@ -416,5 +416,9 @@ export const studioBoardItems = [
     { board:'collaboration-ai', category:'collaboration', name:'approval', title:'Approval' },
 ] as const satisfies readonly StudioBoardItem[]
 
-export const studioGroups = ['action', 'form', 'layout', 'navigation', 'overlay', 'feedback', 'data-display', 'media', 'styling', 'editor', 'assets', 'collaboration'] as const
+export const publicStudioComponentNames: ReadonlySet<string> = new Set(['text-input','textarea','number-input','unit-input','combobox','multi-select','checkbox','radio','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input','color-picker','color-swatch','eyedropper','gradient-editor','gradient-stops','collapsible-sidebar','resizable-panel','docked-panel','panel-header','badge','avatar','card','list','description-row','table','tree','accordion','code-preview','status','empty-state','skeleton','progress','spinner','toast','alert','banner','popover','drawer','hover-card','bottom-sheet','viewport','artboard','rulers','device-frame','expression','bezier','timeline','presence','remote-cursor','comment-pin','comment-thread'])
+export const studioDefinitions = allStudioDefinitions.filter(definition => publicStudioComponentNames.has(definition.name))
+export const studioBoardItems = allStudioBoardItems.filter(item => publicStudioComponentNames.has(item.name))
+export const studioDesignReferences = allStudioBoardItems
+export const studioGroups = ['form', 'layout', 'overlay', 'feedback', 'data-display', 'styling', 'editor', 'collaboration'] as const
 export const studioEntries = studioDefinitions.map(({category,name,className}) => ({path:`${category}/${name}`,name,className}))

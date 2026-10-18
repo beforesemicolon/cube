@@ -1,7 +1,7 @@
 {
   "cube": {
     "title": "Cube by Before Semicolon",
-    "intro": "A headless, themeable web-component library for visual editors. Components are organized into action, form, layout, navigation, overlay, feedback, data display, media, charts, styling, editor, assets, collaboration, icons, and theme categories.",
+    "intro": "A headless, themeable web-component library for visual editors. Components are organized into action, form, layout, navigation, overlay, feedback, data display, media, charts, styling, editor, collaboration, icons, and theme categories.",
     "guide": "Installation and architecture",
     "guideBody": "Import individual component entrypoints to register cb-* tags automatically. Headless base entrypoints do not register elements. The root package exposes DOM-free data utilities and loadComponent for lazy browser loading. Concrete HTMLElement classes require a DOM, including in Node or Deno.",
     "runtime": "Browser scripts require the web-component runtime first. Charts also need the ECharts runtime, or a custom configureChartEngine loader. Media-only scripts do not load ECharts. The current npm release has not been replaced by this branch.",
@@ -39,6 +39,7 @@
     "figma": "The Studio boards in design/figma-layers are the visual source of truth; Storybook provides the runnable component reference.",
     "categoryAction": "Action",
     "categoryForm": "Form",
+    "formNative": "Select, DatePicker and TimePicker use consistent Cube rendering by default. Add the native flag only when the host browser’s native picker is preferred. Combobox provides both list and autocomplete behavior through its autocomplete property, and Calendar is available as a standalone component.",
     "studioLayout": "Layout",
     "categoryNavigation": "Navigation",
     "categoryOverlay": "Overlay",
@@ -49,7 +50,7 @@
     "categoryEditor": "Editor",
     "categoryAssets": "Assets",
     "categoryCollaboration": "Collaboration",
-    "studioCatalogBody": "This category implements the matching Studio design board as self-registering cb-* elements. Each component has an independent browser entry, a typed headless base, theme-driven rendering, stable CSS parts, responsive behavior, and a Storybook visualization.",
+    "studioCatalogBody": "This audited category contains reusable, self-registering cb-* elements. Visual compositions from the Studio boards are documented as examples instead of being promoted to duplicate components. Each real component has an independent browser entry, a typed headless base, theme-driven rendering, stable CSS parts, responsive behavior, and an interaction-ready Storybook story.",
     "studioCatalogApi": "All properties are optional. Provide label, accessible-label, description, status, action-label, empty-label, and item text in the active application locale. Interactive components emit cancelable cb-before-change or cb-before-action events before cb-change or cb-action. Import a component entry to register it, or import its /base entry to supply a different renderer."
   }
 }

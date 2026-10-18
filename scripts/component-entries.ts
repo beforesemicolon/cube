@@ -2,10 +2,8 @@ import { studioEntries, studioGroups } from '../components/studio/catalog.js'
 
 const foundationEntries = [
     {path:'action/button',name:'button',className:'Button'},
-    {path:'action/icon-button',name:'icon-button',className:'IconButton'},
     {path:'action/toggle-button',name:'toggle-button',className:'ToggleButton'},
     {path:'navigation/link',name:'link',className:'Link'},
-    {path:'action/link-button',name:'link-button',className:'LinkButton'},
     {path:'action/split-button',name:'split-button',className:'SplitButton'},
     {path:'action/button-group',name:'button-group',className:'ButtonGroup'},
     {path:'navigation/segmented-control',name:'segmented-control',className:'SegmentedControl'},
@@ -23,6 +21,7 @@ const foundationEntries = [
     {path:'icons/icon',name:'icon',className:'Icon'},
     {path:'form/slider',name:'slider',className:'Slider'},
     {path:'form/select',name:'select',className:'Select'},
+    {path:'form/calendar',name:'calendar',className:'Calendar'},
     {path:'media/audio-player',name:'audio-player',className:'AudioPlayer'},
     {path:'media/video-player',name:'video-player',className:'VideoPlayer'},
     {path:'charts/cartesian-chart',name:'cartesian-chart',className:'CartesianChart'},
@@ -38,4 +37,4 @@ const foundationEntries = [
     {path:'feedback/flashbar',name:'flashbar',className:'Flashbar'},
 ] as const
 export const componentEntries = [...foundationEntries, ...studioEntries] as const
-export const componentGroups = ['action','form','layout','navigation','overlay','feedback','data-display','media','charts','styling','editor','assets','collaboration','icons','theme'] as const
+export const componentGroups = ['action','form','layout','navigation','overlay','feedback','data-display','media','charts','styling','editor','collaboration','icons','theme'] as const

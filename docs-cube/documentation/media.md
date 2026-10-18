@@ -15,7 +15,6 @@ order: 27
 
 | Component | Custom element | Package entry |
 | --- | --- | --- |
-| Media preview | `<cb-media-preview>` | `@beforesemicolon/cube/media/media-preview` |
 | Audio player | `<cb-audio-player>` | `@beforesemicolon/cube/media/audio-player` |
 | Video player | `<cb-video-player>` | `@beforesemicolon/cube/media/video-player` |
 

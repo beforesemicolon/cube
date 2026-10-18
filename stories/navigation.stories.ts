@@ -7,24 +7,6 @@ export default meta
 type Story = StoryObj
 const items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]
 
-export const NestedMenu: Story = { args: { label: 'Nested menu', value: 'one', items }, render: (args, context) => preview('cb-nested-menu', args, context.globals.appearance) }
-
-export const PanelTabs: Story = { args: { label: 'Panel tabs', value: 'one', items }, render: (args, context) => preview('cb-panel-tabs', args, context.globals.appearance) }
-
-export const PageNavigator: Story = { args: { label: 'Page navigator', value: 'one', items }, render: (args, context) => preview('cb-page-navigator', args, context.globals.appearance) }
-
-export const BreakpointNavigator: Story = { args: { label: 'Breakpoint navigator', value: 'one', items }, render: (args, context) => preview('cb-breakpoint-navigator', args, context.globals.appearance) }
-
-export const WorkspaceSwitcher: Story = { args: { label: 'Workspace switcher', value: 'one', items }, render: (args, context) => preview('cb-workspace-switcher', args, context.globals.appearance) }
-
-export const ProjectPicker: Story = { args: { label: 'Project picker', value: 'one', items }, render: (args, context) => preview('cb-project-picker', args, context.globals.appearance) }
-
-export const DeviceSelector: Story = { args: { label: 'Device selector', value: 'one', items }, render: (args, context) => preview('cb-device-selector', args, context.globals.appearance) }
-
-export const SelectionTrail: Story = { args: { label: 'Selection trail', value: 'one', items }, render: (args, context) => preview('cb-selection-trail', args, context.globals.appearance) }
-
-export const UserMenu: Story = { args: { label: 'User menu', value: 'one', items }, render: (args, context) => preview('cb-user-menu', args, context.globals.appearance) }
-
 export const SegmentedControl: Story = { args: { label: 'Segmented control', value: 'one', items }, render: (args, context) => preview('cb-segmented-control', args, context.globals.appearance) }
 
 export const Tabs: Story = { args: { label: 'Tabs', value: 'one', items }, render: (args, context) => preview('cb-tabs', args, context.globals.appearance) }

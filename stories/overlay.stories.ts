@@ -11,17 +11,9 @@ export const Popover: Story = { args: { label: 'Popover', actionLabel: 'Open', e
 
 export const Drawer: Story = { args: { label: 'Drawer', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-drawer', args, context.globals.appearance) }
 
-export const FloatingPanel: Story = { args: { label: 'Floating panel', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-floating-panel', args, context.globals.appearance) }
-
 export const HoverCard: Story = { args: { label: 'Hover card', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-hover-card', args, context.globals.appearance) }
 
 export const BottomSheet: Story = { args: { label: 'Bottom sheet', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-bottom-sheet', args, context.globals.appearance) }
-
-export const Preferences: Story = { args: { label: 'Preferences', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-preferences', args, context.globals.appearance) }
-
-export const ShareDialog: Story = { args: { label: 'Share dialog', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-share-dialog', args, context.globals.appearance) }
-
-export const PublishDialog: Story = { args: { label: 'Publish dialog', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-publish-dialog', args, context.globals.appearance) }
 
 export const ContextMenu: Story = { args: { label: 'Context menu', value: 'one', items }, render: (args, context) => preview('cb-context-menu', args, context.globals.appearance) }
 

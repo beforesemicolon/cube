@@ -21,12 +21,6 @@ export const Toast: Story = { args: { label: 'Toast', value: 'Ready', status: 'U
 
 export const Alert: Story = { args: { label: 'Alert', value: 'Ready', status: 'Updated' }, render: (args, context) => preview('cb-alert', args, context.globals.appearance) }
 
-export const Validation: Story = { args: { label: 'Validation', value: 'Ready', status: 'Updated' }, render: (args, context) => preview('cb-validation', args, context.globals.appearance) }
-
 export const Banner: Story = { args: { label: 'Banner', value: 'Ready', status: 'Updated' }, render: (args, context) => preview('cb-banner', args, context.globals.appearance) }
-
-export const SaveStatus: Story = { args: { label: 'Save status', value: 'Ready', status: 'Updated' }, render: (args, context) => preview('cb-save-status', args, context.globals.appearance) }
-
-export const PublishStatus: Story = { args: { label: 'Publish status', value: 'Ready', status: 'Updated' }, render: (args, context) => preview('cb-publish-status', args, context.globals.appearance) }
 
 export const Flashbar: Story = { args: { label: 'Flashbar', value: 'Ready', status: 'Updated' }, render: (args, context) => preview('cb-flashbar', args, context.globals.appearance) }
