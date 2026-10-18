@@ -285,10 +285,22 @@ test('stepper renders as one joined field and keeps its controls independently o
 test('combobox stays closed initially, filters interactively and replaces autocomplete-only components', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
-        const combo = document.createElement('cb-combobox') as HTMLElement & { label: string; placeholder: string; autocomplete: string; options: Array<{ value: string; label: string }> }
+        const combo = document.createElement('cb-combobox') as HTMLElement & { label: string; placeholder: string; autocomplete: string; options: Array<{ value: string; label: string }>; size: 'sm' | 'lg' }
         combo.label = 'Font family'; combo.placeholder = 'Search fonts'; combo.autocomplete = 'both'; combo.options = [{ value: 'inter', label: 'Inter' }, { value: 'source', label: 'Source Sans 3' }]
-        document.querySelector('#fixture')?.append(combo)
+        const textInput = document.createElement('cb-text-input') as HTMLElement & { label: string; size: 'sm' | 'lg' }
+        textInput.label = 'Comparison input'
+        document.querySelector('#fixture')?.append(combo, textInput)
     })
+    const combo = page.locator('cb-combobox')
+    const textInput = page.locator('cb-text-input')
+    const controlHeights = async (): Promise<number[]> => Promise.all([
+        combo.locator('[part~="input-shell"]').evaluate(element => element.getBoundingClientRect().height),
+        textInput.locator('[part~="control"]').evaluate(element => element.getBoundingClientRect().height),
+    ])
+    expect(await controlHeights()).toEqual([28, 28])
+    await combo.evaluate(element => { (element as HTMLElement & { size: 'lg' }).size = 'lg' })
+    await textInput.evaluate(element => { (element as HTMLElement & { size: 'lg' }).size = 'lg' })
+    expect(await controlHeights()).toEqual([44, 44])
     const input = page.getByRole('combobox', { name: 'Font family' })
     await expect(input).toHaveAttribute('aria-expanded', 'false')
     await input.fill('Sou')

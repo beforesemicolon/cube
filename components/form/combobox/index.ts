@@ -8,8 +8,8 @@ import { PopupController } from '../../core/popup.js'
 import { ComboboxBase } from './ComboboxBase.js'
 
 const css = editorCSS + `
-:host{display:inline-block;inline-size:var(--component-combobox-width,280px)}[part~=root]{position:relative;display:grid}[part~=input-shell]{display:flex;align-items:center;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface-muted)}
-[part~=input]{inline-size:100%;border:0;background:transparent;outline:0}[part~=toggle]{align-self:stretch}[part~=toggle]::part(toggle-control){block-size:100%;border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+:host{display:inline-block;inline-size:var(--component-combobox-width,280px)}[part~=root]{position:relative;display:grid}[part~=input-shell]{display:flex;align-items:center;block-size:var(--cb-height);min-block-size:var(--cb-height);padding:0;overflow:hidden;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface-muted)}
+[part~=prefix]{margin-inline-start:var(--spacing-md,12px)}[part~=input]{flex:1;inline-size:100%;min-inline-size:0;block-size:100%;padding:var(--spacing-xs,4px) var(--spacing-sm,8px);border:0;background:transparent;outline:0}[part~=toggle]{display:block;align-self:stretch;block-size:100%}[part~=toggle]::part(toggle-control){block-size:100%;min-block-size:0;border-radius:0 var(--radius-sm) var(--radius-sm) 0}
     [part~=popup]{z-index:var(--z-index-dropdown,1000);inline-size:max-content;box-sizing:border-box;overflow:auto;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
 [part~=option]{display:flex;inline-size:100%;border-color:transparent;background:transparent;text-align:start}[part~=option][aria-selected=true]{background:var(--color-selection)}[part~=empty]{display:block;padding:10px;color:var(--color-muted-foreground)}
 `
