@@ -1,25 +1,28 @@
 import { UIComponent, type UIProps } from '../../core/UIComponent.js'
 import { bool, scalarText } from '../../core/value.js'
 
-export interface CollapsibleSidebarProps extends UIProps {
+export interface SidebarProps extends UIProps {
+    collapsible?: boolean
     expanded?: boolean
     placement?: 'start' | 'end'
     expandLabel?: string
     collapseLabel?: string
 }
 
-/** Collapsible sidebar state without prescribing its rendered navigation. */
-export abstract class CollapsibleSidebarBase<P extends CollapsibleSidebarProps = CollapsibleSidebarProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'expanded', 'placement', 'expand-label', 'collapse-label']
+/** Sidebar disclosure behavior without prescribing its rendered navigation. */
+export abstract class SidebarBase<P extends SidebarProps = SidebarProps> extends UIComponent<P> {
+    static observedAttributes = [...UIComponent.observedAttributes, 'collapsible', 'expanded', 'placement', 'expand-label', 'collapse-label']
+    collapsible = false
     expanded = true
     placement: 'start' | 'end' = 'start'
     expandLabel = ''
     collapseLabel = ''
 
-    protected isExpanded(): boolean { return this.hasAttribute('expanded') || bool(this.expanded) }
+    protected isCollapsible(): boolean { return this.getAttribute('collapsible') === '' || bool(this.collapsible) }
+    protected isExpanded(): boolean { return !this.isCollapsible() || this.getAttribute('expanded') === '' || bool(this.expanded) }
 
     toggle(originalEvent?: Event): boolean {
-        if (this.unavailable) return false
+        if (!this.isCollapsible() || this.unavailable) return false
         const expanded = !this.isExpanded()
         const detail = { expanded, originalEvent }
         if (!this.request('cb-before-toggle', detail)) return false

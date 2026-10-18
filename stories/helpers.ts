@@ -120,7 +120,7 @@ function seedPreview(tag: string, node: HTMLElement): void {
     else if (tag === 'cb-grid') {
         node.style.gridTemplateColumns = 'repeat(3,minmax(0,1fr))'; node.style.gap = '8px'
         node.append(demoSurface('1'), demoSurface('2'), demoSurface('3'), demoSurface('4'), demoSurface('5'), demoSurface('6'))
-    } else if (tag === 'cb-collapsible-sidebar') node.append(demoSurface('Pages and layers'))
+    } else if (tag === 'cb-sidebar') node.append(demoSurface('Pages and layers'))
     else if (tag === 'cb-resizable-panel') node.append(demoSurface('Drag the outside edge or focus it and use arrow keys.'))
     else if (tag === 'cb-docked-panel') node.append(demoSurface('Docked inspector content'))
     else if (tag === 'cb-panel-header') {

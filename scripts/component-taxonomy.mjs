@@ -53,7 +53,7 @@ const dataDisplayComponents = new Set([
     'activity-log',
 ])
 const layoutComponents = new Set([
-    'inspector', 'collapsible-sidebar', 'resizable-panel', 'docked-panel', 'panel-header', 'top-bar', 'inspector-sidebar',
+    'inspector', 'sidebar', 'resizable-panel', 'docked-panel', 'panel-header', 'top-bar', 'inspector-sidebar',
     'asset-sidebar', 'status-bar',
 ])
 const editorComponents = new Set(['properties-inspector', 'property-group', 'design-code', 'version-history'])

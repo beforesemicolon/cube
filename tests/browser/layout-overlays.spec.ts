@@ -27,27 +27,47 @@ test('layout primitives remain wrapper-free and expose semantic divider behavior
 test('panel components expose real disclosure and keyboard resize behavior', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
-        const sidebar = document.createElement('cb-collapsible-sidebar') as HTMLElement & { label: string; expanded: boolean; expandLabel: string; collapseLabel: string }
-        Object.assign(sidebar, { label: 'Layers', expanded: true, expandLabel: 'Expand layers', collapseLabel: 'Collapse layers' })
+        const sidebar = document.createElement('cb-sidebar') as HTMLElement & { label: string; collapsible: boolean; expanded: boolean; expandLabel: string; collapseLabel: string }
+        Object.assign(sidebar, { label: 'Layers', collapsible: true, expanded: true, expandLabel: 'Expand layers', collapseLabel: 'Collapse layers' })
         sidebar.append(document.createTextNode('Layer list'))
+        const fixedSidebar = document.createElement('cb-sidebar') as HTMLElement & { label: string; collapsible: boolean; expanded: boolean }
+        Object.assign(fixedSidebar, { label: 'Navigation', collapsible: false, expanded: false })
+        fixedSidebar.append(document.createTextNode('Permanent navigation'))
         const resizable = document.createElement('cb-resizable-panel') as HTMLElement & { label: string; value: number; min: number; max: number; step: number; resizeLabel: string }
         Object.assign(resizable, { label: 'Properties', value: 320, min: 240, max: 400, step: 20, resizeLabel: 'Resize properties' })
         resizable.append(document.createTextNode('Property list'))
         const docked = document.createElement('cb-docked-panel') as HTMLElement & { label: string; expanded: boolean; collapsible: boolean; expandLabel: string; collapseLabel: string }
         Object.assign(docked, { label: 'Inspector', expanded: true, collapsible: true, expandLabel: 'Expand inspector', collapseLabel: 'Collapse inspector' })
         docked.append(document.createTextNode('Inspector content'))
-        document.querySelector('#fixture')?.append(sidebar, resizable, docked)
+        document.querySelector('#fixture')?.append(sidebar, fixedSidebar, resizable, docked)
     })
-    const sidebar = page.locator('cb-collapsible-sidebar')
+    const sidebar = page.locator('cb-sidebar').first()
     await sidebar.getByRole('button', { name: 'Collapse layers' }).click()
     await expect(sidebar).not.toHaveAttribute('expanded', '')
+    await expect(sidebar).toHaveAttribute('data-collapsed', '')
+    await expect(sidebar).toHaveCSS('width', '48px')
     await expect(sidebar.locator('div[part=content]')).toBeHidden()
+    await expect(sidebar.locator('cb-panel-header [part~=heading]')).toBeEmpty()
+    await expect(sidebar.getByRole('button', { name: 'Expand layers' })).toBeVisible()
+    const collapsedGeometry = await sidebar.locator('aside[part~=sidebar]').evaluate(element => ({ width: element.getBoundingClientRect().width, scrollWidth: element.scrollWidth }))
+    expect(collapsedGeometry.scrollWidth).toBeLessThanOrEqual(Math.ceil(collapsedGeometry.width))
+    await sidebar.evaluate((element: HTMLElement & { collapsible: boolean }) => { element.collapsible = false })
+    await expect(sidebar).not.toHaveAttribute('collapsible')
+    await expect(sidebar).not.toHaveAttribute('data-collapsed')
+    await expect(sidebar).toHaveCSS('width', '280px')
+    await expect(sidebar.getByText('Layer list')).toBeVisible()
+    await expect(sidebar.getByRole('button')).toHaveCount(0)
+    const fixedSidebar = page.locator('cb-sidebar').nth(1)
+    await expect(fixedSidebar.getByText('Permanent navigation')).toBeVisible()
+    await expect(fixedSidebar.getByRole('button')).toHaveCount(0)
     const separator = page.getByRole('separator', { name: 'Resize properties' })
     await separator.press('ArrowRight')
     await expect(page.locator('cb-resizable-panel')).toHaveJSProperty('value', 300)
     const docked = page.locator('cb-docked-panel')
     await docked.getByRole('button', { name: 'Collapse inspector' }).click()
     await expect(docked.locator('div[part=content]')).toBeHidden()
+    const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
+    expect(audit.violations).toEqual([])
 })
 
 test('popover and hover card are trigger-driven and light dismiss', async ({ page }) => {

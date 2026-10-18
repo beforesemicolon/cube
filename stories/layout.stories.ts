@@ -5,7 +5,7 @@ import '../components/layout/index.js'
 const meta: Meta = { title: 'Layout', tags: ['autodocs'], parameters: { docs: { description: { component: 'Layout components with headless bases, themed parts, standalone imports and browser bundles.' } } } }
 export default meta
 type Story = StoryObj
-export const CollapsibleSidebar: Story = componentStory('cb-collapsible-sidebar', { label: 'Layers', description: 'Project navigation', accessibleLabel: 'Layers sidebar', expanded: true, placement: 'start', expandLabel: 'Expand sidebar', collapseLabel: 'Collapse sidebar' })
+export const Sidebar: Story = componentStory('cb-sidebar', { label: 'Layers', description: 'Project navigation', accessibleLabel: 'Layers sidebar', collapsible: true, expanded: true, placement: 'start', expandLabel: 'Expand sidebar', collapseLabel: 'Collapse sidebar' })
 
 export const ResizablePanel: Story = componentStory('cb-resizable-panel', { label: 'Properties', accessibleLabel: 'Properties panel', resizeLabel: 'Resize properties panel', value: 320, min: 220, max: 640, step: 16, placement: 'end' })
 

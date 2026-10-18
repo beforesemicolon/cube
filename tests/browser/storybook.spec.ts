@@ -62,10 +62,13 @@ test('Storybook Actions records Cube events and their detail payloads',async({pa
 })
 
 test('built Storybook: layout panel stories expose working controls',async({page})=>{
-    await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--collapsible-sidebar&viewMode=story')
-    const sidebar=page.locator('cb-collapsible-sidebar')
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--sidebar&viewMode=story')
+    const sidebar=page.locator('cb-sidebar')
     await sidebar.getByRole('button',{name:'Collapse sidebar'}).click()
     await expect(sidebar).not.toHaveAttribute('expanded','')
+    await expect(sidebar).toHaveAttribute('data-collapsed','')
+    await expect(sidebar).toHaveCSS('width','48px')
+    await expect(sidebar.locator('cb-panel-header [part~=heading]')).toBeEmpty()
 
     await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--resizable-panel&viewMode=story')
     const separator=page.getByRole('separator',{name:'Resize properties panel'})

@@ -95,7 +95,7 @@ const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly Contr
     'cb-link': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-cartesian-chart': { status: ['finished', 'loading', 'error'], stacking: [false, 'normal'] },
     'cb-pie-chart': { status: ['finished', 'loading', 'error'], variant: ['pie', 'donut'] },
-    'cb-collapsible-sidebar': { placement: ['start', 'end'] },
+    'cb-sidebar': { placement: ['start', 'end'] },
     'cb-resizable-panel': { placement: ['start', 'end'] },
     'cb-docked-panel': { placement: ['start', 'end', 'bottom'] },
     'cb-drawer': { placement: ['start', 'end'] },
@@ -392,6 +392,7 @@ const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue
     'cb-json-editor': { indent: 2, lineNumbers: true, wrap: false },
     'cb-editable-list': { minItems: 0, maxItems: 8, allowReorder: true },
     'cb-linked-values': { firstValue: 320, secondValue: 180, linked: true, min: 0, max: 4096, step: 1 },
+    'cb-sidebar': { collapsible: false, expanded: true, placement: 'start' },
     'cb-file-browser': { view: 'grid', sortBy: 'name', sortDirection: 'asc', selectionMode: 'single', searchable: true },
     'cb-guide-overlay': { zoom: 1 },
     'cb-layer-tree': { multiple: true, editable: true, reorderable: true, showVisibility: true, showLock: true },
@@ -427,6 +428,7 @@ function humanize(property: string): string {
 
 function descriptionFor(tag: string, property: string): string {
     if (tag === 'cb-avatar' && property === 'name') return 'Person or entity name used for fallback initials and accessible text.'
+    if (tag === 'cb-sidebar' && property === 'collapsible') return 'Allows the sidebar to collapse into a compact toggle rail.'
     return descriptions[property] ?? `Controls the ${humanize(property)} property.`
 }
 

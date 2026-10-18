@@ -15,7 +15,7 @@ order: 22
 
 | Component | Custom element | Package entry |
 | --- | --- | --- |
-| Collapsible sidebar | `<cb-collapsible-sidebar>` | `@beforesemicolon/cube/layout/collapsible-sidebar` |
+| Sidebar | `<cb-sidebar>` | `@beforesemicolon/cube/layout/sidebar` |
 | Resizable panel | `<cb-resizable-panel>` | `@beforesemicolon/cube/layout/resizable-panel` |
 | Docked panel | `<cb-docked-panel>` | `@beforesemicolon/cube/layout/docked-panel` |
 | Panel header | `<cb-panel-header>` | `@beforesemicolon/cube/layout/panel-header` |

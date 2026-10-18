@@ -57,7 +57,7 @@ const boards: Readonly<Record<string, BoardConfig>> = {
     },
     overlays: {
         file: '06/Overlays.png', width: 3376, height: 6300,
-        components: ['popover','modal','alert-dialog','drawer','floating-panel','inspector','floating-toolbar','nested-menu','hover-card','bottom-sheet','collapsible-sidebar','resizable-panel','docked-panel','panel-tabs','panel-header'],
+        components: ['popover','modal','alert-dialog','drawer','floating-panel','inspector','floating-toolbar','nested-menu','hover-card','bottom-sheet','sidebar','resizable-panel','docked-panel','panel-tabs','panel-header'],
     },
     canvas: {
         file: '07/Canvas.png', width: 3376, height: 11352,

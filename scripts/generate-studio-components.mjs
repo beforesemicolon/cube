@@ -35,7 +35,7 @@ const groups = [
     ['overlays', [
         ['popover','Popover','panel'],['drawer','Drawer','panel'],['floating-panel','Floating panel','panel'],['inspector','Inspector','panel'],
         ['floating-toolbar','Floating toolbar','panel'],['nested-menu','Nested menu','collection'],['hover-card','Hover card','panel'],['bottom-sheet','Bottom sheet','panel'],
-        ['collapsible-sidebar','Collapsible sidebar','panel'],['resizable-panel','Resizable panel','panel'],['docked-panel','Docked panel','panel'],
+        ['sidebar','Sidebar','panel'],['resizable-panel','Resizable panel','panel'],['docked-panel','Docked panel','panel'],
         ['panel-tabs','Panel tabs','collection'],['panel-header','Panel header','panel'],
     ]],
     ['canvas', [
@@ -95,7 +95,7 @@ const definitions = groups.flatMap(([board, entries]) => entries.map(([name, tit
 const publicStudioComponentNames = new Set([
     'text-input','textarea','number-input','unit-input','combobox','checkbox','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input',
     'color-picker','gradient-editor',
-    'collapsible-sidebar','resizable-panel','docked-panel','panel-header',
+    'sidebar','resizable-panel','docked-panel','panel-header',
     'badge','avatar','card','list','description-row','table','tree','accordion','code-preview',
     'status','empty-state','skeleton','progress','spinner','toast','alert','banner',
     'popover','drawer','hover-card','bottom-sheet',

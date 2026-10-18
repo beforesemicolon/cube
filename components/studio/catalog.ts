@@ -92,7 +92,7 @@ const allStudioDefinitions = [
     { board:'overlays', category:'navigation', name:'nested-menu', className:'NestedMenu', title:'Nested menu', kind:'collection' },
     { board:'overlays', category:'overlay', name:'hover-card', className:'HoverCard', title:'Hover card', kind:'panel' },
     { board:'overlays', category:'overlay', name:'bottom-sheet', className:'BottomSheet', title:'Bottom sheet', kind:'panel' },
-    { board:'overlays', category:'layout', name:'collapsible-sidebar', className:'CollapsibleSidebar', title:'Collapsible sidebar', kind:'panel' },
+    { board:'overlays', category:'layout', name:'sidebar', className:'Sidebar', title:'Sidebar', kind:'panel' },
     { board:'overlays', category:'layout', name:'resizable-panel', className:'ResizablePanel', title:'Resizable panel', kind:'panel' },
     { board:'overlays', category:'layout', name:'docked-panel', className:'DockedPanel', title:'Docked panel', kind:'panel' },
     { board:'overlays', category:'navigation', name:'panel-tabs', className:'PanelTabs', title:'Panel tabs', kind:'collection' },
@@ -312,7 +312,7 @@ const allStudioBoardItems = [
     { board:'overlays', category:'navigation', name:'nested-menu', title:'Nested menu' },
     { board:'overlays', category:'overlay', name:'hover-card', title:'Hover card' },
     { board:'overlays', category:'overlay', name:'bottom-sheet', title:'Bottom sheet' },
-    { board:'overlays', category:'layout', name:'collapsible-sidebar', title:'Collapsible sidebar' },
+    { board:'overlays', category:'layout', name:'sidebar', title:'Sidebar' },
     { board:'overlays', category:'layout', name:'resizable-panel', title:'Resizable panel' },
     { board:'overlays', category:'layout', name:'docked-panel', title:'Docked panel' },
     { board:'overlays', category:'navigation', name:'panel-tabs', title:'Panel tabs' },
@@ -417,7 +417,7 @@ const allStudioBoardItems = [
     { board:'collaboration-ai', category:'collaboration', name:'approval', title:'Approval' },
 ] as const satisfies readonly StudioBoardItem[]
 
-export const publicStudioComponentNames: ReadonlySet<string> = new Set(['text-input','textarea','number-input','unit-input','combobox','checkbox','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input','color-picker','gradient-editor','collapsible-sidebar','resizable-panel','docked-panel','panel-header','badge','avatar','card','list','description-row','table','tree','accordion','expandable-section','code-preview','status','empty-state','skeleton','progress','spinner','toast','alert','banner','popover','drawer','hover-card','bottom-sheet','viewport','artboard','rulers','device-frame','bezier','timeline','presence','remote-cursor','comment-pin','comment-thread'])
+export const publicStudioComponentNames: ReadonlySet<string> = new Set(['text-input','textarea','number-input','unit-input','combobox','checkbox','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input','color-picker','gradient-editor','sidebar','resizable-panel','docked-panel','panel-header','badge','avatar','card','list','description-row','table','tree','accordion','expandable-section','code-preview','status','empty-state','skeleton','progress','spinner','toast','alert','banner','popover','drawer','hover-card','bottom-sheet','viewport','artboard','rulers','device-frame','bezier','timeline','presence','remote-cursor','comment-pin','comment-thread'])
 export const studioDefinitions = allStudioDefinitions.filter(definition => publicStudioComponentNames.has(definition.name))
 export const studioBoardItems = allStudioBoardItems.filter(item => publicStudioComponentNames.has(item.name))
 export const studioDesignReferences = allStudioBoardItems

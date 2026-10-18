@@ -90,7 +90,7 @@ const presets: Readonly<Record<string, readonly StudioItem[]>> = {
     popover: [item('title', 'Appearance'), item('content', 'Adjust the selected layer')], drawer: [item('section', 'Page settings'), item('status', 'Autosaved')],
     'floating-panel': [item('title', 'Layers'), item('selection', 'Hero section')], inspector: [item('selection', 'Button'), item('tab', 'Design')],
     'hover-card': [item('name', 'Primary button'), item('type', 'Component instance')], 'bottom-sheet': [item('title', 'Insert component'), item('count', '24 results')],
-    'collapsible-sidebar': [item('section', 'Layers'), item('state', 'Expanded')], 'resizable-panel': [item('section', 'Inspector'), item('width', '320 px')],
+    sidebar: [item('section', 'Layers'), item('state', 'Expanded')], 'resizable-panel': [item('section', 'Inspector'), item('width', '320 px')],
     'docked-panel': [item('section', 'Assets'), item('position', 'Left')], 'panel-header': [item('title', 'Inspector'), item('action', 'Close')],
     card: [item('title', 'Project Alpha'), item('meta', 'Updated 2 minutes ago')], accordion: [item('section', 'Layout'), item('state', 'Expanded')],
     preferences: [item('theme', 'Theme', 'System'), item('language', 'Language', 'English')],
