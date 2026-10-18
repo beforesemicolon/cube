@@ -210,6 +210,8 @@ const descriptions: Readonly<Record<string, string>> = {
     messages: 'Editable Flashbar notification queue.',
     allowAlpha: 'Enables transparency editing and eight-digit HEX values.',
     allowSampler: 'Shows the screen color sampler when the browser supports it.',
+    addSwatchLabel: 'Localized accessible label for saving the current color as a swatch.',
+    removeSwatchLabel: 'Localized keyboard-removal guidance for a selected swatch. Supports {color}.',
     native: 'Uses the browser-native control instead of the themed Cube renderer.',
     popupMaxWidth: 'Maximum popup width as a CSS length, or a number interpreted as pixels. The viewport remains the final boundary.',
     popupMaxHeight: 'Maximum popup height as a CSS length, or a number interpreted as pixels. Overflow scrolls within the popup.',

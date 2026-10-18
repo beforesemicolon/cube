@@ -31,7 +31,8 @@ test.beforeEach(async ({ page }) => {
             helpText: 'Click the color rail to add a stop. Drag or use arrow keys to move it.', hueLabel: 'Hue', saturationLabel: 'Saturation',
             brightnessLabel: 'Brightness', alphaLabel: 'Alpha', redLabel: 'Red', greenLabel: 'Green', blueLabel: 'Blue', hexLabel: 'HEX',
             planeLabel: 'Saturation and brightness', samplerLabel: 'Sample color from screen', closeLabel: 'Close color picker',
-            swatchesLabel: 'Saved and recent colors', transparentLabel: 'Transparent',
+            swatchesLabel: 'Saved and recent colors', addSwatchLabel: 'Add current color',
+            removeSwatchLabel: 'Remove {color} with Delete or Backspace', transparentLabel: 'Transparent',
         })
         document.querySelector('#fixture')?.append(editor)
     })

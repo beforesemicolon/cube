@@ -41,6 +41,26 @@ Findings and iteration history:
 
 Primary interactions were exercised by pointer and keyboard. `aria-expanded`, region linkage, cancelable expansion, public expansion methods, and the right/down glyph states are covered by browser tests. The focused live Storybook console had zero errors. The repository-wide visual capture also recorded zero errors for `data-display/expandable-section`; it reported a separate existing Gradient Editor recursion error outside this focused change.
 
+## Focused visual QA — Color picker
+
+- final result: passed
+- audited: 2026-10-18
+- source visual truth: user-provided `Screenshot 2026-10-18 at 12.48.59 PM.png` and the ordered anatomy described with it
+- implementation: `http://127.0.0.1:6006/?path=/story/styling--color-picker`
+- browser: Google Chrome
+- appearances checked: light and dark
+- states checked: closed trigger, open editor, HEX edit, saved-current-color action, selected swatch, Delete-key removal, focus recovery, and Storybook Actions output
+
+Findings and iteration history:
+
+1. P1 — The HEX toolbar preceded the color plane and included a redundant color-preview box. Resolved by putting the plane and compact hue/alpha rails first and rendering the standalone HEX field afterward.
+2. P1 — The hue and alpha rails repeated visible labels and values already represented by the numeric channels. Resolved by keeping their localized accessible names while removing the duplicate visual copy.
+3. P1 — The trigger-width container query collapsed the popup channels into an awkward two-column layout. Resolved by making the popup the responsive container, keeping Hue/Saturation/Brightness/Alpha in one row and Red/Green/Blue in a distinct row at the default width.
+4. P1 — Saved colors had no authoring or removal behavior. Resolved with a composed `cb-icon-button` add action, focus-preserving selection, Delete/Backspace removal, and cancellable `cb-before-swatch-add` / `cb-before-swatch-remove` events followed by completion events.
+5. P1 — Committing the HEX input during a pointer transition could rerender or shift the target and swallow the add action. Resolved with keyed palette updates and explicit focus recovery; the real click-edit-save workflow is covered by the browser test.
+
+The live Storybook Actions panel recorded the picker input/change lifecycle and all four swatch events. Storybook exposes controls for all 41 reactive picker and field props, including the editable `swatches` and `recentColors` arrays plus localized add/remove labels. The focused browser tests include an open-state Axe audit.
+
 ## Resolved findings
 
 - Removed generated pseudo-components such as Width/Height, Min/Max, Aspect Ratio, Z-index, Search, Autocomplete, Preview Switch, Theme Switch, app-shell assemblies, and single-purpose asset/editor views.

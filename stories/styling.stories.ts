@@ -10,7 +10,8 @@ export const ColorPicker: Story = componentStory('cb-color-picker', {
     label: 'Fill color', accessibleLabel: 'Choose fill color', value: '#2563ebcc', native: false, allowAlpha: true, allowSampler: true,
     swatches: ['#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#16a34a','#0891b2','#111827','#ffffff'], recentColors: [], maxRecent: 8,
     hueLabel: 'Hue', saturationLabel: 'Saturation', valueLabel: 'Brightness', alphaLabel: 'Alpha', redLabel: 'Red', greenLabel: 'Green', blueLabel: 'Blue', hexLabel: 'HEX', planeLabel: 'Saturation and brightness',
-    samplerLabel: 'Sample color from screen', closeLabel: 'Close color picker', swatchesLabel: 'Saved and recent colors', transparentLabel: 'Transparent',
+    samplerLabel: 'Sample color from screen', closeLabel: 'Close color picker', swatchesLabel: 'Saved and recent colors',
+    addSwatchLabel: 'Add current color', removeSwatchLabel: 'Remove {color} with Delete or Backspace', transparentLabel: 'Transparent',
 })
 
 export const GradientEditor: Story = componentStory('cb-gradient-editor', {
@@ -72,5 +73,7 @@ export const GradientEditor: Story = componentStory('cb-gradient-editor', {
     samplerLabel: 'Sample color from screen',
     closeLabel: 'Close color picker',
     swatchesLabel: 'Saved and recent colors',
+    addSwatchLabel: 'Add current color',
+    removeSwatchLabel: 'Remove {color} with Delete or Backspace',
     transparentLabel: 'Transparent',
 })

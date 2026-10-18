@@ -288,6 +288,8 @@ export class GradientEditor extends GradientEditorBase {
             samplerLabel: scalarText(this.samplerLabel),
             closeLabel: scalarText(this.closeLabel),
             swatchesLabel: scalarText(this.swatchesLabel),
+            addSwatchLabel: scalarText(this.addSwatchLabel),
+            removeSwatchLabel: scalarText(this.removeSwatchLabel),
             transparentLabel: scalarText(this.transparentLabel),
         })
         this.stopPositionLabelNode.textContent = scalarText(this.stopPositionLabel)

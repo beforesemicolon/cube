@@ -24,6 +24,8 @@ export interface ColorPickerProps extends FormFieldProps, PopupConstraintProps {
     samplerLabel?: string
     closeLabel?: string
     swatchesLabel?: string
+    addSwatchLabel?: string
+    removeSwatchLabel?: string
     transparentLabel?: string
 }
 
@@ -33,12 +35,20 @@ export interface ColorPickerChangeDetail {
     readonly originalEvent?: Event
 }
 
+export interface ColorPickerSwatchDetail {
+    readonly value: string
+    readonly swatches: readonly string[]
+    readonly recentColors: readonly string[]
+    readonly originalEvent?: Event
+}
+
 /** Renderer-independent color state, form behavior and cancelable interactions. */
 export abstract class ColorPickerBase extends FormFieldBase<ColorPickerProps> {
     static observedAttributes = [
         ...FormFieldBase.observedAttributes, 'value', 'native', 'open', 'allow-alpha', 'allow-sampler', 'swatches',
         'recent-colors', 'max-recent', 'hue-label', 'saturation-label', 'value-label', 'alpha-label', 'red-label',
-        'green-label', 'blue-label', 'hex-label', 'plane-label', 'sampler-label', 'close-label', 'swatches-label', 'transparent-label',
+        'green-label', 'blue-label', 'hex-label', 'plane-label', 'sampler-label', 'close-label', 'swatches-label',
+        'add-swatch-label', 'remove-swatch-label', 'transparent-label',
         ...popupConstraintAttributes,
     ]
 
@@ -62,6 +72,8 @@ export abstract class ColorPickerBase extends FormFieldBase<ColorPickerProps> {
     samplerLabel = ''
     closeLabel = ''
     swatchesLabel = ''
+    addSwatchLabel = ''
+    removeSwatchLabel = ''
     transparentLabel = ''
     popupMaxWidth: PopupLength = '344px'
     popupMaxHeight: PopupLength = '640px'
@@ -116,16 +128,47 @@ export abstract class ColorPickerBase extends FormFieldBase<ColorPickerProps> {
         return color ? this.changeColor(color, originalEvent) : false
     }
 
-    palette(): readonly string[] {
-        const seen = new Set<string>()
-        const colors: string[] = []
-        for (const source of [...this.swatches, ...this.recentColors]) {
-            const color = parseHexColor(source)
-            if (!color) continue
-            const normalized = colorToHex(color)
-            if (!seen.has(normalized)) { seen.add(normalized); colors.push(normalized) }
+    addSwatch(value = this.normalizedValue(), originalEvent?: Event): boolean {
+        if (this.unavailable || bool(this.readOnly)) return false
+        const color = parseHexColor(value)
+        if (!color) return false
+        const normalized = colorToHex(color)
+        const swatches = this.normalizedColors(this.swatches)
+        if (swatches.includes(normalized)) return true
+        const detail: ColorPickerSwatchDetail = {
+            value: normalized,
+            swatches: [...swatches, normalized],
+            recentColors: this.normalizedColors(this.recentColors),
+            originalEvent,
         }
-        return colors
+        if (!this.request('cb-before-swatch-add', detail)) return false
+        this.swatches = detail.swatches
+        this.syncView()
+        this.emit('cb-swatch-add', detail)
+        return true
+    }
+
+    removeSwatch(value: string, originalEvent?: Event): boolean {
+        if (this.unavailable || bool(this.readOnly)) return false
+        const color = parseHexColor(value)
+        if (!color) return false
+        const normalized = colorToHex(color)
+        const currentSwatches = this.normalizedColors(this.swatches)
+        const currentRecent = this.normalizedColors(this.recentColors)
+        const swatches = currentSwatches.filter(candidate => candidate !== normalized)
+        const recentColors = currentRecent.filter(candidate => candidate !== normalized)
+        if (swatches.length === currentSwatches.length && recentColors.length === currentRecent.length) return false
+        const detail: ColorPickerSwatchDetail = { value: normalized, swatches, recentColors, originalEvent }
+        if (!this.request('cb-before-swatch-remove', detail)) return false
+        this.swatches = detail.swatches
+        this.recentColors = detail.recentColors
+        this.syncView()
+        this.emit('cb-swatch-remove', detail)
+        return true
+    }
+
+    palette(): readonly string[] {
+        return this.normalizedColors([...this.swatches, ...this.recentColors])
     }
 
     private remember(value: string): void {
@@ -133,5 +176,17 @@ export abstract class ColorPickerBase extends FormFieldBase<ColorPickerProps> {
         if (!limit) { this.recentColors = []; return }
         const normalized = normalizeColor(value)
         this.recentColors = [normalized, ...this.recentColors.map(color => normalizeColor(color)).filter(color => color !== normalized)].slice(0, limit)
+    }
+
+    private normalizedColors(source: readonly string[]): string[] {
+        const seen = new Set<string>()
+        const colors: string[] = []
+        for (const value of source) {
+            const color = parseHexColor(value)
+            if (!color) continue
+            const normalized = colorToHex(color)
+            if (!seen.has(normalized)) { seen.add(normalized); colors.push(normalized) }
+        }
+        return colors
     }
 }
