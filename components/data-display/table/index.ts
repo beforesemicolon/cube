@@ -13,6 +13,7 @@ const css = editorCSS + `
 [part~=viewport]{inline-size:100%;min-inline-size:0;max-inline-size:100%;overflow:auto;max-block-size:var(--component-table-max-height,none);overscroll-behavior:contain;scrollbar-gutter:stable}
 [part~=viewport]:focus-visible{outline:var(--focus-ring);outline-offset:-2px}
 [part~=table]{border-collapse:separate;border-spacing:0;table-layout:fixed;inline-size:100%;min-inline-size:var(--table-resolved-min-width,var(--component-table-min-width,640px));color:${v('--color-foreground')}}
+[part~=column-group],[part~=column],[part~=selection-column]{border:0}
 [part~=caption]{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 [part~=head]{background:var(--component-table-header-background,${v('--color-surface-muted')})}
 [part~=header-row]{block-size:var(--component-table-header-height,40px)}
@@ -26,7 +27,7 @@ const css = editorCSS + `
 [part~=resizer]{position:absolute;z-index:2;inset-block:5px;inset-inline-end:-5px;inline-size:10px;cursor:col-resize;touch-action:none}
 [part~=resizer]::after{content:'';position:absolute;inset-block:0;inset-inline-start:4px;inline-size:1px;background:${v('--color-separator')};transition:background-color var(--motion-duration-fast) ease-out,inline-size var(--motion-duration-fast) ease-out}
 [part~=resizer]:hover::after,[part~=resizer]:focus-visible::after,[part~=resizer][data-resizing]::after{inline-size:2px;background:${v('--color-primary')}}
-[part~=row]{block-size:var(--component-table-row-height,44px);background:${v('--color-surface')};transition:background-color var(--motion-duration-fast) ease-out}
+[part~=row]{display:table-row;block-size:var(--component-table-row-height,44px);background:${v('--color-surface')};transition:background-color var(--motion-duration-fast) ease-out}
 :host([data-striped]) [part~=row]:nth-of-type(even){background:var(--component-table-stripe,${v('--color-surface-muted')})}
 [part~=row]:hover,[part~=row]:hover [part~=cell]{background:${v('--color-active')}}
 [part~=row][data-active],[part~=row][data-active] [part~=cell]{background:${v('--color-selection')}}[part~=row][data-active]{box-shadow:inset 3px 0 0 ${v('--color-primary')}}
@@ -36,8 +37,12 @@ const css = editorCSS + `
 :host([data-wrap]) [part~=cell],[part~=cell][data-wrap]{white-space:normal;overflow-wrap:anywhere}
 [part~=cell][data-align=center],[part~=header-cell][data-align=center]{text-align:center}[part~=cell][data-align=end],[part~=header-cell][data-align=end]{text-align:end;font-variant-numeric:tabular-nums}
 [part~=cell][data-variant=success]{color:${v('--color-success')}}[part~=cell][data-variant=warning]{color:${v('--color-warning')}}[part~=cell][data-variant=danger]{color:${v('--color-danger')}}[part~=cell][data-variant=muted]{color:${v('--color-muted-foreground')}}
-[part~=primary-cell]{padding-inline-start:calc(var(--component-table-cell-padding-inline,var(--spacing-md,12px)) + var(--table-depth,0) * var(--component-table-tree-indent,20px))}
-[part~=tree-cell]{display:flex;align-items:center;min-inline-size:0;gap:var(--spacing-xs,4px)}[part~=tree-spacer]{inline-size:24px;flex:none}[part~=cell-content]{min-inline-size:0;overflow:hidden;text-overflow:inherit}
+[part~=primary-cell]{padding-inline-start:var(--component-table-cell-padding-inline,var(--spacing-md,12px))}
+[part~=tree-cell]{display:flex;align-items:center;min-inline-size:0;gap:var(--spacing-xs,4px);block-size:100%}
+[part~=tree-indent]{position:relative;align-self:stretch;inline-size:calc(var(--table-depth,0) * var(--component-table-tree-indent,28px));min-block-size:24px;flex:none;background:repeating-linear-gradient(to right,transparent 0 calc(var(--component-table-tree-indent,28px) - 1px),color-mix(in srgb,${v('--color-separator')} 74%,transparent) calc(var(--component-table-tree-indent,28px) - 1px) var(--component-table-tree-indent,28px))}
+[part~=tree-indent]::after{content:'';position:absolute;inset-inline-end:0;inset-block-start:50%;inline-size:calc(var(--component-table-tree-indent,28px) * .4);border-block-start:1px solid ${v('--color-separator')}}
+[part~=tree-spacer]{inline-size:24px;flex:none}[part~=cell-content]{min-inline-size:0;overflow:hidden;text-overflow:inherit}
+[part~=row][data-parent] [part~=primary-cell] [part~=cell-content]{font-weight:600}
 [part~=selection-cell]{inline-size:44px;min-inline-size:44px;max-inline-size:44px;text-align:center;padding-inline:var(--spacing-sm,8px)}
 [part~=selection-control]{appearance:none;display:inline-grid;place-items:center;inline-size:16px;block-size:16px;margin:0;border:1px solid ${v('--color-border')};background:${v('--color-surface')};cursor:pointer}
 input[type=checkbox][part~=selection-control]{border-radius:var(--radius-xs,3px)}input[type=radio][part~=selection-control]{border-radius:50%}
@@ -47,8 +52,9 @@ input[type=radio][part~=selection-control]:checked::after{inline-size:6px;block-
 [part~=selection-control]:disabled{cursor:not-allowed;opacity:var(--component-disabled-opacity,.5)}
 [part~=group-row]{background:var(--component-table-group-background,${v('--color-surface-muted')})}[part~=group-cell]{padding:var(--spacing-xs,4px) var(--spacing-sm,8px);border-block-end:1px solid ${v('--color-separator')}}[part~=group-content]{display:flex;align-items:center;gap:var(--spacing-xs,4px);font-weight:600}[part~=group-count]{color:${v('--color-muted-foreground')};font-variant-numeric:tabular-nums}
 [part~=empty],[part~=loading]{display:grid;place-items:center;min-block-size:var(--component-table-state-height,160px);padding:var(--spacing-lg,20px);color:${v('--color-muted-foreground')};text-align:center}[part~=loading]{display:block}
-[part~=sticky]{position:sticky;inset-inline-start:var(--table-sticky-offset,0);z-index:2;box-shadow:1px 0 ${v('--color-separator')};background:inherit}[part~=header-cell][part~=sticky],[part~=selection-cell][part~=sticky]{z-index:5;background:var(--component-table-header-background,${v('--color-surface-muted')})}
+[part~=sticky]{position:sticky;inset-inline-start:var(--table-sticky-offset,0);z-index:2;box-shadow:1px 0 ${v('--color-separator')};background:inherit}[part~=header-cell][part~=sticky],[part~=group-header-cell][part~=sticky]{z-index:5;background:var(--component-table-header-background,${v('--color-surface-muted')})}
 [part~=live]{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+:host([data-resizing]),:host([data-resizing]) *{cursor:col-resize!important;user-select:none!important}
 :host([data-density=compact]){--component-table-row-height:34px;--component-table-header-height:34px;--component-table-cell-padding-block:4px;--component-table-cell-padding-inline:8px}
 @container (max-width:560px){[part~=table]{--component-table-cell-padding-inline:8px;--component-table-min-width:520px}[part~=resizer]{display:none}}
 @media(pointer:coarse){[part~=resizer]{display:none}[part~=sort-button],[part~=expand-button],[part~=group-button]{--component-control-height:36px;--component-control-height-sm:36px}}
@@ -86,6 +92,9 @@ function pixels(value: string | number | undefined, fallback: number): number {
     const parsed = Number.parseFloat(scalarText(value))
     return Number.isFinite(parsed) ? parsed : fallback
 }
+
+const selectionColumnWidth = 44
+const defaultColumnWidth = 160
 
 export class Table extends TableBase {
     private container?: HTMLElement
@@ -151,17 +160,32 @@ export class Table extends TableBase {
 
     private createTable(): HTMLTableElement {
         const table = el('table', 'table')
-        const selectionWidth = this.normalizedSelectionMode() === 'none' ? 0 : 44
-        const columnWidth = this.columnList().reduce((total, column) => total + pixels(column.width ?? column.minWidth, 120), 0)
+        const columns = this.columnList()
+        const selectionWidth = this.normalizedSelectionMode() === 'none' ? 0 : selectionColumnWidth
+        const columnWidth = columns.reduce((total, column) => total + pixels(column.minWidth ?? column.width, defaultColumnWidth), 0)
         table.style.setProperty('--table-resolved-min-width', `${Math.max(320, selectionWidth + columnWidth)}px`)
+        if (columns.every(column => this.columnWidths.has(column.id))) this.updateTableWidth(table, columns)
         const caption = el('caption', 'caption', this.accessibleName())
-        table.append(caption, this.createHead(), this.createBody())
+        table.append(caption, this.createColumnGroup(columns), this.createHead(), this.createBody())
         return table
     }
 
-    private columnStyle(column: TableColumn): string {
-        const width = this.columnWidths.get(column.id)
-        return `width:${width === undefined ? cssSize(column.width ?? column.minWidth) : `${width}px`};min-width:${cssSize(column.minWidth, '72px')};max-width:${cssSize(column.maxWidth, 'none')}`
+    private createColumnGroup(columns: readonly TableColumn[]): HTMLTableColElement {
+        const group = el('colgroup', 'column-group')
+        if (this.normalizedSelectionMode() !== 'none') {
+            const selection = el('col', 'selection-column')
+            selection.style.width = `${selectionColumnWidth}px`
+            group.append(selection)
+        }
+        for (const column of columns) {
+            const col = el('col', 'column')
+            col.dataset.columnId = column.id
+            col.style.width = this.columnWidths.has(column.id)
+                ? `${this.columnWidths.get(column.id)}px`
+                : cssSize(column.width ?? column.minWidth, `${defaultColumnWidth}px`)
+            group.append(col)
+        }
+        return group
     }
 
     private createHead(): HTMLTableSectionElement {
@@ -221,8 +245,8 @@ export class Table extends TableBase {
     private headerCell(column: TableColumn, index: number, grouped: boolean): HTMLTableCellElement {
         const cell = el('th', 'header-cell')
         cell.scope = 'col'
+        cell.dataset.columnId = column.id
         cell.dataset.align = column.align ?? 'start'
-        cell.style.cssText = this.columnStyle(column)
         if (grouped && !scalarText(column.group)) cell.hidden = true
         const content = el('span', 'header-content')
         content.append(el('span', 'header-label', scalarText(column.header)))
@@ -252,12 +276,19 @@ export class Table extends TableBase {
         aria(handle, 'aria-valuenow', Math.round(Math.min(maximum, Math.max(minimum, current))))
         const columnLabel = scalarText(column.ariaLabel) || scalarText(column.header)
         aria(handle, 'aria-label', scalarText(this.resizeColumnLabel).replaceAll('{column}', columnLabel) || columnLabel)
+        handle.dataset.columnId = column.id
         handle.addEventListener('pointerdown', event => this.startResize(column, handle, event))
         handle.addEventListener('keydown', event => {
-            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
             event.preventDefault()
-            const current = this.columnWidths.get(column.id) ?? pixels(column.width ?? column.minWidth, 160)
-            this.resizeColumn(column, current + (event.key === 'ArrowRight' ? 16 : -16))
+            this.freezeColumnWidths()
+            const current = this.columnWidths.get(column.id) ?? pixels(column.width ?? column.minWidth, defaultColumnWidth)
+            const proposed = event.key === 'Home'
+                ? minimum
+                : event.key === 'End'
+                    ? (Number.isFinite(maximum) ? maximum : current + 160)
+                    : current + (event.key === 'ArrowRight' ? 16 : -16)
+            this.resizeColumn(column, proposed)
         })
         return handle
     }
@@ -265,30 +296,87 @@ export class Table extends TableBase {
     private startResize(column: TableColumn, handle: HTMLElement, event: PointerEvent): void {
         if (event.button !== 0) return
         event.preventDefault()
+        event.stopPropagation()
+        this.freezeColumnWidths()
         const header = handle.closest('th')
         if (!(header instanceof HTMLElement)) return
         const startX = event.clientX
-        const startWidth = header.getBoundingClientRect().width
-        handle.setPointerCapture(event.pointerId)
-        handle.toggleAttribute('data-resizing', true)
-        const move = (moveEvent: PointerEvent): void => this.resizeColumn(column, startWidth + moveEvent.clientX - startX, false)
-        const stop = (upEvent: PointerEvent): void => {
+        const startWidth = this.columnWidths.get(column.id) ?? header.getBoundingClientRect().width
+        const viewport = this.viewport
+        const startScrollLeft = viewport?.scrollLeft ?? 0
+        const preserveScrollPosition = (): void => {
+            if (viewport) viewport.scrollLeft = startScrollLeft
+        }
+        let finished = false
+        const move = (moveEvent: PointerEvent): void => {
+            moveEvent.preventDefault()
+            this.resizeColumn(column, startWidth + moveEvent.clientX - startX, false)
+            preserveScrollPosition()
+            queueMicrotask(preserveScrollPosition)
+        }
+        const stop = (endEvent: PointerEvent): void => {
+            if (finished) return
+            finished = true
             handle.removeEventListener('pointermove', move)
             handle.removeEventListener('pointerup', stop)
             handle.removeEventListener('pointercancel', stop)
+            handle.removeEventListener('lostpointercapture', stop)
+            if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId)
             handle.toggleAttribute('data-resizing', false)
-            this.emit('cb-column-resize', { column, width: this.columnWidths.get(column.id), originalEvent: upEvent })
+            this.toggleAttribute('data-resizing', false)
+            preserveScrollPosition()
+            this.emit('cb-column-resize', { column, width: this.columnWidths.get(column.id), originalEvent: endEvent })
         }
+        handle.setPointerCapture(event.pointerId)
+        handle.toggleAttribute('data-resizing', true)
+        this.toggleAttribute('data-resizing', true)
         handle.addEventListener('pointermove', move)
         handle.addEventListener('pointerup', stop)
         handle.addEventListener('pointercancel', stop)
+        handle.addEventListener('lostpointercapture', stop)
     }
 
     private resizeColumn(column: TableColumn, proposed: number, announce = true): void {
         const width = Math.min(pixels(column.maxWidth, Number.POSITIVE_INFINITY), Math.max(pixels(column.minWidth, 72), proposed))
         this.columnWidths.set(column.id, width)
-        this.syncView()
+        const table = this.viewport?.querySelector<HTMLTableElement>('[part~="table"]')
+        if (table) {
+            const col = [...table.querySelectorAll<HTMLTableColElement>('col[data-column-id]')]
+                .find(candidate => candidate.dataset.columnId === column.id)
+            if (col) col.style.width = `${width}px`
+            this.updateTableWidth(table, this.columnList())
+            const resizer = [...table.querySelectorAll<HTMLElement>('[part~="resizer"][data-column-id]')]
+                .find(candidate => candidate.dataset.columnId === column.id)
+            if (resizer) aria(resizer, 'aria-valuenow', Math.round(width))
+        }
+        queueMicrotask(() => this.applyStickyOffsets())
         if (announce) this.emit('cb-column-resize', { column, width })
+    }
+
+    private freezeColumnWidths(): void {
+        const table = this.viewport?.querySelector<HTMLTableElement>('[part~="table"]')
+        if (!table) return
+        const headers = [...table.querySelectorAll<HTMLTableCellElement>('th[data-column-id]')]
+        const measurements = this.columnList().map(column => ({
+            column,
+            width: headers.find(header => header.dataset.columnId === column.id)?.getBoundingClientRect().width,
+        }))
+        for (const measurement of measurements) {
+            if (measurement.width && measurement.width > 0) this.columnWidths.set(measurement.column.id, measurement.width)
+        }
+        for (const col of table.querySelectorAll<HTMLTableColElement>('col[data-column-id]')) {
+            const columnId = col.dataset.columnId ?? ''
+            const width = this.columnWidths.get(columnId)
+            if (width !== undefined) col.style.width = `${width}px`
+        }
+        this.updateTableWidth(table, this.columnList())
+    }
+
+    private updateTableWidth(table: HTMLTableElement, columns: readonly TableColumn[]): void {
+        if (!columns.every(column => this.columnWidths.has(column.id))) return
+        const selectionWidth = this.normalizedSelectionMode() === 'none' ? 0 : selectionColumnWidth
+        const width = columns.reduce((total, column) => total + (this.columnWidths.get(column.id) ?? 0), selectionWidth)
+        table.style.inlineSize = `max(100%, ${Math.ceil(width)}px)`
     }
 
     private createBody(): HTMLTableSectionElement {
@@ -319,6 +407,10 @@ export class Table extends TableBase {
         const row = el('tr', 'row data-row')
         row.dataset.rowKey = rowModel.key
         row.dataset.parentKey = rowModel.parentKey
+        row.dataset.depth = String(rowModel.depth)
+        row.toggleAttribute('data-child', rowModel.depth > 0)
+        row.toggleAttribute('data-parent', rowModel.hasChildren)
+        row.toggleAttribute('data-expanded', rowModel.hasChildren && this.expandedKeySet().has(rowModel.key))
         row.toggleAttribute('data-selected', this.selectedKeySet().has(rowModel.key))
         row.toggleAttribute('data-active', scalarText(this.activeKey) === rowModel.key)
         aria(row, 'aria-current', scalarText(this.activeKey) === rowModel.key ? true : null)
@@ -356,12 +448,17 @@ export class Table extends TableBase {
         const part = columnIndex === 0 ? 'cell primary-cell' : 'cell'
         const cell = el('td', part)
         cell.dataset.align = column.align ?? 'start'
+        cell.dataset.columnId = column.id
         cell.dataset.variant = this.cellVariant(column, row, rowIndex)
         cell.toggleAttribute('data-wrap', bool(column.wrap))
-        cell.style.cssText = this.columnStyle(column)
         if (columnIndex === 0) {
-            cell.style.setProperty('--table-depth', String(row.depth))
             const tree = el('div', 'tree-cell')
+            if (row.depth > 0) {
+                const indent = el('span', 'tree-indent')
+                indent.style.setProperty('--table-depth', String(row.depth))
+                indent.setAttribute('aria-hidden', 'true')
+                tree.append(indent)
+            }
             if (row.hasChildren) {
                 const expanded = this.expandedKeySet().has(row.key)
                 tree.append(iconButton(expanded ? 'down' : 'right', this.rowLabel(expanded ? this.collapseRowLabel : this.expandRowLabel, row), 'expand-button', event => this.toggleExpanded(row, event)))

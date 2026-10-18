@@ -40,6 +40,13 @@ test('sorts siblings, expands nested rows, selects eligible rows and activates r
     const table = page.locator('cb-table')
     await expect(table.getByRole('table', { name: 'Resources' })).toBeVisible()
     await expect(table.locator('tbody [part~="data-row"]')).toHaveCount(4)
+    const parentContentX = await table.locator('tr[data-row-key="root"] [part~="cell-content"]').evaluate(element => element.getBoundingClientRect().x)
+    const childContentX = await table.locator('tr[data-row-key="home"] [part~="cell-content"]').evaluate(element => element.getBoundingClientRect().x)
+    expect(childContentX - parentContentX).toBeGreaterThanOrEqual(24)
+    await expect(table.locator('tr[data-row-key="root"]')).toHaveAttribute('data-parent', '')
+    await expect(table.locator('tr[data-row-key="home"]')).toHaveAttribute('data-child', '')
+    await expect(table.locator('tr[data-row-key="home"]')).toHaveAttribute('data-depth', '1')
+    await expect(table.locator('tr[data-row-key="home"] [part~="tree-indent"]')).toBeVisible()
 
     await table.getByRole('button', { name: 'Collapse Website' }).click()
     await expect(table.locator('tbody [part~="data-row"]')).toHaveCount(2)
@@ -65,6 +72,49 @@ test('sorts siblings, expands nested rows, selects eligible rows and activates r
     }))
     await table.locator('tbody [part~="data-row"]').filter({ hasText: 'Archive' }).click({ position: { x: 200, y: 20 } })
     await expect(activation).resolves.toBe('archive')
+})
+
+test('keeps headers and rows aligned while resizing columns with a pointer', async ({ page }) => {
+    await start(page)
+    await mountTable(page)
+    const table = page.locator('cb-table')
+    const nameHeader = table.locator('th[data-column-id="name"]')
+    const nameCell = table.locator('tr[data-row-key="root"] td[data-column-id="name"]')
+    const statusHeader = table.locator('th[data-column-id="status"]')
+    const statusCell = table.locator('tr[data-row-key="root"] td[data-column-id="status"]')
+
+    const aligned = async (): Promise<readonly number[]> => {
+        const rectangles = await Promise.all([nameHeader, nameCell, statusHeader, statusCell].map(locator => locator.evaluate(element => {
+            const rect = element.getBoundingClientRect()
+            return { x: rect.x, width: rect.width }
+        })))
+        return [
+            Math.abs(rectangles[0]!.x - rectangles[1]!.x),
+            Math.abs(rectangles[0]!.width - rectangles[1]!.width),
+            Math.abs(rectangles[2]!.x - rectangles[3]!.x),
+            Math.abs(rectangles[2]!.width - rectangles[3]!.width),
+        ]
+    }
+
+    for (const difference of await aligned()) expect(difference).toBeLessThan(1)
+    const beforeName = await nameHeader.evaluate(element => element.getBoundingClientRect().width)
+    const separator = table.getByRole('separator', { name: 'Resize Name column' })
+    const handle = await separator.boundingBox()
+    if (!handle) throw new Error('Expected the Name column resize handle to be visible')
+    const resized = table.evaluate(element => new Promise<number>(resolve => {
+        element.addEventListener('cb-column-resize', event => {
+            resolve((event as CustomEvent<{ width: number }>).detail.width)
+        }, { once: true })
+    }))
+    await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(handle.x + handle.width / 2 + 80, handle.y + handle.height / 2, { steps: 4 })
+    await page.mouse.up()
+
+    await expect(resized).resolves.toBeGreaterThan(beforeName + 70)
+    await expect.poll(() => nameHeader.evaluate(element => element.getBoundingClientRect().width)).toBeGreaterThan(beforeName + 70)
+    await expect.poll(() => table.locator('col[data-column-id="name"]').evaluate(element => Number.parseFloat((element as HTMLElement).style.width))).toBeGreaterThan(beforeName + 70)
+    for (const difference of await aligned()) expect(difference).toBeLessThan(1)
 })
 
 test('renders custom cells, groups, keyboard column resizing, loading and empty states', async ({ page }) => {

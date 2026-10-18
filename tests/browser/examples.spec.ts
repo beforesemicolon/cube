@@ -61,6 +61,28 @@ for (const [id, size] of examples) {
     })
 }
 
+test('rich resource table keeps custom cells aligned and nested rows compact', async ({ page }) => {
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--resource-table&viewMode=story')
+    const table = page.locator('cb-table')
+    await expect(table.getByRole('table', { name: 'Project resources' })).toBeVisible({ timeout: 20_000 })
+    const columns = ['name', 'status', 'owner', 'updated', 'actions'] as const
+    for (const column of columns) {
+        const header = table.locator(`th[data-column-id="${column}"]`)
+        const cell = table.locator(`[part~="data-row"] td[data-column-id="${column}"]`).first()
+        const geometry = await Promise.all([header, cell].map(locator => locator.evaluate(element => {
+            const bounds = element.getBoundingClientRect()
+            return { x: bounds.x, width: bounds.width }
+        })))
+        expect(Math.abs(geometry[0]!.x - geometry[1]!.x)).toBeLessThan(1)
+        expect(Math.abs(geometry[0]!.width - geometry[1]!.width)).toBeLessThan(1)
+    }
+    const rowHeights = await table.locator('[part~="data-row"]').evaluateAll(rows => rows.map(row => row.getBoundingClientRect().height))
+    expect(Math.max(...rowHeights)).toBeLessThanOrEqual(48)
+    const parentX = await table.locator('tr[data-row-key="website"] [part~="cell-content"]').evaluate(element => element.getBoundingClientRect().x)
+    const childX = await table.locator('tr[data-row-key="home"] [part~="cell-content"]').evaluate(element => element.getBoundingClientRect().x)
+    expect(childX - parentX).toBeGreaterThanOrEqual(24)
+})
+
 test('example field popups use the top layer without changing the example surface height', async ({ page }) => {
     for (const [id, controlName, popupPart] of [
         ['multi-selection', /^Project members:/, 'popup'],

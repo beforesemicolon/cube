@@ -255,7 +255,6 @@ export const ResourceTable: Story = {
             } },
             {
                 id: 'status', header: 'Status', field: 'status', sortable: true, width: 130,
-                cell: ({ value }) => component('cb-badge', { value: String(value ?? '') }),
                 cellVariant: ({ value }) => value === 'Published' ? 'success' : value === 'Archived' ? 'muted' : 'warning',
             },
             { id: 'owner', header: 'Owner', field: 'owner', sortable: true, minWidth: 160 },
