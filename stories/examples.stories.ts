@@ -166,8 +166,7 @@ export const FeedbackStates: Story = {
 export const ReviewWorkflow: Story = {
     name: 'Collaboration / Review workflow',
     render: () => {
-        const actions = component('cb-button-group', { label: 'Review actions' })
-        actions.append(component('cb-button', { label: 'Reject', variant: 'secondary' }), component('cb-button', { label: 'Approve', variant: 'primary' }))
+        const actions = component('cb-button-group', { label: 'Review actions', items: [{ id: 'reject', label: 'Reject' }, { id: 'approve', label: 'Approve' }] })
         return surface(component('cb-alert', { label: 'Spacing change', value: '32 px → 24 px', status: 'Suggested by Ana' }), actions)
     },
 }

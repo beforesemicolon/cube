@@ -208,7 +208,7 @@ const foundationStoryArgs = {
     button: `{ label: 'Button', value: 'add-section', variant: 'primary', icon: 'plus', loading: false }`,
     'split-button': `{ label: 'Split button', actionValue: 'create', menuLabel: 'More create actions', items, open: false, placement: 'bottom-start', loading: false }`,
     'toggle-button': `{ label: 'Toggle button', pressed: true, variant: 'secondary', icon: '' }`,
-    'button-group': `{ label: 'Button group', orientation: 'horizontal' }`,
+    'button-group': `{ label: 'Clipboard actions', orientation: 'horizontal', variant: 'secondary', items: [{ id: 'copy', label: 'Copy' }, { id: 'paste', label: 'Paste' }, { id: 'duplicate', label: 'Duplicate' }] }`,
     toolbar: `{ label: 'Toolbar', orientation: 'horizontal' }`,
     'action-bar': `{ label: 'Action bar', selectionCount: 3, busy: false, status: '3 layers selected' }`,
     shortcut: `{ keys: '⌘+Shift+P', accessibleLabel: 'Command Shift P' }`,

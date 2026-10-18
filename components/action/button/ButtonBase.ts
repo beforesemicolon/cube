@@ -1,7 +1,8 @@
 import { UIComponent, type UIProps } from '../../core/UIComponent.js'
 import { bool, scalarText } from '../../core/value.js'
+export type ButtonVariant = 'primary'|'secondary'|'outline'|'ghost'|'destructive'
 export interface ButtonProps extends UIProps {
-    variant?: 'primary'|'secondary'|'outline'|'ghost'|'destructive'; loading?:boolean; icon?:string
+    variant?: ButtonVariant; loading?:boolean; icon?:string
     type?:'button'|'submit'|'reset'; name?:string; value?:string; formNoValidate?:boolean
     popupType?: 'menu'|'listbox'|'tree'|'grid'|'dialog'|''; popupExpanded?:boolean; popupControls?:string
 }

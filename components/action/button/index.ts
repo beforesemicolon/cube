@@ -9,4 +9,4 @@ export class Button extends ButtonBase {
 }
 register('cb-button',Button)
 export { ButtonBase }
-export type { ButtonProps } from './ButtonBase.js'
+export type { ButtonProps, ButtonVariant } from './ButtonBase.js'

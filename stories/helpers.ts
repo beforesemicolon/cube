@@ -30,8 +30,7 @@ function seedPreview(tag: string, node: HTMLElement): void {
         { value: 'mobile', label: 'Mobile' },
     ], value: 'desktop' })
     if (name === 'multi-select') Object.assign(node, { multiple: true, value: ['design', 'prototype'] })
-    if (tag === 'cb-button-group') node.append(demoButton('Copy'), demoButton('Paste'), demoButton('Duplicate'))
-    else if (tag === 'cb-toolbar') node.append(demoButton('Select', 'ghost'), demoButton('Move', 'ghost'), demoButton('Comment', 'ghost'))
+    if (tag === 'cb-toolbar') node.append(demoButton('Select', 'ghost'), demoButton('Move', 'ghost'), demoButton('Comment', 'ghost'))
     else if (tag === 'cb-action-bar') {
         Object.assign(node, { status: '3 layers selected' })
         node.append(demoButton('Group'), demoButton('Delete', 'destructive'))

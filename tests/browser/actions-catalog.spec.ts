@@ -29,6 +29,69 @@ test('segmented control and tabs support selection and keyboard roving focus', a
     await expect(page.getByRole('tab', { name: 'Preview' })).toHaveAttribute('aria-selected', 'true')
 })
 
+test('button group owns its buttons and renders one continuous control', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const group = document.createElement('cb-button-group') as HTMLElement & {
+            items: Array<{ id: string; label: string; disabled?: boolean }>
+            accessibleLabel: string
+        }
+        group.accessibleLabel = 'Clipboard actions'
+        group.items = [{ id: 'copy', label: 'Copy' }, { id: 'paste', label: 'Paste' }, { id: 'duplicate', label: 'Duplicate', disabled: true }]
+        group.addEventListener('cb-action', () => { group.dataset.actionCount = String(Number(group.dataset.actionCount ?? 0) + 1) })
+        document.querySelector('#fixture')?.append(group)
+    })
+    const group = page.getByRole('group', { name: 'Clipboard actions' })
+    await expect(group.getByRole('button')).toHaveCount(3)
+    await expect(group.getByRole('button', { name: 'Duplicate' })).toBeDisabled()
+    await group.getByRole('button', { name: 'Copy' }).click()
+    await expect(page.locator('cb-button-group')).toHaveAttribute('data-action-count', '1')
+    expect(await page.locator('cb-button-group').evaluate(element => element.childElementCount)).toBe(0)
+    const geometry = await group.getByRole('button').evaluateAll(buttons => buttons.map(button => {
+        const style = getComputedStyle(button)
+        const box = button.getBoundingClientRect()
+        return { left: box.left, right: box.right, startStart: style.borderStartStartRadius, startEnd: style.borderStartEndRadius }
+    }))
+    expect(geometry[1]?.left).toBeLessThanOrEqual((geometry[0]?.right ?? 0) + 0.1)
+    expect(geometry[0]?.startEnd).toBe('0px')
+    expect(geometry[1]?.startStart).toBe('0px')
+    await page.locator('cb-button-group').evaluate(element => { (element as HTMLElement & { orientation: string }).orientation = 'vertical' })
+    const verticalGeometry = await group.getByRole('button').evaluateAll(buttons => buttons.map(button => {
+        const style = getComputedStyle(button)
+        const box = button.getBoundingClientRect()
+        return { top: box.top, bottom: box.bottom, startStart: style.borderStartStartRadius, endStart: style.borderEndStartRadius }
+    }))
+    expect(verticalGeometry[1]?.top).toBeLessThanOrEqual((verticalGeometry[0]?.bottom ?? 0) + 0.1)
+    expect(verticalGeometry[0]?.endStart).toBe('0px')
+    expect(verticalGeometry[1]?.startStart).toBe('0px')
+    const audit = await new AxeBuilder({ page }).include('cb-button-group').analyze()
+    expect(audit.violations).toEqual([])
+})
+
+test('split button joins its primary and menu trigger into one control', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const split = document.createElement('cb-split-button') as HTMLElement & { label: string; items: Array<{ id: string; label: string }> }
+        split.label = 'Create'; split.items = [{ id: 'page', label: 'Page' }]
+        split.addEventListener('cb-action', () => { split.dataset.actionCount = String(Number(split.dataset.actionCount ?? 0) + 1) })
+        document.querySelector('#fixture')?.append(split)
+    })
+    const buttons = page.locator('cb-split-button').getByRole('button')
+    await expect(buttons).toHaveCount(2)
+    const geometry = await buttons.evaluateAll(controls => controls.map(control => {
+        const style = getComputedStyle(control)
+        const box = control.getBoundingClientRect()
+        return { left: box.left, right: box.right, startStart: style.borderStartStartRadius, startEnd: style.borderStartEndRadius }
+    }))
+    expect(geometry[1]?.left).toBeLessThanOrEqual((geometry[0]?.right ?? 0) + 0.1)
+    expect(geometry[0]?.startEnd).toBe('0px')
+    expect(geometry[1]?.startStart).toBe('0px')
+    await buttons.first().click()
+    await expect(page.locator('cb-split-button')).toHaveAttribute('data-action-count', '1')
+    const audit = await new AxeBuilder({ page }).include('cb-split-button').analyze()
+    expect(audit.violations).toEqual([])
+})
+
 test('dropdown, menu, pagination and tooltip expose canonical accessible interactions', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {

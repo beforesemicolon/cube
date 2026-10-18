@@ -86,6 +86,7 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
 
 const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly ControlOption[]>>>> = {
     'cb-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
+    'cb-button-group': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-link': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-toggle-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-cartesian-chart': { status: ['finished', 'loading', 'error'], stacking: [false, 'normal'] },
@@ -180,6 +181,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
 
 const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue>>>> = {
     'cb-button': { variant: 'secondary' },
+    'cb-button-group': { variant: 'secondary' },
     'cb-link': { variant: 'secondary' },
     'cb-toggle-button': { variant: 'secondary' },
     'cb-cartesian-chart': { status: 'finished', stacking: false, inverted: false },

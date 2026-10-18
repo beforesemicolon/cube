@@ -3,7 +3,7 @@ import { el, fragment, sheet, slot, editorCSS, aria, uid } from '../../core/edit
 import { createIcon, iconPaths } from '../../icons/registry.js'
 import { bool, scalarText } from '../../core/value.js'
 export const buttonCSS=editorCSS+`
-:host{display:inline-block}[part~=control]{display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-sm,8px);text-decoration:none;vertical-align:middle;max-inline-size:100%;font-weight:500;min-inline-size:var(--component-button-min-width,72px)}
+:host{display:inline-block}[part~=control]{display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-sm,8px);text-decoration:none;vertical-align:middle;max-inline-size:100%;font-weight:500;min-inline-size:var(--component-button-min-width,72px);border-start-start-radius:var(--component-button-radius-start-start,var(--radius-sm,6px));border-start-end-radius:var(--component-button-radius-start-end,var(--radius-sm,6px));border-end-end-radius:var(--component-button-radius-end-end,var(--radius-sm,6px));border-end-start-radius:var(--component-button-radius-end-start,var(--radius-sm,6px))}
 :host([data-variant=primary]) [part~=control]{background:var(--color-primary,#2563EB);color:var(--color-primary-foreground,#fff);border-color:transparent}
 :host([data-variant=primary]) [part~=control]:hover:not(:disabled):not([aria-disabled=true]){background:var(--color-primary-hover,#1D50B3)}
 :host([data-variant=outline]) [part~=control]{background:transparent}
