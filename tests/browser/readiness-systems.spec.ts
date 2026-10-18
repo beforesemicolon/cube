@@ -13,12 +13,23 @@ test('editable label, masked input, editable list, and linked values expose dist
         const editable = document.createElement('cb-editable-label') as HTMLElement & Record<string, string | boolean>
         Object.assign(editable, { label: 'Layer name', accessibleLabel: 'Layer name', name: 'layer', value: 'Hero section', editLabel: 'Edit {value}', saveLabel: 'Save layer name', cancelLabel: 'Cancel editing', selectOnEdit: true, submitOnBlur: true })
         const masked = document.createElement('cb-masked-input') as HTMLElement & Record<string, string | boolean>
-        Object.assign(masked, { label: 'Phone number', accessibleLabel: 'Phone number', name: 'phone', value: '6175550142', mask: '(999) 999-9999', maskPlaceholder: '•', guide: true, unmask: true, inputMode: 'tel' })
+        Object.assign(masked, { name: 'phone', value: '6175550142', mask: '(999) 999-9999', maskPlaceholder: '•', guide: true, unmask: true, inputMode: 'tel' })
         const list = document.createElement('cb-editable-list') as HTMLElement & { items: readonly object[] } & Record<string, string | number | boolean>
-        Object.assign(list, { label: 'Redirect paths', accessibleLabel: 'Redirect paths', items: [{ id: 'home', label: '/home', value: '/home' }], minItems: 1, maxItems: 3, addLabel: 'Add path', editLabel: 'Edit {item}', saveLabel: 'Save path', cancelLabel: 'Cancel', removeLabel: 'Remove {item}', moveUpLabel: 'Move {item} up', moveDownLabel: 'Move {item} down', inputLabel: 'New redirect path', emptyLabel: 'No paths' })
+        Object.assign(list, { items: [{ id: 'home', label: '/home', value: '/home' }], minItems: 1, maxItems: 3, addLabel: 'Add path', editLabel: 'Edit {item}', saveLabel: 'Save path', cancelLabel: 'Cancel', removeLabel: 'Remove {item}', moveUpLabel: 'Move {item} up', moveDownLabel: 'Move {item} down', inputLabel: 'New redirect path', emptyLabel: 'No paths' })
         const linked = document.createElement('cb-linked-values') as HTMLElement & { firstValue: number; secondValue: number; linked: boolean; setFirst(value: number): boolean }
-        Object.assign(linked, { label: 'Dimensions', accessibleLabel: 'Linked dimensions', firstValue: 320, secondValue: 180, firstLabel: 'Width', secondLabel: 'Height', linked: true, linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions' })
-        form.append(editable, masked, list, linked)
+        Object.assign(linked, { firstValue: 320, secondValue: 180, firstLabel: 'Width', secondLabel: 'Height', linked: true, linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions' })
+        const field = (control: HTMLElement, label: string, description: string): HTMLElement => {
+            const wrapper = document.createElement('cb-field') as HTMLElement & { label: string; description: string }
+            Object.assign(wrapper, { label, description })
+            wrapper.append(control)
+            return wrapper
+        }
+        form.append(
+            editable,
+            field(masked, 'Phone number', 'Enter ten digits; punctuation is added while typing.'),
+            field(list, 'Redirect paths', 'Add one or more redirect paths.'),
+            field(linked, 'Dimensions', 'Set the width and height.'),
+        )
         document.querySelector('#fixture')?.append(form)
     })
 
@@ -35,6 +46,9 @@ test('editable label, masked input, editable list, and linked values expose dist
     await expect(phone).toHaveValue('(617) 555-0142')
     await phone.fill('2125550188')
     await expect(phone).toHaveValue('(212) 555-0188')
+    await expect(page.locator('cb-masked-input')).toHaveJSProperty('rawValue', '2125550188')
+    await expect(page.locator('cb-masked-input cb-field')).toHaveCount(0)
+    await expect(page.locator('cb-editable-list cb-field')).toHaveCount(0)
     await phone.blur()
     const formValues = await page.locator('form').evaluate(form => Object.fromEntries(new FormData(form).entries()))
     expect(formValues).toMatchObject({ layer: 'Hero banner', phone: '2125550188' })

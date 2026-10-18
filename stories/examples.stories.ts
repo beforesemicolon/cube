@@ -25,6 +25,13 @@ const lengthUnits = [{ value: 'px', label: 'px' }, { value: '%', label: '%' }, {
 const lengthUnitProps = { unit: 'px', units: lengthUnits, unitLabel: 'Unit' }
 
 type SurfaceSize = 'compact' | 'standard' | 'wide'
+type ComponentValue = string | number | boolean | readonly (string | object)[]
+type ComponentProps = Record<string, ComponentValue>
+
+const fieldOwnedProperties = new Set([
+    'label', 'accessibleLabel', 'description', 'helpText', 'details', 'detailsLabel', 'optionalLabel',
+    'error', 'errorText', 'success', 'successText', 'disabled', 'required', 'invalid',
+])
 
 function sizedSurface(size: SurfaceSize, ...children: HTMLElement[]): HTMLElement {
     const node = document.createElement('div')
@@ -45,11 +52,37 @@ function fill<T extends HTMLElement>(node: T): T {
     return node
 }
 
-function component<T extends HTMLElement>(tag: string, props: Record<string, string | number | boolean | readonly (string | object)[]>): T {
+function component<T extends HTMLElement>(tag: string, props: ComponentProps): T {
     const node = document.createElement(tag) as T
     node.style.maxInlineSize = '100%'
     Object.assign(node, props)
     return node
+}
+
+function formField(tag: string, props: ComponentProps): HTMLElement {
+    const controlProps = Object.fromEntries(Object.entries(props).filter(([name]) => !fieldOwnedProperties.has(name))) as ComponentProps
+    const control = component(tag, controlProps)
+    const field = document.createElement('cb-field')
+    const stringProp = (name: string): string => typeof props[name] === 'string' ? String(props[name]) : ''
+    const errorText = stringProp('errorText') || stringProp('error')
+    Object.assign(field, {
+        label: stringProp('label'),
+        accessibleLabel: stringProp('accessibleLabel'),
+        description: stringProp('description'),
+        helpText: stringProp('helpText'),
+        details: stringProp('details'),
+        detailsLabel: stringProp('detailsLabel'),
+        optionalLabel: stringProp('optionalLabel'),
+        errorText,
+        successText: stringProp('successText'),
+        disabled: props.disabled === true,
+        required: props.required === true,
+        invalid: props.invalid === true || Boolean(errorText),
+        success: props.success === true,
+    })
+    field.style.maxInlineSize = '100%'
+    field.append(control)
+    return field
 }
 
 export const ButtonPressedStates: Story = {
@@ -69,7 +102,7 @@ export const ButtonPressedStates: Story = {
 
 export const MultiSelection: Story = {
     name: 'Form / Multi-selection',
-    render: () => compactSurface(component('cb-select', {
+    render: () => compactSurface(formField('cb-select', {
         label: 'Project members',
         placeholder: 'Choose members',
         multi: true,
@@ -89,15 +122,15 @@ export const MultiSelection: Story = {
 
 export const Autocomplete: Story = {
     name: 'Form / Autocomplete',
-    render: () => compactSurface(component('cb-combobox', { label: 'Add a command', placeholder: 'Start typing…', autocomplete: 'both', options: [{ value: 'layout', label: 'Auto layout' }, { value: 'width', label: 'Auto width' }, { value: 'save', label: 'Autosave' }] })),
+    render: () => compactSurface(formField('cb-combobox', { label: 'Add a command', placeholder: 'Start typing…', autocomplete: 'both', options: [{ value: 'layout', label: 'Auto layout' }, { value: 'width', label: 'Auto width' }, { value: 'save', label: 'Autosave' }] })),
 }
 
 export const NativeFormControls: Story = {
     name: 'Form / Native controls',
     render: () => compactSurface(
-        component('cb-select', { label: 'Device', native: true, value: 'desktop', options: [{ value: 'desktop', label: 'Desktop' }, { value: 'tablet', label: 'Tablet' }] }),
-        component('cb-date-picker', { label: 'Publish date', native: true, value: '2026-10-18' }),
-        component('cb-time-picker', { label: 'Publish time', native: true, value: '09:30' }),
+        formField('cb-select', { label: 'Device', native: true, value: 'desktop', options: [{ value: 'desktop', label: 'Desktop' }, { value: 'tablet', label: 'Tablet' }] }),
+        formField('cb-date-picker', { label: 'Publish date', native: true, value: '2026-10-18' }),
+        formField('cb-time-picker', { label: 'Publish time', native: true, value: '09:30' }),
     ),
 }
 
@@ -106,10 +139,10 @@ export const Dimensions: Story = {
     render: () => {
         const row = component('cb-row', { gap: '12px', wrap: true })
         row.append(
-            component('cb-unit-input', { label: 'Width', value: 320, ...lengthUnitProps }),
-            component('cb-unit-input', { label: 'Height', value: 180, ...lengthUnitProps }),
-            component('cb-text-input', { label: 'Aspect ratio', value: '16 : 9' }),
-            component('cb-number-input', { label: 'Z index', value: 10 }),
+            formField('cb-unit-input', { label: 'Width', value: 320, ...lengthUnitProps }),
+            formField('cb-unit-input', { label: 'Height', value: 180, ...lengthUnitProps }),
+            formField('cb-text-input', { label: 'Aspect ratio', value: '16 : 9' }),
+            formField('cb-number-input', { label: 'Z index', value: 10 }),
         )
         return surface(fill(row))
     },
@@ -118,11 +151,29 @@ export const Dimensions: Story = {
 export const FieldStates: Story = {
     name: 'Form / Field states',
     render: () => compactSurface(
-        component('cb-text-input', { label: 'Default', placeholder: 'Type a value' }),
-        component('cb-text-input', { label: 'Filled', value: 'Hero section' }),
-        component('cb-text-input', { label: 'Invalid', value: '!', invalid: true, error: 'Enter a descriptive name.' }),
-        component('cb-text-input', { label: 'Read only', value: 'Published', readOnly: true }),
-        component('cb-text-input', { label: 'Disabled', value: 'Unavailable', disabled: true }),
+        formField('cb-text-input', { label: 'Default', placeholder: 'Type a value' }),
+        formField('cb-text-input', { label: 'Filled', value: 'Hero section' }),
+        formField('cb-text-input', { label: 'Invalid', value: '!', invalid: true, error: 'Enter a descriptive name.' }),
+        formField('cb-text-input', { label: 'Read only', value: 'Published', readOnly: true }),
+        formField('cb-text-input', { label: 'Disabled', value: 'Unavailable', disabled: true }),
+    ),
+}
+
+export const InputMasks: Story = {
+    name: 'Form / Input mask patterns',
+    render: () => compactSurface(
+        formField('cb-masked-input', {
+            label: 'US phone number', description: '9 accepts digits. Display: (617) 555-0142; submitted value: 6175550142.',
+            value: '6175550142', mask: '(999) 999-9999', maskPlaceholder: '•', guide: true, unmask: true, inputMode: 'tel',
+        }),
+        formField('cb-masked-input', {
+            label: 'Project code', description: 'A accepts letters and 9 accepts digits.',
+            value: 'CUBE2048', mask: 'AAAA-9999', maskPlaceholder: '•', guide: true,
+        }),
+        formField('cb-masked-input', {
+            label: 'Device key', description: '* accepts either a letter or a digit.',
+            value: 'A7X92Q4LM', mask: '***-***-***', maskPlaceholder: '•', guide: true,
+        }),
     ),
 }
 
@@ -131,10 +182,10 @@ export const BoxModel: Story = {
     render: () => {
         const inputs = component('cb-grid', { columns: 'repeat(auto-fit,minmax(min(100%,240px),1fr))', gap: '12px' })
         inputs.append(
-            component('cb-unit-input', { label: 'Padding block', value: 24, ...lengthUnitProps }),
-            component('cb-unit-input', { label: 'Padding inline', value: 32, ...lengthUnitProps }),
-            component('cb-unit-input', { label: 'Margin block', value: 0, ...lengthUnitProps }),
-            component('cb-unit-input', { label: 'Margin inline', value: 0, ...lengthUnitProps }),
+            formField('cb-unit-input', { label: 'Padding block', value: 24, ...lengthUnitProps }),
+            formField('cb-unit-input', { label: 'Padding inline', value: 32, ...lengthUnitProps }),
+            formField('cb-unit-input', { label: 'Margin block', value: 0, ...lengthUnitProps }),
+            formField('cb-unit-input', { label: 'Margin inline', value: 0, ...lengthUnitProps }),
         )
         return surface(fill(inputs))
     },
@@ -145,7 +196,7 @@ export const LayoutControls: Story = {
     render: () => surface(
         fill(component('cb-segmented-control', { label: 'Direction', accessibleLabel: 'Flex direction', value: 'row', items: [{ id: 'row', label: 'Row' }, { id: 'column', label: 'Column' }] })),
         fill(component('cb-segmented-control', { label: 'Alignment', accessibleLabel: 'Alignment', value: 'center', items: [{ id: 'start', label: 'Start' }, { id: 'center', label: 'Center' }, { id: 'end', label: 'End' }] })),
-        component('cb-unit-input', { label: 'Gap', value: 16, ...lengthUnitProps }),
+        formField('cb-unit-input', { label: 'Gap', value: 16, ...lengthUnitProps }),
         component('cb-switch', { label: 'Wrap children', checked: true }),
     ),
 }
@@ -153,19 +204,19 @@ export const LayoutControls: Story = {
 export const StylingControls: Story = {
     name: 'Styling / Appearance controls',
     render: () => compactSurface(
-        component('cb-color-picker', { label: 'Fill', value: '#2563eb' }),
-        component('cb-range-slider', { label: 'Opacity', value: 84, min: 0, max: 100, step: 1 }),
-        component('cb-select', { label: 'Blend mode', value: 'normal', options: [{ value: 'normal', label: 'Normal' }, { value: 'multiply', label: 'Multiply' }, { value: 'screen', label: 'Screen' }] }),
-        component('cb-unit-input', { label: 'Corner radius', value: 12, ...lengthUnitProps }),
+        formField('cb-color-picker', { label: 'Fill', value: '#2563eb' }),
+        formField('cb-range-slider', { label: 'Opacity', value: 84, min: 0, max: 100, step: 1 }),
+        formField('cb-select', { label: 'Blend mode', value: 'normal', options: [{ value: 'normal', label: 'Normal' }, { value: 'multiply', label: 'Multiply' }, { value: 'screen', label: 'Screen' }] }),
+        formField('cb-unit-input', { label: 'Corner radius', value: 12, ...lengthUnitProps }),
     ),
 }
 
 export const TypographyControls: Story = {
     name: 'Styling / Typography controls',
     render: () => surface(
-        component('cb-combobox', { label: 'Font family', value: 'inter', options: [{ value: 'inter', label: 'Inter' }, { value: 'source', label: 'Source Sans 3' }, { value: 'system', label: 'System UI' }] }),
-        component('cb-select', { label: 'Weight', value: '600', options: [{ value: '400', label: 'Regular' }, { value: '600', label: 'Semibold' }, { value: '700', label: 'Bold' }] }),
-        component('cb-unit-input', { label: 'Font size', value: 16, ...lengthUnitProps }),
+        formField('cb-combobox', { label: 'Font family', value: 'inter', options: [{ value: 'inter', label: 'Inter' }, { value: 'source', label: 'Source Sans 3' }, { value: 'system', label: 'System UI' }] }),
+        formField('cb-select', { label: 'Weight', value: '600', options: [{ value: '400', label: 'Regular' }, { value: '600', label: 'Semibold' }, { value: '700', label: 'Bold' }] }),
+        formField('cb-unit-input', { label: 'Font size', value: 16, ...lengthUnitProps }),
         component('cb-segmented-control', { label: 'Text alignment', value: 'left', items: [{ id: 'left', label: 'Left' }, { id: 'center', label: 'Center' }, { id: 'right', label: 'Right' }] }),
     ),
 }
@@ -177,8 +228,8 @@ export const InspectorPanel: Story = {
         const content = component('cb-col', { gap: '16px' })
         content.append(
             component('cb-segmented-control', { label: 'Direction', items: [{ id: 'row', label: 'Row' }, { id: 'column', label: 'Column' }], value: 'row' }),
-            component('cb-number-input', { label: 'Gap', value: 16, min: 0 }),
-            component('cb-select', { label: 'Overflow', options: [{ value: 'visible', label: 'Visible' }, { value: 'hidden', label: 'Hidden' }, { value: 'auto', label: 'Auto' }], value: 'visible' }),
+            formField('cb-number-input', { label: 'Gap', value: 16, min: 0 }),
+            formField('cb-select', { label: 'Overflow', options: [{ value: 'visible', label: 'Visible' }, { value: 'hidden', label: 'Hidden' }, { value: 'auto', label: 'Auto' }], value: 'visible' }),
         )
         panel.append(content)
         return compactSurface(fill(panel))
@@ -192,7 +243,7 @@ export const AssetBrowser: Story = {
         for (const [label, value] of [['Hero image', '1920 × 1080'], ['Logo', 'SVG'], ['Portrait', '800 × 800']]) {
             assets.append(component('cb-card', { label, value, items: [{ id: 'metadata', label: 'Format', description: value }] }))
         }
-        return wideSurface(component('cb-combobox', { label: 'Search assets', placeholder: 'Name or type', options: [{ value: 'hero', label: 'Hero image' }, { value: 'logo', label: 'Logo' }] }), fill(assets))
+        return wideSurface(formField('cb-combobox', { label: 'Search assets', placeholder: 'Name or type', options: [{ value: 'hero', label: 'Hero image' }, { value: 'logo', label: 'Logo' }] }), fill(assets))
     },
 }
 
@@ -258,14 +309,14 @@ export const SettingsAccordion: Story = {
     render: () => {
         const content = component('cb-col', { gap: '12px' })
         content.append(
-            component('cb-text-input', { label: 'Element ID', value: 'hero-section' }),
-            component('cb-text-input', { label: 'CSS classes', placeholder: 'Add space-separated classes' }),
+            formField('cb-text-input', { label: 'Element ID', value: 'hero-section' }),
+            formField('cb-text-input', { label: 'CSS classes', placeholder: 'Add space-separated classes' }),
             component('cb-switch', { label: 'Hide on smaller screens', checked: false }),
         )
         const appearance = component('cb-col', { gap: '12px' })
         appearance.append(
-            component('cb-select', { label: 'Surface', value: 'default', options: [{ value: 'default', label: 'Default' }, { value: 'muted', label: 'Muted' }, { value: 'raised', label: 'Raised' }] }),
-            component('cb-unit-input', { label: 'Corner radius', value: 8, ...lengthUnitProps }),
+            formField('cb-select', { label: 'Surface', value: 'default', options: [{ value: 'default', label: 'Default' }, { value: 'muted', label: 'Muted' }, { value: 'raised', label: 'Raised' }] }),
+            formField('cb-unit-input', { label: 'Corner radius', value: 8, ...lengthUnitProps }),
         )
         const accordion = document.createElement('cb-accordion') as HTMLElement & {
             items: readonly AccordionItem[]
@@ -300,7 +351,7 @@ export const PublishFlow: Story = {
         const modal = component<HTMLElement & { show(): boolean }>('cb-modal', { heading: 'Publish website', description: 'Choose where this version should be available.' })
         const form = component('cb-col', { gap: '12px' })
         form.append(
-            component('cb-select', { label: 'Environment', value: 'production', options: [{ value: 'preview', label: 'Preview' }, { value: 'production', label: 'Production' }] }),
+            formField('cb-select', { label: 'Environment', value: 'production', options: [{ value: 'preview', label: 'Preview' }, { value: 'production', label: 'Production' }] }),
             component('cb-switch', { label: 'Notify collaborators', checked: true }),
         )
         modal.append(form)
@@ -348,7 +399,7 @@ export const EditorWorkspace: Story = {
             items: [{ id: 'page', label: 'Homepage', children: [{ id: 'hero', label: 'Hero', children: [{ id: 'title', label: 'Main heading', icon: 'text' }, { id: 'visual', label: 'Product visual', icon: 'image' }] }, { id: 'features', label: 'Features', icon: 'grid' }] }],
         }); layers.slot = 'start'
         const properties = component('cb-property-group', { label: 'Dimensions', expanded: true, dirty: true, resetLabel: 'Reset dimensions', mixedLabel: 'Mixed', expandLabel: 'Expand dimensions', collapseLabel: 'Collapse dimensions' }); properties.slot = 'end'
-        const linked = component('cb-linked-values', { label: 'Dimensions', accessibleLabel: 'Layer dimensions', firstValue: 320, secondValue: 180, firstLabel: 'Width', secondLabel: 'Height', linked: true, linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions' })
+        const linked = formField('cb-linked-values', { label: 'Dimensions', accessibleLabel: 'Layer dimensions', firstValue: 320, secondValue: 180, firstLabel: 'Width', secondLabel: 'Height', linked: true, linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions' })
         properties.append(linked)
         const timeline = component('cb-timeline', { label: 'Timeline', accessibleLabel: 'Animation timeline', duration: 4, currentTime: 1, playLabel: 'Play', pauseLabel: 'Pause', rewindLabel: 'Rewind', addKeyframeLabel: 'Add keyframe', playheadLabel: 'Playhead', keyframeLabel: '{track} at {time}', timeLabel: '{current} / {duration}', tracks: [{ id: 'opacity', label: 'Opacity', keyframes: [{ id: 'one', time: 0 }, { id: 'two', time: 2 }, { id: 'three', time: 4 }] }] }); timeline.slot = 'bottom'
         const canvas = document.createElement('div')
@@ -370,8 +421,8 @@ export const GlobalModalSystem: Story = {
         launcher.addEventListener('cb-action', async () => {
             const body = component('cb-col', { gap: '12px' })
             body.append(
-                component('cb-text-input', { label: 'Project name', value: 'Cube documentation' }),
-                component('cb-select', { label: 'Visibility', value: 'team', options: [{ value: 'private', label: 'Private' }, { value: 'team', label: 'Project members' }, { value: 'public', label: 'Public' }] }),
+                formField('cb-text-input', { label: 'Project name', value: 'Cube documentation' }),
+                formField('cb-select', { label: 'Visibility', value: 'team', options: [{ value: 'private', label: 'Private' }, { value: 'team', label: 'Project members' }, { value: 'public', label: 'Public' }] }),
             )
             const handle = showModal({
                 id: 'storybook-create-project', heading: 'Create project', description: 'Set the initial project details.', body,

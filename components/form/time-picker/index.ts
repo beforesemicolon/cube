@@ -7,7 +7,7 @@ import { TimePickerBase } from './TimePickerBase.js'
 
 const css = editorCSS + `
 :host{display:inline-block;inline-size:var(--component-time-picker-width,220px)}
-[part~=field]{position:relative;display:grid;gap:var(--spacing-xs,4px)}
+[part~=root]{position:relative;display:grid}
 [part~=trigger]{display:flex;align-items:center;justify-content:space-between;inline-size:100%;text-align:start}
 [part~=popup]{z-index:var(--z-index-dropdown,1000);inline-size:max-content;box-sizing:border-box;overflow:auto;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
 [part~=option]{inline-size:100%;border-color:transparent;background:transparent;text-align:start}
@@ -21,13 +21,9 @@ export class TimePicker extends TimePickerBase {
     private valueNode?: HTMLElement
     private popup?: HTMLElement
     private popupController?: PopupController
-    private labelNode?: HTMLLabelElement
-    private descriptionNode?: HTMLElement
-    private errorNode?: HTMLElement
 
     render(): Node {
-        const field = el('div', 'field')
-        this.labelNode = el('label', 'label')
+        const root = el('div', 'root')
         this.trigger = el('button', 'trigger control')
         this.trigger.type = 'button'
         this.trigger.id = uid('cb-time-picker')
@@ -39,17 +35,13 @@ export class TimePicker extends TimePickerBase {
         this.nativeControl = el('input', 'native control')
         this.nativeControl.type = 'time'
         this.nativeControl.id = `${this.trigger.id}-native`
-        this.descriptionNode = el('p', 'description')
-        this.descriptionNode.id = `${this.trigger.id}-description`
-        this.errorNode = el('p', 'error')
-        this.errorNode.id = `${this.trigger.id}-error`
         this.trigger.addEventListener('click', event => this.setOpen(!this.open, event))
         this.trigger.addEventListener('keydown', event => this.handleKey(event))
         this.popup.addEventListener('keydown', event => this.handleKey(event))
         this.nativeControl.addEventListener('change', event => this.setValue(this.nativeControl!.value, event))
         this.nativeControl.addEventListener('blur', () => { this.validationShown = true; this.syncView() })
-        field.append(this.labelNode, this.trigger, this.popup, this.nativeControl, this.descriptionNode, this.errorNode)
-        return fragment(sheet(css), field)
+        root.append(this.trigger, this.popup, this.nativeControl)
+        return fragment(sheet(css), root)
     }
 
     protected mount(): void {
@@ -68,7 +60,7 @@ export class TimePicker extends TimePickerBase {
     protected fieldElement(): HTMLInputElement | undefined { return this.nativeControl }
 
     protected syncView(): void {
-        if (!this.nativeControl || !this.trigger || !this.valueNode || !this.popup || !this.labelNode || !this.descriptionNode || !this.errorNode) return
+        if (!this.nativeControl || !this.trigger || !this.valueNode || !this.popup) return
         const native = bool(this.native)
         this.nativeControl.hidden = !native
         this.trigger.hidden = native
@@ -96,23 +88,20 @@ export class TimePicker extends TimePickerBase {
         this.valueNode.textContent = match?.groups ? this.formatTime(Number(match.groups.hours), Number(match.groups.minutes)) : text(this.placeholder)
         const accessibleName = this.accessibleName(), visibleValue = this.valueNode.textContent ?? ''
         this.trigger.setAttribute('aria-label', accessibleName && visibleValue ? `${accessibleName}: ${visibleValue}` : accessibleName || visibleValue)
+        this.nativeControl.setAttribute('aria-label', accessibleName)
+        this.popup.setAttribute('aria-label', accessibleName)
         this.trigger.disabled = this.unavailable || bool(this.readOnly)
         this.trigger.setAttribute('aria-haspopup', 'listbox')
         this.trigger.setAttribute('aria-controls', this.popup.id)
         aria(this.trigger, 'aria-expanded', this.open)
-        this.labelNode.htmlFor = native ? this.nativeControl.id : this.trigger.id
-        this.labelNode.textContent = text(this.label)
-        this.labelNode.hidden = !text(this.label)
-        this.descriptionNode.textContent = text(this.description)
-        this.descriptionNode.hidden = !text(this.description)
         this.syncForm(this.value)
         const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText)))
-        this.errorNode.textContent = error ? this.validationMessage : ''
-        this.errorNode.hidden = !error
-        const describedBy = [text(this.description) ? this.descriptionNode.id : '', error ? this.errorNode.id : ''].filter(Boolean).join(' ') || null
-        aria(this.trigger, 'aria-describedby', describedBy)
-        aria(this.nativeControl, 'aria-describedby', describedBy)
+        const description = [text(this.description), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null
+        aria(this.trigger, 'aria-description', description)
+        aria(this.nativeControl, 'aria-description', description)
         aria(this.trigger, 'aria-invalid', error ? true : null)
+        aria(this.nativeControl, 'aria-invalid', error ? true : null)
+        this.toggleAttribute('data-invalid', error)
         this.syncPopup()
     }
 

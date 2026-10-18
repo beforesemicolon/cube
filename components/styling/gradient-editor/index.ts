@@ -5,7 +5,7 @@ import '../../form/select/index.js'
 import type { SegmentedControl } from '../../navigation/segmented-control/index.js'
 import '../../navigation/segmented-control/index.js'
 import { register } from '../../core/Component.js'
-import { aria, editorCSS, el, fragment, sheet, uid } from '../../core/editor-dom.js'
+import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { bool, clamp, scalarText } from '../../core/value.js'
 import { token as v } from '../../theme/tokens.js'
 import type { ColorPicker } from '../color-picker/index.js'
@@ -17,8 +17,7 @@ import type { GradientExtent, GradientPosition, GradientShape, GradientStop, Gra
 
 const css = editorCSS + `
 :host{display:block;inline-size:min(100%,var(--component-gradient-editor-width,560px));container-type:inline-size}
-[part~=field]{display:grid;gap:var(--spacing-md,12px);min-inline-size:0}
-[part~=label]{font-size:var(--component-label-font-size,12px);font-weight:650}
+[part~=root]{display:grid;gap:var(--spacing-md,12px);min-inline-size:0}
 [part~=preview-shell],[part~=track]{background-color:${v('--color-surface')};background-image:conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0);background-size:12px 12px}
 [part~=preview-shell]{position:relative;overflow:hidden;block-size:var(--component-gradient-preview-height,124px);border:1px solid ${v('--color-border')};border-radius:var(--radius-lg,12px)}
 [part~=preview]{position:absolute;inset:0;background:var(--cb-gradient)}
@@ -29,6 +28,7 @@ const css = editorCSS + `
 [part~=angle],[part~=stop-position]{inline-size:88px;min-block-size:var(--cb-height);padding:4px 8px;border:1px solid ${v('--color-border')};border-radius:var(--radius-sm);background:${v('--color-surface-muted')};font-variant-numeric:tabular-nums}
 [part~=angle]::-webkit-inner-spin-button,[part~=stop-position]::-webkit-inner-spin-button{appearance:none;margin:0}
 [part~=radial-controls]{display:flex;align-items:end;gap:var(--spacing-sm,8px);flex:1;flex-wrap:wrap}
+[part~=select-field]{display:grid;gap:var(--spacing-xs,4px);min-inline-size:0}
 [part~=shape],[part~=extent],[part~=position]{--component-select-width:var(--component-gradient-select-width,132px)}
 [part~=stops]{display:grid;gap:var(--spacing-sm,8px)}
 [part~=stops-header]{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-sm,8px)}
@@ -45,7 +45,6 @@ const css = editorCSS + `
 [part~=stop-position]{inline-size:100%}
 [part~=value-row]{display:grid;gap:var(--spacing-xs,4px)}
 [part~=value]{display:block;min-inline-size:0;padding:var(--spacing-sm,8px);overflow:auto;border:1px solid ${v('--color-separator')};border-radius:var(--radius-sm);background:${v('--color-surface-muted')};font:var(--component-code-font,11px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace);white-space:nowrap}
-[part~=help],[part~=description],[part~=error]{margin:0}
 [part~=hidden-control]{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%)}
 :host([data-disabled]) [part~=track]{cursor:not-allowed;opacity:var(--component-disabled-opacity,.5)}
 :host([data-invalid]) [part~=preview-shell]{border-color:${v('--color-danger')}}
@@ -67,8 +66,7 @@ interface ChoiceOption {
 }
 
 export class GradientEditor extends GradientEditorBase {
-    private field?: HTMLElement
-    private labelNode?: HTMLLabelElement
+    private rootNode?: HTMLElement
     private preview?: HTMLElement
     private modeControl?: SegmentedControl
     private angleField?: HTMLElement
@@ -78,6 +76,9 @@ export class GradientEditor extends GradientEditorBase {
     private shapeControl?: Select
     private extentControl?: Select
     private positionControl?: Select
+    private shapeLabelNode?: HTMLElement
+    private extentLabelNode?: HTMLElement
+    private positionLabelNode?: HTMLElement
     private stopsLabelNode?: HTMLElement
     private addButton?: IconButton
     private track?: HTMLElement
@@ -88,17 +89,12 @@ export class GradientEditor extends GradientEditorBase {
     private removeButton?: IconButton
     private valueLabelNode?: HTMLElement
     private valueNode?: HTMLOutputElement
-    private helpNode?: HTMLElement
-    private descriptionNode?: HTMLElement
-    private errorNode?: HTMLElement
     private formControl?: HTMLInputElement
     private drag?: DragState
     private readonly handles = new Map<string, HTMLButtonElement>()
 
     render(): Node {
-        this.field = el('div', 'field')
-        this.labelNode = el('label', 'label')
-        this.labelNode.id = uid('cb-gradient-editor-label')
+        this.rootNode = el('div', 'root')
 
         const previewShell = el('div', 'preview-shell')
         this.preview = el('div', 'preview')
@@ -137,7 +133,16 @@ export class GradientEditor extends GradientEditorBase {
             const value = event.detail.value
             if (this.isPosition(value)) this.changePosition(value, event)
         })
-        this.radialControls.append(this.shapeControl, this.extentControl, this.positionControl)
+        const shapeField = el('label', 'select-field shape-field')
+        const extentField = el('label', 'select-field extent-field')
+        const radialPositionField = el('label', 'select-field position-field')
+        this.shapeLabelNode = el('span', 'control-label shape-label')
+        this.extentLabelNode = el('span', 'control-label extent-label')
+        this.positionLabelNode = el('span', 'control-label position-label')
+        shapeField.append(this.shapeLabelNode, this.shapeControl)
+        extentField.append(this.extentLabelNode, this.extentControl)
+        radialPositionField.append(this.positionLabelNode, this.positionControl)
+        this.radialControls.append(shapeField, extentField, radialPositionField)
         geometry.append(this.modeControl, this.angleField, this.radialControls)
 
         const stopsSection = el('section', 'stops')
@@ -156,7 +161,7 @@ export class GradientEditor extends GradientEditorBase {
         const stopEditor = el('div', 'stop-editor')
         this.colorPicker = document.createElement('cb-color-picker') as ColorPicker
         this.colorPicker.setAttribute('part', 'stop-color')
-        this.colorPicker.setAttribute('exportparts', 'field:stop-color-field,trigger:stop-color-trigger,trigger-swatch:stop-color-swatch,popup:stop-color-popup')
+        this.colorPicker.setAttribute('exportparts', 'root:stop-color-root,trigger:stop-color-trigger,trigger-swatch:stop-color-swatch,popup:stop-color-popup')
         this.colorPicker.addEventListener('cb-input', event => {
             event.stopPropagation()
             this.changeStopColor(this.selectedStopId(), (event as CustomEvent<{ value: string }>).detail.value, event, false)
@@ -184,36 +189,32 @@ export class GradientEditor extends GradientEditorBase {
         this.valueLabelNode = el('span', 'value-label')
         this.valueNode = el('output', 'value')
         valueRow.append(this.valueLabelNode, this.valueNode)
-        this.helpNode = el('p', 'help')
-        this.descriptionNode = el('p', 'description')
-        this.descriptionNode.id = uid('cb-gradient-editor-description')
-        this.errorNode = el('p', 'error')
-        this.errorNode.id = uid('cb-gradient-editor-error')
-        this.errorNode.setAttribute('role', 'alert')
         this.formControl = el('input', 'hidden-control')
         this.formControl.type = 'text'
         this.formControl.tabIndex = -1
-        this.field.append(this.labelNode, previewShell, geometry, stopsSection, valueRow, this.helpNode, this.descriptionNode, this.errorNode, this.formControl)
-        return fragment(sheet(css), this.field)
+        this.rootNode.append(previewShell, geometry, stopsSection, valueRow, this.formControl)
+        return fragment(sheet(css), this.rootNode)
     }
 
     protected fieldElement(): HTMLInputElement | undefined { return this.formControl }
 
+    focus(options?: FocusOptions): void {
+        if (this.model().type === 'linear') this.angleInput?.focus(options)
+        else this.shapeControl?.focus(options)
+    }
+
     protected syncView(): void {
-        if (!this.field || !this.labelNode || !this.preview || !this.modeControl || !this.angleField || !this.angleLabelNode || !this.angleInput
-            || !this.radialControls || !this.shapeControl || !this.extentControl || !this.positionControl || !this.stopsLabelNode || !this.addButton
+        if (!this.rootNode || !this.preview || !this.modeControl || !this.angleField || !this.angleLabelNode || !this.angleInput
+            || !this.radialControls || !this.shapeControl || !this.extentControl || !this.positionControl || !this.shapeLabelNode || !this.extentLabelNode || !this.positionLabelNode || !this.stopsLabelNode || !this.addButton
             || !this.track || !this.trackColor || !this.colorPicker || !this.stopPositionLabelNode || !this.stopPositionInput || !this.removeButton
-            || !this.valueLabelNode || !this.valueNode || !this.helpNode || !this.descriptionNode || !this.errorNode || !this.formControl) return
+            || !this.valueLabelNode || !this.valueNode || !this.formControl) return
 
         const model = this.model()
         const value = this.cssValue()
         const unavailable = this.unavailable
         const readOnly = bool(this.readOnly)
         const inaccessible = unavailable || readOnly
-        const visibleLabel = scalarText(this.label)
         const accessibleName = this.accessibleName()
-        this.labelNode.textContent = visibleLabel
-        this.labelNode.hidden = !visibleLabel
         this.preview.style.setProperty('--cb-gradient', value)
         this.preview.setAttribute('role', 'img')
         this.preview.setAttribute('aria-label', scalarText(this.previewLabel) || accessibleName)
@@ -235,17 +236,17 @@ export class GradientEditor extends GradientEditorBase {
         this.angleInput.disabled = inaccessible
         this.angleInput.setAttribute('aria-label', scalarText(this.angleLabel))
         this.radialControls.hidden = model.type !== 'radial'
-        this.syncSelect(this.shapeControl, scalarText(this.shapeLabel), model.shape, [
+        this.syncSelect(this.shapeControl, this.shapeLabelNode, scalarText(this.shapeLabel), model.shape, [
             { value: 'circle', label: scalarText(this.circleLabel) || 'circle' },
             { value: 'ellipse', label: scalarText(this.ellipseLabel) || 'ellipse' },
         ], inaccessible)
-        this.syncSelect(this.extentControl, scalarText(this.extentLabel), model.extent, [
+        this.syncSelect(this.extentControl, this.extentLabelNode, scalarText(this.extentLabel), model.extent, [
             { value: 'closest-side', label: scalarText(this.closestSideLabel) || 'closest-side' },
             { value: 'closest-corner', label: scalarText(this.closestCornerLabel) || 'closest-corner' },
             { value: 'farthest-side', label: scalarText(this.farthestSideLabel) || 'farthest-side' },
             { value: 'farthest-corner', label: scalarText(this.farthestCornerLabel) || 'farthest-corner' },
         ], inaccessible)
-        this.syncSelect(this.positionControl, scalarText(this.positionLabel), model.position, [
+        this.syncSelect(this.positionControl, this.positionLabelNode, scalarText(this.positionLabel), model.position, [
             { value: 'left top', label: scalarText(this.topLeftLabel) || 'left top' },
             { value: 'center top', label: scalarText(this.topLabel) || 'center top' },
             { value: 'right top', label: scalarText(this.topRightLabel) || 'right top' },
@@ -298,11 +299,6 @@ export class GradientEditor extends GradientEditorBase {
         this.valueLabelNode.textContent = scalarText(this.valueLabel)
         this.valueNode.value = value
         this.valueNode.textContent = value
-        this.helpNode.textContent = scalarText(this.helpText)
-        this.helpNode.hidden = !scalarText(this.helpText)
-        this.descriptionNode.textContent = scalarText(this.description)
-        this.descriptionNode.hidden = !scalarText(this.description)
-
         this.formControl.value = value
         this.formControl.disabled = unavailable
         this.formControl.readOnly = readOnly
@@ -310,18 +306,18 @@ export class GradientEditor extends GradientEditorBase {
         this.formControl.setAttribute('aria-label', accessibleName)
         this.syncForm(value)
         const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(scalarText(this.errorText)))
-        this.errorNode.textContent = error ? this.validationMessage : ''
-        this.errorNode.hidden = !error
-        const describedBy = [scalarText(this.description) ? this.descriptionNode.id : '', error ? this.errorNode.id : ''].filter(Boolean).join(' ') || null
-        aria(this.preview, 'aria-describedby', describedBy)
+        const description = [scalarText(this.description), scalarText(this.helpText), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null
+        aria(this.preview, 'aria-description', description)
+        aria(this.formControl, 'aria-description', description)
         aria(this.preview, 'aria-invalid', error ? true : null)
+        aria(this.formControl, 'aria-invalid', error ? true : null)
         this.toggleAttribute('data-invalid', error)
     }
 
     private createSelect(part: string, handler: (event: CustomEvent<{ value: string }>) => void): Select {
         const control = document.createElement('cb-select') as Select
         control.setAttribute('part', part)
-        control.setAttribute('exportparts', `field:${part}-field,label:${part}-label,trigger:${part}-trigger,value:${part}-value,popup:${part}-popup,option:${part}-option`)
+        control.setAttribute('exportparts', `root:${part}-root,trigger:${part}-trigger,value:${part}-value,popup:${part}-popup,option:${part}-option`)
         control.addEventListener('cb-change', event => {
             event.stopPropagation()
             handler(event as CustomEvent<{ value: string }>)
@@ -329,8 +325,10 @@ export class GradientEditor extends GradientEditorBase {
         return control
     }
 
-    private syncSelect(control: Select, label: string, value: string, options: readonly ChoiceOption[], disabled: boolean): void {
-        Object.assign(control, { label, accessibleLabel: label, value, options, disabled, searchable: false, size: this.size })
+    private syncSelect(control: Select, labelNode: HTMLElement, label: string, value: string, options: readonly ChoiceOption[], disabled: boolean): void {
+        labelNode.textContent = label
+        labelNode.hidden = !label
+        Object.assign(control, { label: '', accessibleLabel: label, value, options, disabled, searchable: false, size: this.size })
     }
 
     private syncHandles(stops: readonly GradientStop[], disabled: boolean): void {

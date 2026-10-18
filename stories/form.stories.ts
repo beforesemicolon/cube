@@ -41,7 +41,7 @@ export const EditableLabel: Story = componentStory('cb-editable-label', {
 })
 
 export const MaskedInput: Story = componentStory('cb-masked-input', {
-    label: 'Phone number', accessibleLabel: 'Phone number', description: 'The formatting is applied while you type.', value: '6175550142',
+    label: 'US phone number', accessibleLabel: 'US phone number', description: 'Type digits. The mask formats the display as (617) 555-0142 while the submitted value omits punctuation.', value: '',
     mask: '(999) 999-9999', placeholder: 'Phone number', maskPlaceholder: '•', guide: true, unmask: true, inputMode: 'tel', autocomplete: 'tel',
 })
 
@@ -54,7 +54,7 @@ export const Calendar: Story = componentStory('cb-calendar', { label: 'Calendar'
 export const Field: Story = componentStory('cb-field', {
     label: 'Project name', description: 'Used in the workspace and published URL.', helpText: 'Choose a short, recognizable name.',
     detailsLabel: 'Naming guidance', details: 'Names can contain letters, numbers, spaces, and hyphens.', optionalLabel: 'Optional',
-    errorText: '', required: false, invalid: false,
+    errorText: '', successText: '', required: false, invalid: false, success: false,
 })
 
 export const EditableList: Story = componentStory('cb-editable-list', {

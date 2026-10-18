@@ -1,6 +1,6 @@
 import type { StoryObj } from '@storybook/web-components-vite'
 import { iconPaths } from '../components/icons/paths.js'
-import { preview } from './helpers.js'
+import { fieldControlTags, preview } from './helpers.js'
 
 type ControlOption = string | number | boolean
 type StoryValue = string | number | boolean | null | object
@@ -35,7 +35,7 @@ const booleanProperties = new Set([
     'allowAlpha', 'allowReorder', 'allowSampler', 'animated', 'autoplay', 'bottomOpen', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'dirty', 'disabled', 'dismissible',
     'controls', 'disableContentPadding', 'expanded', 'formNoValidate', 'grid', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
     'editable', 'editing', 'endOpen', 'guide', 'inline', 'lineNumbers', 'linked', 'mixed', 'movable', 'open', 'patterns', 'pinned', 'popupExpanded', 'pressed', 'readOnly', 'reorderable', 'required', 'resizable', 'returnFocus', 'reverse', 'rotatable', 'rowActivation',
-    'pannable', 'playing', 'searchable', 'selectable', 'selected', 'selectOnEdit', 'showChrome', 'showCursor', 'showDimensions', 'showLock', 'showOrientationControl', 'showSize', 'showVisibility', 'startOpen', 'stickyHeader', 'striped', 'submitOnBlur', 'unmask', 'wrap', 'zoomable',
+    'pannable', 'playing', 'searchable', 'selectable', 'selected', 'selectOnEdit', 'showChrome', 'showCursor', 'showDimensions', 'showLock', 'showOrientationControl', 'showSize', 'showVisibility', 'startOpen', 'stickyHeader', 'striped', 'submitOnBlur', 'success', 'unmask', 'wrap', 'zoomable',
 ])
 
 const numberProperties = new Set([
@@ -52,7 +52,7 @@ const objectProperties = new Set([
 
 const stateProperties = new Set([
     'busy', 'checked', 'disabled', 'expanded', 'invalid', 'loading', 'multi', 'multiple', 'native', 'open', 'pressed',
-    'readOnly', 'required', 'status', 'startOpen', 'endOpen', 'bottomOpen', 'mobilePanel',
+    'readOnly', 'required', 'status', 'success', 'startOpen', 'endOpen', 'bottomOpen', 'mobilePanel',
 ])
 
 const layoutProperties = new Set([
@@ -178,14 +178,24 @@ const descriptions: Readonly<Record<string, string>> = {
     code: 'Source code displayed by the preview.',
     codeLanguage: 'Syntax language passed to the highlighter.',
     description: 'Supporting text associated with the component.',
+    details: 'Extended guidance displayed in the field details disclosure.',
+    detailsLabel: 'Localized label for opening the field details disclosure.',
     disabled: 'Prevents interaction and exposes the disabled state.',
     emptyLabel: 'Localized message displayed when no content is available.',
     error: 'Visible validation or error message.',
     errorText: 'Validation message announced and displayed for the field.',
+    success: 'Displays the field success state when no validation error is present.',
+    successText: 'Confirmation message announced and displayed below the control.',
+    mask: 'Formatting pattern. Use 9 for a digit, A for a letter, * for an alphanumeric character, and other characters as literals.',
+    maskPlaceholder: 'Single character shown for each incomplete mask position when guide is enabled.',
+    guide: 'Displays the complete mask shape as the input placeholder.',
+    helpText: 'Additional guidance displayed below the wrapped control.',
+    invalid: 'Marks the wrapped control invalid and exposes its validation state.',
+    unmask: 'Submits only characters accepted by mask tokens while retaining the formatted display value.',
     firstDayOfWeek: 'Weekday used as the first calendar column, from 0 (Sunday) through 6 (Saturday).',
     icon: 'Icon name displayed by the control.',
     items: 'Editable item collection. Add, remove, reorder, label, value, or disable entries here.',
-    name: 'Identity name used to generate fallback initials and accessible text.',
+    name: 'Form-control name used when the value is submitted.',
     src: 'Image source. When absent or unavailable, the avatar displays initials.',
     initials: 'Optional initials override. Otherwise initials are derived from the name.',
     color: 'Avatar fallback surface color.',
@@ -205,6 +215,7 @@ const descriptions: Readonly<Record<string, string>> = {
     recentColors: 'Controlled list of colors most recently committed in the picker.',
     open: 'Controls whether the popup or overlay is open.',
     options: 'Editable option collection. Add, remove, relabel, value, or disable options here.',
+    optionalLabel: 'Localized text identifying a field as optional.',
     placeholder: 'Hint displayed when the component has no value.',
     multi: 'Allows more than one option to be selected while keeping the dropdown open.',
     searchable: 'Shows search automatically above the threshold, or forces it on or off.',
@@ -325,7 +336,7 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     allowReorder: 'true', bottomOpen: 'false', editable: 'true', endOpen: 'true', entries: '[]', guides: '[]', handleLabels: '{}',
     lineNumbers: 'true', linked: 'false', maxLines: '32', minItems: '0', minLines: '8', mobilePanel: "''", movable: 'true',
     rect: '{ x: 0, y: 0, width: 120, height: 80 }', reorderable: 'true', returnFocus: 'true', rotatable: 'false',
-    selectedIds: '[]', showLock: 'true', showSize: 'true', showVisibility: 'true', startOpen: 'true', tabSize: '2', targets: '[]',
+    selectedIds: '[]', showLock: 'true', showSize: 'true', showVisibility: 'true', startOpen: 'true', success: 'false', successText: "''", tabSize: '2', targets: '[]',
 }
 
 const primitiveDefaults: Readonly<Record<string, string | number | boolean | null>> = {
@@ -348,7 +359,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     animated: true, allowReorder: true, bottomOpen: false, dirty: false, editable: true, editing: false, endOpen: true, guide: true, headingLevel: 2, inline: false,
     lineNumbers: true, linked: false, lines: 3, loadingRows: 5, maxLines: 32, minItems: 0, minLines: 8, mixed: false,
     mobileBreakpoint: 860, mobilePanel: '', movable: true, moveStep: 1, pinned: false, reorderable: true, resizeStep: 16,
-    resizable: true, returnFocus: true, rotatable: false, rowActivation: false, selectionMode: 'none',
+    resizable: true, returnFocus: true, rotatable: false, rowActivation: false, selectionMode: 'none', success: false, successText: '',
     selectOnEdit: true, showLock: true, showSize: true, showVisibility: true, startOpen: true, submitOnBlur: true, tabSize: 2, threshold: 3, unmask: false,
     sortDirection: 'asc', stickyColumns: 0, stickyHeader: false, striped: false, density: 'comfortable',
 }
@@ -412,6 +423,11 @@ function attributeToProperty(attribute: string): string {
 
 function humanize(property: string): string {
     return property.replace(/[A-Z]/g, letter => ` ${letter.toLowerCase()}`)
+}
+
+function descriptionFor(tag: string, property: string): string {
+    if (tag === 'cb-avatar' && property === 'name') return 'Person or entity name used for fallback initials and accessible text.'
+    return descriptions[property] ?? `Controls the ${humanize(property)} property.`
 }
 
 function categoryFor(tag: string, property: string): string {
@@ -487,7 +503,7 @@ function definitionFor(tag: string, property: string): StoryControl {
         control,
         ...(options ? { options } : {}),
         ...(property === 'valueFormatter' ? { mapping: formatterMapping } : {}),
-        description: descriptions[property] ?? `Controls the ${humanize(property)} property.`,
+        description: descriptionFor(tag, property),
         table: {
             category: categoryFor(tag, property),
             type: { summary: typeSummary(tag, property, control, options) },
@@ -535,8 +551,10 @@ export function storyArgsFor(tag: string, args: StoryArgs): StoryArgs {
 export function controlsFor(tag: string): StoryArgTypes {
     const constructor = customElements.get(tag) as ObservedElementConstructor | undefined
     if (!constructor) throw new Error(`Cannot create Storybook controls before ${tag} is registered`)
+    const fieldConstructor = fieldControlTags.has(tag) ? customElements.get('cb-field') as ObservedElementConstructor | undefined : undefined
     const controls: StoryArgTypes = {}
-    for (const attribute of new Set(constructor.observedAttributes ?? [])) {
+    const attributes = new Set([...(constructor.observedAttributes ?? []), ...(fieldConstructor?.observedAttributes ?? [])])
+    for (const attribute of attributes) {
         const property = attributeToProperty(attribute)
         controls[property] = definitionFor(tag, property)
     }

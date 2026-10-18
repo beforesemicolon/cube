@@ -27,15 +27,22 @@ test('every public component exposes controls and initialized args for every rea
         }
         const splitControls = controlsFor('cb-split-button')
         const splitArgs = storyArgsFor('cb-split-button', { items: [{ id: 'save', label: 'Save' }] })
+        const maskedControls = controlsFor('cb-masked-input')
+        const maskedArgs = storyArgsFor('cb-masked-input', {})
+        const fieldProperties = ['helpText', 'details', 'detailsLabel', 'optionalLabel', 'invalid', 'success', 'successText']
         return {
             missingControls,
             missingArgs,
             splitItemControl: splitControls.items?.control,
             splitItems: splitArgs.items,
+            missingMaskedFieldControls: fieldProperties.filter(property => !(property in maskedControls)),
+            missingMaskedFieldArgs: fieldProperties.filter(property => !(property in maskedArgs)),
         }
     })
     expect(audit.missingControls).toEqual([])
     expect(audit.missingArgs).toEqual([])
     expect(audit.splitItemControl).toBe('object')
     expect(audit.splitItems).toEqual([{ id: 'save', label: 'Save' }])
+    expect(audit.missingMaskedFieldControls).toEqual([])
+    expect(audit.missingMaskedFieldArgs).toEqual([])
 })

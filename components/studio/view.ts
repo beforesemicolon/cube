@@ -14,6 +14,10 @@ export interface StudioView {
     update(): void
 }
 
+const fieldControlKinds: ReadonlySet<StudioComponentBase['componentKind']> = new Set([
+    'text', 'textarea', 'number', 'search', 'select', 'range', 'file', 'color', 'tokens',
+])
+
 const studioCSS = editorCSS + `
 :host{inline-size:var(--component-studio-inline-size,auto);min-inline-size:0;container-type:inline-size}
 :host([data-kind=text]),:host([data-kind=textarea]),:host([data-kind=number]),:host([data-kind=search]),:host([data-kind=select]),:host([data-kind=range]),:host([data-kind=file]),:host([data-kind=color]),:host([data-kind=tokens]){inline-size:min(100%,var(--component-studio-control-width,320px))}
@@ -88,8 +92,8 @@ cb-button[part~=token]{border:0;padding:0;background:transparent}cb-button[part~
 :host([data-invalid]) [part~=field-shell][part~=stepper] [part~=control],:host([data-invalid]) [part~=decrement-button]::part(decrement-button-control),:host([data-invalid]) [part~=increment-button]::part(increment-button-control){border-color:var(--color-danger)}
 [part~=field-affix]{display:grid;place-items:center;min-inline-size:42px;padding-inline:8px;border:1px solid var(--color-border);border-inline-start:0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;background:var(--color-surface-muted);color:var(--color-muted-foreground)}
 [part~=unit-select]{--component-select-width:auto;display:block;inline-size:auto;min-inline-size:58px;flex:none}
-[part~=unit-select]::part(field){display:block;block-size:100%}
-[part~=unit-select]::part(label),[part~=unit-select]::part(description),[part~=unit-select]::part(error),[part~=unit-select]::part(native){display:none}
+[part~=unit-select]::part(root){display:block;block-size:100%}
+[part~=unit-select]::part(native){display:none}
 [part~=unit-select]::part(trigger){block-size:100%;min-block-size:var(--cb-height);padding-inline:8px;border-inline-start:0;border-start-start-radius:0;border-end-start-radius:0;background:var(--color-surface-muted);color:var(--color-muted-foreground)}
 [part~=unit-select]::part(popup){inline-size:max-content;min-inline-size:88px}
 [part~=field-affix][data-side=start]{border-inline:1px solid var(--color-border);border-inline-end:0;border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
@@ -307,6 +311,7 @@ function panelContent(host: StudioComponentBase): HTMLElement {
 }
 
 export function createStudioView(host: StudioComponentBase): StudioView {
+    const fieldControl = fieldControlKinds.has(host.componentKind)
     const root = el('div', `root ${host.componentName}`)
     root.dataset.component = host.componentName
     const labelRow = el('div', 'label-row row')
@@ -321,7 +326,8 @@ export function createStudioView(host: StudioComponentBase): StudioView {
     const error = el('p', 'error')
     error.id = uid(`cb-${host.componentName}-error`)
     error.setAttribute('role', 'alert')
-    root.append(labelRow, body, description, error)
+    if (fieldControl) root.append(body)
+    else root.append(labelRow, body, description, error)
     let control: HTMLElement | undefined
     let updateBody = (): void => {}
 
@@ -635,7 +641,7 @@ export function createStudioView(host: StudioComponentBase): StudioView {
         host.dataset.orientation = host.orientation === 'vertical' ? 'vertical' : 'horizontal'
         host.toggleAttribute('data-invalid', host.studioInvalid())
         label.textContent = host.studioLabel()
-        label.hidden = ['choice','display','panel','editor','shell'].includes(host.componentKind) || !host.label
+        label.hidden = fieldControl || ['choice','display','panel','editor','shell'].includes(host.componentKind) || !host.label
         status.textContent = host.studioStatus()
         status.hidden = !host.studioStatus()
         description.textContent = host.studioDescription()
@@ -646,8 +652,14 @@ export function createStudioView(host: StudioComponentBase): StudioView {
         if (control) {
             if (!control.id) control.id = uid(`cb-${host.componentName}-control`)
             if (control instanceof HTMLInputElement || control instanceof HTMLSelectElement || control instanceof HTMLTextAreaElement) label.htmlFor = control.id
-            aria(control, 'aria-describedby', host.studioDescription() ? description.id : null)
-            aria(control, 'aria-errormessage', host.studioError() ? error.id : null)
+            if (fieldControl) {
+                aria(control, 'aria-description', [host.studioDescription(), host.studioError()].filter(Boolean).join(' ') || null)
+                aria(control, 'aria-describedby', null)
+                aria(control, 'aria-errormessage', null)
+            } else {
+                aria(control, 'aria-describedby', host.studioDescription() ? description.id : null)
+                aria(control, 'aria-errormessage', host.studioError() ? error.id : null)
+            }
             aria(control, 'aria-invalid', host.studioInvalid() ? true : null)
             aria(control, 'aria-readonly', host.studioReadOnly() ? true : null)
             if (host.componentKind === 'collection' || host.componentKind === 'collaboration') aria(control, 'aria-label', host.studioAccessibleName())

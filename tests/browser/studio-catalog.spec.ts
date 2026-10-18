@@ -79,23 +79,24 @@ test('representative Studio controls expose keyboard semantics, parts, theme inh
 
 test('Studio fields expose invalid and read-only states without throwing or accepting changes', async ({ page }) => {
     await page.evaluate(() => {
-        const field = document.createElement('cb-text-input') as HTMLElement & {
-            label: string
+        const control = document.createElement('cb-text-input') as HTMLElement & {
             value: string
-            invalid: boolean
-            error: string
             readOnly: boolean
         }
+        control.value = 'Homepage'
+        control.readOnly = true
+        const field = document.createElement('cb-field') as HTMLElement & { label: string; invalid: boolean; errorText: string }
         field.label = 'Page title'
-        field.value = 'Homepage'
         field.invalid = true
-        field.error = 'Enter a valid page title.'
-        field.readOnly = true
+        field.errorText = 'Enter a valid page title.'
+        field.append(control)
         document.querySelector('#fixture')!.append(field)
     })
-    const field = page.locator('cb-text-input')
-    const input = field.locator('[part~="control"]')
+    const field = page.locator('cb-field')
+    const control = field.locator('cb-text-input')
+    const input = control.locator('[part~="control"]')
     await expect(field).toHaveAttribute('data-invalid')
+    await expect(control).toHaveAttribute('data-field-invalid')
     await expect(input).toHaveAttribute('aria-invalid', 'true')
     await expect(input).toHaveAttribute('aria-readonly', 'true')
     await expect(field.getByRole('alert')).toHaveText('Enter a valid page title.')
@@ -103,7 +104,7 @@ test('Studio fields expose invalid and read-only states without throwing or acce
         node.value = 'Changed title'
         node.dispatchEvent(new Event('change', { bubbles: true }))
     })
-    await expect(field).toHaveJSProperty('value', 'Homepage')
+    await expect(control).toHaveJSProperty('value', 'Homepage')
 })
 
 test('code preview uses Highlight.js without interpreting source markup', async ({ page }) => {

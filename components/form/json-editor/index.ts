@@ -49,6 +49,8 @@ export class JsonEditor extends JsonEditorBase {
             : scalarText(this.validLabel)
         this.status.toggleAttribute('data-invalid', Boolean(error))
     }
+
+    focus(options?: FocusOptions): void { this.editor?.focus(options) }
 }
 
 register('cb-json-editor', JsonEditor)

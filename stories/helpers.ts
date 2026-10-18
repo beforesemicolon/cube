@@ -1,6 +1,46 @@
 import '../components/client.js'
 import { studioItemsFor, studioStatusFor, studioValueFor } from '../components/studio/presets.js'
 
+type PreviewValue = string | number | boolean | null | object | undefined
+type PreviewArgs = Record<string, PreviewValue>
+
+export const fieldControlTags = new Set([
+    'cb-text-input', 'cb-textarea', 'cb-number-input', 'cb-unit-input', 'cb-combobox', 'cb-range-slider', 'cb-stepper',
+    'cb-date-picker', 'cb-time-picker', 'cb-file-picker', 'cb-token-input', 'cb-masked-input', 'cb-select', 'cb-slider',
+    'cb-code-editor', 'cb-json-editor', 'cb-editable-list', 'cb-linked-values', 'cb-color-picker', 'cb-gradient-editor',
+])
+
+const fieldOwnedProperties = new Set([
+    'label', 'accessibleLabel', 'description', 'helpText', 'details', 'detailsLabel', 'optionalLabel',
+    'error', 'errorText', 'success', 'successText', 'disabled', 'required', 'invalid',
+])
+
+function controlArgs(args: PreviewArgs): PreviewArgs {
+    return Object.fromEntries(Object.entries(args).filter(([name]) => !fieldOwnedProperties.has(name)))
+}
+
+function fieldFor(control: HTMLElement, args: PreviewArgs): HTMLElement {
+    const field = document.createElement('cb-field')
+    const errorText = typeof args.errorText === 'string' ? args.errorText : typeof args.error === 'string' ? args.error : ''
+    Object.assign(field, {
+        label: typeof args.label === 'string' ? args.label : '',
+        accessibleLabel: typeof args.accessibleLabel === 'string' ? args.accessibleLabel : '',
+        description: typeof args.description === 'string' ? args.description : '',
+        helpText: typeof args.helpText === 'string' ? args.helpText : '',
+        details: typeof args.details === 'string' ? args.details : '',
+        detailsLabel: typeof args.detailsLabel === 'string' ? args.detailsLabel : '',
+        optionalLabel: typeof args.optionalLabel === 'string' ? args.optionalLabel : '',
+        successText: typeof args.successText === 'string' ? args.successText : '',
+        errorText,
+        disabled: args.disabled === true,
+        required: args.required === true,
+        invalid: args.invalid === true || Boolean(errorText),
+        success: args.success === true,
+    })
+    field.append(control)
+    return field
+}
+
 function demoSurface(label: string): HTMLElement {
     const surface = document.createElement('div')
     surface.textContent = label
@@ -93,10 +133,11 @@ function seedPreview(tag: string, node: HTMLElement): void {
         const content = document.createElement('cb-col')
         Object.assign(content, { gap: 'sm' })
         const width = document.createElement('cb-unit-input')
-        Object.assign(width, { label: 'Width', value: 320, unit: 'px', units: [{ value: 'px', label: 'px' }, { value: '%', label: '%' }], unitLabel: 'Unit' })
+        const widthProps = { label: 'Width', value: 320, unit: 'px', units: [{ value: 'px', label: 'px' }, { value: '%', label: '%' }], unitLabel: 'Unit' }
+        Object.assign(width, widthProps)
         const visible = document.createElement('cb-switch')
         Object.assign(visible, { label: 'Visible', checked: true })
-        content.append(width, visible)
+        content.append(fieldFor(width, widthProps), visible)
         node.append(content)
     } else if (tag === 'cb-workspace') {
         const header = document.createElement('cb-toolbar'); header.slot = 'header'
@@ -104,7 +145,9 @@ function seedPreview(tag: string, node: HTMLElement): void {
         const start = demoSurface('Pages and layers'); start.slot = 'start'; start.style.cssText += ';min-height:100%;border:0;border-radius:0'
         const end = document.createElement('cb-property-group'); end.slot = 'end'
         Object.assign(end, { label: 'Layout', expanded: true, resetLabel: 'Reset layout', expandLabel: 'Expand layout', collapseLabel: 'Collapse layout' })
-        const width = document.createElement('cb-unit-input'); Object.assign(width, { label: 'Width', value: 320, unit: 'px', unitLabel: 'Unit' }); end.append(width)
+        const width = document.createElement('cb-unit-input')
+        const widthProps = { label: 'Width', value: 320, unit: 'px', unitLabel: 'Unit' }
+        Object.assign(width, widthProps); end.append(fieldFor(width, widthProps))
         const bottom = demoSurface('Timeline'); bottom.slot = 'bottom'; bottom.style.cssText += ';min-width:100%;border:0;border-radius:0'
         const canvas = demoSurface('Responsive editor canvas'); canvas.style.cssText += ';min-height:420px;border:0;border-radius:0;background:linear-gradient(90deg,var(--color-separator) 1px,transparent 1px),linear-gradient(var(--color-separator) 1px,transparent 1px);background-size:20px 20px'
         node.append(header, start, canvas, end, bottom)
@@ -188,12 +231,13 @@ function wireInteraction(tag: string, node: HTMLElement, wrapper: HTMLElement): 
     wrapper.append(node)
 }
 
-export function preview(tag: string, args: Record<string, unknown>, appearance: string) {
+export function preview(tag: string, args: PreviewArgs, appearance: string) {
     const provider = document.createElement('cb-theme-provider')
     Object.assign(provider, { appearance })
     const wrapper = document.createElement('div'); wrapper.style.cssText = 'min-height:140px;max-width:960px;width:100%;padding:24px;box-sizing:border-box;background:var(--color-background);color:var(--color-foreground)'
-    const node = document.createElement(tag); seedPreview(tag, node); Object.assign(node, args)
-    wireInteraction(tag, node, wrapper); provider.append(wrapper)
+    const node = document.createElement(tag); seedPreview(tag, node); Object.assign(node, fieldControlTags.has(tag) ? controlArgs(args) : args)
+    const presentation = fieldControlTags.has(tag) ? fieldFor(node, args) : node
+    wireInteraction(tag, presentation, wrapper); provider.append(wrapper)
     return provider
 }
 export function silentAudio(seconds = 4): string {

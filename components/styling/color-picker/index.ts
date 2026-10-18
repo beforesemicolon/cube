@@ -10,8 +10,7 @@ import { colorToHex, hsvaToRgba, parseHexColor, rgbaToHsva, type HSVAColor, type
 
 const css = editorCSS + `
 :host{display:inline-block;inline-size:auto;min-inline-size:0;container-type:inline-size}
-[part~=field]{display:grid;gap:var(--spacing-xs,4px);justify-items:start;min-inline-size:0}
-[part~=label]{white-space:nowrap}
+[part~=root]{display:grid;gap:var(--spacing-xs,4px);justify-items:start;min-inline-size:0}
 [part~=trigger],[part~=native]{position:relative;display:block;inline-size:var(--component-color-picker-trigger-size,36px);min-inline-size:var(--component-color-picker-trigger-size,36px);block-size:var(--component-color-picker-trigger-size,36px);min-block-size:var(--component-color-picker-trigger-size,36px);padding:3px;overflow:hidden;border:1px solid ${v('--color-border')};border-radius:var(--component-color-picker-radius,var(--radius-sm));background:conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0) 0 0/10px 10px}
 [part~=trigger]:hover:not(:disabled){border-color:${v('--color-primary')};background:conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0) 0 0/10px 10px}
 [part~=trigger-swatch]{display:block;inline-size:100%;block-size:100%;border-radius:calc(var(--component-color-picker-radius,var(--radius-sm)) - 3px);background:var(--cb-selected-color)}
@@ -42,7 +41,6 @@ button[part~=plane]:hover:not(:disabled),button[part~=plane]:active:not(:disable
 [part~=swatch]{position:relative;inline-size:28px;min-inline-size:28px;block-size:28px;min-block-size:28px;padding:2px;border:1px solid ${v('--color-border')};border-radius:var(--radius-sm);background:${v('--color-surface')};overflow:hidden}
 [part~=swatch][aria-pressed=true]{border-color:${v('--color-primary')};box-shadow:0 0 0 1px ${v('--color-primary')}}
 [part~=swatch-preview]{display:block;inline-size:100%;block-size:100%;border-radius:calc(var(--radius-sm) - 2px)}
-[part~=description],[part~=error]{max-inline-size:320px}
 :host([data-invalid]) [part~=trigger],:host([data-invalid]) [part~=native]{border-color:${v('--color-danger')}}
 @container(max-width:300px){[part~=popup]{inline-size:min(344px,calc(100vw - 16px))}[part~=channels]{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(pointer:coarse){[part~=trigger],[part~=native]{--component-color-picker-trigger-size:44px}[part~=swatch]{inline-size:36px;min-inline-size:36px;block-size:36px;min-block-size:36px}}
@@ -87,9 +85,6 @@ export class ColorPicker extends ColorPickerBase {
     private paletteNode?: HTMLElement
     private paletteGroup?: HTMLElement
     private paletteLabel?: HTMLElement
-    private labelNode?: HTMLLabelElement
-    private descriptionNode?: HTMLElement
-    private errorNode?: HTMLElement
     private samplerButton?: IconButton
     private closeButton?: IconButton
     private popupController?: PopupController
@@ -97,8 +92,7 @@ export class ColorPicker extends ColorPickerBase {
     private readonly channelLabels = new Map<ChannelName, HTMLElement>()
 
     render(): Node {
-        const field = el('div', 'field')
-        this.labelNode = el('label', 'label')
+        const root = el('div', 'root')
         this.trigger = el('button', 'trigger control'); this.trigger.type = 'button'; this.trigger.id = uid('cb-color-picker')
         this.triggerSwatch = el('span', 'trigger-swatch'); this.trigger.append(this.triggerSwatch)
         this.nativeControl = el('input', 'native control'); this.nativeControl.type = 'color'; this.nativeControl.id = `${this.trigger.id}-native`
@@ -125,8 +119,6 @@ export class ColorPicker extends ColorPickerBase {
         }
         this.paletteGroup = el('div', 'palette-group'); this.paletteLabel = el('span', 'palette-label label'); this.paletteNode = el('div', 'palette'); this.paletteGroup.append(this.paletteLabel, this.paletteNode)
         this.popup.append(toolbar, this.plane, hueField.field, alphaField.field, channelGrid, this.paletteGroup)
-        this.descriptionNode = el('p', 'description'); this.descriptionNode.id = `${this.trigger.id}-description`
-        this.errorNode = el('p', 'error'); this.errorNode.id = `${this.trigger.id}-error`
         this.trigger.addEventListener('click', event => this.setOpen(!bool(this.open), event))
         this.plane.addEventListener('pointerdown', event => { this.plane?.setPointerCapture(event.pointerId); this.updateFromPlane(event, false) })
         this.plane.addEventListener('pointermove', event => { if (this.plane?.hasPointerCapture(event.pointerId)) this.updateFromPlane(event, false) })
@@ -138,8 +130,8 @@ export class ColorPicker extends ColorPickerBase {
         this.nativeControl.addEventListener('input', event => { const color = parseHexColor(this.nativeControl?.value ?? ''); if (color) this.inputColor(color, event) })
         this.nativeControl.addEventListener('change', event => { const color = parseHexColor(this.nativeControl?.value ?? ''); if (color) this.changeColor(color, event) })
         this.nativeControl.addEventListener('blur', () => { this.validationShown = true; this.syncView() })
-        field.append(this.labelNode, this.trigger, this.nativeControl, this.popup, this.descriptionNode, this.errorNode)
-        return fragment(sheet(css), field)
+        root.append(this.trigger, this.nativeControl, this.popup)
+        return fragment(sheet(css), root)
     }
 
     protected mount(): void {
@@ -154,7 +146,7 @@ export class ColorPicker extends ColorPickerBase {
     protected fieldElement(): HTMLInputElement | undefined { return this.nativeControl }
 
     protected syncView(): void {
-        if (!this.trigger || !this.triggerSwatch || !this.nativeControl || !this.popup || !this.plane || !this.hueSlider || !this.alphaSlider || !this.hueOutput || !this.alphaOutput || !this.previewColor || !this.hexInput || !this.paletteNode || !this.paletteGroup || !this.paletteLabel || !this.labelNode || !this.descriptionNode || !this.errorNode || !this.samplerButton || !this.closeButton) return
+        if (!this.trigger || !this.triggerSwatch || !this.nativeControl || !this.popup || !this.plane || !this.hueSlider || !this.alphaSlider || !this.hueOutput || !this.alphaOutput || !this.previewColor || !this.hexInput || !this.paletteNode || !this.paletteGroup || !this.paletteLabel || !this.samplerButton || !this.closeButton) return
         const color = this.color(), rgba = hsvaToRgba(color), value = colorToHex(color), solid = colorToHex({ ...color, alpha: 1 }, false), native = bool(this.native)
         this.value = value
         this.style.setProperty('--cb-selected-color', value); this.popup.style.setProperty('--cb-hue-color', `hsl(${color.hue}, 100%, 50%)`); this.popup.style.setProperty('--cb-solid-color', solid)
@@ -171,11 +163,10 @@ export class ColorPicker extends ColorPickerBase {
         this.trigger.disabled = this.unavailable || bool(this.readOnly); this.trigger.hidden = native; this.nativeControl.hidden = !native
         this.trigger.setAttribute('aria-label', this.accessibleName()); this.trigger.setAttribute('aria-haspopup', 'dialog'); this.trigger.setAttribute('aria-controls', this.popup.id); aria(this.trigger, 'aria-expanded', bool(this.open) && !native)
         this.popup.setAttribute('aria-label', this.accessibleName())
-        this.labelNode.htmlFor = native ? this.nativeControl.id : this.trigger.id; this.labelNode.textContent = text(this.label); this.labelNode.hidden = !text(this.label)
-        this.descriptionNode.textContent = text(this.description); this.descriptionNode.hidden = !text(this.description)
-        const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))); this.errorNode.textContent = error ? this.validationMessage : ''; this.errorNode.hidden = !error
-        const describedBy = [text(this.description) ? this.descriptionNode.id : '', error ? this.errorNode.id : ''].filter(Boolean).join(' ') || null
-        aria(this.trigger, 'aria-describedby', describedBy); aria(this.nativeControl, 'aria-describedby', describedBy); aria(this.trigger, 'aria-invalid', error ? true : null)
+        const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText)))
+        const description = [text(this.description), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null
+        aria(this.trigger, 'aria-description', description); aria(this.nativeControl, 'aria-description', description)
+        aria(this.trigger, 'aria-invalid', error ? true : null); aria(this.nativeControl, 'aria-invalid', error ? true : null)
         this.toggleAttribute('data-invalid', error); this.toggleAttribute('data-native', native)
         if (native) { this.open = false; this.removeAttribute('open'); this.popupController?.hide() }
         else if (bool(this.open)) this.popupController?.show(); else this.popupController?.hide()

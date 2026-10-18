@@ -62,6 +62,12 @@ export abstract class StudioComponentBase<P extends StudioProps = StudioProps> e
         return typeof this.value === 'string' || typeof this.value === 'number' ? String(this.value) : ''
     }
 
+    focus(options?: FocusOptions): void {
+        const control = this.contentRoot.querySelector<HTMLElement>('[part~="control"]')
+        if (control) control.focus(options)
+        else super.focus(options)
+    }
+
     setValue(value: StudioValue, originalEvent?: Event): boolean {
         if (this.studioDisabled() || this.studioReadOnly()) return false
         const detail = { value, originalEvent }

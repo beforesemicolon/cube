@@ -6,7 +6,7 @@ import { PopupController } from '../../core/popup.js'
 import { SelectBase } from './SelectBase.js'
 
 const css = editorCSS + `
-:host{display:inline-block;inline-size:var(--component-select-width,240px)}[part~=field]{position:relative;display:grid;gap:var(--spacing-xs,4px)}
+:host{display:inline-block;inline-size:var(--component-select-width,240px)}[part~=root]{position:relative;display:grid}
 [part~=trigger]{display:flex;align-items:center;justify-content:space-between;gap:8px;inline-size:100%;text-align:start}[part~=value][data-placeholder]{color:var(--color-muted-foreground)}
 [part~=value]{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     [part~=popup]{z-index:var(--z-index-dropdown,1000);display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:4px;inline-size:max-content;box-sizing:border-box;overflow:hidden;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
@@ -28,15 +28,11 @@ export class Select extends SelectBase {
     private searchInput?: HTMLInputElement
     private listbox?: HTMLElement
     private emptyNode?: HTMLElement
-    private titleNode?: HTMLLabelElement
-    private descriptionNode?: HTMLElement
-    private errorNode?: HTMLElement
     private popupController?: PopupController
     private query = ''
 
     render(): Node {
-        const field = el('div', 'field')
-        this.titleNode = el('label', 'label')
+        const root = el('div', 'root')
         this.trigger = el('button', 'trigger control'); this.trigger.type = 'button'; this.trigger.id = uid('cb-select')
         this.valueNode = el('span', 'value'); this.trigger.append(this.valueNode, createIcon('down', 'icon indicator'))
         this.popup = el('div', 'popup')
@@ -49,8 +45,6 @@ export class Select extends SelectBase {
         this.searchWrap.append(this.searchInput)
         this.popup.append(this.searchWrap, this.listbox, this.emptyNode)
         this.nativeControl = el('select', 'native control'); this.nativeControl.id = `${this.trigger.id}-native`
-        this.descriptionNode = el('p', 'description'); this.descriptionNode.id = `${this.trigger.id}-description`
-        this.errorNode = el('p', 'error'); this.errorNode.id = `${this.trigger.id}-error`
         this.trigger.addEventListener('click', event => {
             const opening = !bool(this.open)
             if (this.setOpen(opening, event) && opening && this.searchEnabled) this.searchInput?.focus()
@@ -60,8 +54,8 @@ export class Select extends SelectBase {
         this.searchInput.addEventListener('input', () => { this.query = this.searchInput?.value ?? ''; this.syncView() })
         this.nativeControl.addEventListener('change', event => this.choose(bool(this.multi) ? [...this.nativeControl!.selectedOptions].map(option => option.value) : this.nativeControl!.value, event))
         this.nativeControl.addEventListener('blur', () => { this.validationShown = true; this.syncView() })
-        field.append(this.titleNode, this.trigger, this.popup, this.nativeControl, this.descriptionNode, this.errorNode)
-        return fragment(sheet(css), field)
+        root.append(this.trigger, this.popup, this.nativeControl)
+        return fragment(sheet(css), root)
     }
 
     protected mount(): void {
@@ -80,7 +74,7 @@ export class Select extends SelectBase {
     protected fieldElement(): HTMLSelectElement | undefined { return this.nativeControl }
 
     protected syncView(): void {
-        if (!this.nativeControl || !this.trigger || !this.valueNode || !this.popup || !this.searchWrap || !this.searchInput || !this.listbox || !this.emptyNode || !this.titleNode || !this.descriptionNode || !this.errorNode) return
+        if (!this.nativeControl || !this.trigger || !this.valueNode || !this.popup || !this.searchWrap || !this.searchInput || !this.listbox || !this.emptyNode) return
         const options = this.normalizedOptions, selection = this.selection, placeholder = text(this.placeholder)
         const searching = this.searchEnabled && !bool(this.native)
         if (!bool(this.open)) this.query = ''
@@ -115,18 +109,19 @@ export class Select extends SelectBase {
         this.emptyNode.textContent = text(this.emptyLabel)
         this.emptyNode.hidden = visibleOptions.length > 0 || !text(this.emptyLabel)
         aria(this.listbox, 'aria-multiselectable', bool(this.multi) ? true : null)
+        this.listbox.setAttribute('aria-label', this.accessibleName())
         this.nativeControl.multiple = bool(this.multi); this.nativeControl.disabled = this.unavailable || bool(this.readOnly); this.nativeControl.required = bool(this.required) && !bool(this.readOnly); this.nativeControl.setAttribute('aria-label', this.accessibleName())
         this.trigger.disabled = this.unavailable || bool(this.readOnly)
         const accessibleName = this.accessibleName()
         const visibleValue = this.valueNode.textContent ?? ''
         this.trigger.setAttribute('aria-label', visibleValue && visibleValue !== accessibleName ? `${accessibleName}: ${visibleValue}` : accessibleName)
         this.trigger.setAttribute('aria-haspopup', 'listbox'); this.trigger.setAttribute('aria-controls', this.listbox.id); aria(this.trigger, 'aria-expanded', bool(this.open))
-        this.titleNode.htmlFor = native ? this.nativeControl.id : this.trigger.id; this.titleNode.textContent = text(this.label); this.titleNode.hidden = !text(this.label)
-        this.descriptionNode.textContent = text(this.description); this.descriptionNode.hidden = !text(this.description)
         this.syncForm(bool(this.multi) ? this.multipleFormValue(selection) : selection[0] ?? '')
-        const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))); this.errorNode.textContent = error ? this.validationMessage : ''; this.errorNode.hidden = !error
-        const describedBy = [text(this.description) ? this.descriptionNode.id : '', error ? this.errorNode.id : ''].filter(Boolean).join(' ') || null
-        aria(this.trigger, 'aria-describedby', describedBy); aria(this.nativeControl, 'aria-describedby', describedBy); aria(this.trigger, 'aria-invalid', error ? true : null)
+        const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText)))
+        const description = [text(this.description), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null
+        aria(this.trigger, 'aria-description', description); aria(this.nativeControl, 'aria-description', description)
+        aria(this.trigger, 'aria-invalid', error ? true : null); aria(this.nativeControl, 'aria-invalid', error ? true : null)
+        this.toggleAttribute('data-invalid', error)
         this.syncPopup()
     }
 

@@ -6,6 +6,7 @@ const examples = [
     ['native-form-controls', 'compact'],
     ['dimensions', 'standard'],
     ['field-states', 'compact'],
+    ['input-masks', 'compact'],
     ['box-model', 'standard'],
     ['layout-controls', 'standard'],
     ['styling-controls', 'compact'],

@@ -1,14 +1,11 @@
 import { register } from '../../core/Component.js'
 import { SliderBase } from './SliderBase.js'
-import { el,fragment,sheet,editorCSS,aria,uid } from '../../core/editor-dom.js'
+import { el,fragment,sheet,editorCSS,aria } from '../../core/editor-dom.js'
 import { bool,text } from '../../core/value.js'
 export class Slider extends SliderBase {
-    private control?:HTMLInputElement;private titleNode?:HTMLLabelElement;private descriptionNode?:HTMLElement;private errorNode?:HTMLElement
+    private control?:HTMLInputElement
     render():Node{
-        this.control=el('input','control');this.control.type='range';this.control.id=uid('cb-slider')
-        this.titleNode=el('label','label');this.titleNode.htmlFor=this.control.id
-        this.descriptionNode=el('p','description');this.descriptionNode.id=this.control.id+'-description'
-        this.errorNode=el('p','error');this.errorNode.id=this.control.id+'-error'
+        this.control=el('input','control');this.control.type='range'
         this.control.addEventListener('input',e=>this.setValue(this.control!.valueAsNumber,'input',e))
         this.control.addEventListener('change',e=>this.setValue(this.control!.valueAsNumber,'change',e))
         this.control.addEventListener('pointerdown',()=>this.pointerActive=true)
@@ -24,21 +21,20 @@ export class Slider extends SliderBase {
 [part=control]:disabled{cursor:not-allowed;opacity:var(--component-disabled-opacity,.5)}
 :host([data-orientation=vertical]){min-inline-size:var(--cb-height);inline-size:var(--cb-height)}
 :host([data-orientation=vertical]) [part=control]{writing-mode:vertical-lr;direction:rtl;block-size:var(--cb-height);inline-size:160px}
-`),this.titleNode,this.control,this.descriptionNode,this.errorNode)
+`),this.control)
     }
     protected fieldElement(){return this.control}
     protected syncView():void{
-        if(!this.control||!this.titleNode||!this.descriptionNode||!this.errorNode)return
+        if(!this.control)return
         const range=this.range;this.dataset.orientation=this.orientation==='vertical'?'vertical':'horizontal'
         this.control.min=String(range.min);this.control.max=String(range.max);this.control.step=String(range.step)
         this.control.value=String(range.value);this.control.disabled=this.unavailable;this.control.style.setProperty('--cb-slider-fill',range.percent+'%')
         this.control.setAttribute('aria-label',this.accessibleName());this.control.setAttribute('aria-orientation',this.dataset.orientation)
         aria(this.control,'aria-valuetext',text(this.valueText)||null);aria(this.control,'aria-readonly',bool(this.readOnly)?true:null)
-        this.titleNode.textContent=text(this.label);this.titleNode.hidden=!text(this.label)
-        this.descriptionNode.textContent=text(this.description);this.descriptionNode.hidden=!text(this.description)
         this.syncForm(String(range.value));const error=!!this.validationMessage&&(this.validationShown||!!text(this.errorText))
-        this.errorNode.textContent=error?this.validationMessage:'';this.errorNode.hidden=!error;aria(this.control,'aria-invalid',error?true:null)
-        aria(this.control,'aria-describedby',[text(this.description)?this.descriptionNode.id:'',error?this.errorNode.id:''].filter(Boolean).join(' ')||null)
+        aria(this.control,'aria-invalid',error?true:null)
+        aria(this.control,'aria-description',[text(this.description),error?this.validationMessage:''].filter(Boolean).join(' ')||null)
+        this.toggleAttribute('data-invalid',error)
     }
 }
 register('cb-slider',Slider)

@@ -22,7 +22,7 @@ const css = editorCSS + `
 [part~=handle]{fill:${v('--color-surface-raised')};stroke:${v('--color-primary')};stroke-width:2;cursor:grab;outline:none}
 [part~=handle]:focus{stroke:${v('--color-focus')};stroke-width:4}
 [part~=fields]{display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-sm,8px);align-content:start}
-[part~=field]{display:block;inline-size:100%;min-inline-size:0;--component-studio-control-width:100%}
+[part~=field]{display:grid;gap:var(--spacing-xs,4px);inline-size:100%;min-inline-size:0}[part~=field-label]{color:${v('--color-muted-foreground')};font-size:var(--component-caption-font-size,11px);font-weight:600}[part~=field-control]{display:block;inline-size:100%;min-inline-size:0;--component-studio-control-width:100%}
 [part~=value]{grid-column:1/-1;display:block;overflow:auto;padding:var(--spacing-sm,8px);border:1px solid ${v('--color-separator')};border-radius:var(--radius-sm,6px);background:${v('--color-surface-muted')};font:var(--component-code-font,11px/1.5 ui-monospace,monospace);white-space:nowrap}
 [part~=preview]{position:relative;grid-column:1/-1;block-size:56px;overflow:hidden;border:1px solid ${v('--color-separator')};border-radius:var(--radius-md,10px);background:linear-gradient(90deg,${v('--color-surface-muted')} 50%,${v('--color-surface')} 50%)}
 [part~=preview-dot]{position:absolute;inset-inline-start:8px;inset-block-start:50%;inline-size:18px;block-size:18px;translate:0 -50%;border-radius:50%;background:${v('--color-primary')};box-shadow:0 2px 8px color-mix(in srgb,${v('--color-primary')} 45%,transparent)}
@@ -33,6 +33,7 @@ const css = editorCSS + `
 `
 
 interface NumberControl extends HTMLElement { label: string; accessibleLabel: string; value: number; min: number; max: number; step: number; disabled: boolean }
+interface NumberField { readonly wrapper: HTMLElement; readonly label: HTMLElement; readonly control: NumberControl }
 interface DragState { readonly point: 1 | 2; readonly pointerId: number; readonly handle: SVGCircleElement }
 
 const svgNS = 'http://www.w3.org/2000/svg'
@@ -51,6 +52,7 @@ export class Bezier extends BezierBase {
     private handle1?: SVGCircleElement
     private handle2?: SVGCircleElement
     private fields: readonly NumberControl[] = []
+    private fieldLabels: readonly HTMLElement[] = []
     private valueNode?: HTMLOutputElement
     private preview?: HTMLElement
     private playButton?: IconButton
@@ -83,13 +85,15 @@ export class Bezier extends BezierBase {
         this.handle1 = this.createHandle(1); this.handle2 = this.createHandle(2)
         this.graph.append(xAxis, yAxis, this.line1, this.line2, this.curvePath, this.handle1, this.handle2)
         const fields = el('div', 'fields')
-        this.fields = [this.createField(1, 'x'), this.createField(1, 'y'), this.createField(2, 'x'), this.createField(2, 'y')]
+        const numberFields = [this.createField(1, 'x'), this.createField(1, 'y'), this.createField(2, 'x'), this.createField(2, 'y')]
+        this.fields = numberFields.map(field => field.control)
+        this.fieldLabels = numberFields.map(field => field.label)
         this.valueNode = el('output', 'value')
         this.valueNode.tabIndex = 0
         this.preview = el('div', 'preview')
         this.preview.setAttribute('role', 'img')
         this.preview.append(el('span', 'preview-dot'))
-        fields.append(...this.fields, this.valueNode, this.preview)
+        fields.append(...numberFields.map(field => field.wrapper), this.valueNode, this.preview)
         workspace.append(this.graph, fields)
         root.append(header, workspace)
         this.graph.addEventListener('pointermove', event => this.moveHandle(event))
@@ -99,7 +103,7 @@ export class Bezier extends BezierBase {
     }
 
     protected syncView(): void {
-        if (!this.labelNode || !this.graph || !this.curvePath || !this.line1 || !this.line2 || !this.handle1 || !this.handle2 || !this.valueNode || !this.preview || !this.playButton || !this.resetButton || this.fields.length !== 4) return
+        if (!this.labelNode || !this.graph || !this.curvePath || !this.line1 || !this.line2 || !this.handle1 || !this.handle2 || !this.valueNode || !this.preview || !this.playButton || !this.resetButton || this.fields.length !== 4 || this.fieldLabels.length !== 4) return
         const curve = this.curve()
         this.labelNode.textContent = this.displayLabel()
         this.labelNode.hidden = !this.displayLabel()
@@ -109,7 +113,15 @@ export class Bezier extends BezierBase {
         this.positionHandle(this.handle1, first); this.positionHandle(this.handle2, second)
         const values = [curve.x1, curve.y1, curve.x2, curve.y2]
         const labels = [this.text('x1Label'), this.text('y1Label'), this.text('x2Label'), this.text('y2Label')]
-        this.fields.forEach((field, index) => { field.value = values[index]!; field.label = labels[index]!; field.accessibleLabel = labels[index]!; field.disabled = this.unavailable })
+        this.fields.forEach((field, index) => {
+            const label = labels[index]!
+            this.fieldLabels[index]!.textContent = label
+            this.fieldLabels[index]!.hidden = !label
+            field.value = values[index]!
+            field.label = ''
+            field.accessibleLabel = label
+            field.disabled = this.unavailable
+        })
         const value = this.cssValue(curve)
         this.value = value
         this.valueNode.value = value
@@ -127,11 +139,13 @@ export class Bezier extends BezierBase {
         this.resetButton.disabled = this.unavailable
     }
 
-    private createField(point: 1 | 2, axis: 'x' | 'y'): NumberControl {
-        const field = document.createElement('cb-number-input') as NumberControl
-        field.setAttribute('part', `field point-${point}-${axis}`)
-        field.min = axis === 'x' ? 0 : -1; field.max = axis === 'x' ? 1 : 2; field.step = .01
-        field.addEventListener('cb-change', event => {
+    private createField(point: 1 | 2, axis: 'x' | 'y'): NumberField {
+        const wrapper = el('label', `field point-${point}-${axis}`)
+        const label = el('span', 'field-label')
+        const control = document.createElement('cb-number-input') as NumberControl
+        control.setAttribute('part', `field-control point-${point}-${axis}-control`)
+        control.min = axis === 'x' ? 0 : -1; control.max = axis === 'x' ? 1 : 2; control.step = .01
+        control.addEventListener('cb-change', event => {
             event.stopPropagation()
             const value = Number((event as CustomEvent<{ value: string | number }>).detail.value)
             const curve = this.curve()
@@ -139,7 +153,9 @@ export class Bezier extends BezierBase {
             const y = axis === 'y' ? value : point === 1 ? curve.y1 : curve.y2
             this.setPoint(point, x, y, event)
         })
-        return field
+        wrapper.addEventListener('click', event => { if (event.target === label) control.focus() })
+        wrapper.append(label, control)
+        return { wrapper, label, control }
     }
 
     private createHandle(point: 1 | 2): SVGCircleElement {

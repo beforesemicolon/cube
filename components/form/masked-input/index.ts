@@ -1,5 +1,3 @@
-import '../field/index.js'
-import type { Field } from '../field/index.js'
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { bool, scalarText } from '../../core/value.js'
@@ -12,13 +10,9 @@ const css = editorCSS + `
 `
 
 export class MaskedInput extends MaskedInputBase {
-    private field?: Field
     private input?: HTMLInputElement
     render(): Node {
-        this.field = document.createElement('cb-field') as Field
-        this.field.setAttribute('part', 'field')
-        this.field.setAttribute('exportparts', 'field:field,header:header,label:label,requirement:requirement,description:description,help:help,details:details,error:error,control:control')
-        this.input = el('input', 'input')
+        this.input = el('input', 'control input')
         this.input.type = 'text'
         this.input.addEventListener('input', event => {
             if (!this.input) return
@@ -26,12 +20,11 @@ export class MaskedInput extends MaskedInputBase {
             if (accepted) queueMicrotask(() => { if (this.input) this.input.setSelectionRange(this.input.value.length, this.input.value.length) })
         })
         this.input.addEventListener('change', event => { if (this.input) this.setValue(this.input.value, event, true) })
-        this.field.append(this.input)
-        return fragment(sheet(css), this.field)
+        return fragment(sheet(css), this.input)
     }
     protected fieldElement(): HTMLInputElement | undefined { return this.input }
     protected syncView(): void {
-        if (!this.field || !this.input) return
+        if (!this.input) return
         const value = this.formattedValue()
         if (this.input.value !== value) this.input.value = value
         this.input.placeholder = this.maskGuide()
@@ -41,13 +34,11 @@ export class MaskedInput extends MaskedInputBase {
         this.input.inputMode = scalarText(this.inputMode, 'text') as typeof this.input.inputMode
         this.input.setAttribute('autocomplete', scalarText(this.autocomplete, 'off'))
         aria(this.input, 'aria-label', this.accessibleName())
+        aria(this.input, 'aria-description', scalarText(this.description) || null)
         this.syncForm(this.submittedValue())
         const error = this.validationShown ? this.validationMessage : scalarText(this.errorText)
-        Object.assign(this.field, {
-            label: scalarText(this.label), accessibleLabel: scalarText(this.accessibleLabel), description: scalarText(this.description),
-            errorText: error, required: bool(this.required), invalid: Boolean(error), disabled: this.unavailable,
-        })
         aria(this.input, 'aria-invalid', error ? true : null)
+        this.toggleAttribute('data-invalid', Boolean(error))
     }
 }
 

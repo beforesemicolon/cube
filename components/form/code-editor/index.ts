@@ -13,7 +13,7 @@ const syntaxCSS = `
 `
 const css = editorCSS + syntaxCSS + `
 :host{display:block;inline-size:min(100%,var(--component-code-editor-width,720px));min-inline-size:0}
-[part~=field]{display:grid;gap:var(--spacing-xs,4px)}[part~=label]{font-weight:600}[part~=shell]{overflow:hidden;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)}
+[part~=shell]{overflow:hidden;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)}
 [part~=toolbar]{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-sm,8px);min-block-size:32px;padding:var(--spacing-xs,4px) var(--spacing-sm,8px);border-block-end:1px solid var(--color-separator);background:var(--color-surface-muted)}
 [part~=language],[part~=position]{color:var(--color-muted-foreground);font:600 11px/1.4 var(--typography-mono-font-family)}
 [part~=editor]{display:grid;grid-template-columns:auto minmax(0,1fr);min-block-size:0;overflow:hidden}
@@ -21,23 +21,18 @@ const css = editorCSS + syntaxCSS + `
 [part~=editing-layer]{position:relative;min-inline-size:0;overflow:hidden}[part~=highlight],[part~=control]{font:400 var(--component-code-font-size,12px)/1.65 var(--typography-mono-font-family);tab-size:var(--code-tab-size,2);white-space:pre;margin:0;padding:var(--spacing-sm,8px);border:0;border-radius:0;min-block-size:var(--code-min-height);max-block-size:var(--code-max-height);overflow:auto}
 [part~=highlight]{position:absolute;inset:0;pointer-events:none;color:var(--color-foreground)}[part~=control]{position:relative;inline-size:100%;resize:none;background:transparent;color:transparent;caret-color:var(--color-foreground);-webkit-text-fill-color:transparent;outline:0}
 [part~=control]::selection{background:var(--color-selection);-webkit-text-fill-color:transparent}:host([data-wrap]) [part~=highlight],:host([data-wrap]) [part~=control]{white-space:pre-wrap;overflow-wrap:anywhere}
-[part~=description],[part~=error]{margin:0}:host([data-invalid]) [part~=shell]{border-color:var(--color-danger)}
+:host([data-invalid]) [part~=shell]{border-color:var(--color-danger)}
 `
 
 export class CodeEditor extends CodeEditorBase {
-    private labelNode?: HTMLLabelElement
     private shell?: HTMLElement
     private languageNode?: HTMLElement
     private positionNode?: HTMLElement
     private gutter?: HTMLPreElement
     private highlight?: HTMLElement
     private control?: HTMLTextAreaElement
-    private descriptionNode?: HTMLElement
-    private errorNode?: HTMLElement
 
     render(): Node {
-        const field = el('div', 'field')
-        this.labelNode = el('label', 'label')
         this.shell = el('div', 'shell')
         const toolbar = el('div', 'toolbar')
         this.languageNode = el('span', 'language')
@@ -63,16 +58,12 @@ export class CodeEditor extends CodeEditorBase {
         layer.append(this.highlight, this.control)
         editor.append(this.gutter, layer)
         this.shell.append(toolbar, editor)
-        this.descriptionNode = el('p', 'description')
-        this.errorNode = el('p', 'error')
-        this.errorNode.setAttribute('role', 'alert')
-        field.append(this.labelNode, this.shell, this.descriptionNode, this.errorNode)
-        return fragment(sheet(css), field)
+        return fragment(sheet(css), this.shell)
     }
 
     protected editorElement(): HTMLTextAreaElement | undefined { return this.control }
     protected syncView(): void {
-        if (!this.labelNode || !this.shell || !this.languageNode || !this.positionNode || !this.gutter || !this.highlight || !this.control || !this.descriptionNode || !this.errorNode) return
+        if (!this.shell || !this.languageNode || !this.positionNode || !this.gutter || !this.highlight || !this.control) return
         const value = this.sourceText()
         const selectionStart = this.control.selectionStart
         const selectionEnd = this.control.selectionEnd
@@ -92,20 +83,12 @@ export class CodeEditor extends CodeEditorBase {
         this.style.setProperty('--code-min-height', `${this.normalizedMinLines() * 1.65}em`)
         this.style.setProperty('--code-max-height', `${this.normalizedMaxLines() * 1.65}em`)
         this.toggleAttribute('data-wrap', bool(this.wrap))
-        this.labelNode.textContent = scalarText(this.label)
-        this.labelNode.htmlFor = this.control.id
-        this.labelNode.hidden = !scalarText(this.label)
-        this.descriptionNode.textContent = scalarText(this.description)
-        this.descriptionNode.hidden = !scalarText(this.description)
         this.syncForm(value)
         const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(scalarText(this.errorText)))
-        this.errorNode.textContent = error ? this.validationMessage : ''
-        this.errorNode.hidden = !error
         this.toggleAttribute('data-invalid', error)
         aria(this.control, 'aria-label', this.accessibleName())
         aria(this.control, 'aria-invalid', error ? true : null)
-        const describedBy = [this.descriptionNode.hidden ? '' : this.descriptionNode.id ||= uid('cb-code-description'), error ? this.errorNode.id ||= uid('cb-code-error') : ''].filter(Boolean).join(' ')
-        aria(this.control, 'aria-describedby', describedBy || null)
+        aria(this.control, 'aria-description', [scalarText(this.description), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null)
         this.control.setSelectionRange(Math.min(selectionStart, value.length), Math.min(selectionEnd, value.length))
         this.syncPosition()
         this.syncScroll()
