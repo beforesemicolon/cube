@@ -61,4 +61,6 @@ class CubeStoryEvents extends HTMLElement {
     }
 }
 
-if (!customElements.get('cube-story-events')) customElements.define('cube-story-events', CubeStoryEvents)
+export function registerCubeStoryEvents(): void {
+    if (!customElements.get('cube-story-events')) customElements.define('cube-story-events', CubeStoryEvents)
+}

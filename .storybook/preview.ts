@@ -1,7 +1,9 @@
 import type { Decorator, Preview } from '@storybook/web-components-vite'
 import { html } from 'lit'
 import '../components/theme/theme-provider/index.js'
-import '../stories/events.js'
+import { registerCubeStoryEvents } from '../stories/events.js'
+
+registerCubeStoryEvents()
 
 const withCubeTheme: Decorator = (Story, context) => {
     const requestedAppearance = String(context.globals.appearance)
