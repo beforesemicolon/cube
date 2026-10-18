@@ -240,7 +240,13 @@ test('built Storybook: readiness component stories remain directly interactive',
     await page.goto('http://127.0.0.1:6006/iframe.html?id=form--json-editor&viewMode=story')
     const json = page.locator('cb-json-editor')
     await expect(json.locator('.hljs-attr').first()).toBeVisible()
+    const jsonControl = json.getByRole('textbox')
+    await jsonControl.fill('{"appearance":"light","radius":{"md":"12px"}}')
+    await expect(jsonControl).toHaveValue('{"appearance":"light","radius":{"md":"12px"}}')
+    await expect(json).toHaveJSProperty('value', '{"appearance":"light","radius":{"md":"12px"}}')
+    await expect(jsonControl).toBeFocused()
     await json.getByRole('button', { name: 'Format JSON' }).click()
+    expect(await jsonControl.inputValue()).toContain('\n')
     await expect(json.getByRole('status')).toHaveText('Valid JSON')
 
     await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--workspace&viewMode=story')

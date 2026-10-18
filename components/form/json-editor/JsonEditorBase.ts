@@ -1,5 +1,6 @@
 import { FormFieldBase, type FormFieldProps } from '../FormFieldBase.js'
 import { bool, finite, scalarText } from '../../core/value.js'
+import { SourceValueController } from '../source-value.js'
 
 export type JsonPrimitive = string | number | boolean | null
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
@@ -31,7 +32,8 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
         ...FormFieldBase.observedAttributes, 'value', 'indent', 'format-label', 'valid-label', 'invalid-label', 'placeholder',
         'line-numbers', 'wrap', 'position-label',
     ]
-    value: string | JsonValue = ''
+    declare value: string | JsonValue
+    private readonly sourceValue: SourceValueController<string | JsonValue>
     indent = 2
     validator?: JsonValidator
     formatLabel = ''
@@ -41,6 +43,20 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
     lineNumbers = true
     wrap = false
     positionLabel = ''
+
+    constructor() {
+        super()
+        this.sourceValue = new SourceValueController<string | JsonValue>(
+            this,
+            '',
+            value => value ?? '',
+            value => typeof value === 'string' || value === null || typeof value === 'number' || typeof value === 'boolean'
+                ? value === null ? 'null' : scalarText(value)
+                : null,
+            () => this.syncView(),
+        )
+    }
+
     protected abstract nestedEditor(): HTMLElement | undefined
     protected fieldElement(): undefined { return undefined }
     protected sourceText(): string {
@@ -49,8 +65,16 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
     }
     protected captureValue(): string { return this.sourceText() }
     protected restoreValue(value: unknown): void {
-        if (value instanceof FormData) this.value = scalarText(value.get(this.name))
-        else this.value = scalarText(value)
+        this.sourceValue.set(value instanceof FormData ? scalarText(value.get(this.name)) : scalarText(value), false)
+    }
+
+    protected mount(): void { this.sourceValue.mount(); super.mount() }
+    protected update(name: string): void {
+        if (name === 'value') {
+            if (this.sourceValue.isReflecting) return
+            this.sourceValue.readAttribute()
+        }
+        super.update(name)
     }
 
     parse(): { value?: JsonValue; error: string } {
@@ -68,8 +92,8 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
         if (this.unavailable || bool(this.readOnly)) return false
         const next = scalarText(value)
         const detail = { value: next, originalEvent }
-        if (!this.request('cb-before-change', detail)) return false
-        this.value = next
+        if (!this.request('cb-before-change', detail)) { this.syncView(); return false }
+        this.sourceValue.set(next, false)
         this.validationShown = commit
         this.syncView()
         this.emit(commit ? 'cb-change' : 'cb-input', detail)

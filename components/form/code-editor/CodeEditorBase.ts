@@ -1,5 +1,6 @@
 import { FormFieldBase, type FormFieldProps } from '../FormFieldBase.js'
 import { bool, finite, scalarText } from '../../core/value.js'
+import { SourceValueController } from '../source-value.js'
 
 export type CodeEditorValue = string | number | boolean | null | readonly CodeEditorValue[] | { readonly [key: string]: CodeEditorValue }
 
@@ -22,7 +23,8 @@ export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps
         ...FormFieldBase.observedAttributes, 'value', 'language', 'placeholder', 'line-numbers', 'wrap', 'tab-size',
         'min-lines', 'max-lines', 'position-label', 'submit-label',
     ]
-    value: CodeEditorValue = ''
+    declare value: CodeEditorValue
+    private readonly sourceValue: SourceValueController<CodeEditorValue>
     language = 'plaintext'
     placeholder = ''
     lineNumbers = true
@@ -33,6 +35,19 @@ export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps
     positionLabel = ''
     submitLabel = ''
 
+    constructor() {
+        super()
+        this.sourceValue = new SourceValueController<CodeEditorValue>(
+            this,
+            '',
+            value => value ?? '',
+            value => typeof value === 'string' || value === null || typeof value === 'number' || typeof value === 'boolean'
+                ? scalarText(value)
+                : null,
+            () => this.syncView(),
+        )
+    }
+
     protected abstract editorElement(): HTMLTextAreaElement | undefined
     protected fieldElement(): HTMLTextAreaElement | undefined { return this.editorElement() }
     protected sourceText(): string {
@@ -42,19 +57,26 @@ export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps
     }
     protected captureValue(): string { return this.sourceText() }
     protected restoreValue(value: unknown): void {
-        if (value instanceof FormData) this.value = scalarText(value.get(this.name))
-        else this.value = scalarText(value)
+        this.sourceValue.set(value instanceof FormData ? scalarText(value.get(this.name)) : scalarText(value), false)
     }
     protected normalizedTabSize(): number { return Math.min(8, Math.max(1, Math.trunc(finite(this.tabSize, 2)))) }
     protected normalizedMinLines(): number { return Math.max(2, Math.trunc(finite(this.minLines, 8))) }
     protected normalizedMaxLines(): number { return Math.max(this.normalizedMinLines(), Math.trunc(finite(this.maxLines, 32))) }
+    protected mount(): void { this.sourceValue.mount(); super.mount() }
+    protected update(name: string): void {
+        if (name === 'value') {
+            if (this.sourceValue.isReflecting) return
+            this.sourceValue.readAttribute()
+        }
+        super.update(name)
+    }
 
     setValue(value: string, originalEvent?: Event, commit = false): boolean {
         if (this.unavailable || bool(this.readOnly)) return false
         const next = scalarText(value)
         const detail = { value: next, originalEvent }
         if (!this.request('cb-before-change', detail)) { this.syncView(); return false }
-        this.value = next
+        this.sourceValue.set(next, false)
         this.syncView()
         this.emit(commit ? 'cb-change' : 'cb-input', detail)
         return true
