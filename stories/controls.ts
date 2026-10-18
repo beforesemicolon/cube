@@ -216,7 +216,7 @@ const descriptions: Readonly<Record<string, string>> = {
     popupMaxWidth: 'Maximum popup width as a CSS length, or a number interpreted as pixels. The viewport remains the final boundary.',
     popupMaxHeight: 'Maximum popup height as a CSS length, or a number interpreted as pixels. Overflow scrolls within the popup.',
     pressed: 'When defined, gives the button persistent toggle state and exposes aria-pressed. Leave undefined for a normal action button.',
-    recentColors: 'Controlled list of colors most recently committed in the picker.',
+    recentColors: 'Controlled list of recent colors to display without changing it when the picker value changes.',
     open: 'Controls whether the popup or overlay is open.',
     options: 'Editable option collection. Add, remove, relabel, value, or disable options here.',
     optionalLabel: 'Localized text identifying a field as optional.',

@@ -117,7 +117,6 @@ export abstract class ColorPickerBase extends FormFieldBase<ColorPickerProps> {
         const detail: ColorPickerChangeDetail = { value: next, color: parseHexColor(next) ?? color, originalEvent }
         if (!this.request('cb-before-change', detail)) return false
         this.value = next
-        this.remember(next)
         this.syncView()
         this.emit('cb-change', detail)
         return true
@@ -168,14 +167,8 @@ export abstract class ColorPickerBase extends FormFieldBase<ColorPickerProps> {
     }
 
     palette(): readonly string[] {
-        return this.normalizedColors([...this.swatches, ...this.recentColors])
-    }
-
-    private remember(value: string): void {
         const limit = Math.max(0, Math.round(finite(this.maxRecent, 8)))
-        if (!limit) { this.recentColors = []; return }
-        const normalized = normalizeColor(value)
-        this.recentColors = [normalized, ...this.recentColors.map(color => normalizeColor(color)).filter(color => color !== normalized)].slice(0, limit)
+        return this.normalizedColors([...this.swatches, ...this.recentColors.slice(0, limit)])
     }
 
     private normalizedColors(source: readonly string[]): string[] {
