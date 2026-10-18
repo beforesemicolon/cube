@@ -36,9 +36,9 @@ test('every Studio design entry registers and mounts without missing-property fa
             componentErrors,
         }
     })
-    expect(result.definitions).toBe(55)
-    expect(result.registered).toBe(55)
-    expect(result.mounted).toBe(55)
+    expect(result.definitions).toBe(54)
+    expect(result.registered).toBe(54)
+    expect(result.mounted).toBe(54)
     expect(result.componentErrors).toEqual([])
     expect(pageErrors).toEqual([])
 })

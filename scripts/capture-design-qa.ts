@@ -45,7 +45,7 @@ const boards: Readonly<Record<string, BoardConfig>> = {
     },
     styling: {
         file: '03/Color & style.png', width: 3376, height: 13920,
-        components: ['color-picker','hue','alpha','gradient-editor','gradient-stops','fill','stroke','shadow','opacity','blend-mode','radius','spacing','typography','font-family','font-weight','decoration','alignment','css-variable','design-token','image-background','filter'],
+        components: ['color-picker','hue','alpha','gradient-editor','fill','stroke','shadow','opacity','blend-mode','radius','spacing','typography','font-family','font-weight','decoration','alignment','css-variable','design-token','image-background','filter'],
     },
     layout: {
         file: '04/Layout.png', width: 3376, height: 11228,

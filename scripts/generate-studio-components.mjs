@@ -94,7 +94,7 @@ const definitions = groups.flatMap(([board, entries]) => entries.map(([name, tit
 // retained as a design reference and documented as an application-level example.
 const publicStudioComponentNames = new Set([
     'text-input','textarea','number-input','unit-input','combobox','checkbox','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input',
-    'color-picker','gradient-editor','gradient-stops',
+    'color-picker','gradient-editor',
     'collapsible-sidebar','resizable-panel','docked-panel','panel-header',
     'badge','avatar','card','list','description-row','table','tree','accordion','code-preview',
     'status','empty-state','skeleton','progress','spinner','toast','alert','banner',

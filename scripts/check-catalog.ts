@@ -10,7 +10,7 @@ for(const {category,name,className}of studioDefinitions){
     assert.match(await readFile(`components/${category}/${name}/${className}Base.ts`,'utf8'),/extends (?:StudioComponentBase|FormFieldBase|UIComponent|Component|ModalBase)/)
     await access(`components/${category}/${name}/base.ts`)
 }
-assert.equal(studioDefinitions.length,55,'The audited Studio catalog contains 55 component families')
+assert.equal(studioDefinitions.length,54,'The audited Studio catalog contains 54 component families')
 assert.equal(studioDesignReferences.length,217,'The eleven Studio boards remain available as 217 design references')
 for(const {name}of studioBoardItems)assert(componentEntries.some(entry=>entry.name===name),`Missing Studio board component: ${name}`)
 const index=JSON.parse(await readFile('storybook-static/index.json','utf8'))

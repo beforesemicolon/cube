@@ -102,7 +102,7 @@ export class ColorPicker extends ColorPickerBase {
         this.trigger = el('button', 'trigger control'); this.trigger.type = 'button'; this.trigger.id = uid('cb-color-picker')
         this.triggerSwatch = el('span', 'trigger-swatch'); this.trigger.append(this.triggerSwatch)
         this.nativeControl = el('input', 'native control'); this.nativeControl.type = 'color'; this.nativeControl.id = `${this.trigger.id}-native`
-        this.popup = el('section', 'popup'); this.popup.id = `${this.trigger.id}-popup`; this.popup.setAttribute('role', 'dialog'); this.popup.hidden = true
+        this.popup = el('section', 'popup'); this.popup.id = `${this.trigger.id}-popup`; this.popup.setAttribute('role', 'dialog'); this.popup.tabIndex = -1; this.popup.hidden = true
         const toolbar = el('div', 'toolbar')
         const preview = el('span', 'preview'), previewColor = el('span', 'preview-color'); this.previewColor = previewColor; preview.append(previewColor)
         const hexField = el('label', 'hex-field'), hexLabel = el('span', 'channel-label'); this.hexLabelNode = hexLabel

@@ -17,7 +17,6 @@ export const studioComponentLoaders = {
     'masked-input': () => import('../form/masked-input/index.js'),
     'color-picker': () => import('../styling/color-picker/index.js'),
     'gradient-editor': () => import('../styling/gradient-editor/index.js'),
-    'gradient-stops': () => import('../styling/gradient-stops/index.js'),
     'badge': () => import('../data-display/badge/index.js'),
     'status': () => import('../feedback/status/index.js'),
     'avatar': () => import('../data-display/avatar/index.js'),

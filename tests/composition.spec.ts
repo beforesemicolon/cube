@@ -37,5 +37,6 @@ test('raw buttons are limited to semantic primitives and native form interop', (
         'navigation/tabs/index.ts': 1,
         'studio/view.ts': 1,
         'styling/color-picker/index.ts': 3,
+        'styling/gradient-editor/index.ts': 1,
     })
 })
