@@ -23,7 +23,7 @@ order: 21
 | Unit input | `<cb-unit-input>` | `@beforesemicolon/cube/form/unit-input` |
 | Combobox | `<cb-combobox>` | `@beforesemicolon/cube/form/combobox` |
 | Checkbox | `<cb-checkbox>` | `@beforesemicolon/cube/form/checkbox` |
-| Radio | `<cb-radio>` | `@beforesemicolon/cube/form/radio` |
+| Radio group | `<cb-radio-group>` | `@beforesemicolon/cube/form/radio-group` |
 | Switch | `<cb-switch>` | `@beforesemicolon/cube/form/switch` |
 | Range slider | `<cb-range-slider>` | `@beforesemicolon/cube/form/range-slider` |
 | Stepper | `<cb-stepper>` | `@beforesemicolon/cube/form/stepper` |

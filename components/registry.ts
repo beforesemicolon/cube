@@ -22,6 +22,7 @@ export const componentLoaders = {
     'icon': () => import('./icons/icon/index.js'),
     'slider': () => import('./form/slider/index.js'),
     'select': () => import('./form/select/index.js'),
+    'radio-group': () => import('./form/radio-group/index.js'),
     'calendar': () => import('./form/calendar/index.js'),
     'audio-player': () => import('./media/audio-player/index.js'),
     'video-player': () => import('./media/video-player/index.js'),

@@ -93,7 +93,7 @@ const definitions = groups.flatMap(([board, entries]) => entries.map(([name, tit
 // Only these Figma cards define reusable public components. Every other card is
 // retained as a design reference and documented as an application-level example.
 const publicStudioComponentNames = new Set([
-    'text-input','textarea','number-input','unit-input','combobox','checkbox','radio','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input',
+    'text-input','textarea','number-input','unit-input','combobox','checkbox','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input',
     'color-picker','color-swatch','eyedropper','gradient-editor','gradient-stops',
     'collapsible-sidebar','resizable-panel','docked-panel','panel-header',
     'badge','avatar','card','list','description-row','table','tree','accordion','code-preview',
@@ -138,7 +138,7 @@ const studioBoardItems = [
 ]
 const existingCategoryExports = {
     action: ["export * from './button/index.js'", "export * from './toggle-button/index.js'", "export * from './split-button/index.js'", "export * from './button-group/index.js'", "export * from './toolbar/index.js'", "export * from './action-bar/index.js'", "export * from './shortcut/index.js'"],
-    form: ["export * from './slider/index.js'", "export * from './select/index.js'", "export * from './calendar/index.js'", "export { normalizeRange, normalizeOptions } from './model.js'"],
+    form: ["export * from './slider/index.js'", "export * from './select/index.js'", "export * from './radio-group/index.js'", "export * from './calendar/index.js'", "export { normalizeRange, normalizeOptions } from './model.js'"],
     layout: ["export * from './box/index.js'", "export * from './row/index.js'", "export * from './col/index.js'", "export * from './grid/index.js'", "export * from './divider/index.js'"],
     navigation: ["export * from './link/index.js'", "export * from './segmented-control/index.js'", "export * from './tabs/index.js'", "export * from './breadcrumb/index.js'", "export * from './menu/index.js'", "export * from './pagination/index.js'"],
     overlay: ["export * from './context-menu/index.js'", "export * from './dropdown/index.js'", "export * from './command-palette/index.js'", "export * from './tooltip/index.js'", "export * from './modal/index.js'", "export * from './alert-dialog/index.js'"],
@@ -240,6 +240,7 @@ const foundationStoryArgs = {
     'alert-dialog': `{ heading: 'Delete component?', description: 'This action cannot be undone.', open: false, dismissible: true, closeOnBackdrop: true, modalSize: 'sm', confirmLabel: 'Delete', cancelLabel: 'Cancel', destructive: true, busy: false }`,
     slider: `{ label: 'Opacity', value: 64, min: 0, max: 100, step: 1, valueText: '64%', orientation: 'horizontal' }`,
     select: `{ label: 'Select', value: 'desktop', placeholder: 'Choose a device', native: false, open: false, multi: false, searchable: 'auto', searchThreshold: 10, searchLabel: 'Filter options', searchPlaceholder: 'Search options', emptyLabel: 'No matching options', options: [{ value: 'desktop', label: 'Desktop' }, { value: 'tablet', label: 'Tablet' }, { value: 'mobile', label: 'Mobile' }, { value: 'watch', label: 'Watch' }, { value: 'television', label: 'Television' }, { value: 'laptop', label: 'Laptop' }, { value: 'desktop-wide', label: 'Wide desktop' }, { value: 'tablet-landscape', label: 'Landscape tablet' }, { value: 'phone-small', label: 'Small phone' }, { value: 'phone-large', label: 'Large phone' }, { value: 'kiosk', label: 'Kiosk' }] }`,
+    'radio-group': `{ label: 'Publishing access', value: 'team', orientation: 'vertical', options: [{ value: 'private', label: 'Only me' }, { value: 'team', label: 'Project members' }, { value: 'public', label: 'Anyone with the link' }] }`,
     calendar: `{ label: 'Calendar', value: '2026-10-18', firstDayOfWeek: 0, min: '', max: '', previousLabel: 'Previous month', nextLabel: 'Next month' }`,
     box: `{ inlineSize: '100%', padding: '16px', background: 'var(--color-surface-muted)', radius: '8px' }`,
     row: `{ gap: '8px', align: 'center', justify: 'start', wrap: true, reverse: false, collapseAt: 'sm' }`,
@@ -253,6 +254,7 @@ const foundationStoryArgs = {
 
 const storyExtras = [
     {category:'form',name:'calendar',title:'Calendar',kind:'display',className:'Calendar'},
+    {category:'form',name:'radio-group',title:'Radio group',kind:'choice',className:'RadioGroup'},
     {category:'layout',name:'box',title:'Box',kind:'panel',className:'Box'},
     {category:'layout',name:'row',title:'Row',kind:'collection',className:'Row'},
     {category:'layout',name:'col',title:'Col',kind:'collection',className:'Col'},
@@ -265,8 +267,10 @@ const storyExtras = [
 ]
 const reusedStoryDefinitions = reusedDefinitions.filter(reused => !definitions.some(definition => definition.name === reused.name) && reused.name !== 'icon-button')
 const storyDefinitions = [...publicDefinitions, ...reusedStoryDefinitions, ...storyExtras]
+const formStoryOrder = ['text-input','textarea','number-input','unit-input','combobox','checkbox','radio-group','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input','select','slider','calendar']
+const orderDefinitions = (category, entries) => category !== 'form' ? entries : [...entries].sort((left, right) => formStoryOrder.indexOf(left.name) - formStoryOrder.indexOf(right.name))
 const storyGroups = componentCategoryOrder
-    .map(category => [category, storyDefinitions.filter(definition => definition.category === category)])
+    .map(category => [category, orderDefinitions(category, storyDefinitions.filter(definition => definition.category === category))])
     .filter(([, entries]) => entries.length > 0 && !['media', 'charts'].includes(entries[0].category))
 
 for (const [category, entries] of storyGroups) {
@@ -296,7 +300,7 @@ const summary = summaryDefinitions.reduce((result, definition) => {
 const documentationCategories = componentCategoryOrder.filter(category => summary[category])
 
 for (const category of documentationCategories) {
-    const entries = summary[category]
+    const entries = orderDefinitions(category, summary[category])
     const heading = componentCategoryTitles[category]
     const rows = entries.map(entry => `| ${entry.title} | \`<cb-${entry.name}>\` | \`@beforesemicolon/cube/${category}/${entry.name}\` |`).join('\n')
     const key = documentationKeys[category]

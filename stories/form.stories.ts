@@ -19,7 +19,7 @@ export const Combobox: Story = componentStory('cb-combobox', { label: 'Font fami
 
 export const Checkbox: Story = componentStory('cb-checkbox', { label: 'Checkbox', checked: true })
 
-export const Radio: Story = componentStory('cb-radio', { label: 'Radio', checked: true })
+export const RadioGroup: Story = componentStory('cb-radio-group', { label: 'Publishing access', value: 'team', orientation: 'vertical', options: [{ value: 'private', label: 'Only me' }, { value: 'team', label: 'Project members' }, { value: 'public', label: 'Anyone with the link' }] })
 
 export const Switch: Story = componentStory('cb-switch', { label: 'Switch', checked: true })
 

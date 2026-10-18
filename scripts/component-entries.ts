@@ -21,6 +21,7 @@ const foundationEntries = [
     {path:'icons/icon',name:'icon',className:'Icon'},
     {path:'form/slider',name:'slider',className:'Slider'},
     {path:'form/select',name:'select',className:'Select'},
+    {path:'form/radio-group',name:'radio-group',className:'RadioGroup'},
     {path:'form/calendar',name:'calendar',className:'Calendar'},
     {path:'media/audio-player',name:'audio-player',className:'AudioPlayer'},
     {path:'media/video-player',name:'video-player',className:'VideoPlayer'},

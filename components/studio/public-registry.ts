@@ -6,7 +6,6 @@ export const studioComponentLoaders = {
     'unit-input': () => import('../form/unit-input/index.js'),
     'combobox': () => import('../form/combobox/index.js'),
     'checkbox': () => import('../form/checkbox/index.js'),
-    'radio': () => import('../form/radio/index.js'),
     'switch': () => import('../form/switch/index.js'),
     'range-slider': () => import('../form/range-slider/index.js'),
     'stepper': () => import('../form/stepper/index.js'),

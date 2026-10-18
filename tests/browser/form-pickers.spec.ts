@@ -82,6 +82,47 @@ test('select supports searchable multi-selection in the same component', async (
     expect(audit.violations).toEqual([])
 })
 
+test('radio group owns its options, keyboard selection and form value', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const form = document.createElement('form')
+        const group = document.createElement('cb-radio-group') as HTMLElement & {
+            label: string
+            name: string
+            value: string
+            required: boolean
+            options: Array<{ value: string; label: string; disabled?: boolean }>
+        }
+        group.label = 'Contact method'
+        group.name = 'contact'
+        group.value = 'email'
+        group.required = true
+        group.options = [
+            { value: 'email', label: 'Email' },
+            { value: 'sms', label: 'Text message' },
+            { value: 'push', label: 'Push notification', disabled: true },
+        ]
+        form.append(group)
+        document.querySelector('#fixture')?.append(form)
+    })
+
+    const group = page.locator('cb-radio-group')
+    await expect(group.getByRole('radiogroup', { name: 'Contact method' })).toBeVisible()
+    const email = group.getByRole('radio', { name: 'Email' })
+    const sms = group.getByRole('radio', { name: 'Text message' })
+    await expect(email).toBeChecked()
+    await email.focus()
+    await page.keyboard.press('ArrowRight')
+    await expect(sms).toBeChecked()
+    await expect(group).toHaveJSProperty('value', 'sms')
+    await expect(group.getByRole('radio', { name: 'Push notification' })).toBeDisabled()
+    const formValue = await page.locator('form').evaluate(form => new FormData(form).get('contact'))
+    expect(formValue).toBe('sms')
+
+    const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
+    expect(audit.violations).toEqual([])
+})
+
 test('unit input offers configurable units without changing its numeric value', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
