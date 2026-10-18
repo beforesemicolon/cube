@@ -38,7 +38,7 @@ export class PopupController {
     constructor(
         private popup: HTMLElement,
         private anchor: HTMLElement,
-        private onDismiss: () => void,
+        private onDismiss: (originalEvent: Event) => void,
         private options: PopupControllerOptions = {},
     ) {}
 
@@ -101,13 +101,13 @@ export class PopupController {
         }
         listen(doc, 'pointerdown', event => {
             const path = event.composedPath()
-            if (!path.includes(this.popup) && !path.includes(this.anchor)) this.onDismiss()
+            if (!path.includes(this.popup) && !path.includes(this.anchor)) this.onDismiss(event)
         }, true)
         listen(doc, 'keydown', event => {
             const keyboardEvent = event as KeyboardEvent
             if (keyboardEvent.key === 'Escape') {
                 keyboardEvent.preventDefault()
-                this.onDismiss()
+                this.onDismiss(keyboardEvent)
                 this.anchor.focus()
             }
         }, true)

@@ -27,8 +27,7 @@ test.beforeEach(async ({ page }) => {
             positionLabel: 'Origin', topLeftLabel: 'Top left', topLabel: 'Top', topRightLabel: 'Top right', leftLabel: 'Left', centerLabel: 'Center', rightLabel: 'Right',
             bottomLeftLabel: 'Bottom left', bottomLabel: 'Bottom', bottomRightLabel: 'Bottom right', stopsLabel: 'Color stops',
             stopLabel: 'Color stop {index} at {position}', addStopLabel: 'Add color stop', removeStopLabel: 'Remove selected color stop',
-            stopPositionLabel: 'Stop position (%)', previewLabel: 'Gradient preview', valueLabel: 'CSS value',
-            helpText: 'Click the color rail to add a stop. Drag or use arrow keys to move it.', hueLabel: 'Hue', saturationLabel: 'Saturation',
+            helpText: 'Click the color rail to add a stop. Drag or use arrow keys to move it. Double-click a stop, or press Enter, to edit its color.', hueLabel: 'Hue', saturationLabel: 'Saturation',
             brightnessLabel: 'Brightness', alphaLabel: 'Alpha', redLabel: 'Red', greenLabel: 'Green', blueLabel: 'Blue', hexLabel: 'HEX',
             planeLabel: 'Saturation and brightness', samplerLabel: 'Sample color from screen', closeLabel: 'Close color picker',
             swatchesLabel: 'Saved and recent colors', addSwatchLabel: 'Add current color',
@@ -40,9 +39,10 @@ test.beforeEach(async ({ page }) => {
 
 test('combines linear and radial geometry with interactive color stops', async ({ page }) => {
     const editor = page.locator('cb-gradient-editor')
-    await expect(editor.getByRole('img', { name: 'Gradient preview' })).toBeVisible()
+    await expect(editor.locator('[part~="preview-shell"]')).toHaveCount(0)
     await expect(editor.getByRole('slider')).toHaveCount(3)
-    await expect(editor.locator('output[part~="value"]')).toContainText('linear-gradient(120deg')
+    await expect(editor.locator('output[part~="value"]')).toHaveCount(0)
+    await expect(editor.locator('[part~="stop-position"]')).toHaveCount(0)
 
     await editor.getByRole('button', { name: 'Add color stop' }).click()
     await expect(editor.getByRole('slider')).toHaveCount(4)
@@ -66,10 +66,14 @@ test('combines linear and radial geometry with interactive color stops', async (
 test('edits the selected stop with Cube color picker and has no axe violations', async ({ page }) => {
     const editor = page.locator('cb-gradient-editor')
     const first = editor.getByRole('slider').first()
-    await first.click()
-    await editor.locator('cb-color-picker').getByRole('button').first().click()
+    await first.dblclick()
     await editor.getByLabel('HEX', { exact: true }).fill('#ff000080')
     await expect.poll(() => editor.evaluate(element => (element as GradientEditorElement).stops[0]?.color)).toBe('#ff000080')
+    await page.keyboard.press('Escape')
+    await expect(first).toBeFocused()
+
+    await first.press('Enter')
+    await expect(editor.getByLabel('HEX', { exact: true })).toBeFocused()
     const results = await new AxeBuilder({ page }).include('cb-gradient-editor').analyze()
     expect(results.violations).toEqual([])
 })

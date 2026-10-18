@@ -140,7 +140,7 @@ export class ColorPicker extends ColorPickerBase {
     }
 
     protected mount(): void {
-        if (this.popup && this.trigger) this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false), {
+        if (this.popup && this.trigger) this.popupController = new PopupController(this.popup, this.trigger, event => this.setOpen(false, event), {
             maxWidth: () => this.popupMaxWidth,
             maxHeight: () => this.popupMaxHeight,
         })
@@ -177,6 +177,9 @@ export class ColorPicker extends ColorPickerBase {
     }
 
     focus(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.trigger)?.focus(options) }
+
+    /** Moves focus into the custom editor after an external control opens it. */
+    focusEditor(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.hexInput)?.focus(options) }
 
     private sliderField(name: 'hue' | 'alpha'): { readonly field: HTMLElement; readonly input: HTMLInputElement } {
         const field = el('div', `slider-field ${name}-slider-field`), input = el('input', `slider ${name}-slider control`)

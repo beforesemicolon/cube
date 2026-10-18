@@ -61,6 +61,29 @@ Findings and iteration history:
 
 The live Storybook Actions panel recorded the picker input/change lifecycle and all four swatch events. Storybook exposes controls for all 41 reactive picker and field props, including the editable `swatches` and `recentColors` arrays plus localized add/remove labels. The focused browser tests include an open-state Axe audit.
 
+## Focused visual QA — Gradient editor
+
+- final result: passed
+- audited: 2026-10-18
+- source visual truth: user-provided `Screenshot 2026-10-18 at 12.56.13 PM.png` and the four requested removals/interactions described with it
+- implementation: `http://127.0.0.1:6006/?path=/story/styling--gradient-editor`
+- browser: Google Chrome
+- implementation viewport/output: 1555 × 1117 pixels
+- appearances checked: light and dark
+- states checked: linear, radial, selected stop, add/remove, pointer color editing, keyboard color editing, arrow-key movement, live alpha color update, Escape focus recovery, Storybook Actions output, and Axe scan
+- visual evidence: live Chrome screenshots were captured and displayed during the audit; the named source attachment was not present at its local path, so no synthetic local comparison artifact was created
+
+Findings and iteration history:
+
+1. P1 — The component repeated the gradient in a large preview above the editable rail. Resolved by making the stop rail the single live visual result.
+2. P1 — The selected stop repeated its position in a separate numeric editor even though the handle already communicates and edits that position. Resolved by removing the block and preserving drag plus Arrow, Shift+Arrow, Home, and End controls on the slider.
+3. P1 — The component exposed a generated CSS string that applications do not need in the editing UI. Resolved by removing the visible readout while preserving the form value and public `value` property.
+4. P1 — Stop color editing required a separate visible trigger. Resolved by opening the composed Cube color picker from a stop handle with double-click or Enter/Space, updating the rail in real time, and restoring focus on Escape or the picker close action.
+5. P1 — Normalizing `stops` by reassigning the reactive property from its own update callback caused a maximum-call-stack loop. Resolved by normalizing at model and mutation boundaries without recursively assigning during `update`.
+6. P1 — Slider handles initially carried popup-only ARIA attributes. Resolved by keeping native slider semantics and describing the color-edit interaction through the localized help text.
+
+The focused Storybook accessibility scan reports zero violations. The post-reload interaction pass produced no console errors. `npm run typecheck`, all 51 unit tests, `npm run test:catalog`, `npm run test:exports`, `npm run build:storybook`, and `npm run build` pass.
+
 ## Resolved findings
 
 - Removed generated pseudo-components such as Width/Height, Min/Max, Aspect Ratio, Z-index, Search, Autocomplete, Preview Switch, Theme Switch, app-shell assemblies, and single-purpose asset/editor views.

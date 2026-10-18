@@ -44,9 +44,6 @@ export interface GradientEditorProps extends FormFieldProps {
     stopLabel?: string
     addStopLabel?: string
     removeStopLabel?: string
-    stopPositionLabel?: string
-    previewLabel?: string
-    valueLabel?: string
     helpText?: string
     hueLabel?: string
     saturationLabel?: string
@@ -78,7 +75,7 @@ export abstract class GradientEditorBase extends FormFieldBase<GradientEditorPro
         'type-label', 'linear-label', 'radial-label', 'angle-label', 'shape-label', 'circle-label', 'ellipse-label', 'extent-label',
         'closest-side-label', 'closest-corner-label', 'farthest-side-label', 'farthest-corner-label', 'position-label',
         'top-left-label', 'top-label', 'top-right-label', 'left-label', 'center-label', 'right-label', 'bottom-left-label', 'bottom-label', 'bottom-right-label',
-        'stops-label', 'stop-label', 'add-stop-label', 'remove-stop-label', 'stop-position-label', 'preview-label', 'value-label', 'help-text',
+        'stops-label', 'stop-label', 'add-stop-label', 'remove-stop-label', 'help-text',
         'hue-label', 'saturation-label', 'brightness-label', 'alpha-label', 'red-label', 'green-label', 'blue-label', 'hex-label', 'plane-label',
         'sampler-label', 'close-label', 'swatches-label', 'add-swatch-label', 'remove-swatch-label', 'transparent-label',
     ]
@@ -119,9 +116,6 @@ export abstract class GradientEditorBase extends FormFieldBase<GradientEditorPro
     stopLabel = ''
     addStopLabel = ''
     removeStopLabel = ''
-    stopPositionLabel = ''
-    previewLabel = ''
-    valueLabel = ''
     helpText = ''
     hueLabel = ''
     saturationLabel = ''
@@ -150,7 +144,6 @@ export abstract class GradientEditorBase extends FormFieldBase<GradientEditorPro
 
     protected update(name: string): void {
         if (name === 'value') this.adoptValue()
-        if (name === 'stops') this.stops = normalizeGradientStops(this.stops)
         this.ensureSelectedStop()
         super.update(name)
     }

@@ -18,20 +18,19 @@ import type { GradientExtent, GradientPosition, GradientShape, GradientStop, Gra
 const css = editorCSS + `
 :host{display:block;inline-size:min(100%,var(--component-gradient-editor-width,560px));container-type:inline-size}
 [part~=root]{display:grid;gap:var(--spacing-md,12px);min-inline-size:0}
-[part~=preview-shell],[part~=track]{background-color:${v('--color-surface')};background-image:conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0);background-size:12px 12px}
-[part~=preview-shell]{position:relative;overflow:hidden;block-size:var(--component-gradient-preview-height,124px);border:1px solid ${v('--color-border')};border-radius:var(--radius-lg,12px)}
-[part~=preview]{position:absolute;inset:0;background:var(--cb-gradient)}
+[part~=track]{background-color:${v('--color-surface')};background-image:conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0);background-size:12px 12px}
 [part~=geometry]{display:flex;align-items:end;gap:var(--spacing-sm,8px);flex-wrap:wrap}
 [part~=mode]{flex:none}
 [part~=angle-field]{display:grid;gap:var(--spacing-xs,4px);min-inline-size:88px}
-[part~=control-label],[part~=section-label],[part~=value-label]{color:${v('--color-muted-foreground')};font-size:var(--component-caption-font-size,11px);font-weight:600}
-[part~=angle],[part~=stop-position]{inline-size:88px;min-block-size:var(--cb-height);padding:4px 8px;border:1px solid ${v('--color-border')};border-radius:var(--radius-sm);background:${v('--color-surface-muted')};font-variant-numeric:tabular-nums}
-[part~=angle]::-webkit-inner-spin-button,[part~=stop-position]::-webkit-inner-spin-button{appearance:none;margin:0}
+[part~=control-label],[part~=section-label]{color:${v('--color-muted-foreground')};font-size:var(--component-caption-font-size,11px);font-weight:600}
+[part~=angle]{inline-size:88px;min-block-size:var(--cb-height);padding:4px 8px;border:1px solid ${v('--color-border')};border-radius:var(--radius-sm);background:${v('--color-surface-muted')};font-variant-numeric:tabular-nums}
+[part~=angle]::-webkit-inner-spin-button{appearance:none;margin:0}
 [part~=radial-controls]{display:flex;align-items:end;gap:var(--spacing-sm,8px);flex:1;flex-wrap:wrap}
 [part~=select-field]{display:grid;gap:var(--spacing-xs,4px);min-inline-size:0}
 [part~=shape],[part~=extent],[part~=position]{--component-select-width:var(--component-gradient-select-width,132px)}
 [part~=stops]{display:grid;gap:var(--spacing-sm,8px)}
 [part~=stops-header]{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-sm,8px)}
+[part~=stop-actions]{display:flex;align-items:center;gap:var(--spacing-xs,4px)}
 [part~=track]{position:relative;block-size:38px;margin:0 10px 32px;border:1px solid ${v('--color-border')};border-radius:var(--radius-md);box-shadow:inset 0 0 0 1px color-mix(in srgb,#fff 35%,transparent);cursor:crosshair;touch-action:none;user-select:none}
 [part~=track-color]{position:absolute;inset:0;border-radius:calc(var(--radius-md) - 1px);background:var(--cb-track-gradient);pointer-events:none}
 [part~=stop]{position:absolute;inset-block-start:100%;display:block;inline-size:22px;min-inline-size:22px;block-size:28px;min-block-size:28px;padding:8px 3px 2px;border:0;border-radius:0;background:transparent!important;transform:translate(-50%,3px);color:${v('--color-muted-foreground')};cursor:ew-resize;touch-action:none}
@@ -39,16 +38,12 @@ const css = editorCSS + `
 [part~=stop-swatch]{display:block;inline-size:16px;block-size:16px;border:2px solid ${v('--color-surface-raised')};border-radius:3px;background:var(--cb-stop-color);box-shadow:0 0 0 1px currentColor}
 [part~=stop][data-selected]{z-index:1;color:${v('--color-primary')}}
 [part~=stop][data-selected] [part~=stop-swatch]{box-shadow:0 0 0 2px currentColor}
-[part~=stop-editor]{display:grid;grid-template-columns:auto minmax(100px,1fr) auto;align-items:end;gap:var(--spacing-sm,8px);padding:var(--spacing-sm,8px);border:1px solid ${v('--color-separator')};border-radius:var(--radius-md);background:${v('--color-surface-muted')}}
-[part~=stop-color]{inline-size:var(--component-color-picker-trigger-size,36px);min-inline-size:var(--component-color-picker-trigger-size,36px)}
-[part~=stop-position-field]{display:grid;gap:var(--spacing-xs,4px)}
-[part~=stop-position]{inline-size:100%}
-[part~=value-row]{display:grid;gap:var(--spacing-xs,4px)}
-[part~=value]{display:block;min-inline-size:0;padding:var(--spacing-sm,8px);overflow:auto;border:1px solid ${v('--color-separator')};border-radius:var(--radius-sm);background:${v('--color-surface-muted')};font:var(--component-code-font,11px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace);white-space:nowrap}
+[part~=stop-color]{position:absolute;z-index:2;inset-block-start:calc(100% + 31px);inset-inline-start:var(--cb-selected-stop-position);inline-size:1px;min-inline-size:1px;block-size:1px;transform:translateX(-50%);--component-color-picker-trigger-size:1px}
+[part~=stop-color]::part(trigger){visibility:hidden;padding:0;border:0}
 [part~=hidden-control]{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%)}
 :host([data-disabled]) [part~=track]{cursor:not-allowed;opacity:var(--component-disabled-opacity,.5)}
-:host([data-invalid]) [part~=preview-shell]{border-color:${v('--color-danger')}}
-@container(max-width:420px){[part~=preview-shell]{block-size:96px}[part~=geometry],[part~=radial-controls]{display:grid;grid-template-columns:1fr 1fr;inline-size:100%}[part~=mode]{grid-column:1/-1}[part~=shape],[part~=extent],[part~=position]{--component-select-width:100%}[part~=stop-editor]{grid-template-columns:auto 1fr auto}}
+:host([data-invalid]) [part~=track]{border-color:${v('--color-danger')}}
+@container(max-width:420px){[part~=geometry],[part~=radial-controls]{display:grid;grid-template-columns:1fr 1fr;inline-size:100%}[part~=mode]{grid-column:1/-1}[part~=shape],[part~=extent],[part~=position]{--component-select-width:100%}}
 @media(pointer:coarse){[part~=track]{block-size:44px;margin-block-end:38px}[part~=stop]{inline-size:30px;min-inline-size:30px;block-size:34px;min-block-size:34px}[part~=stop]::before{inset-inline-start:11px}}
 `
 
@@ -67,7 +62,6 @@ interface ChoiceOption {
 
 export class GradientEditor extends GradientEditorBase {
     private rootNode?: HTMLElement
-    private preview?: HTMLElement
     private modeControl?: SegmentedControl
     private angleField?: HTMLElement
     private angleLabelNode?: HTMLElement
@@ -84,21 +78,13 @@ export class GradientEditor extends GradientEditorBase {
     private track?: HTMLElement
     private trackColor?: HTMLElement
     private colorPicker?: ColorPicker
-    private stopPositionLabelNode?: HTMLElement
-    private stopPositionInput?: HTMLInputElement
     private removeButton?: IconButton
-    private valueLabelNode?: HTMLElement
-    private valueNode?: HTMLOutputElement
     private formControl?: HTMLInputElement
     private drag?: DragState
     private readonly handles = new Map<string, HTMLButtonElement>()
 
     render(): Node {
         this.rootNode = el('div', 'root')
-
-        const previewShell = el('div', 'preview-shell')
-        this.preview = el('div', 'preview')
-        previewShell.append(this.preview)
 
         const geometry = el('div', 'geometry')
         this.modeControl = document.createElement('cb-segmented-control') as SegmentedControl
@@ -149,7 +135,14 @@ export class GradientEditor extends GradientEditorBase {
         const stopsHeader = el('div', 'stops-header')
         this.stopsLabelNode = el('span', 'section-label')
         this.addButton = createIconButton('add-stop', 'plus', event => this.addStop(this.largestGapPosition(), event))
-        stopsHeader.append(this.stopsLabelNode, this.addButton)
+        this.removeButton = createIconButton('remove-stop', 'close', event => {
+            const selectedId = this.selectedStopId()
+            if (!this.removeStop(selectedId, event)) return
+            this.handles.get(this.selectedStopId())?.focus()
+        })
+        const stopActions = el('div', 'stop-actions')
+        stopActions.append(this.addButton, this.removeButton)
+        stopsHeader.append(this.stopsLabelNode, stopActions)
         this.track = el('div', 'track')
         this.trackColor = el('div', 'track-color')
         this.track.append(this.trackColor)
@@ -158,7 +151,6 @@ export class GradientEditor extends GradientEditorBase {
             const bounds = this.track?.getBoundingClientRect()
             if (bounds?.width) this.addStop((event.clientX - bounds.left) / bounds.width * 100, event)
         })
-        const stopEditor = el('div', 'stop-editor')
         this.colorPicker = document.createElement('cb-color-picker') as ColorPicker
         this.colorPicker.setAttribute('part', 'stop-color')
         this.colorPicker.setAttribute('exportparts', 'root:stop-color-root,trigger:stop-color-trigger,trigger-swatch:stop-color-swatch,popup:stop-color-popup')
@@ -170,29 +162,19 @@ export class GradientEditor extends GradientEditorBase {
             event.stopPropagation()
             this.changeStopColor(this.selectedStopId(), (event as CustomEvent<{ value: string }>).detail.value, event)
         })
-        const positionField = el('label', 'stop-position-field')
-        this.stopPositionLabelNode = el('span', 'control-label')
-        this.stopPositionInput = el('input', 'stop-position control')
-        this.stopPositionInput.type = 'number'
-        this.stopPositionInput.min = '0'
-        this.stopPositionInput.max = '100'
-        this.stopPositionInput.step = '.1'
-        this.stopPositionInput.inputMode = 'decimal'
-        this.stopPositionInput.addEventListener('input', event => this.moveStop(this.selectedStopId(), this.stopPositionInput?.valueAsNumber ?? 0, event))
-        this.stopPositionInput.addEventListener('change', event => this.moveStop(this.selectedStopId(), this.stopPositionInput?.valueAsNumber ?? 0, event, true))
-        positionField.append(this.stopPositionLabelNode, this.stopPositionInput)
-        this.removeButton = createIconButton('remove-stop', 'close', event => this.removeStop(this.selectedStopId(), event))
-        stopEditor.append(this.colorPicker, positionField, this.removeButton)
-        stopsSection.append(stopsHeader, this.track, stopEditor)
+        this.colorPicker.addEventListener('cb-close', event => {
+            const originalEvent = (event as CustomEvent<{ originalEvent?: Event }>).detail.originalEvent
+            const escape = originalEvent?.type === 'keydown' && (originalEvent as KeyboardEvent).key === 'Escape'
+            if (!escape && originalEvent?.type !== 'click') return
+            queueMicrotask(() => this.handles.get(this.selectedStopId())?.focus())
+        })
+        this.track.append(this.colorPicker)
+        stopsSection.append(stopsHeader, this.track)
 
-        const valueRow = el('div', 'value-row')
-        this.valueLabelNode = el('span', 'value-label')
-        this.valueNode = el('output', 'value')
-        valueRow.append(this.valueLabelNode, this.valueNode)
         this.formControl = el('input', 'hidden-control')
         this.formControl.type = 'text'
         this.formControl.tabIndex = -1
-        this.rootNode.append(previewShell, geometry, stopsSection, valueRow, this.formControl)
+        this.rootNode.append(geometry, stopsSection, this.formControl)
         return fragment(sheet(css), this.rootNode)
     }
 
@@ -204,10 +186,9 @@ export class GradientEditor extends GradientEditorBase {
     }
 
     protected syncView(): void {
-        if (!this.rootNode || !this.preview || !this.modeControl || !this.angleField || !this.angleLabelNode || !this.angleInput
+        if (!this.rootNode || !this.modeControl || !this.angleField || !this.angleLabelNode || !this.angleInput
             || !this.radialControls || !this.shapeControl || !this.extentControl || !this.positionControl || !this.shapeLabelNode || !this.extentLabelNode || !this.positionLabelNode || !this.stopsLabelNode || !this.addButton
-            || !this.track || !this.trackColor || !this.colorPicker || !this.stopPositionLabelNode || !this.stopPositionInput || !this.removeButton
-            || !this.valueLabelNode || !this.valueNode || !this.formControl) return
+            || !this.track || !this.trackColor || !this.colorPicker || !this.removeButton || !this.formControl) return
 
         const model = this.model()
         const value = this.cssValue()
@@ -215,9 +196,6 @@ export class GradientEditor extends GradientEditorBase {
         const readOnly = bool(this.readOnly)
         const inaccessible = unavailable || readOnly
         const accessibleName = this.accessibleName()
-        this.preview.style.setProperty('--cb-gradient', value)
-        this.preview.setAttribute('role', 'img')
-        this.preview.setAttribute('aria-label', scalarText(this.previewLabel) || accessibleName)
 
         Object.assign(this.modeControl, {
             value: model.type,
@@ -267,6 +245,7 @@ export class GradientEditor extends GradientEditorBase {
         this.syncHandles(model.stops, inaccessible)
 
         const selected = this.selectedStop()
+        this.colorPicker.style.setProperty('--cb-selected-stop-position', `${selected.position}%`)
         Object.assign(this.colorPicker, {
             value: selected.color,
             label: '',
@@ -292,15 +271,8 @@ export class GradientEditor extends GradientEditorBase {
             removeSwatchLabel: scalarText(this.removeSwatchLabel),
             transparentLabel: scalarText(this.transparentLabel),
         })
-        this.stopPositionLabelNode.textContent = scalarText(this.stopPositionLabel)
-        this.stopPositionInput.value = String(selected.position)
-        this.stopPositionInput.disabled = inaccessible
-        this.stopPositionInput.setAttribute('aria-label', scalarText(this.stopPositionLabel))
         actionLabel(this.removeButton, scalarText(this.removeStopLabel))
         this.removeButton.disabled = inaccessible || model.stops.length <= 2
-        this.valueLabelNode.textContent = scalarText(this.valueLabel)
-        this.valueNode.value = value
-        this.valueNode.textContent = value
         this.formControl.value = value
         this.formControl.disabled = unavailable
         this.formControl.readOnly = readOnly
@@ -309,9 +281,7 @@ export class GradientEditor extends GradientEditorBase {
         this.syncForm(value)
         const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(scalarText(this.errorText)))
         const description = [scalarText(this.description), scalarText(this.helpText), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null
-        aria(this.preview, 'aria-description', description)
         aria(this.formControl, 'aria-description', description)
-        aria(this.preview, 'aria-invalid', error ? true : null)
         aria(this.formControl, 'aria-invalid', error ? true : null)
         this.toggleAttribute('data-invalid', error)
     }
@@ -346,6 +316,7 @@ export class GradientEditor extends GradientEditorBase {
                 handle.setAttribute('role', 'slider')
                 handle.append(el('span', 'stop-swatch'))
                 handle.addEventListener('click', event => { event.stopPropagation(); this.selectStop(stop.id, event) })
+                handle.addEventListener('dblclick', event => this.openStopColorEditor(stop.id, event))
                 handle.addEventListener('pointerdown', event => this.startDrag(event, stop.id, handle!))
                 handle.addEventListener('pointermove', event => this.dragStop(event))
                 handle.addEventListener('pointerup', event => this.finishDrag(event))
@@ -362,8 +333,18 @@ export class GradientEditor extends GradientEditorBase {
             handle.setAttribute('aria-valuemax', '100')
             handle.setAttribute('aria-valuenow', String(stop.position))
             handle.setAttribute('aria-valuetext', `${Math.round(stop.position * 10) / 10}%`)
+            aria(handle, 'aria-description', scalarText(this.helpText) || null)
             if (handle.parentElement !== this.track) this.track.append(handle)
         }
+    }
+
+    private openStopColorEditor(id: string, event: Event): void {
+        if (!this.colorPicker || !this.selectStop(id, event)) return
+        if (bool(this.colorPicker.open)) this.colorPicker.setOpen(false, event)
+        if (!this.colorPicker.setOpen(true, event)) return
+        queueMicrotask(() => this.colorPicker?.focusEditor())
+        event.preventDefault()
+        event.stopPropagation()
     }
 
     private startDrag(event: PointerEvent, id: string, handle: HTMLButtonElement): void {
@@ -406,6 +387,10 @@ export class GradientEditor extends GradientEditorBase {
         else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') position += event.shiftKey ? 10 : 1
         else if (event.key === 'Home') position = 0
         else if (event.key === 'End') position = 100
+        else if (event.key === 'Enter' || event.key === ' ') {
+            this.openStopColorEditor(id, event)
+            return
+        }
         else if (event.key === 'Delete' || event.key === 'Backspace') {
             event.preventDefault()
             this.removeStop(id, event)
