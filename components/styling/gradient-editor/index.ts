@@ -16,7 +16,7 @@ import {
 import type { GradientExtent, GradientPosition, GradientShape, GradientStop, GradientType } from './gradient.js'
 
 const css = editorCSS + `
-:host{display:block;inline-size:min(100%,var(--component-gradient-editor-width,560px));container-type:inline-size}
+:host{display:block;inline-size:var(--component-gradient-editor-width,560px);max-inline-size:100%;min-inline-size:min(100%,var(--component-gradient-editor-min-width,320px));container-type:inline-size}
 [part~=root]{display:grid;gap:var(--spacing-md,12px);min-inline-size:0}
 [part~=track]{background-color:${v('--color-surface')};background-image:conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0);background-size:12px 12px}
 [part~=geometry]{display:flex;align-items:end;gap:var(--spacing-sm,8px);flex-wrap:wrap}

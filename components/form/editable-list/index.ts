@@ -9,7 +9,7 @@ import { bool, scalarText } from '../../core/value.js'
 import { EditableListBase, type EditableListItem } from './EditableListBase.js'
 
 const css = editorCSS + `
-:host{display:block;inline-size:min(100%,var(--component-editable-list-width,420px));min-inline-size:0}
+:host{display:block;inline-size:var(--component-editable-list-width,420px);max-inline-size:100%;min-inline-size:min(100%,var(--component-editable-list-min-width,320px))}
 [part~=editor]{display:grid;gap:var(--spacing-sm,8px)}[part~=list]{display:grid;gap:var(--spacing-xs,4px);margin:0;padding:0;list-style:none}
 [part~=item]{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--spacing-sm,8px);min-block-size:var(--cb-height);padding:var(--spacing-xs,4px) var(--spacing-sm,8px);border:1px solid var(--color-separator);border-radius:var(--radius-sm);background:var(--color-surface)}
 [part~=item-copy]{display:grid;min-inline-size:0}[part~=item-label]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}[part~=item-description]{color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px)}

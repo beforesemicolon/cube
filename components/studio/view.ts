@@ -21,8 +21,7 @@ const fieldControlKinds: ReadonlySet<StudioComponentBase['componentKind']> = new
 
 const studioCSS = editorCSS + `
 :host{inline-size:var(--component-studio-inline-size,auto);min-inline-size:0;container-type:inline-size}
-:host([data-kind=text]),:host([data-kind=textarea]),:host([data-kind=number]),:host([data-kind=search]),:host([data-kind=select]),:host([data-kind=range]),:host([data-kind=file]),:host([data-kind=color]),:host([data-kind=tokens]){inline-size:min(100%,var(--component-studio-control-width,320px))}
-:host([data-kind=text]),:host([data-kind=textarea]){inline-size:var(--component-studio-control-width,320px);max-inline-size:100%;min-inline-size:min(100%,var(--component-studio-control-min-width,240px))}
+:host([data-kind=text]),:host([data-kind=textarea]),:host([data-kind=number]),:host([data-kind=search]),:host([data-kind=select]),:host([data-kind=range]),:host([data-kind=file]),:host([data-kind=color]),:host([data-kind=tokens]){inline-size:var(--component-studio-control-width,320px);max-inline-size:100%;min-inline-size:min(100%,var(--component-studio-control-min-width,240px))}
 :host([data-kind=range]){inline-size:var(--component-range-slider-width,var(--component-studio-control-width,320px));max-inline-size:100%;min-inline-size:min(100%,var(--component-range-slider-min-width,240px))}
 :host([data-kind=tokens]){inline-size:var(--component-token-input-width,var(--component-studio-control-width,320px));max-inline-size:100%;min-inline-size:min(100%,var(--component-token-input-min-width,var(--component-studio-control-min-width,240px)))}
 :host([data-kind=collection]),:host([data-kind=collaboration]),:host([data-kind=status]),:host([data-kind=progress]),:host([data-kind=display]),:host([data-kind=panel]),:host([data-kind=editor]){inline-size:min(100%,var(--component-studio-panel-width,360px))}

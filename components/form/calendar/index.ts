@@ -5,7 +5,7 @@ import type { IconButton } from '../../action/icon-button/index.js'
 import { CalendarBase } from './CalendarBase.js'
 
 const calendarCSS = editorCSS + `
-:host{display:block;inline-size:min(100%,var(--component-calendar-width,288px))}
+:host{display:block;inline-size:var(--component-calendar-width,288px);max-inline-size:100%;min-inline-size:min(100%,var(--component-calendar-min-width,240px))}
 [part~=calendar]{display:grid;gap:var(--spacing-sm,8px);padding:var(--spacing-md,12px);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
 [part~=header]{display:grid;grid-template-columns:var(--component-control-height-sm,28px) 1fr var(--component-control-height-sm,28px);align-items:center;gap:4px}
 [part~=month]{text-align:center;font-weight:650}

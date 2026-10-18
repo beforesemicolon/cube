@@ -9,9 +9,9 @@ import { bool, finite, scalarText } from '../../core/value.js'
 import { LinkedValuesBase } from './LinkedValuesBase.js'
 
 const css = editorCSS + `
-:host{display:block;inline-size:min(100%,var(--component-linked-values-width,420px));max-inline-size:100%}[part~=group]{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:end;gap:var(--spacing-xs,4px);inline-size:100%;min-inline-size:0}
+:host{display:block;inline-size:var(--component-linked-values-width,420px);max-inline-size:100%;min-inline-size:min(100%,var(--component-linked-values-min-width,320px))}[part~=group]{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:end;gap:var(--spacing-xs,4px);inline-size:100%;min-inline-size:0}
 [part~=value-field]{display:grid;gap:var(--spacing-xs,4px);min-inline-size:0}[part~=value-label]{color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px);font-weight:600}
-[part~=first],[part~=second]{display:block;min-inline-size:0;--component-studio-control-width:100%}[part~=link]{margin-block-end:1px}
+[part~=first],[part~=second]{display:block;min-inline-size:0;--component-studio-control-width:100%;--component-studio-control-min-width:0px}[part~=link]{margin-block-end:1px}
 @container(max-width:300px){[part~=group]{grid-template-columns:minmax(0,1fr) auto}[part~=second-field]{grid-column:1}[part~=link]{grid-column:2;grid-row:1/3;align-self:center}}
 `
 export class LinkedValues extends LinkedValuesBase {

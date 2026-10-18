@@ -112,3 +112,41 @@ test('field labels delegate focus through composite controls', async ({ page }) 
     await page.locator('#gradient-field [id^="cb-field-label"]').click()
     await expect(page.locator('#gradient-field input[part~="angle"]')).toBeFocused()
 })
+
+test('field-compatible controls keep a useful width and contract with their container', async ({ page }) => {
+    await page.evaluate(() => {
+        const controls: ReadonlyArray<readonly [string, string, Record<string, string | number | boolean>]> = [
+            ['number', 'cb-number-input', { value: 24 }],
+            ['unit', 'cb-unit-input', { value: 24, unit: 'px' }],
+            ['stepper', 'cb-stepper', { value: 24 }],
+            ['file', 'cb-file-picker', { fileLabel: 'Choose file' }],
+            ['slider', 'cb-slider', { value: 50 }],
+            ['masked', 'cb-masked-input', { mask: '(999) 999-9999' }],
+            ['list', 'cb-editable-list', { inputLabel: 'New item', addLabel: 'Add item' }],
+            ['linked', 'cb-linked-values', { firstLabel: 'Width', secondLabel: 'Height' }],
+            ['gradient', 'cb-gradient-editor', { angleLabel: 'Angle' }],
+        ]
+        const fixture = document.querySelector('#fixture')
+        for (const [id, tag, props] of controls) {
+            const field = document.createElement('cb-field') as HTMLElement & { label: string }
+            field.id = `${id}-width-field`
+            field.label = id
+            const control = document.createElement(tag)
+            control.id = `${id}-width-control`
+            Object.assign(control, props)
+            field.append(control)
+            fixture?.append(field)
+        }
+    })
+
+    const expectedWidths: ReadonlyArray<readonly [string, number]> = [
+        ['number', 320], ['unit', 320], ['stepper', 320], ['file', 320], ['slider', 320],
+        ['masked', 360], ['list', 420], ['linked', 420], ['gradient', 560],
+    ]
+    for (const [id, expectedWidth] of expectedWidths) {
+        const control = page.locator(`#${id}-width-control`)
+        await expect.poll(async () => control.evaluate(element => element.getBoundingClientRect().width)).toBeGreaterThanOrEqual(expectedWidth)
+        await page.locator(`#${id}-width-field`).evaluate(element => { (element as HTMLElement).style.inlineSize = '220px' })
+        await expect.poll(async () => control.evaluate(element => element.getBoundingClientRect().width)).toBeLessThanOrEqual(220)
+    }
+})

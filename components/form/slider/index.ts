@@ -11,7 +11,7 @@ export class Slider extends SliderBase {
         this.control.addEventListener('pointerdown',()=>this.pointerActive=true)
         this.control.addEventListener('blur',()=>this.pointerActive=false)
         return fragment(sheet(editorCSS+`
-:host{display:block;min-inline-size:var(--component-slider-min-width,80px)}
+:host{display:block;inline-size:var(--component-slider-width,320px);max-inline-size:100%;min-inline-size:min(100%,var(--component-slider-min-width,160px))}
 [part=control]{display:block;appearance:none;inline-size:100%;padding:0;border:0;background:transparent;cursor:pointer}
 [part=control]::-webkit-slider-runnable-track{block-size:var(--component-slider-track-height,4px);border-radius:var(--radius-sm,6px);background:linear-gradient(to right,var(--color-primary,#2563EB) var(--cb-slider-fill,0%),var(--color-track,#D8DCDE) var(--cb-slider-fill,0%))}
 [part=control]::-webkit-slider-thumb{appearance:none;inline-size:var(--component-slider-thumb-size,12px);block-size:var(--component-slider-thumb-size,12px);border-radius:50%;background:var(--color-surface,#fff);border:2px solid var(--color-primary,#2563EB);margin-block-start:calc((var(--component-slider-track-height,4px) - var(--component-slider-thumb-size,12px))/2)}
