@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
-import { preview } from './helpers.js'
+import { componentStory } from './controls.js'
 import '../components/overlay/index.js'
 
 const meta: Meta = { title: 'Overlay', tags: ['autodocs'], parameters: { docs: { description: { component: 'Overlay components with headless bases, themed parts, standalone imports and browser bundles.' } } } }
@@ -7,22 +7,22 @@ export default meta
 type Story = StoryObj
 const items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]
 
-export const Popover: Story = { args: { label: 'Popover', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-popover', args, context.globals.appearance) }
+export const Popover: Story = componentStory('cb-popover', { label: 'Popover', actionLabel: 'Open', expanded: true })
 
-export const Drawer: Story = { args: { label: 'Drawer', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-drawer', args, context.globals.appearance) }
+export const Drawer: Story = componentStory('cb-drawer', { label: 'Drawer', actionLabel: 'Open', expanded: true })
 
-export const HoverCard: Story = { args: { label: 'Hover card', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-hover-card', args, context.globals.appearance) }
+export const HoverCard: Story = componentStory('cb-hover-card', { label: 'Hover card', actionLabel: 'Open', expanded: true })
 
-export const BottomSheet: Story = { args: { label: 'Bottom sheet', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-bottom-sheet', args, context.globals.appearance) }
+export const BottomSheet: Story = componentStory('cb-bottom-sheet', { label: 'Bottom sheet', actionLabel: 'Open', expanded: true })
 
-export const ContextMenu: Story = { args: { label: 'Context menu', value: 'one', items }, render: (args, context) => preview('cb-context-menu', args, context.globals.appearance) }
+export const ContextMenu: Story = componentStory('cb-context-menu', { label: 'Context menu', items, open: false, x: 32, y: 32, loop: true })
 
-export const Dropdown: Story = { args: { label: 'Dropdown', value: 'one', items }, render: (args, context) => preview('cb-dropdown', args, context.globals.appearance) }
+export const Dropdown: Story = componentStory('cb-dropdown', { label: 'Dropdown', items, open: false, placement: 'bottom-start', icon: 'down' })
 
-export const CommandPalette: Story = { args: { label: 'Command palette', value: 'one', items }, render: (args, context) => preview('cb-command-palette', args, context.globals.appearance) }
+export const CommandPalette: Story = componentStory('cb-command-palette', { label: 'Command palette', items, open: false, query: '', placeholder: 'Search commands' })
 
-export const Tooltip: Story = { args: { label: 'Tooltip', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-tooltip', args, context.globals.appearance) }
+export const Tooltip: Story = componentStory('cb-tooltip', { content: 'Align selected layers', placement: 'top', delay: 250, open: false })
 
-export const Modal: Story = { args: { label: 'Modal', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-modal', args, context.globals.appearance) }
+export const Modal: Story = componentStory('cb-modal', { heading: 'Create a page', description: 'Add a page to this project.', open: false, dismissible: true, closeOnBackdrop: true, modalSize: 'md', closeLabel: 'Close' })
 
-export const AlertDialog: Story = { args: { label: 'Alert dialog', actionLabel: 'Open', expanded: true }, render: (args, context) => preview('cb-alert-dialog', args, context.globals.appearance) }
+export const AlertDialog: Story = componentStory('cb-alert-dialog', { heading: 'Delete component?', description: 'This action cannot be undone.', open: false, dismissible: true, closeOnBackdrop: true, modalSize: 'sm', confirmLabel: 'Delete', cancelLabel: 'Cancel', destructive: true, busy: false })

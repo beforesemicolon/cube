@@ -12,3 +12,12 @@ for(const [id,tag]of [['audio','cb-audio-player'],['video','cb-video-player']])t
     await expect(page.locator(tag+'[data-story-ready=true]')).toBeVisible({timeout:20000})
     await expect(page.locator(tag+' cb-icon-button[part=play]').getByRole('button')).toBeEnabled()
 })
+
+test('built Storybook: Split Button exposes its complete interactive API',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/?path=/story/action--split-button&addonPanel=storybook/controls/panel')
+    const panel=page.getByRole('tabpanel',{name:/Controls/})
+    await expect(panel).toContainText('items',{timeout:20000})
+    await expect(panel.getByText('menuLabel',{exact:true})).toBeVisible()
+    await expect(panel.getByText('actionValue',{exact:true})).toBeVisible()
+    await expect(panel.locator('button[aria-label="add a new item to the \'items\' array"]')).toBeVisible()
+})

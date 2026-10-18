@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
-import { preview } from './helpers.js'
+import { componentStory } from './controls.js'
 import '../components/navigation/index.js'
 
 const meta: Meta = { title: 'Navigation', tags: ['autodocs'], parameters: { docs: { description: { component: 'Navigation components with headless bases, themed parts, standalone imports and browser bundles.' } } } }
@@ -7,14 +7,14 @@ export default meta
 type Story = StoryObj
 const items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]
 
-export const SegmentedControl: Story = { args: { label: 'Segmented control', value: 'one', items }, render: (args, context) => preview('cb-segmented-control', args, context.globals.appearance) }
+export const SegmentedControl: Story = componentStory('cb-segmented-control', { label: 'View', value: 'one', items, orientation: 'horizontal' })
 
-export const Tabs: Story = { args: { label: 'Tabs', value: 'one', items }, render: (args, context) => preview('cb-tabs', args, context.globals.appearance) }
+export const Tabs: Story = componentStory('cb-tabs', { label: 'Workspace', value: 'one', items, orientation: 'horizontal', activation: 'automatic' })
 
-export const Breadcrumb: Story = { args: { label: 'Breadcrumb', value: 'one', items }, render: (args, context) => preview('cb-breadcrumb', args, context.globals.appearance) }
+export const Breadcrumb: Story = componentStory('cb-breadcrumb', { label: 'Breadcrumb', items, maxItems: 4 })
 
-export const Menu: Story = { args: { label: 'Menu', value: 'one', items }, render: (args, context) => preview('cb-menu', args, context.globals.appearance) }
+export const Menu: Story = componentStory('cb-menu', { label: 'Menu', items, loop: true })
 
-export const Link: Story = { args: { label: 'Link', value: '12 px', placeholder: 'Link' }, render: (args, context) => preview('cb-link', args, context.globals.appearance) }
+export const Link: Story = componentStory('cb-link', { label: 'Documentation', href: '#documentation', target: '_self', variant: 'ghost' })
 
-export const Pagination: Story = { args: { label: 'Pagination', value: 24, min: 0, max: 100, step: 1 }, render: (args, context) => preview('cb-pagination', args, context.globals.appearance) }
+export const Pagination: Story = componentStory('cb-pagination', { label: 'Results pages', page: 2, totalPages: 8, siblings: 1 })

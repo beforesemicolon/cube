@@ -1,7 +1,8 @@
 import type { Meta,StoryObj } from '@storybook/web-components-vite'
 import { expect,userEvent,waitFor } from 'storybook/test'
 import { preview,silentAudio } from './helpers.js'
-const meta:Meta={title:'Media',tags:['autodocs'],args:{mediaTitle:'Studio recording',seekStep:10,locale:'en'},argTypes:{locale:{control:'select',options:['en','pt','es','fr','zh']},seekStep:{control:{type:'number',min:1,max:60}}},parameters:{docs:{description:{component:'Transport buttons are cb-icon-button; timeline and volume are cb-slider; speed and captions are cb-select. Native audio/video elements retain playback state. Themes and CSS parts are inherited. The video example uses an original four-second offline clip with finite seekable duration.'}}},render:(args,c)=>preview('cb-audio-player',args,c.globals.appearance)}
+import { controlsFor, storyArgsFor } from './controls.js'
+const meta:Meta={title:'Media',tags:['autodocs'],args:storyArgsFor('cb-audio-player',{mediaTitle:'Studio recording',seekStep:10,locale:'en'}),argTypes:controlsFor('cb-audio-player'),parameters:{docs:{description:{component:'Transport buttons are cb-icon-button; timeline and volume are cb-slider; speed and captions are cb-select. Native audio/video elements retain playback state. Themes and CSS parts are inherited. The video example uses an original four-second offline clip with finite seekable duration.'}}},render:(args,c)=>preview('cb-audio-player',args,c.globals.appearance)}
 export default meta
 type Story=StoryObj
 export const EmptyAudio:Story={}

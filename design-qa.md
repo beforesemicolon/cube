@@ -32,6 +32,7 @@ Visual checks establish that every public component renders with the Cube theme 
 - Preserved `part` hooks and theme variables in the new controls, including composed Calendar and picker internals.
 - Added keyboard navigation, screen-reader naming, form association, graceful defaults, validation states, and localized labels to the custom controls.
 - Fixed document-level pointer handling across nested shadow roots so Select and picker popups work when composed inside media and higher-level components.
+- Derived each interaction story's controls from the component's full reactive public API. Structured props such as dropdown `items`, select `options`, chart data, messages, tracks, labels, and themes use editable object controls rather than being hidden from Storybook.
 
 ## Category render audit
 
@@ -70,7 +71,7 @@ Examples demonstrate composition without adding package tags. They currently cov
 
 - `npm run typecheck` — passed
 - `npm test` — 42 passed
-- `npx playwright test` — 54 passed
+- `npx playwright test` — 56 passed, including full-prop coverage for all 92 public components and the live Split Button add-item control
 - `npm run test:catalog` — 92 public entry points, 58 audited Studio components, all 217 design references, and eight chart stories verified
 - `npm run test:exports` — ESM/CJS SSR-safe imports and 107 external-runtime browser entries verified
 - `npm run build:storybook` — passed

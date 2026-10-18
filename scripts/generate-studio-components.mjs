@@ -204,6 +204,39 @@ const sampleByKind = {
     collaboration: `{ label: '${'${title}'}', items }`,
 }
 
+const foundationStoryArgs = {
+    button: `{ label: 'Button', value: 'add-section', variant: 'primary', icon: 'plus', loading: false }`,
+    'split-button': `{ label: 'Split button', actionValue: 'create', menuLabel: 'More create actions', items, open: false, placement: 'bottom-start', loading: false }`,
+    'toggle-button': `{ label: 'Toggle button', pressed: true, variant: 'secondary', icon: '' }`,
+    'button-group': `{ label: 'Button group', orientation: 'horizontal' }`,
+    toolbar: `{ label: 'Toolbar', orientation: 'horizontal' }`,
+    'action-bar': `{ label: 'Action bar', selectionCount: 3, busy: false, status: '3 layers selected' }`,
+    shortcut: `{ keys: '⌘+Shift+P', accessibleLabel: 'Command Shift P' }`,
+    'segmented-control': `{ label: 'View', value: 'one', items, orientation: 'horizontal' }`,
+    tabs: `{ label: 'Workspace', value: 'one', items, orientation: 'horizontal', activation: 'automatic' }`,
+    breadcrumb: `{ label: 'Breadcrumb', items, maxItems: 4 }`,
+    menu: `{ label: 'Menu', items, loop: true }`,
+    link: `{ label: 'Documentation', href: '#documentation', target: '_self', variant: 'ghost' }`,
+    pagination: `{ label: 'Results pages', page: 2, totalPages: 8, siblings: 1 }`,
+    'context-menu': `{ label: 'Context menu', items, open: false, x: 32, y: 32, loop: true }`,
+    dropdown: `{ label: 'Dropdown', items, open: false, placement: 'bottom-start', icon: 'down' }`,
+    'command-palette': `{ label: 'Command palette', items, open: false, query: '', placeholder: 'Search commands' }`,
+    tooltip: `{ content: 'Align selected layers', placement: 'top', delay: 250, open: false }`,
+    modal: `{ heading: 'Create a page', description: 'Add a page to this project.', open: false, dismissible: true, closeOnBackdrop: true, modalSize: 'md', closeLabel: 'Close' }`,
+    'alert-dialog': `{ heading: 'Delete component?', description: 'This action cannot be undone.', open: false, dismissible: true, closeOnBackdrop: true, modalSize: 'sm', confirmLabel: 'Delete', cancelLabel: 'Cancel', destructive: true, busy: false }`,
+    slider: `{ label: 'Opacity', value: 64, min: 0, max: 100, step: 1, valueText: '64%', orientation: 'horizontal' }`,
+    select: `{ label: 'Select', value: 'desktop', placeholder: 'Choose a device', native: false, open: false, multiple: false, options: [{ value: 'desktop', label: 'Desktop' }, { value: 'mobile', label: 'Mobile' }] }`,
+    calendar: `{ label: 'Calendar', value: '2026-10-18', firstDayOfWeek: 0, min: '', max: '' }`,
+    box: `{ inlineSize: '100%', padding: '16px', background: 'var(--color-surface-muted)', radius: '8px' }`,
+    row: `{ gap: '8px', align: 'center', justify: 'start', wrap: true, reverse: false, collapseAt: 'sm' }`,
+    col: `{ gap: '8px', align: 'stretch', justify: 'start', reverse: false }`,
+    grid: `{ columns: 'repeat(3,minmax(0,1fr))', rows: '', gap: '8px', autoFlow: 'row', align: 'stretch', justify: 'stretch' }`,
+    divider: `{ orientation: 'horizontal', decorative: false }`,
+    flashbar: `{ position: 'top-end', maxVisible: 4, messages: [{ id: 'saved', type: 'success', heading: 'Changes saved', message: 'Your project is up to date.', dismissible: true, duration: 0 }] }`,
+    icon: `{ label: 'Settings', name: 'settings', size: 'md', disabled: false }`,
+    'theme-provider': `{ appearance: 'system', src: '', theme: null, locale: 'en', labels: {} }`,
+}
+
 const storyExtras = [
     {category:'form',name:'calendar',title:'Calendar',kind:'display',className:'Calendar'},
     {category:'layout',name:'box',title:'Box',kind:'panel',className:'Box'},
@@ -224,19 +257,17 @@ const storyGroups = componentCategoryOrder
 
 for (const [category, entries] of storyGroups) {
     const categoryTitle = componentCategoryTitles[category]
-    const story = `import type { Meta, StoryObj } from '@storybook/web-components-vite'\nimport { preview } from './helpers.js'\nimport '../components/${category}/index.js'\n\nconst meta: Meta = { title: '${categoryTitle}', tags: ['autodocs'], parameters: { docs: { description: { component: '${categoryTitle} components with headless bases, themed parts, standalone imports and browser bundles.' } } } }\nexport default meta\ntype Story = StoryObj\nconst items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]\n\n${entries.map(({name, title, kind, className}) => {
-        const args = name === 'code-preview'
+    const story = `import type { Meta, StoryObj } from '@storybook/web-components-vite'\nimport { componentStory } from './controls.js'\nimport '../components/${category}/index.js'\n\nconst meta: Meta = { title: '${categoryTitle}', tags: ['autodocs'], parameters: { docs: { description: { component: '${categoryTitle} components with headless bases, themed parts, standalone imports and browser bundles.' } } } }\nexport default meta\ntype Story = StoryObj\nconst items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]\n\n${entries.map(({name, title, kind, className}) => {
+        const args = foundationStoryArgs[name] ?? (name === 'code-preview'
             ? `{ label: 'Code preview', code: '<cb-button label="Save"></cb-button>', codeLanguage: 'html' }`
             : name === 'combobox'
                 ? `{ label: 'Font family', placeholder: 'Search fonts', open: false, autocomplete: 'list', options: [{ value: 'inter', label: 'Inter' }, { value: 'source-sans', label: 'Source Sans 3' }] }`
-                : name === 'calendar' || name === 'date-picker'
-                    ? `{ label: '${title}', value: '2026-10-18'${name === 'date-picker' ? ', native: false, open: false' : ", firstDayOfWeek: 0, min: '', max: ''"} }`
+                : name === 'date-picker'
+                    ? `{ label: '${title}', value: '2026-10-18', native: false, open: false, min: '', max: '' }`
                     : name === 'time-picker'
                         ? `{ label: 'Time picker', value: '09:30', step: 1800, native: false, open: false, min: '', max: '' }`
-                        : name === 'select'
-                            ? `{ label: 'Select', value: 'desktop', placeholder: 'Choose a device', native: false, open: false, multiple: false, options: [{ value: 'desktop', label: 'Desktop' }, { value: 'mobile', label: 'Mobile' }] }`
-                            : sampleByKind[kind].replaceAll('${title}', title)
-        return `export const ${className}: Story = { args: ${args}, render: (args, context) => preview('cb-${name}', args, context.globals.appearance) }`
+                        : sampleByKind[kind].replaceAll('${title}', title))
+        return `export const ${className}: Story = componentStory('cb-${name}', ${args})`
     }).join('\n\n')}\n`
     await writeFile(resolve('stories', `${category}.stories.ts`), story)
 }
