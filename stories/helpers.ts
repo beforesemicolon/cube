@@ -90,6 +90,8 @@ function seedPreview(tag: string, node: HTMLElement): void {
     if (tag === 'cb-toolbar') node.append(demoButton('Select', 'ghost'), demoButton('Move', 'ghost'), demoButton('Comment', 'ghost'))
     else if (tag === 'cb-action-bar') {
         Object.assign(node, { status: '3 layers selected' })
+        const back = demoButton('Back', 'ghost'); back.slot = 'start'
+        node.append(back)
         node.append(demoButton('Group'), demoButton('Delete', 'destructive'))
     } else if (tag === 'cb-shortcut') Object.assign(node, { keys: '⌘+Shift+P', accessibleLabel: 'Command Shift P' })
     else if (tag === 'cb-context-menu') Object.assign(node, { x: 32, y: 32 })

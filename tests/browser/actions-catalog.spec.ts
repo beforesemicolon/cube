@@ -109,6 +109,34 @@ test('button group owns its buttons and renders one continuous control', async (
     expect(audit.violations).toEqual([])
 })
 
+test('action bar places named start content before its default actions', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const bar = document.createElement('cb-action-bar') as HTMLElement & { accessibleLabel: string; status: string }
+        bar.accessibleLabel = 'Selection actions'
+        bar.status = '3 layers selected'
+        const back = document.createElement('cb-button') as HTMLElement & { label: string; variant: string }
+        back.label = 'Back'
+        back.variant = 'ghost'
+        back.slot = 'start'
+        const group = document.createElement('cb-button') as HTMLElement & { label: string }
+        group.label = 'Group'
+        bar.append(back, group)
+        document.querySelector('#fixture')?.append(bar)
+    })
+
+    const bar = page.locator('cb-action-bar')
+    await expect(bar.getByRole('button', { name: 'Back' })).toBeVisible()
+    await expect(bar.getByText('3 layers selected')).toBeVisible()
+    await expect(bar.getByRole('button', { name: 'Group' })).toBeVisible()
+    const slots = await bar.evaluate(element => Array.from(element.children).map(child => child.getAttribute('slot') ?? 'default'))
+    expect(slots).toEqual(['start', 'default'])
+    const geometry = await bar.getByRole('button').evaluateAll(buttons => buttons.map(button => button.getBoundingClientRect().left))
+    expect(geometry[0]).toBeLessThan(geometry[1] ?? 0)
+    const audit = await new AxeBuilder({ page }).include('cb-action-bar').analyze()
+    expect(audit.violations).toEqual([])
+})
+
 test('split button joins its primary and menu trigger into one control', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
