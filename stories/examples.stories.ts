@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
+import type { AccordionItem } from '../components/data-display/accordion/base.js'
 import type { TableColumn, TableRecord } from '../components/data-display/table/base.js'
 import '../components/client.js'
 
@@ -205,6 +206,38 @@ export const ResourceTable: Story = {
         header.append(title, component('cb-button', { label: 'Create resource', variant: 'primary', icon: 'plus' }))
         table.append(header)
         return surface(table)
+    },
+}
+
+export const SettingsAccordion: Story = {
+    name: 'Data display / Settings accordion',
+    render: () => {
+        const content = component('cb-col', { gap: '12px' })
+        content.append(
+            component('cb-text-input', { label: 'Element ID', value: 'hero-section' }),
+            component('cb-text-input', { label: 'CSS classes', placeholder: 'Add space-separated classes' }),
+            component('cb-switch', { label: 'Hide on smaller screens', checked: false }),
+        )
+        const appearance = component('cb-col', { gap: '12px' })
+        appearance.append(
+            component('cb-select', { label: 'Surface', value: 'default', options: [{ value: 'default', label: 'Default' }, { value: 'muted', label: 'Muted' }, { value: 'raised', label: 'Raised' }] }),
+            component('cb-unit-input', { label: 'Corner radius', value: 8, ...lengthUnitProps }),
+        )
+        const accordion = document.createElement('cb-accordion') as HTMLElement & {
+            items: readonly AccordionItem[]
+            expandedIds: readonly string[]
+        }
+        Object.assign(accordion, {
+            label: 'Element settings',
+            variant: 'container',
+            expandedIds: ['attributes'],
+            items: [
+                { id: 'attributes', label: 'Custom attributes', description: 'IDs, classes, and responsive visibility', renderContent: () => content, actions: [{ id: 'reset', label: 'Reset attributes', icon: 'reset' }] },
+                { id: 'appearance', label: 'Appearance', description: 'Surface and corner treatment', renderContent: () => appearance },
+                { id: 'advanced', label: 'Advanced rendering', disabled: true, disabledReason: 'Unavailable for this element type' },
+            ] satisfies readonly AccordionItem[],
+        })
+        return surface(accordion)
     },
 }
 

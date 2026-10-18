@@ -72,6 +72,20 @@ export const Table: Story = componentStory('cb-table', {
 
 export const Tree: Story = componentStory('cb-tree', { label: 'Tree', value: 'one', items, emptyLabel: 'No items' })
 
-export const Accordion: Story = componentStory('cb-accordion', { label: 'Accordion', actionLabel: 'Open', expanded: true })
+export const Accordion: Story = componentStory('cb-accordion', {
+    label: 'Accordion settings',
+    items: [
+        { id: 'advanced', label: 'Advanced settings', description: 'Optional controls for this element.', content: 'Custom attributes and rendering behavior.', actions: [{ id: 'edit', label: 'Open editor' }] },
+        { id: 'appearance', label: 'Appearance', content: 'Theme, spacing, and responsive presentation.' },
+        { id: 'unavailable', label: 'Element-specific controls', disabled: true, disabledReason: 'Unavailable for this element type' },
+    ],
+    expandedIds: ['advanced'],
+    multiple: false,
+    collapsible: true,
+    animated: true,
+    variant: 'simple',
+    headingLevel: 3,
+    emptyLabel: 'No settings available',
+})
 
 export const CodePreview: Story = componentStory('cb-code-preview', { label: 'Code preview', code: '<cb-button label="Save"></cb-button>', codeLanguage: 'html', copyLabel: 'Copy code', copiedLabel: 'Copied' })

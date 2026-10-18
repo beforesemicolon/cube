@@ -23,6 +23,7 @@ test('raw buttons are limited to semantic primitives and native form interop', (
 
     assert.deepEqual(actual, {
         'action/button/ButtonBase.ts': 1,
+        'data-display/accordion/index.ts': 1,
         'form/calendar/index.ts': 1,
         'form/combobox/index.ts': 1,
         'form/date-picker/index.ts': 1,

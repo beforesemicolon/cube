@@ -39,13 +39,13 @@ const booleanProperties = new Set([
 ])
 
 const numberProperties = new Set([
-    'delay', 'firstDayOfWeek', 'height', 'lines', 'max', 'maxItems', 'maxVisible', 'min', 'page', 'playbackRate',
+    'delay', 'firstDayOfWeek', 'headingLevel', 'height', 'lines', 'max', 'maxItems', 'maxVisible', 'min', 'page', 'playbackRate',
     'loadingRows', 'progress', 'searchThreshold', 'seekStep', 'selectionCount', 'siblings', 'step', 'stickyColumns',
     'totalPages', 'x', 'y',
 ])
 
 const objectProperties = new Set([
-    'collapsedGroupKeys', 'expandedKeys', 'items', 'messages', 'options', 'selectedKeys', 'series', 'theme', 'tracks',
+    'collapsedGroupKeys', 'expandedIds', 'expandedKeys', 'items', 'messages', 'options', 'selectedKeys', 'series', 'theme', 'tracks',
     'units', 'visibleSegments', 'visibleSeries',
     'xAxis', 'yAxis',
 ])
@@ -62,7 +62,7 @@ const layoutProperties = new Set([
 ])
 
 const dataProperties = new Set([
-    'collapsedGroupKeys', 'expandedKeys', 'items', 'messages', 'options', 'selectedKeys', 'series', 'theme', 'tracks', 'units', 'value', 'visibleSegments',
+    'collapsedGroupKeys', 'expandedIds', 'expandedKeys', 'items', 'messages', 'options', 'selectedKeys', 'series', 'theme', 'tracks', 'units', 'value', 'visibleSegments',
     'visibleSeries', 'xAxis', 'yAxis',
 ])
 
@@ -103,11 +103,13 @@ const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly Contr
     'cb-hover-card': { placement: ['bottom-start', 'bottom-end', 'top-start', 'top-end'] },
     'cb-skeleton': { variant: ['text', 'card', 'table'] },
     'cb-table': { density: ['comfortable', 'compact'], selectionMode: ['none', 'single', 'multiple'], sortDirection: ['asc', 'desc'] },
+    'cb-accordion': { variant: ['simple', 'container'] },
 }
 
 const numberControls: Readonly<Record<string, NumberControl>> = {
     delay: { type: 'number', min: 0, max: 5000, step: 50 },
     firstDayOfWeek: { type: 'number', min: 0, max: 6, step: 1 },
+    headingLevel: { type: 'number', min: 1, max: 6, step: 1 },
     height: { type: 'number', min: 160, max: 1200, step: 10 },
     lines: { type: 'number', min: 1, max: 12, step: 1 },
     loadingRows: { type: 'number', min: 1, max: 20, step: 1 },
@@ -168,13 +170,17 @@ const descriptions: Readonly<Record<string, string>> = {
     visibleSeries: 'Controlled list of visible Cartesian series IDs.',
     xAxis: 'Editable Cartesian x-axis configuration.',
     yAxis: 'Editable Cartesian y-axis configuration.',
-    animated: 'Animates the loading shimmer unless reduced motion is requested.',
+    animated: 'Enables component motion while honoring the user’s reduced-motion preference.',
     columns: 'Number of placeholder columns rendered by the table skeleton.',
     lines: 'Number of text placeholder lines rendered by text and card skeletons.',
     rows: 'Number of placeholder rows rendered by the table skeleton.',
     collapsedGroupKeys: 'Controlled group keys that are currently collapsed.',
     density: 'Controls comfortable or compact row spacing.',
     expandedKeys: 'Controlled row keys whose nested children are visible.',
+    expandedIds: 'Controlled accordion item IDs whose panels are expanded.',
+    headingLevel: 'Semantic heading level exposed by each accordion trigger.',
+    collapsible: 'Allows every accordion panel to be collapsed. Disable it to keep one panel open.',
+    multiple: 'Allows more than one accordion panel to be expanded at the same time.',
     loadingRows: 'Number of placeholder rows displayed while table data is loading.',
     parentBy: 'Nested path containing each row’s parent key.',
     childrenBy: 'Nested path containing each row’s child row array.',
@@ -207,7 +213,7 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     preload: 'metadata', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', searchable: 'auto', searchThreshold: '10', seekStep: '10',
     series: '[]', size: 'sm', status: 'finished', step: '1', theme: 'null', tracks: '[]', units: '[]', value: "''",
     visibleSegments: 'null', visibleSeries: 'null', wrap: 'false', xAxis: '{}', yAxis: '{}', zoomable: 'false',
-    animated: 'true', lines: '3', loadingRows: '5', resizable: 'true', rowActivation: 'false', selectionMode: 'none',
+    animated: 'true', headingLevel: '2', lines: '3', loadingRows: '5', resizable: 'true', rowActivation: 'false', selectionMode: 'none',
     sortDirection: 'asc', stickyColumns: '0', stickyHeader: 'false', striped: 'false', density: 'comfortable',
 }
 
@@ -227,11 +233,12 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     pressed: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
     seekStep: 10, selectionCount: 0, siblings: 1, size: 'sm', src: '', status: '', step: 1, target: '_self',
     totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', wrap: false, x: 0, y: 0, zoomable: false,
-    animated: true, lines: 3, loadingRows: 5, resizable: true, rowActivation: false, selectionMode: 'none',
+    animated: true, headingLevel: 2, lines: 3, loadingRows: 5, resizable: true, rowActivation: false, selectionMode: 'none',
     sortDirection: 'asc', stickyColumns: 0, stickyHeader: false, striped: false, density: 'comfortable',
 }
 
 const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue>>>> = {
+    'cb-accordion': { variant: 'simple' },
     'cb-button': { variant: 'secondary' },
     'cb-button-group': { variant: 'secondary' },
     'cb-link': { variant: 'secondary' },
@@ -299,7 +306,7 @@ function typeSummary(tag: string, property: string, control: StoryControl['contr
     if (property === 'valueFormatter') return '(value: number) => string'
     if (property === 'items') return 'Item[]'
     if (tag === 'cb-table' && property === 'columns') return 'TableColumn[]'
-    if (['selectedKeys', 'expandedKeys', 'collapsedGroupKeys'].includes(property)) return 'string[]'
+    if (['selectedKeys', 'expandedIds', 'expandedKeys', 'collapsedGroupKeys'].includes(property)) return 'string[]'
     if (property === 'options') return 'SelectOption[]'
     if (property === 'units') return 'UnitOption[]'
     if (property === 'series') return tag === 'cb-pie-chart' ? 'PieSeries' : 'Series[]'
