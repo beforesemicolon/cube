@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
 const required=[['bar','Bar'],['line','Line'],['mixed-line-and-bar','Mixed line and bar'],['area','Area'],['bubble','Bubble'],['scatter','Scatter'],['pie','Pie'],['donut','Donut']]
 for(const [id,name]of required)test(`built Storybook: ${name} finishes its interactive play function`,async({page})=>{
     const tag=id==='pie'||id==='donut'?'cb-pie-chart':'cb-cartesian-chart'
@@ -302,4 +303,49 @@ test('built Storybook: global modal and flashbar examples demonstrate applicatio
     await expect(notification).toBeVisible()
     await notification.getByRole('button', { name: 'Dismiss changes saved' }).click()
     await expect(notification).toBeHidden()
+})
+
+test('built Storybook: composition examples are responsive, interactive, and dismissible', async ({ page }) => {
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--dimensions&viewMode=story')
+    await expect(page.getByRole('img', { name: 'Live dimensions preview' })).toBeVisible()
+    const dimensionWidths = await page.locator('cb-field').evaluateAll(elements => elements.map(element => element.getBoundingClientRect().width))
+    expect(dimensionWidths).toHaveLength(4)
+    expect(dimensionWidths.every(width => width >= 180)).toBe(true)
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--field-states&viewMode=story')
+    await expect(page.getByRole('textbox', { name: 'Filled' })).toHaveValue('Hero section')
+    const stateWidths = await page.locator('cb-field').evaluateAll(elements => elements.map(element => element.getBoundingClientRect().width))
+    expect(stateWidths).toHaveLength(5)
+    expect(stateWidths.every(width => width >= 300)).toBe(true)
+    await expect(page.getByRole('textbox', { name: 'Read only' })).toHaveValue('Published')
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--layout-controls&viewMode=story')
+    const flexPreview = page.getByRole('region', { name: 'Live flex layout preview' })
+    await expect(flexPreview).toBeVisible()
+    await page.getByRole('radio', { name: 'Column' }).click()
+    await expect(flexPreview).toHaveCSS('flex-direction', 'column')
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--styling-controls&viewMode=story')
+    const appearancePreview = page.getByRole('img', { name: 'Live appearance preview' }).locator(':scope > div')
+    await expect(appearancePreview).toBeVisible()
+    await expect(appearancePreview).toHaveCSS('opacity', '0.84')
+    await page.getByRole('slider', { name: 'Opacity' }).press('ArrowLeft')
+    await expect(appearancePreview).toHaveCSS('opacity', '0.83')
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--inspector-panel&viewMode=story')
+    await expect(page.getByRole('button', { name: 'Collapse layout inspector' })).toBeVisible()
+    const gap = page.getByRole('spinbutton', { name: 'Gap' })
+    await gap.press('ArrowUp')
+    await gap.press('Tab')
+    await expect(page.getByRole('region', { name: 'Selected container preview' })).toHaveCSS('gap', '17px')
+    expect((await new AxeBuilder({ page }).include('body').analyze()).violations).toEqual([])
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--publish-flow&viewMode=story')
+    const launcher = page.getByRole('button', { name: 'Publish website', exact: true })
+    await expect(launcher).toBeVisible()
+    await launcher.click()
+    const dialog = page.getByRole('dialog', { name: 'Publish website' })
+    await expect(dialog.getByRole('button', { name: 'Cancel', exact: true })).toHaveCount(1)
+    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await expect(dialog).toBeHidden()
 })

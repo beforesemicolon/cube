@@ -18,6 +18,8 @@ const lengthUnitProps = { unit: 'px', units: lengthUnits, unitLabel: 'Unit' }
 type SurfaceSize = 'compact' | 'standard' | 'wide'
 type ComponentValue = string | number | boolean | readonly (string | object)[]
 type ComponentProps = Record<string, ComponentValue>
+interface ExampleChangeDetail { readonly value: ComponentValue }
+interface ExampleModal extends HTMLElement { show(): boolean; close(reason?: 'action'): boolean }
 
 const fieldOwnedProperties = new Set([
     'label', 'accessibleLabel', 'description', 'helpText', 'details', 'detailsLabel', 'optionalLabel',
@@ -41,6 +43,20 @@ function fill<T extends HTMLElement>(node: T): T {
     node.setAttribute('inline-size', '100%')
     node.style.inlineSize = '100%'
     return node
+}
+
+function onValueChange(node: HTMLElement, handler: (value: ComponentValue) => void): void {
+    node.addEventListener('cb-change', event => handler((event as CustomEvent<ExampleChangeDetail>).detail.value))
+}
+
+function numberValue(value: ComponentValue, fallback: number): number {
+    if (Array.isArray(value) || typeof value === 'boolean') return fallback
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : fallback
+}
+
+function textValue(value: ComponentValue, fallback: string): string {
+    return typeof value === 'string' || typeof value === 'number' ? String(value) : fallback
 }
 
 function component<T extends HTMLElement>(tag: string, props: ComponentProps): T {
@@ -71,7 +87,8 @@ function formField(tag: string, props: ComponentProps): HTMLElement {
         invalid: props.invalid === true || Boolean(errorText),
         success: props.success === true,
     })
-    field.style.maxInlineSize = '100%'
+    field.style.cssText = 'inline-size:100%;max-inline-size:100%;min-inline-size:0'
+    control.style.cssText = 'inline-size:100%;max-inline-size:100%;min-inline-size:0'
     field.append(control)
     return field
 }
@@ -128,14 +145,41 @@ export const NativeFormControls: Story = {
 export const Dimensions: Story = {
     name: 'Form / Dimensions',
     render: () => {
-        const row = component('cb-row', { gap: '12px', wrap: true })
-        row.append(
-            formField('cb-unit-input', { label: 'Width', value: 320, ...lengthUnitProps }),
-            formField('cb-unit-input', { label: 'Height', value: 180, ...lengthUnitProps }),
-            formField('cb-text-input', { label: 'Aspect ratio', value: '16 : 9' }),
-            formField('cb-number-input', { label: 'Z index', value: 10 }),
-        )
-        return surface(fill(row))
+        const controls = component('cb-grid', { columns: 'repeat(auto-fit,minmax(min(100%,180px),1fr))', gap: '12px' })
+        const widthField = formField('cb-unit-input', { label: 'Width', value: 320, ...lengthUnitProps })
+        const heightField = formField('cb-unit-input', { label: 'Height', value: 180, ...lengthUnitProps })
+        const ratioField = formField('cb-text-input', { label: 'Aspect ratio', value: '16 : 9' })
+        const zIndexField = formField('cb-number-input', { label: 'Z index', value: 10 })
+        controls.append(widthField, heightField, ratioField, zIndexField)
+
+        const preview = document.createElement('div')
+        preview.setAttribute('role', 'img')
+        preview.setAttribute('aria-label', 'Live dimensions preview')
+        preview.style.cssText = 'position:relative;display:grid;place-items:center;inline-size:100%;min-block-size:260px;overflow:hidden;border:1px solid var(--color-separator);border-radius:var(--radius-md);background:linear-gradient(90deg,var(--color-separator) 1px,transparent 1px),linear-gradient(var(--color-separator) 1px,transparent 1px),var(--color-surface-muted);background-size:16px 16px'
+        const behind = document.createElement('div')
+        behind.style.cssText = 'position:absolute;inline-size:min(280px,60%);block-size:132px;translate:-32px -24px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)'
+        const layer = document.createElement('div')
+        layer.style.cssText = 'position:relative;display:grid;place-items:center;max-inline-size:82%;max-block-size:210px;border:1px solid var(--color-primary);border-radius:var(--radius-md);background:var(--color-selection);color:var(--color-signal-text);box-shadow:var(--shadow-md,0 8px 24px rgba(12,18,24,.14));font-weight:650'
+        const status = document.createElement('output')
+        layer.append(status)
+        preview.append(behind, layer)
+
+        let width = 320
+        let height = 180
+        let ratio = '16 : 9'
+        let zIndex = 10
+        const update = (): void => {
+            layer.style.inlineSize = `${Math.max(120, Math.min(width, 520))}px`
+            layer.style.blockSize = `${Math.max(80, Math.min(height, 210))}px`
+            layer.style.zIndex = String(Math.round(zIndex))
+            status.value = `${width} × ${height} px · ${ratio} · z ${zIndex}`
+        }
+        onValueChange(widthField, value => { width = numberValue(value, width); update() })
+        onValueChange(heightField, value => { height = numberValue(value, height); update() })
+        onValueChange(ratioField, value => { ratio = textValue(value, ratio); update() })
+        onValueChange(zIndexField, value => { zIndex = numberValue(value, zIndex); update() })
+        update()
+        return surface(fill(controls), fill(preview))
     },
 }
 
@@ -184,22 +228,59 @@ export const BoxModel: Story = {
 
 export const LayoutControls: Story = {
     name: 'Layout / Flex controls',
-    render: () => surface(
-        fill(component('cb-segmented-control', { label: 'Direction', accessibleLabel: 'Flex direction', value: 'row', items: [{ id: 'row', label: 'Row' }, { id: 'column', label: 'Column' }] })),
-        fill(component('cb-segmented-control', { label: 'Alignment', accessibleLabel: 'Alignment', value: 'center', items: [{ id: 'start', label: 'Start' }, { id: 'center', label: 'Center' }, { id: 'end', label: 'End' }] })),
-        formField('cb-unit-input', { label: 'Gap', value: 16, ...lengthUnitProps }),
-        component('cb-switch', { label: 'Wrap children', checked: true }),
-    ),
+    render: () => {
+        const controls = component('cb-grid', { columns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: '12px' })
+        const directionField = formField('cb-segmented-control', { label: 'Direction', accessibleLabel: 'Flex direction', value: 'row', items: [{ id: 'row', label: 'Row' }, { id: 'column', label: 'Column' }] })
+        const alignmentField = formField('cb-segmented-control', { label: 'Alignment', accessibleLabel: 'Cross-axis alignment', value: 'center', items: [{ id: 'start', label: 'Start' }, { id: 'center', label: 'Center' }, { id: 'end', label: 'End' }] })
+        const gapField = formField('cb-unit-input', { label: 'Gap', value: 16, ...lengthUnitProps })
+        const wrapControl = component('cb-switch', { label: 'Wrap children', checked: true })
+        controls.append(directionField, alignmentField, gapField, wrapControl)
+
+        const preview = document.createElement('div')
+        preview.setAttribute('role', 'region')
+        preview.setAttribute('aria-label', 'Live flex layout preview')
+        preview.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:16px;inline-size:100%;min-block-size:220px;padding:20px;box-sizing:border-box;border:1px solid var(--color-separator);border-radius:var(--radius-md);background:var(--color-surface-muted);overflow:auto'
+        for (const label of ['One', 'Two', 'Three', 'Four']) {
+            const item = document.createElement('div')
+            item.textContent = label
+            item.style.cssText = 'display:grid;place-items:center;flex:0 0 92px;min-block-size:56px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);box-shadow:var(--shadow-sm,0 1px 2px rgba(12,18,24,.08))'
+            preview.append(item)
+        }
+        onValueChange(directionField, value => { preview.style.flexDirection = textValue(value, 'row') === 'column' ? 'column' : 'row' })
+        onValueChange(alignmentField, value => {
+            const alignment: Readonly<Record<string, string>> = { start: 'flex-start', center: 'center', end: 'flex-end' }
+            preview.style.alignItems = alignment[textValue(value, 'center')] ?? 'center'
+        })
+        onValueChange(gapField, value => { preview.style.gap = `${Math.max(0, numberValue(value, 16))}px` })
+        onValueChange(wrapControl, value => { preview.style.flexWrap = value === true ? 'wrap' : 'nowrap' })
+        return surface(fill(controls), fill(preview))
+    },
 }
 
 export const StylingControls: Story = {
     name: 'Styling / Appearance controls',
-    render: () => compactSurface(
-        formField('cb-color-picker', { label: 'Fill', value: '#2563eb' }),
-        formField('cb-range-slider', { label: 'Opacity', value: 84, min: 0, max: 100, step: 1 }),
-        formField('cb-select', { label: 'Blend mode', value: 'normal', options: [{ value: 'normal', label: 'Normal' }, { value: 'multiply', label: 'Multiply' }, { value: 'screen', label: 'Screen' }] }),
-        formField('cb-unit-input', { label: 'Corner radius', value: 12, ...lengthUnitProps }),
-    ),
+    render: () => {
+        const controls = component('cb-grid', { columns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: '12px' })
+        const fillField = formField('cb-color-picker', { label: 'Fill', value: '#2563eb' })
+        const opacityField = formField('cb-range-slider', { label: 'Opacity', value: 84, min: 0, max: 100, step: 1 })
+        const blendField = formField('cb-select', { label: 'Blend mode', value: 'normal', options: [{ value: 'normal', label: 'Normal' }, { value: 'multiply', label: 'Multiply' }, { value: 'screen', label: 'Screen' }] })
+        const radiusField = formField('cb-unit-input', { label: 'Corner radius', value: 12, ...lengthUnitProps })
+        controls.append(fillField, opacityField, blendField, radiusField)
+
+        const stage = document.createElement('div')
+        stage.setAttribute('role', 'img')
+        stage.setAttribute('aria-label', 'Live appearance preview')
+        stage.style.cssText = 'display:grid;place-items:center;inline-size:100%;min-block-size:240px;border:1px solid var(--color-separator);border-radius:var(--radius-md);background:repeating-conic-gradient(var(--color-surface-muted) 0 25%,var(--color-surface) 0 50%) 0/24px 24px;overflow:hidden'
+        const preview = document.createElement('div')
+        preview.textContent = 'Appearance preview'
+        preview.style.cssText = 'display:grid;place-items:center;inline-size:min(320px,72%);min-block-size:140px;padding:20px;box-sizing:border-box;border:1px solid color-mix(in srgb,var(--color-foreground) 24%,transparent);border-radius:12px;background:#2563eb;color:#fff;box-shadow:var(--shadow-lg,0 16px 40px rgba(12,18,24,.18));font-weight:650;opacity:.84'
+        stage.append(preview)
+        onValueChange(fillField, value => { preview.style.background = textValue(value, '#2563eb') })
+        onValueChange(opacityField, value => { preview.style.opacity = String(Math.max(0, Math.min(100, numberValue(value, 84))) / 100) })
+        onValueChange(blendField, value => { preview.style.mixBlendMode = textValue(value, 'normal') })
+        onValueChange(radiusField, value => { preview.style.borderRadius = `${Math.max(0, numberValue(value, 12))}px` })
+        return surface(fill(controls), fill(stage))
+    },
 }
 
 export const TypographyControls: Story = {
@@ -215,15 +296,32 @@ export const TypographyControls: Story = {
 export const InspectorPanel: Story = {
     name: 'Layout / Inspector panel',
     render: () => {
-        const panel = component('cb-docked-panel', { label: 'Layout' })
+        const panel = component('cb-docked-panel', { label: 'Layout', description: 'Adjust the selected container.', accessibleLabel: 'Layout inspector', expanded: true, collapsible: true, expandLabel: 'Expand layout inspector', collapseLabel: 'Collapse layout inspector' })
         const content = component('cb-col', { gap: '16px' })
-        content.append(
-            component('cb-segmented-control', { label: 'Direction', items: [{ id: 'row', label: 'Row' }, { id: 'column', label: 'Column' }], value: 'row' }),
-            formField('cb-number-input', { label: 'Gap', value: 16, min: 0 }),
-            formField('cb-select', { label: 'Overflow', options: [{ value: 'visible', label: 'Visible' }, { value: 'hidden', label: 'Hidden' }, { value: 'auto', label: 'Auto' }], value: 'visible' }),
-        )
+        const directionField = formField('cb-segmented-control', { label: 'Direction', accessibleLabel: 'Container direction', items: [{ id: 'row', label: 'Row' }, { id: 'column', label: 'Column' }], value: 'row' })
+        const gapField = formField('cb-number-input', { label: 'Gap', value: 16, min: 0 })
+        const overflowField = formField('cb-select', { label: 'Overflow', options: [{ value: 'visible', label: 'Visible' }, { value: 'hidden', label: 'Hidden' }, { value: 'auto', label: 'Auto' }], value: 'visible' })
+        content.append(directionField, gapField, overflowField)
         panel.append(content)
-        return compactSurface(fill(panel))
+
+        const preview = document.createElement('div')
+        preview.setAttribute('role', 'region')
+        preview.setAttribute('aria-label', 'Selected container preview')
+        preview.style.cssText = 'display:flex;align-items:stretch;gap:16px;min-block-size:300px;padding:24px;box-sizing:border-box;border:1px solid var(--color-primary);border-radius:var(--radius-md);background:linear-gradient(90deg,var(--color-separator) 1px,transparent 1px),linear-gradient(var(--color-separator) 1px,transparent 1px),var(--color-surface-muted);background-size:20px 20px;overflow:visible'
+        for (const label of ['Header', 'Content', 'Footer']) {
+            const item = document.createElement('div')
+            item.textContent = label
+            item.style.cssText = 'display:grid;place-items:center;flex:1 1 100px;min-inline-size:84px;min-block-size:64px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface)'
+            preview.append(item)
+        }
+        onValueChange(directionField, value => { preview.style.flexDirection = textValue(value, 'row') === 'column' ? 'column' : 'row' })
+        onValueChange(gapField, value => { preview.style.gap = `${Math.max(0, numberValue(value, 16))}px` })
+        onValueChange(overflowField, value => { preview.style.overflow = textValue(value, 'visible') })
+
+        const workspace = document.createElement('div')
+        workspace.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px;align-items:start;inline-size:100%'
+        workspace.append(preview, panel)
+        return wideSurface(fill(workspace))
     },
 }
 
@@ -338,16 +436,20 @@ export const PublishFlow: Story = {
     name: 'Overlay / Publish flow',
     render: () => {
         const launcher = component('cb-button', { label: 'Publish website', variant: 'primary' })
-        const modal = component<HTMLElement & { show(): boolean }>('cb-modal', { heading: 'Publish website', description: 'Choose where this version should be available.' })
+        const modal = component<ExampleModal>('cb-modal', {
+            heading: 'Publish website', description: 'Choose where this version should be available.', closeLabel: 'Close publish website',
+            cancelLabel: 'Cancel', showCancel: true, dismissible: true,
+        })
         const form = component('cb-col', { gap: '12px' })
         form.append(
             formField('cb-select', { label: 'Environment', value: 'production', options: [{ value: 'preview', label: 'Preview' }, { value: 'production', label: 'Production' }] }),
             component('cb-switch', { label: 'Notify collaborators', checked: true }),
         )
         modal.append(form)
-        const footer = component('cb-row', { gap: '8px', justify: 'end' }); footer.slot = 'footer'
-        footer.append(component('cb-button', { label: 'Cancel' }), component('cb-button', { label: 'Publish', variant: 'primary' }))
-        modal.append(footer)
+        const publish = component('cb-button', { label: 'Publish', variant: 'primary' })
+        publish.slot = 'footer'
+        publish.addEventListener('cb-action', () => modal.close('action'))
+        modal.append(publish)
         launcher.addEventListener('cb-action', () => modal.show())
         return compactSurface(launcher, modal)
     },
