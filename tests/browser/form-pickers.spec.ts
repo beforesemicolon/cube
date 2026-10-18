@@ -16,6 +16,7 @@ test('custom select is the default and native rendering is opt in', async ({ pag
         document.querySelector('#fixture')?.append(custom, native)
     })
     const trigger = page.locator('cb-select').first().getByRole('button', { name: /^Device:/ })
+    await expect(page.locator('cb-select').first().locator('[part~="search-wrap"]')).toBeHidden()
     await trigger.focus()
     await trigger.press('ArrowDown')
     await expect(page.locator('cb-select').first().getByRole('option', { name: 'Desktop' })).toBeFocused()
@@ -24,6 +25,61 @@ test('custom select is the default and native rendering is opt in', async ({ pag
     await page.keyboard.press('Enter')
     await expect(page.locator('cb-select').first()).toHaveJSProperty('value', 'mobile')
     await expect(page.locator('cb-select').nth(1).getByRole('combobox', { name: 'Browser device' })).toHaveValue('mobile')
+})
+
+test('select supports searchable multi-selection in the same component', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const select = document.createElement('cb-select') as HTMLElement & {
+            label: string
+            value: string[]
+            multi: boolean
+            searchable: 'auto' | boolean
+            searchThreshold: number
+            searchLabel: string
+            searchPlaceholder: string
+            emptyLabel: string
+            options: Array<{ value: string; label: string }>
+        }
+        select.label = 'Frameworks'
+        select.value = ['react']
+        select.multi = true
+        select.searchable = 'auto'
+        select.searchThreshold = 10
+        select.searchLabel = 'Filter frameworks'
+        select.searchPlaceholder = 'Search frameworks'
+        select.emptyLabel = 'No matching frameworks'
+        select.options = [
+            { value: 'angular', label: 'Angular' }, { value: 'astro', label: 'Astro' },
+            { value: 'ember', label: 'Ember' }, { value: 'lit', label: 'Lit' },
+            { value: 'next', label: 'Next.js' }, { value: 'nuxt', label: 'Nuxt' },
+            { value: 'preact', label: 'Preact' }, { value: 'qwik', label: 'Qwik' },
+            { value: 'react', label: 'React' }, { value: 'solid', label: 'Solid' },
+            { value: 'svelte', label: 'Svelte' }, { value: 'vue', label: 'Vue' },
+        ]
+        document.querySelector('#fixture')?.append(select)
+    })
+
+    const select = page.locator('cb-select')
+    await select.getByRole('button', { name: 'Frameworks: React' }).click()
+    const search = select.getByRole('combobox', { name: 'Filter frameworks' })
+    await expect(search).toBeVisible()
+    await expect(search).toBeFocused()
+    await search.fill('vue')
+    await expect(select.getByRole('option', { name: 'Vue' })).toBeVisible()
+    await expect(select.getByRole('option', { name: 'React' })).toHaveCount(0)
+    await select.getByRole('option', { name: 'Vue' }).click()
+    await expect(select).toHaveJSProperty('value', ['react', 'vue'])
+    await expect(select.locator('[part~="popup"]')).toBeVisible()
+    await expect(select.getByRole('button', { name: 'Frameworks: React, Vue' })).toHaveAttribute('aria-expanded', 'true')
+
+    await search.fill('missing')
+    await expect(select.getByRole('status')).toHaveText('No matching frameworks')
+    await search.press('Escape')
+    await expect(select.locator('[part~="popup"]')).toBeHidden()
+
+    const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
+    expect(audit.violations).toEqual([])
 })
 
 test('unit input offers configurable units without changing its numeric value', async ({ page }) => {

@@ -17,8 +17,6 @@ export const UnitInput: Story = componentStory('cb-unit-input', { label: 'Unit i
 
 export const Combobox: Story = componentStory('cb-combobox', { label: 'Font family', placeholder: 'Search fonts', toggleLabel: 'Toggle options', emptyLabel: 'No fonts found', open: false, autocomplete: 'list', options: [{ value: 'inter', label: 'Inter' }, { value: 'source-sans', label: 'Source Sans 3' }] })
 
-export const MultiSelect: Story = componentStory('cb-multi-select', { label: 'Multi select', value: 'one', items })
-
 export const Checkbox: Story = componentStory('cb-checkbox', { label: 'Checkbox', checked: true })
 
 export const Radio: Story = componentStory('cb-radio', { label: 'Radio', checked: true })
@@ -41,7 +39,7 @@ export const EditableLabel: Story = componentStory('cb-editable-label', { label:
 
 export const MaskedInput: Story = componentStory('cb-masked-input', { label: 'Masked input', value: '12 px', placeholder: 'Masked input' })
 
-export const Select: Story = componentStory('cb-select', { label: 'Select', value: 'desktop', placeholder: 'Choose a device', native: false, open: false, multiple: false, options: [{ value: 'desktop', label: 'Desktop' }, { value: 'mobile', label: 'Mobile' }] })
+export const Select: Story = componentStory('cb-select', { label: 'Select', value: 'desktop', placeholder: 'Choose a device', native: false, open: false, multi: false, searchable: 'auto', searchThreshold: 10, searchLabel: 'Filter options', searchPlaceholder: 'Search options', emptyLabel: 'No matching options', options: [{ value: 'desktop', label: 'Desktop' }, { value: 'tablet', label: 'Tablet' }, { value: 'mobile', label: 'Mobile' }, { value: 'watch', label: 'Watch' }, { value: 'television', label: 'Television' }, { value: 'laptop', label: 'Laptop' }, { value: 'desktop-wide', label: 'Wide desktop' }, { value: 'tablet-landscape', label: 'Landscape tablet' }, { value: 'phone-small', label: 'Small phone' }, { value: 'phone-large', label: 'Large phone' }, { value: 'kiosk', label: 'Kiosk' }] })
 
 export const Slider: Story = componentStory('cb-slider', { label: 'Opacity', value: 64, min: 0, max: 100, step: 1, valueText: '64%', orientation: 'horizontal' })
 

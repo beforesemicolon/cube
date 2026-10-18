@@ -93,7 +93,7 @@ const definitions = groups.flatMap(([board, entries]) => entries.map(([name, tit
 // Only these Figma cards define reusable public components. Every other card is
 // retained as a design reference and documented as an application-level example.
 const publicStudioComponentNames = new Set([
-    'text-input','textarea','number-input','unit-input','combobox','multi-select','checkbox','radio','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input',
+    'text-input','textarea','number-input','unit-input','combobox','checkbox','radio','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input',
     'color-picker','color-swatch','eyedropper','gradient-editor','gradient-stops',
     'collapsible-sidebar','resizable-panel','docked-panel','panel-header',
     'badge','avatar','card','list','description-row','table','tree','accordion','code-preview',
@@ -239,7 +239,7 @@ const foundationStoryArgs = {
     modal: `{ heading: 'Create a page', description: 'Add a page to this project.', open: false, dismissible: true, closeOnBackdrop: true, modalSize: 'md', closeLabel: 'Close' }`,
     'alert-dialog': `{ heading: 'Delete component?', description: 'This action cannot be undone.', open: false, dismissible: true, closeOnBackdrop: true, modalSize: 'sm', confirmLabel: 'Delete', cancelLabel: 'Cancel', destructive: true, busy: false }`,
     slider: `{ label: 'Opacity', value: 64, min: 0, max: 100, step: 1, valueText: '64%', orientation: 'horizontal' }`,
-    select: `{ label: 'Select', value: 'desktop', placeholder: 'Choose a device', native: false, open: false, multiple: false, options: [{ value: 'desktop', label: 'Desktop' }, { value: 'mobile', label: 'Mobile' }] }`,
+    select: `{ label: 'Select', value: 'desktop', placeholder: 'Choose a device', native: false, open: false, multi: false, searchable: 'auto', searchThreshold: 10, searchLabel: 'Filter options', searchPlaceholder: 'Search options', emptyLabel: 'No matching options', options: [{ value: 'desktop', label: 'Desktop' }, { value: 'tablet', label: 'Tablet' }, { value: 'mobile', label: 'Mobile' }, { value: 'watch', label: 'Watch' }, { value: 'television', label: 'Television' }, { value: 'laptop', label: 'Laptop' }, { value: 'desktop-wide', label: 'Wide desktop' }, { value: 'tablet-landscape', label: 'Landscape tablet' }, { value: 'phone-small', label: 'Small phone' }, { value: 'phone-large', label: 'Large phone' }, { value: 'kiosk', label: 'Kiosk' }] }`,
     calendar: `{ label: 'Calendar', value: '2026-10-18', firstDayOfWeek: 0, min: '', max: '', previousLabel: 'Previous month', nextLabel: 'Next month' }`,
     box: `{ inlineSize: '100%', padding: '16px', background: 'var(--color-surface-muted)', radius: '8px' }`,
     row: `{ gap: '8px', align: 'center', justify: 'start', wrap: true, reverse: false, collapseAt: 'sm' }`,
@@ -302,7 +302,8 @@ for (const category of documentationCategories) {
     const key = documentationKeys[category]
     const order = 20 + documentationCategories.indexOf(category)
     const categoryNote = category === 'form' ? '\n{{t.cube.formNative}}\n' : ''
-    const markdown = `---\nname: '{{t.cube.${key}}}'\ntitle: '{{t.cube.${key}}}'\npath: /documentation/${category}\nlayout: document\norder: ${order}\n---\n\n# {{t.cube.${key}}}\n\n{{t.cube.studioCatalogBody}}\n${categoryNote}\n:::cube studio-${category}\n:::\n\n| Component | Custom element | Package entry |\n| --- | --- | --- |\n${rows}\n\n## API\n\n{{t.cube.studioCatalogApi}}\n`
+    const categoryDetails = category === 'form' ? '\n\n{{t.cube.unitInputBody}}\n\n{{t.cube.selectBody}}' : ''
+    const markdown = `---\nname: '{{t.cube.${key}}}'\ntitle: '{{t.cube.${key}}}'\npath: /documentation/${category}\nlayout: document\norder: ${order}\n---\n\n# {{t.cube.${key}}}\n\n{{t.cube.studioCatalogBody}}\n${categoryNote}\n:::cube studio-${category}\n:::\n\n| Component | Custom element | Package entry |\n| --- | --- | --- |\n${rows}${categoryDetails}\n\n## API\n\n{{t.cube.studioCatalogApi}}\n`
     await writeFile(resolve('docs-cube/documentation', `${category}.md`), markdown)
 }
 

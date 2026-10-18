@@ -15,10 +15,30 @@ function surface(...children: HTMLElement[]): HTMLElement {
     return node
 }
 
-function component<T extends HTMLElement>(tag: string, props: Record<string, string | number | boolean | readonly object[]>): T {
+function component<T extends HTMLElement>(tag: string, props: Record<string, string | number | boolean | readonly (string | object)[]>): T {
     const node = document.createElement(tag) as T
     Object.assign(node, props)
     return node
+}
+
+export const MultiSelection: Story = {
+    name: 'Form / Multi-selection',
+    render: () => surface(component('cb-select', {
+        label: 'Project members',
+        placeholder: 'Choose members',
+        multi: true,
+        searchable: true,
+        searchLabel: 'Filter project members',
+        searchPlaceholder: 'Search members',
+        emptyLabel: 'No matching members',
+        value: ['maya'],
+        options: [
+            { value: 'maya', label: 'Maya Chen' },
+            { value: 'noah', label: 'Noah Williams' },
+            { value: 'sofia', label: 'Sofia Martins' },
+            { value: 'liam', label: 'Liam Okafor' },
+        ],
+    })),
 }
 
 export const Autocomplete: Story = {

@@ -22,7 +22,6 @@ order: 21
 | Number input | `<cb-number-input>` | `@beforesemicolon/cube/form/number-input` |
 | Unit input | `<cb-unit-input>` | `@beforesemicolon/cube/form/unit-input` |
 | Combobox | `<cb-combobox>` | `@beforesemicolon/cube/form/combobox` |
-| Multi select | `<cb-multi-select>` | `@beforesemicolon/cube/form/multi-select` |
 | Checkbox | `<cb-checkbox>` | `@beforesemicolon/cube/form/checkbox` |
 | Radio | `<cb-radio>` | `@beforesemicolon/cube/form/radio` |
 | Switch | `<cb-switch>` | `@beforesemicolon/cube/form/switch` |
@@ -40,13 +39,7 @@ order: 21
 
 {{t.cube.unitInputBody}}
 
-```html
-<cb-unit-input label="Width" value="320" unit="px" unit-label="Unit"></cb-unit-input>
-<script type="module">
-  const input = document.querySelector('cb-unit-input')
-  input.units = ['px', '%', 'rem', 'vw']
-</script>
-```
+{{t.cube.selectBody}}
 
 ## API
 

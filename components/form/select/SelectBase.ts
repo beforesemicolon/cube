@@ -1,18 +1,20 @@
 import { FormFieldBase, type FormFieldProps } from '../FormFieldBase.js'
 import { normalizeOptions, type SelectOption } from '../model.js'
-import { bool,text,scalarText } from '../../core/value.js'
-export interface SelectProps extends FormFieldProps { options?:SelectOption[]; value?:string|string[]; multiple?:boolean; placeholder?:string; native?:boolean; open?:boolean }
+import { bool,finite,text,scalarText } from '../../core/value.js'
+export type SelectSearchMode = 'auto' | boolean
+export interface SelectProps extends FormFieldProps { options?:SelectOption[]; value?:string|string[]; multi?:boolean; placeholder?:string; native?:boolean; open?:boolean; searchable?:SelectSearchMode; searchThreshold?:number; searchLabel?:string; searchPlaceholder?:string; emptyLabel?:string }
 export abstract class SelectBase extends FormFieldBase<SelectProps> {
-    static observedAttributes=[...FormFieldBase.observedAttributes,'options','value','multiple','placeholder','native','open']
-    options:SelectOption[]=[];value:string|string[]='';multiple=false;placeholder='';native=false;open=false
+    static observedAttributes=[...FormFieldBase.observedAttributes,'options','value','multi','placeholder','native','open','searchable','search-threshold','search-label','search-placeholder','empty-label']
+    options:SelectOption[]=[];value:string|string[]='';multi=false;placeholder='';native=false;open=false;searchable:SelectSearchMode='auto';searchThreshold=10;searchLabel='';searchPlaceholder='';emptyLabel=''
     get normalizedOptions(){return normalizeOptions(this.options)}
-    get selection():string[]{const values=(Array.isArray(this.value)?this.value:[this.value]).map(v=>scalarText(v));return values.filter(v=>this.normalizedOptions.some(o=>o.value===v))}
+    get selection():string[]{const values=(Array.isArray(this.value)?this.value:[this.value]).map(v=>scalarText(v));const selected=values.filter(v=>this.normalizedOptions.some(o=>o.value===v));return bool(this.multi)?selected:selected.slice(0,1)}
+    get searchEnabled():boolean{return this.searchable===true||(this.searchable==='auto'&&this.normalizedOptions.length>Math.max(0,finite(this.searchThreshold,10)))}
     protected captureValue():unknown{return Array.isArray(this.value)?[...this.value]:this.value}
     protected restoreValue(value:unknown):void{this.value=value instanceof FormData?value.getAll(this.name).filter((v):v is string=>typeof v==='string'):Array.isArray(value)?value.filter((v):v is string=>typeof v==='string'):scalarText(value)}
     choose(value:string|string[],originalEvent?:Event):boolean{
         if(this.unavailable||bool(this.readOnly)){this.syncView();return false}
         const values=(Array.isArray(value)?value:[value]).filter(v=>v===''||this.normalizedOptions.some(o=>o.value===v&&!o.disabled))
-        const next=bool(this.multiple)
+        const next=bool(this.multi)
             ? Array.isArray(value)
                 ? values
                 : this.selection.includes(values[0] ?? '')

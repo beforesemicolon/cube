@@ -5,7 +5,6 @@ export const studioComponentLoaders = {
     'number-input': () => import('../form/number-input/index.js'),
     'unit-input': () => import('../form/unit-input/index.js'),
     'combobox': () => import('../form/combobox/index.js'),
-    'multi-select': () => import('../form/multi-select/index.js'),
     'checkbox': () => import('../form/checkbox/index.js'),
     'radio': () => import('../form/radio/index.js'),
     'switch': () => import('../form/switch/index.js'),

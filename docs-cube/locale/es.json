@@ -41,6 +41,7 @@
     "categoryForm": "Formularios",
     "formNative": "Select, DatePicker y TimePicker usan el renderizado coherente de Cube de forma predeterminada. Añade la bandera native solo cuando prefieras el selector nativo del navegador. Combobox ofrece los comportamientos de lista y autocompletado mediante la propiedad autocomplete, y Calendar también está disponible como componente independiente.",
     "unitInputBody": "UnitInput acepta una unidad actual y una colección de unidades. Una sola unidad se muestra como sufijo estático; varias unidades se convierten en un selector accesible mediante teclado. Los cambios de unidad emiten cb-unit-change sin modificar el valor numérico.",
+    "selectBody": "Select gestiona la selección única y múltiple mediante la bandera multi. La búsqueda se puede activar, desactivar o dejar en auto; auto muestra el filtro cuando la cantidad de opciones supera searchThreshold, cuyo valor predeterminado es 10.",
     "studioLayout": "Layout",
     "categoryNavigation": "Navegación",
     "categoryOverlay": "Superposiciones",

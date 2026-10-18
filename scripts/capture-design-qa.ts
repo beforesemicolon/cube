@@ -41,7 +41,7 @@ const boards: Readonly<Record<string, BoardConfig>> = {
     },
     inputs: {
         file: '02/Inputs.png', width: 3376, height: 8106,
-        components: ['text-input','textarea','number-input','unit-input','search','combobox','autocomplete','select','multi-select','checkbox','radio','switch','slider','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input'],
+        components: ['text-input','textarea','number-input','unit-input','search','combobox','autocomplete','select','checkbox','radio','switch','slider','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input'],
     },
     styling: {
         file: '03/Color & style.png', width: 3376, height: 13920,

@@ -41,6 +41,7 @@
     "categoryForm": "表单",
     "formNative": "Select、DatePicker 和 TimePicker 默认使用一致的 Cube 渲染。仅在希望使用浏览器原生选择器时添加 native 标志。Combobox 通过 autocomplete 属性同时提供列表和自动补全行为，Calendar 也可作为独立组件使用。",
     "unitInputBody": "UnitInput 接受当前 unit 和 units 集合。单个单位显示为静态后缀；多个单位则显示为支持键盘操作的选择器。单位变化会触发 cb-unit-change，且不会修改数值。",
+    "selectBody": "Select 通过 multi 标志同时支持单选和多选。搜索可以开启、关闭或设为 auto；当选项数量超过 searchThreshold 时，auto 会显示筛选框，默认阈值为 10。",
     "studioLayout": "布局",
     "categoryNavigation": "导航",
     "categoryOverlay": "浮层",

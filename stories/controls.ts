@@ -33,13 +33,13 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 
 const booleanProperties = new Set([
     'autoplay', 'busy', 'checked', 'closeOnBackdrop', 'decorative', 'destructive', 'disabled', 'dismissible',
-    'expanded', 'formNoValidate', 'invalid', 'inverted', 'loading', 'loop', 'multiple', 'muted', 'native',
+    'expanded', 'formNoValidate', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
     'open', 'patterns', 'popupExpanded', 'pressed', 'readOnly', 'required', 'reverse', 'wrap', 'zoomable',
 ])
 
 const numberProperties = new Set([
     'delay', 'firstDayOfWeek', 'height', 'max', 'maxItems', 'maxVisible', 'min', 'page', 'playbackRate',
-    'progress', 'seekStep', 'selectionCount', 'siblings', 'step', 'totalPages', 'x', 'y',
+    'progress', 'searchThreshold', 'seekStep', 'selectionCount', 'siblings', 'step', 'totalPages', 'x', 'y',
 ])
 
 const objectProperties = new Set([
@@ -48,7 +48,7 @@ const objectProperties = new Set([
 ])
 
 const stateProperties = new Set([
-    'busy', 'checked', 'disabled', 'expanded', 'invalid', 'loading', 'multiple', 'native', 'open', 'pressed',
+    'busy', 'checked', 'disabled', 'expanded', 'invalid', 'loading', 'multi', 'multiple', 'native', 'open', 'pressed',
     'readOnly', 'required', 'status',
 ])
 
@@ -78,6 +78,7 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
     popupType: ['', 'menu', 'listbox', 'tree', 'grid', 'dialog'],
     position: ['top-start', 'top-end', 'bottom-start', 'bottom-end'],
     preload: ['none', 'metadata', 'auto'],
+    searchable: ['auto', true, false],
     size: ['xs', 'sm', 'md', 'lg'],
     target: ['_self', '_blank', '_parent', '_top'],
     type: ['button', 'submit', 'reset'],
@@ -102,6 +103,7 @@ const numberControls: Readonly<Record<string, NumberControl>> = {
     playbackRate: { type: 'number', min: 0.25, max: 4, step: 0.25 },
     progress: { type: 'number', min: 0, max: 100, step: 1 },
     seekStep: { type: 'number', min: 1, max: 60, step: 1 },
+    searchThreshold: { type: 'number', min: 0, step: 1 },
     selectionCount: { type: 'number', min: 0, step: 1 },
     siblings: { type: 'number', min: 0, max: 5, step: 1 },
     totalPages: { type: 'number', min: 1, step: 1 },
@@ -132,6 +134,11 @@ const descriptions: Readonly<Record<string, string>> = {
     open: 'Controls whether the popup or overlay is open.',
     options: 'Editable option collection. Add, remove, relabel, value, or disable options here.',
     placeholder: 'Hint displayed when the component has no value.',
+    multi: 'Allows more than one option to be selected while keeping the dropdown open.',
+    searchable: 'Shows search automatically above the threshold, or forces it on or off.',
+    searchThreshold: 'Option count above which automatic search is displayed.',
+    searchLabel: 'Accessible label for the option filter field.',
+    searchPlaceholder: 'Placeholder displayed in the option filter field.',
     readOnly: 'Prevents edits while preserving focus and value exposure.',
     required: 'Marks the value as required for form validation.',
     series: 'Editable chart series and data points.',
@@ -154,9 +161,9 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     crossOrigin: "''", decorative: 'false', destructive: 'false', disabled: 'false', dismissible: 'true',
     expanded: 'false', firstDayOfWeek: '0', height: 'auto', invalid: 'false', items: '[]',
     loading: 'false', loop: 'false', max: '100', maxVisible: '4', messages: '[]', min: '0',
-    modalSize: 'md', multiple: 'false', muted: 'false', native: 'false', open: 'false', options: '[]',
+    modalSize: 'md', multi: 'false', multiple: 'false', muted: 'false', native: 'false', open: 'false', options: '[]',
     orientation: 'horizontal', patterns: 'false', placement: 'bottom-start', playbackRate: '1', position: 'top-end',
-    preload: 'metadata', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', seekStep: '10',
+    preload: 'metadata', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', searchable: 'auto', searchThreshold: '10', seekStep: '10',
     series: '[]', size: 'sm', status: 'finished', step: '1', theme: 'null', tracks: '[]', units: '[]', value: "''",
     visibleSegments: 'null', visibleSeries: 'null', wrap: 'false', xAxis: '{}', yAxis: '{}', zoomable: 'false',
 }
@@ -171,9 +178,9 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     href: '', icon: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
     keys: '', label: '', loading: false, loop: false, margin: '', max: 100, maxBlockSize: '', maxInlineSize: '',
     maxItems: 4, maxVisible: 4, mediaTitle: '', menuLabel: '', min: 0, minBlockSize: '', minInlineSize: '',
-    modalSize: 'md', multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal',
+    modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal',
     overflow: '', padding: '', page: 1, patterns: false, placement: 'bottom-start', placeholder: '', playbackRate: 1,
-    popupControls: '', popupExpanded: false, popupType: '', position: 'top-end', poster: '', preload: 'metadata',
+    popupControls: '', popupExpanded: false, popupType: '', position: 'top-end', poster: '', preload: 'metadata', searchLabel: '', searchable: 'auto', searchPlaceholder: '', searchThreshold: 10,
     pressed: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
     seekStep: 10, selectionCount: 0, siblings: 1, size: 'sm', src: '', status: '', step: 1, target: '_self',
     totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', wrap: false, x: 0, y: 0, zoomable: false,
@@ -211,7 +218,7 @@ function humanize(property: string): string {
 }
 
 function categoryFor(property: string): string {
-    if (property === 'accessibleLabel') return 'Accessibility'
+    if (property === 'accessibleLabel' || property === 'searchLabel' || property === 'unitLabel') return 'Accessibility'
     if (stateProperties.has(property)) return 'State'
     if (layoutProperties.has(property)) return 'Layout'
     if (dataProperties.has(property)) return 'Data'

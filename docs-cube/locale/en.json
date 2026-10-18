@@ -41,6 +41,7 @@
     "categoryForm": "Form",
     "formNative": "Select, DatePicker and TimePicker use consistent Cube rendering by default. Add the native flag only when the host browser’s native picker is preferred. Combobox provides both list and autocomplete behavior through its autocomplete property, and Calendar is available as a standalone component.",
     "unitInputBody": "UnitInput accepts a current unit and a units collection. A single unit is rendered as a static suffix; multiple units become a keyboard-accessible selector. Unit changes emit cb-unit-change without changing the numeric value.",
+    "selectBody": "Select handles both single and multiple selection through the multi flag. Search can be enabled, disabled, or left on auto; auto displays the filter when the option count exceeds searchThreshold, which defaults to 10.",
     "studioLayout": "Layout",
     "categoryNavigation": "Navigation",
     "categoryOverlay": "Overlay",

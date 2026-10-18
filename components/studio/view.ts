@@ -425,7 +425,7 @@ export function createStudioView(host: StudioComponentBase): StudioView {
                 option.selected = selected(host, item)
                 select.append(option)
             }
-            select.multiple = host.componentName === 'multi-select' || host.studioMultiple()
+            select.multiple = host.studioMultiple()
             select.required = host.studioRequired()
             select.disabled = host.studioDisabled()
             select.setAttribute('aria-label', host.studioAccessibleName())

@@ -2,7 +2,7 @@
 
 A TypeScript, headless-first web-component library for visual editors. This is the **0.3.0 alpha implementation branch**, not a published release.
 
-The eleven Studio boards contain 217 visual references. An explicit audit separates those references into 92 independently loadable component entries and application-level composition examples; a Figma card is no longer treated as a component merely because it has a name. Preview and theme switching are usage contexts for `Switch`; autocomplete is a `Combobox` mode; dimensions, aspect ratio and z-index are examples assembled from form and layout primitives. Each concrete component registers its `cb-*` element when imported, has a headless base, exposes styling parts, and consumes site-builder-compatible theme variables.
+The eleven Studio boards contain 217 visual references. An explicit audit separates those references into 91 independently loadable component entries and application-level composition examples; a Figma card is no longer treated as a component merely because it has a name. Preview and theme switching are usage contexts for `Switch`; autocomplete is a `Combobox` mode; multi-selection and searchable option lists are modes of `Select`; dimensions, aspect ratio and z-index are examples assembled from form and layout primitives. Each concrete component registers its `cb-*` element when imported, has a headless base, exposes styling parts, and consumes site-builder-compatible theme variables.
 
 ## Develop
 
