@@ -32,20 +32,20 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 }
 
 const booleanProperties = new Set([
-    'animated', 'autoplay', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'disabled', 'dismissible',
+    'allowAlpha', 'allowSampler', 'animated', 'autoplay', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'disabled', 'dismissible',
     'disableContentPadding', 'expanded', 'formNoValidate', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
     'open', 'patterns', 'popupExpanded', 'pressed', 'readOnly', 'required', 'resizable', 'reverse', 'rowActivation',
     'stickyHeader', 'striped', 'wrap', 'zoomable',
 ])
 
 const numberProperties = new Set([
-    'delay', 'firstDayOfWeek', 'headingLevel', 'height', 'lines', 'max', 'maxItems', 'maxVisible', 'min', 'page', 'playbackRate',
+    'delay', 'firstDayOfWeek', 'headingLevel', 'height', 'lines', 'max', 'maxItems', 'maxRecent', 'maxVisible', 'min', 'page', 'playbackRate',
     'loadingRows', 'progress', 'searchThreshold', 'seekStep', 'selectionCount', 'siblings', 'step', 'stickyColumns',
     'totalPages', 'x', 'y',
 ])
 
 const objectProperties = new Set([
-    'collapsedGroupKeys', 'expandedIds', 'expandedKeys', 'items', 'messages', 'options', 'selectedKeys', 'series', 'theme', 'tracks',
+    'collapsedGroupKeys', 'expandedIds', 'expandedKeys', 'items', 'messages', 'options', 'recentColors', 'selectedKeys', 'series', 'swatches', 'theme', 'tracks',
     'units', 'visibleSegments', 'visibleSeries',
     'xAxis', 'yAxis',
 ])
@@ -62,7 +62,7 @@ const layoutProperties = new Set([
 ])
 
 const dataProperties = new Set([
-    'collapsedGroupKeys', 'expandedIds', 'expandedKeys', 'items', 'messages', 'options', 'selectedKeys', 'series', 'theme', 'tracks', 'units', 'value', 'visibleSegments',
+    'collapsedGroupKeys', 'expandedIds', 'expandedKeys', 'items', 'messages', 'options', 'recentColors', 'selectedKeys', 'series', 'swatches', 'theme', 'tracks', 'units', 'value', 'visibleSegments',
     'visibleSeries', 'xAxis', 'yAxis',
 ])
 
@@ -115,6 +115,7 @@ const numberControls: Readonly<Record<string, NumberControl>> = {
     lines: { type: 'number', min: 1, max: 12, step: 1 },
     loadingRows: { type: 'number', min: 1, max: 20, step: 1 },
     maxItems: { type: 'number', min: 1, step: 1 },
+    maxRecent: { type: 'number', min: 0, max: 24, step: 1 },
     maxVisible: { type: 'number', min: 1, max: 20, step: 1 },
     page: { type: 'number', min: 1, step: 1 },
     playbackRate: { type: 'number', min: 0.25, max: 4, step: 0.25 },
@@ -148,7 +149,10 @@ const descriptions: Readonly<Record<string, string>> = {
     label: 'Visible component label.',
     menuLabel: 'Accessible label for the split button menu trigger.',
     messages: 'Editable Flashbar notification queue.',
+    allowAlpha: 'Enables transparency editing and eight-digit HEX values.',
+    allowSampler: 'Shows the screen color sampler when the browser supports it.',
     native: 'Uses the browser-native control instead of the themed Cube renderer.',
+    recentColors: 'Controlled list of colors most recently committed in the picker.',
     open: 'Controls whether the popup or overlay is open.',
     options: 'Editable option collection. Add, remove, relabel, value, or disable options here.',
     placeholder: 'Hint displayed when the component has no value.',
@@ -160,6 +164,7 @@ const descriptions: Readonly<Record<string, string>> = {
     readOnly: 'Prevents edits while preserving focus and value exposure.',
     required: 'Marks the value as required for form validation.',
     series: 'Editable chart series and data points.',
+    swatches: 'Editable saved color palette displayed inside the picker.',
     theme: 'Site-builder-compatible theme definition applied as CSS variables.',
     tracks: 'Editable caption-track collection for media playback.',
     unit: 'Current unit displayed beside the numeric value.',
@@ -207,21 +212,21 @@ const descriptions: Readonly<Record<string, string>> = {
 
 const defaultSummaries: Readonly<Record<string, string>> = {
     activation: 'automatic', align: 'stretch', appearance: 'system', autoFlow: 'row', autocomplete: 'list',
-    autoplay: 'false', busy: 'false', checked: 'false', closeOnBackdrop: 'true', collapseAt: "''",
+    allowAlpha: 'true', allowSampler: 'true', autoplay: 'false', busy: 'false', checked: 'false', closeOnBackdrop: 'true', collapseAt: "''",
     crossOrigin: "''", decorative: 'false', destructive: 'false', disabled: 'false', disableContentPadding: 'false', dismissible: 'true',
     expanded: 'false', firstDayOfWeek: '0', height: 'auto', invalid: 'false', items: '[]',
-    loading: 'false', loop: 'false', max: '100', maxVisible: '4', messages: '[]', min: '0',
+    loading: 'false', loop: 'false', max: '100', maxRecent: '8', maxVisible: '4', messages: '[]', min: '0',
     modalSize: 'md', multi: 'false', multiple: 'false', muted: 'false', native: 'false', open: 'false', options: '[]',
     orientation: 'horizontal', patterns: 'false', placement: 'bottom-start', playbackRate: '1', position: 'top-end',
     preload: 'metadata', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', searchable: 'auto', searchThreshold: '10', seekStep: '10',
-    series: '[]', size: 'sm', status: 'finished', step: '1', theme: 'null', tracks: '[]', units: '[]', value: "''",
+    recentColors: '[]', series: '[]', size: 'sm', status: 'finished', step: '1', swatches: '[]', theme: 'null', tracks: '[]', units: '[]', value: "''",
     visibleSegments: 'null', visibleSeries: 'null', wrap: 'false', xAxis: '{}', yAxis: '{}', zoomable: 'false',
     animated: 'true', headingLevel: '2', lines: '3', loadingRows: '5', resizable: 'true', rowActivation: 'false', selectionMode: 'none',
     sortDirection: 'asc', stickyColumns: '0', stickyHeader: 'false', striped: 'false', density: 'comfortable',
 }
 
 const primitiveDefaults: Readonly<Record<string, string | number | boolean | null>> = {
-    accessibleLabel: '', actionLabel: '', actionValue: '', activation: 'automatic', align: 'stretch', appearance: 'system',
+    accessibleLabel: '', actionLabel: '', actionValue: '', activation: 'automatic', align: 'stretch', allowAlpha: true, allowSampler: true, appearance: 'system',
     autoFlow: 'row', autocomplete: 'list', autoplay: false, background: '', blockSize: '', border: '', busy: false,
     cancelLabel: '', checked: false, closeLabel: '', closeOnBackdrop: true, code: '', codeLanguage: 'html', collapsible: false, collapseAt: '', columns: '',
     confirmLabel: '', content: '', copiedLabel: '', copyLabel: '', crossOrigin: '', decorative: false, delay: 0,
@@ -229,7 +234,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     errorText: '', expanded: false, firstDayOfWeek: 0, formNoValidate: false, gap: '', heading: '', height: 320,
     href: '', icon: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
     keys: '', label: '', loading: false, loop: false, margin: '', max: 100, maxBlockSize: '', maxInlineSize: '',
-    maxItems: 4, maxVisible: 4, mediaTitle: '', menuLabel: '', min: 0, minBlockSize: '', minInlineSize: '',
+    maxItems: 4, maxRecent: 8, maxVisible: 4, mediaTitle: '', menuLabel: '', min: 0, minBlockSize: '', minInlineSize: '',
     modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal',
     overflow: '', padding: '', page: 1, patterns: false, placement: 'bottom-start', placeholder: '', playbackRate: 1,
     popupControls: '', popupExpanded: false, popupType: '', position: 'top-end', poster: '', preload: 'metadata', searchLabel: '', searchable: 'auto', searchPlaceholder: '', searchThreshold: 10,
@@ -257,7 +262,7 @@ const numericValueTags = new Set([
     'cb-number-input', 'cb-unit-input', 'cb-range-slider', 'cb-slider', 'cb-stepper', 'cb-resizable-panel',
 ])
 
-const colorValueTags = new Set(['cb-color-picker', 'cb-color-swatch', 'cb-eyedropper'])
+const colorValueTags = new Set(['cb-color-picker'])
 const dateBoundTags = new Set(['cb-calendar', 'cb-date-picker', 'cb-time-picker'])
 
 const formatterMapping: Readonly<Record<string, ((value: number) => string) | null>> = {
@@ -276,7 +281,7 @@ function humanize(property: string): string {
 
 function categoryFor(tag: string, property: string): string {
     if (tag === 'cb-table' && property === 'columns') return 'Data'
-    if (property === 'accessibleLabel' || property === 'searchLabel' || property === 'unitLabel') return 'Accessibility'
+    if (property === 'accessibleLabel' || property === 'searchLabel' || property === 'unitLabel' || property.endsWith('Label')) return 'Accessibility'
     if (stateProperties.has(property)) return 'State'
     if (layoutProperties.has(property)) return 'Layout'
     if (dataProperties.has(property)) return 'Data'
@@ -310,7 +315,7 @@ function typeSummary(tag: string, property: string, control: StoryControl['contr
     if (property === 'valueFormatter') return '(value: number) => string'
     if (property === 'items') return 'Item[]'
     if (tag === 'cb-table' && property === 'columns') return 'TableColumn[]'
-    if (['selectedKeys', 'expandedIds', 'expandedKeys', 'collapsedGroupKeys'].includes(property)) return 'string[]'
+    if (['selectedKeys', 'expandedIds', 'expandedKeys', 'collapsedGroupKeys', 'swatches', 'recentColors'].includes(property)) return 'string[]'
     if (property === 'options') return 'SelectOption[]'
     if (property === 'units') return 'UnitOption[]'
     if (property === 'series') return tag === 'cb-pie-chart' ? 'PieSeries' : 'Series[]'

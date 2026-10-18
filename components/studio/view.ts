@@ -520,7 +520,7 @@ export function createStudioView(host: StudioComponentBase): StudioView {
         const row = el('div', 'row color-row')
         const swatch = el('span', 'swatch')
         const input = el('input', 'control color-value')
-        input.type = host.componentName === 'color-picker' || host.componentName === 'eyedropper' ? 'color' : 'text'
+        input.type = host.componentName === 'color-picker' ? 'color' : 'text'
         control = input
         input.addEventListener('change', event => host.setValue(input.value, event))
         updateBody = (): void => {
