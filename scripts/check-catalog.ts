@@ -10,7 +10,7 @@ for(const {category,name,className}of studioDefinitions){
     assert.match(await readFile(`components/${category}/${name}/${className}Base.ts`,'utf8'),/extends StudioComponentBase/)
     await access(`components/${category}/${name}/base.ts`)
 }
-assert.equal(studioBoardItems.length,219,'The eleven Studio boards contain 219 component cards')
+assert.equal(studioBoardItems.length,217,'The eleven Studio boards contain 217 component cards')
 for(const {name}of studioBoardItems)assert(componentEntries.some(entry=>entry.name===name),`Missing Studio board component: ${name}`)
 const index=JSON.parse(await readFile('storybook-static/index.json','utf8'))
 for(const id of ['bar','line','mixed-line-and-bar','area','bubble','scatter','pie','donut'])assert(index.entries[`charts--${id}`],`Missing ${id} story`)

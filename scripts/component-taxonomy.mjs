@@ -58,7 +58,6 @@ const layoutComponents = new Set([
     'inspector', 'collapsible-sidebar', 'resizable-panel', 'docked-panel', 'panel-header', 'top-bar', 'inspector-sidebar',
     'asset-sidebar', 'status-bar',
 ])
-const formComponents = new Set(['preview-switch', 'theme-switch'])
 const editorComponents = new Set(['properties-inspector', 'property-group', 'design-code', 'version-history'])
 const mediaComponents = new Set(['media-preview'])
 
@@ -93,7 +92,6 @@ export function resolveComponentCategory(sourceCategory, name) {
         if (layoutComponents.has(name)) return 'layout'
         if (overlayComponents.has(name)) return 'overlay'
         if (feedbackComponents.has(name)) return 'feedback'
-        if (formComponents.has(name)) return 'form'
         return 'editor'
     }
     if (sourceCategory === 'collaboration-ai') return 'collaboration'

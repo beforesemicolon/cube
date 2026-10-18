@@ -34,8 +34,6 @@ order: 21
 | Token input | `<cb-token-input>` | `@beforesemicolon/cube/form/token-input` |
 | Editable label | `<cb-editable-label>` | `@beforesemicolon/cube/form/editable-label` |
 | Masked input | `<cb-masked-input>` | `@beforesemicolon/cube/form/masked-input` |
-| Preview switch | `<cb-preview-switch>` | `@beforesemicolon/cube/form/preview-switch` |
-| Theme switch | `<cb-theme-switch>` | `@beforesemicolon/cube/form/theme-switch` |
 | Select | `<cb-select>` | `@beforesemicolon/cube/form/select` |
 | Slider | `<cb-slider>` | `@beforesemicolon/cube/form/slider` |
 

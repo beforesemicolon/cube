@@ -45,10 +45,6 @@ export const EditableLabel: Story = { args: { label: 'Editable label', value: '1
 
 export const MaskedInput: Story = { args: { label: 'Masked input', value: '12 px', placeholder: 'Masked input' }, render: (args, context) => preview('cb-masked-input', args, context.globals.appearance) }
 
-export const PreviewSwitch: Story = { args: { label: 'Preview switch', checked: true }, render: (args, context) => preview('cb-preview-switch', args, context.globals.appearance) }
-
-export const ThemeSwitch: Story = { args: { label: 'Theme switch', checked: true }, render: (args, context) => preview('cb-theme-switch', args, context.globals.appearance) }
-
 export const Select: Story = { args: { label: 'Select', value: 'desktop', options: [{ value: 'desktop', label: 'Desktop' }, { value: 'tablet', label: 'Tablet' }, { value: 'mobile', label: 'Mobile' }] }, render: (args, context) => preview('cb-select', args, context.globals.appearance) }
 
 export const Slider: Story = { args: { label: 'Slider', value: 64, min: 0, max: 100, step: 1 }, render: (args, context) => preview('cb-slider', args, context.globals.appearance) }

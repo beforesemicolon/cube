@@ -66,10 +66,10 @@ const groups = [
     ]],
     ['app-shell', [
         ['top-bar','Top bar','shell'],['workspace-switcher','Workspace switcher','select'],['project-picker','Project picker','select'],
-        ['save-status','Save status','status'],['publish-status','Publish status','status'],['preview-switch','Preview switch','choice'],
+        ['save-status','Save status','status'],['publish-status','Publish status','status'],
         ['design-code','Design code','collection'],['device-selector','Device selector','select'],['inspector-sidebar','Inspector sidebar','shell'],
         ['asset-sidebar','Asset sidebar','shell'],['status-bar','Status bar','shell'],['selection-trail','Selection trail','collection'],
-        ['shortcuts','Shortcuts','collection'],['preferences','Preferences','panel'],['theme-switch','Theme switch','choice'],['user-menu','User menu','collection'],
+        ['shortcuts','Shortcuts','collection'],['preferences','Preferences','panel'],['user-menu','User menu','collection'],
         ['version-history','Version history','collection'],['share-dialog','Share dialog','panel'],['publish-dialog','Publish dialog','panel'],
     ]],
     ['collaboration-ai', [

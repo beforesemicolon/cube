@@ -2,7 +2,7 @@
 
 A TypeScript, headless-first web-component library for visual editors. This is the **0.3.0 alpha implementation branch**, not a published release.
 
-The implementation covers all 219 components named on the eleven Studio design boards, plus Cube-specific wrapper-free layout primitives, LinkButton, Flashbar, media players, Cartesian and pie charts, icons, and `ThemeProvider`. The package exposes 230 independently loadable component entries across category folders. Each concrete component registers its `cb-*` element when imported. Every component has a headless base, exposes styling parts, and consumes site-builder-compatible theme variables.
+The implementation covers 217 reusable components from the eleven Studio design boards, plus Cube-specific wrapper-free layout primitives, LinkButton, Flashbar, media players, Cartesian and pie charts, icons, and `ThemeProvider`. Preview and theme switching are usage contexts for the generic `Switch`, not separate components. The package exposes 228 independently loadable component entries across category folders. Each concrete component registers its `cb-*` element when imported. Every component has a headless base, exposes styling parts, and consumes site-builder-compatible theme variables.
 
 ## Develop
 

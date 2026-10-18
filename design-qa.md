@@ -7,9 +7,9 @@
 - browser: Google Chrome via Playwright and the live user Chrome session
 - viewport: 1100 × 760 CSS pixels
 - appearances: light and dark
-- component stories checked: 230
-- Studio-board cards represented: 219
-- stories with visible output: 230
+- component stories checked: 228
+- Studio-board cards represented: 217
+- stories with visible output: 228
 - stories with console or page errors: 0
 
 ## Verdict
@@ -42,7 +42,7 @@ The audit remains blocked on exact Studio fidelity. The new shared renderer now 
 | Data display | 12 | 12 | 0 |
 | Editor | 48 | 48 | 0 |
 | Feedback | 12 | 12 | 0 |
-| Form | 23 | 23 | 0 |
+| Form | 21 | 21 | 0 |
 | Icons | 1 | 1 | 0 |
 | Layout | 33 | 33 | 0 |
 | Media | 3 | 3 | 0 |
@@ -50,7 +50,7 @@ The audit remains blocked on exact Studio fidelity. The new shared renderer now 
 | Overlay | 14 | 14 | 0 |
 | Styling | 23 | 23 | 0 |
 | Theme | 1 | 1 | 0 |
-| **Total** | **230** | **230** | **0** |
+| **Total** | **228** | **228** | **0** |
 
 The exhaustive one-row-per-story evidence, including measured dimensions and light/dark screenshot paths, is in [results.json](design-qa-artifacts/results.json).
 
@@ -86,10 +86,10 @@ Reference evidence uses the boards' repeated three-column layout. A few crops in
 - `npm run typecheck`
 - `npm test` — 42 passed
 - `npx playwright test` — 50 passed
-- `npm run test:catalog` — 230 entry points, 219 Studio cards, and eight chart stories verified
-- `npm run test:exports` — ESM/CJS SSR-safe imports and 246 external-runtime browser entries verified
+- `npm run test:catalog` — 228 entry points, 217 Studio cards, and eight chart stories verified
+- `npm run test:exports` — ESM/CJS SSR-safe imports and 244 external-runtime browser entries verified
 - `npm run build`
-- `npm run test:visual-audit` — 230 stories captured in both themes; 0 render/console failures
+- `npm run test:visual-audit` — 228 stories captured in both themes; 0 render/console failures
 
 ## Iteration history
 
@@ -97,4 +97,4 @@ Reference evidence uses the boards' repeated three-column layout. A few crops in
 2. Render repair: seeded open overlays and layout content, added typed examples and component-kind renderers, and fixed visibility measurement for display-contents hosts.
 3. State repair: added field, switch, collection, action, and viewport matrices plus invalid/read-only semantics.
 4. Runtime repair: made structured content reactive and moved remaining shared runtime strings into the localized message catalog.
-5. Final health pass: all 230 stories render in light and dark with no recorded application errors; exact specialized fidelity remains blocked as listed above.
+5. Final health pass: all 228 stories render in light and dark with no recorded application errors; exact specialized fidelity remains blocked as listed above.

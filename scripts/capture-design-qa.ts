@@ -68,7 +68,7 @@ const boards: Readonly<Record<string, BoardConfig>> = {
     },
     shell: {
         file: '10/App shell.png', width: 3376, height: 8408,
-        components: ['top-bar','workspace-switcher','project-picker','save-status','publish-status','preview-switch','design-code','device-selector','inspector-sidebar','asset-sidebar','status-bar','selection-trail','undo-redo','shortcuts','preferences','theme-switch','user-menu','version-history','share-dialog','publish-dialog'],
+        components: ['top-bar','workspace-switcher','project-picker','save-status','publish-status','design-code','device-selector','inspector-sidebar','asset-sidebar','status-bar','selection-trail','undo-redo','shortcuts','preferences','user-menu','version-history','share-dialog','publish-dialog'],
     },
     collaboration: {
         file: '11/Collaboration & AI.png', width: 3376, height: 6387,
