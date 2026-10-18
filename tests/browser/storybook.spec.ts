@@ -50,11 +50,12 @@ test('built Storybook: Button exposes optional pressed state and variant example
 })
 
 test('Storybook Actions records Cube events and their detail payloads',async({page})=>{
-    await page.goto('http://127.0.0.1:6006/?path=/story/action--button')
+    await page.goto('http://127.0.0.1:6006/?path=/story/action--button&addonPanel=storybook/actions/panel')
     const story=page.frameLocator('#storybook-preview-iframe')
-    await story.getByRole('button',{name:'Button'}).click()
     await page.getByRole('tab',{name:/Actions/}).click()
-    const panel=page.getByRole('tabpanel')
+    const panel=page.getByRole('tabpanel',{name:/Actions/})
+    await expect(panel.getByRole('button',{name:'Clear'})).toBeVisible({timeout:20000})
+    await story.getByRole('button',{name:'Button'}).click()
     await expect(panel).toContainText('cb-before-action')
     await expect(panel).toContainText('cb-action')
     await expect(panel).toContainText('cb-button')

@@ -9,9 +9,9 @@ const examples = [
     ['input-masks', 'compact'],
     ['box-model', 'standard'],
     ['layout-controls', 'standard'],
-    ['styling-controls', 'compact'],
+    ['styling-controls', 'standard'],
     ['typography-controls', 'standard'],
-    ['inspector-panel', 'compact'],
+    ['inspector-panel', 'wide'],
     ['asset-browser', 'wide'],
     ['resource-table', 'wide'],
     ['settings-accordion', 'standard'],
@@ -123,14 +123,20 @@ test('example field popups use the top layer without changing the example surfac
 
 test('layout examples preserve their intended composition instead of collapsing to min-content', async ({ page }) => {
     await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--dimensions&viewMode=story')
-    const row = page.locator('cb-row')
-    await expect(row).toBeVisible({ timeout: 20_000 })
-    const rowLayout = await row.evaluate(element => {
+    const controls = page.locator('cb-grid')
+    await expect(controls).toBeVisible({ timeout: 20_000 })
+    const controlsLayout = await controls.evaluate(element => {
         const children = [...element.children].map(child => child.getBoundingClientRect())
-        return { width: element.getBoundingClientRect().width, firstTop: children[0]?.top, secondTop: children[1]?.top }
+        return {
+            width: element.getBoundingClientRect().width,
+            columns: getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length,
+            firstTop: children[0]?.top,
+            secondTop: children[1]?.top,
+        }
     })
-    expect(rowLayout.width).toBeGreaterThan(600)
-    expect(rowLayout.firstTop).toBeCloseTo(rowLayout.secondTop ?? 0, 0)
+    expect(controlsLayout.width).toBeGreaterThan(600)
+    expect(controlsLayout.columns).toBeGreaterThanOrEqual(3)
+    expect(controlsLayout.firstTop).toBeCloseTo(controlsLayout.secondTop ?? 0, 0)
 
     await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--box-model&viewMode=story')
     const propertyGrid = page.locator('cb-grid')
