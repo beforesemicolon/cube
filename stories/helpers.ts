@@ -14,6 +14,24 @@ function demoButton(label: string, variant = 'secondary'): HTMLElement {
     return button
 }
 
+function artboardContent(): HTMLElement {
+    const page = document.createElement('div')
+    page.style.cssText = 'display:grid;grid-template-rows:auto 1fr;height:100%;background:var(--color-surface);color:var(--color-foreground);font-family:var(--typography-body-font-family)'
+    const navigation = document.createElement('div')
+    navigation.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--color-separator)'
+    const logo = document.createElement('strong'); logo.textContent = 'Acme'
+    const links = document.createElement('span'); links.textContent = 'Work · About · Contact'; links.style.cssText = 'font-size:11px;color:var(--color-muted-foreground)'
+    navigation.append(logo, links)
+    const hero = document.createElement('div')
+    hero.style.cssText = 'display:grid;place-content:center;justify-items:start;gap:10px;padding:28px;background:linear-gradient(135deg,var(--color-surface),var(--color-selection))'
+    const eyebrow = document.createElement('span'); eyebrow.textContent = 'DESIGN SYSTEM'; eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:.12em;color:var(--color-signal-text)'
+    const heading = document.createElement('strong'); heading.textContent = 'Make better products.'; heading.style.cssText = 'font-size:24px;line-height:1.1'
+    const copy = document.createElement('span'); copy.textContent = 'Compose accessible interfaces from production-ready building blocks.'; copy.style.cssText = 'max-width:290px;color:var(--color-muted-foreground);font-size:11px'
+    hero.append(eyebrow, heading, copy, demoButton('Explore components', 'primary'))
+    page.append(navigation, hero)
+    return page
+}
+
 function seedPreview(tag: string, node: HTMLElement): void {
     const name = tag.startsWith('cb-') ? tag.slice(3) : tag
     const items = studioItemsFor(name, [])
@@ -75,6 +93,27 @@ function seedPreview(tag: string, node: HTMLElement): void {
     else if (tag === 'cb-theme-provider') {
         const surface = demoSurface('Theme variables inherited by this content')
         surface.style.minHeight = '120px'; surface.style.padding = '24px'; node.append(surface)
+    } else if (tag === 'cb-viewport') {
+        const artboard = document.createElement('cb-artboard')
+        Object.assign(artboard, { width: 540, height: 330, accessibleLabel: 'Homepage artboard', dimensionsLabel: '{width} × {height}', selected: true })
+        artboard.append(artboardContent())
+        node.append(artboard)
+    } else if (tag === 'cb-artboard') {
+        node.append(artboardContent())
+    } else if (tag === 'cb-rulers') {
+        const canvas = document.createElement('div')
+        canvas.style.cssText = 'display:grid;place-items:center;width:100%;height:100%;min-height:380px;background:linear-gradient(90deg,var(--color-separator) 1px,transparent 1px),linear-gradient(var(--color-separator) 1px,transparent 1px);background-size:20px 20px'
+        const card = demoSurface('Move the pointer to inspect coordinates')
+        card.style.cssText += ';width:240px;height:120px;background:var(--color-surface);box-shadow:0 8px 24px color-mix(in srgb,var(--color-foreground) 12%,transparent)'
+        canvas.append(card); node.append(canvas)
+    } else if (tag === 'cb-device-frame') {
+        const screen = document.createElement('div')
+        screen.style.cssText = 'display:grid;grid-template-rows:32px 1fr;height:100%;background:var(--color-background)'
+        const bar = document.createElement('div'); bar.style.cssText = 'display:flex;align-items:center;gap:6px;padding:0 10px;border-bottom:1px solid var(--color-separator);background:var(--color-surface)'
+        for (const color of ['var(--color-danger)','var(--color-warning)','var(--color-success)']) { const dot=document.createElement('i'); dot.style.cssText=`width:7px;height:7px;border-radius:50%;background:${color}`; bar.append(dot) }
+        const body = document.createElement('div'); body.style.cssText='display:grid;grid-template-columns:28% 1fr;gap:12px;padding:12px'
+        const sidebar=demoSurface('Navigation'); const content=demoSurface('Responsive application content'); content.style.minHeight='180px'; body.append(sidebar,content)
+        screen.append(bar,body); node.append(screen)
     }
 }
 

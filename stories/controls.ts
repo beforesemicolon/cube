@@ -33,15 +33,15 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 
 const booleanProperties = new Set([
     'allowAlpha', 'allowSampler', 'animated', 'autoplay', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'disabled', 'dismissible',
-    'disableContentPadding', 'expanded', 'formNoValidate', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
+    'controls', 'disableContentPadding', 'expanded', 'formNoValidate', 'grid', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
     'open', 'patterns', 'popupExpanded', 'pressed', 'readOnly', 'required', 'resizable', 'reverse', 'rowActivation',
-    'stickyHeader', 'striped', 'wrap', 'zoomable',
+    'pannable', 'playing', 'selectable', 'selected', 'showChrome', 'showCursor', 'showDimensions', 'showOrientationControl', 'stickyHeader', 'striped', 'wrap', 'zoomable',
 ])
 
 const numberProperties = new Set([
-    'angle', 'delay', 'firstDayOfWeek', 'headingLevel', 'height', 'lines', 'max', 'maxItems', 'maxRecent', 'maxVisible', 'min', 'page', 'playbackRate',
+    'angle', 'currentTime', 'cursorX', 'cursorY', 'delay', 'duration', 'firstDayOfWeek', 'headingLevel', 'height', 'lines', 'majorStep', 'max', 'maxItems', 'maxRecent', 'maxVisible', 'maxZoom', 'min', 'minorDivisions', 'minZoom', 'originX', 'originY', 'page', 'playbackRate',
     'loadingRows', 'progress', 'searchThreshold', 'seekStep', 'selectionCount', 'siblings', 'step', 'stickyColumns',
-    'totalPages', 'x', 'y',
+    'snap', 'totalPages', 'width', 'x', 'x1', 'x2', 'y', 'y1', 'y2', 'zoom', 'zoomStep',
 ])
 
 const objectProperties = new Set([
@@ -111,6 +111,7 @@ const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly Contr
         extent: ['closest-side', 'closest-corner', 'farthest-side', 'farthest-corner'],
         position: ['left top', 'center top', 'right top', 'left center', 'center', 'right center', 'left bottom', 'center bottom', 'right bottom'],
     },
+    'cb-device-frame': { device: ['desktop', 'tablet', 'mobile', 'custom'], orientation: ['portrait', 'landscape'] },
 }
 
 const numberControls: Readonly<Record<string, NumberControl>> = {
@@ -118,7 +119,21 @@ const numberControls: Readonly<Record<string, NumberControl>> = {
     firstDayOfWeek: { type: 'number', min: 0, max: 6, step: 1 },
     headingLevel: { type: 'number', min: 1, max: 6, step: 1 },
     height: { type: 'number', min: 160, max: 1200, step: 10 },
+    width: { type: 'number', min: 160, max: 2400, step: 10 },
     angle: { type: 'number', min: -360, max: 360, step: 1 },
+    currentTime: { type: 'number', min: 0, step: .1 },
+    duration: { type: 'number', min: .1, max: 120, step: .1 },
+    majorStep: { type: 'number', min: 1, max: 1000, step: 1 },
+    minorDivisions: { type: 'number', min: 1, max: 20, step: 1 },
+    minZoom: { type: 'number', min: 1, max: 400, step: 1 },
+    maxZoom: { type: 'number', min: 25, max: 1600, step: 25 },
+    snap: { type: 'number', min: .001, max: 10, step: .01 },
+    x1: { type: 'number', min: 0, max: 1, step: .01 },
+    x2: { type: 'number', min: 0, max: 1, step: .01 },
+    y1: { type: 'number', min: -1, max: 2, step: .01 },
+    y2: { type: 'number', min: -1, max: 2, step: .01 },
+    zoom: { type: 'number', min: 1, max: 1600, step: 5 },
+    zoomStep: { type: 'number', min: 1, max: 100, step: 1 },
     lines: { type: 'number', min: 1, max: 12, step: 1 },
     loadingRows: { type: 'number', min: 1, max: 20, step: 1 },
     maxItems: { type: 'number', min: 1, step: 1 },
@@ -174,11 +189,32 @@ const descriptions: Readonly<Record<string, string>> = {
     swatches: 'Editable saved color palette displayed inside the picker.',
     stops: 'Editable gradient color stops. Add, remove, recolor, or reposition entries.',
     theme: 'Site-builder-compatible theme definition applied as CSS variables.',
-    tracks: 'Editable caption-track collection for media playback.',
+    tracks: 'Editable track and keyframe collection for media captions or Timeline animation data.',
     unit: 'Current unit displayed beside the numeric value.',
     unitLabel: 'Accessible label for the unit selector.',
     units: 'Editable units the user can choose from. A single unit is displayed as a static suffix.',
     value: 'Current controlled value.',
+    zoom: 'Current viewport or ruler magnification percentage.',
+    minZoom: 'Smallest magnification allowed by the viewport.',
+    maxZoom: 'Largest magnification allowed by the viewport.',
+    zoomStep: 'Magnification changed by each zoom action.',
+    pannable: 'Allows pointer, wheel, and keyboard panning.',
+    grid: 'Displays the viewport alignment grid.',
+    controls: 'Displays the viewport zoom controls.',
+    selected: 'Displays the artboard as selected.',
+    selectable: 'Allows the artboard to be selected by pointer or keyboard.',
+    showDimensions: 'Displays the artboard dimensions label.',
+    showCursor: 'Displays ruler cursor guides and coordinates.',
+    majorStep: 'Distance in document units between labeled ruler ticks.',
+    minorDivisions: 'Number of smaller ruler intervals inside a major step.',
+    device: 'Device chrome preset used around the content.',
+    showChrome: 'Displays the selected device bezel, camera, notch, or stand.',
+    showOrientationControl: 'Displays an interactive orientation toggle.',
+    duration: 'Total motion-preview duration in milliseconds or Timeline duration in seconds.',
+    playing: 'Controls the motion preview or Timeline playback state.',
+    currentTime: 'Current Timeline playhead position in seconds.',
+    snap: 'Timeline keyframe movement increment in seconds.',
+    selectedKeyframeId: 'Controlled ID of the selected Timeline keyframe.',
     valueFormatter: 'Storybook formatter preset used for chart values.',
     visibleSegments: 'Controlled list of visible pie or donut segment IDs.',
     visibleSeries: 'Controlled list of visible Cartesian series IDs.',
@@ -229,26 +265,29 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     preload: 'metadata', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', searchable: 'auto', searchThreshold: '10', seekStep: '10',
     recentColors: '[]', series: '[]', size: 'sm', status: 'finished', step: '1', stops: '[]', swatches: '[]', theme: 'null', tracks: '[]', units: '[]', value: "''",
     visibleSegments: 'null', visibleSeries: 'null', wrap: 'false', xAxis: '{}', yAxis: '{}', zoomable: 'false',
-    animated: 'true', headingLevel: '2', lines: '3', loadingRows: '5', resizable: 'true', rowActivation: 'false', selectionMode: 'none',
+    animated: 'true', controls: 'true', currentTime: '0', duration: '4', grid: 'true', maxZoom: '400', minZoom: '25', pannable: 'true', playing: 'false',
+    selectable: 'true', selected: 'false', showChrome: 'true', showCursor: 'true', showDimensions: 'true', showOrientationControl: 'true', snap: '0.1', zoom: '100', zoomStep: '10',
+    headingLevel: '2', lines: '3', loadingRows: '5', resizable: 'true', rowActivation: 'false', selectionMode: 'none',
     sortDirection: 'asc', stickyColumns: '0', stickyHeader: 'false', striped: 'false', density: 'comfortable',
 }
 
 const primitiveDefaults: Readonly<Record<string, string | number | boolean | null>> = {
     accessibleLabel: '', actionLabel: '', actionValue: '', activation: 'automatic', align: 'stretch', allowAlpha: true, allowSampler: true, appearance: 'system',
-    angle: 90, autoFlow: 'row', autocomplete: 'list', autoplay: false, background: '', blockSize: '', border: '', busy: false,
+    angle: 90, autoFlow: 'row', autocomplete: 'list', autoplay: false, background: '', blockSize: '', border: '', busy: false, controls: true, currentTime: 0, cursorX: 0, cursorY: 0,
     cancelLabel: '', checked: false, closeLabel: '', closeOnBackdrop: true, code: '', codeLanguage: 'html', collapsible: false, collapseAt: '', columns: '',
     confirmLabel: '', content: '', copiedLabel: '', copyLabel: '', crossOrigin: '', decorative: false, delay: 0,
     description: '', destructive: false, disabled: false, disableContentPadding: false, dismissible: true, download: '', emptyLabel: '', error: '',
-    errorText: '', expanded: false, extent: 'farthest-corner', firstDayOfWeek: 0, formNoValidate: false, gap: '', heading: '', height: 320,
+    device: 'desktop', duration: 4, errorText: '', expanded: false, extent: 'farthest-corner', firstDayOfWeek: 0, formNoValidate: false, gap: '', grid: true, heading: '', height: 320,
     href: '', icon: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
     keys: '', label: '', loading: false, loop: false, margin: '', max: 100, maxBlockSize: '', maxInlineSize: '',
-    maxItems: 4, maxRecent: 8, maxVisible: 4, mediaTitle: '', menuLabel: '', min: 0, minBlockSize: '', minInlineSize: '',
-    modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal',
+    majorStep: 100, maxItems: 4, maxRecent: 8, maxVisible: 4, maxZoom: 400, mediaTitle: '', menuLabel: '', min: 0, minorDivisions: 10, minZoom: 25, minBlockSize: '', minInlineSize: '',
+    modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal', originX: 0, originY: 0,
     overflow: '', padding: '', page: 1, patterns: false, placement: 'bottom-start', placeholder: '', playbackRate: 1,
     popupControls: '', popupExpanded: false, popupType: '', position: 'top-end', poster: '', preload: 'metadata', searchLabel: '', searchable: 'auto', searchPlaceholder: '', searchThreshold: 10,
-    pressed: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
+    pannable: true, playing: false, pressed: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
     seekStep: 10, selectionCount: 0, shape: 'circle', siblings: 1, size: 'sm', src: '', status: '', step: 1, target: '_self',
-    totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', wrap: false, x: 0, y: 0, zoomable: false,
+    selectable: true, selected: false, showChrome: true, showCursor: true, showDimensions: true, showOrientationControl: true, snap: .1,
+    totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', width: 640, wrap: false, x: 0, x1: .25, x2: .25, y: 0, y1: .1, y2: 1, zoom: 100, zoomStep: 10, zoomable: false,
     animated: true, headingLevel: 2, lines: 3, loadingRows: 5, resizable: true, rowActivation: false, selectionMode: 'none',
     sortDirection: 'asc', stickyColumns: 0, stickyHeader: false, striped: false, density: 'comfortable',
 }
@@ -257,6 +296,7 @@ const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue
     'cb-accordion': { variant: 'simple' },
     'cb-expandable-section': { variant: 'default' },
     'cb-gradient-editor': { type: 'linear', shape: 'circle', extent: 'farthest-corner', position: 'center' },
+    'cb-device-frame': { device: 'desktop', orientation: 'landscape' },
     'cb-button': { variant: 'secondary' },
     'cb-button-group': { variant: 'secondary' },
     'cb-link': { variant: 'secondary' },
@@ -329,7 +369,7 @@ function typeSummary(tag: string, property: string, control: StoryControl['contr
     if (property === 'options') return 'SelectOption[]'
     if (property === 'units') return 'UnitOption[]'
     if (property === 'series') return tag === 'cb-pie-chart' ? 'PieSeries' : 'Series[]'
-    if (property === 'tracks') return 'CaptionTrack[]'
+    if (property === 'tracks') return tag === 'cb-timeline' ? 'TimelineTrack[]' : 'CaptionTrack[]'
     if (property === 'messages') return 'FlashbarMessage[]'
     if (property === 'theme') return 'ThemeDefinition | null'
     if (property === 'xAxis' || property === 'yAxis') return 'Axis | Axis[]'

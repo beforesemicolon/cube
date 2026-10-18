@@ -74,7 +74,7 @@ test('representative Studio controls expose keyboard semantics, parts, theme inh
     expect(accessibility.violations).toEqual([])
 
     await page.locator('#theme').evaluate((element: HTMLElement & { appearance: string }) => { element.appearance = 'dark' })
-    await expect(page.locator('cb-artboard').locator('[part~="canvas"]')).toHaveCSS('background-color', 'rgb(40, 46, 50)')
+    await expect(page.locator('cb-artboard').locator('[part~="canvas"]')).toHaveCSS('background-color', 'rgb(29, 33, 36)')
 })
 
 test('Studio fields expose invalid and read-only states without throwing or accepting changes', async ({ page }) => {

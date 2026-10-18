@@ -1,10 +1,47 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { bool, finite, scalarText } from '../../core/value.js'
 
-export interface ArtboardProps extends StudioProps {}
+export interface ArtboardProps extends UIProps {
+    width?: number
+    height?: number
+    background?: string
+    selected?: boolean
+    selectable?: boolean
+    showDimensions?: boolean
+    dimensionsLabel?: string
+}
 
-/** Headless behavior for the Artboard component. */
-export abstract class ArtboardBase extends StudioComponentBase<ArtboardProps> {
-    readonly componentName = 'artboard'
-    readonly componentKind: StudioKind = 'canvas'
+export interface ArtboardSelectDetail { readonly selected: boolean; readonly originalEvent?: Event }
+
+/** Headless behavior for a bounded, selectable document surface. */
+export abstract class ArtboardBase extends UIComponent<ArtboardProps> {
+    static observedAttributes = [
+        ...UIComponent.observedAttributes, 'width', 'height', 'background', 'selected', 'selectable', 'show-dimensions', 'dimensions-label',
+    ]
+
+    width = 640
+    height = 400
+    background = ''
+    selected = false
+    selectable = true
+    showDimensions = true
+    dimensionsLabel = ''
+
+    protected artboardWidth(): number { return Math.max(1, finite(this.width, 640)) }
+    protected artboardHeight(): number { return Math.max(1, finite(this.height, 400)) }
+    protected canSelect(): boolean { return !this.unavailable && bool(this.selectable, true) }
+    protected dimensionsText(): string {
+        return scalarText(this.dimensionsLabel).replace('{width}', String(Math.round(this.artboardWidth()))).replace('{height}', String(Math.round(this.artboardHeight())))
+    }
+
+    select(selected = true, originalEvent?: Event): boolean {
+        if (!this.canSelect()) return false
+        const detail: ArtboardSelectDetail = { selected, originalEvent }
+        if (!this.request('cb-before-select', detail)) return false
+        this.selected = selected
+        this.toggleAttribute('selected', selected)
+        this.syncView()
+        this.emit('cb-select', detail)
+        return true
+    }
 }
