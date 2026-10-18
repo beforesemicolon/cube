@@ -111,6 +111,29 @@ test('radio group owns its options, keyboard selection and form value', async ({
     const email = group.getByRole('radio', { name: 'Email' })
     const sms = group.getByRole('radio', { name: 'Text message' })
     await expect(email).toBeChecked()
+    const indicatorGeometry = await email.evaluate(input => {
+        const bounds = input.getBoundingClientRect()
+        const style = getComputedStyle(input)
+        const dotStyle = getComputedStyle(input, '::before')
+        return {
+            width: bounds.width,
+            height: bounds.height,
+            padding: style.padding,
+            alignItems: style.alignItems,
+            justifyItems: style.justifyItems,
+            dotWidth: dotStyle.width,
+            dotHeight: dotStyle.height,
+        }
+    })
+    expect(indicatorGeometry).toEqual({
+        width: 18,
+        height: 18,
+        padding: '0px',
+        alignItems: 'center',
+        justifyItems: 'center',
+        dotWidth: '8px',
+        dotHeight: '8px',
+    })
     await email.focus()
     await page.keyboard.press('ArrowRight')
     await expect(sms).toBeChecked()
