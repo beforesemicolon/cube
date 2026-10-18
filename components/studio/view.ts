@@ -75,6 +75,17 @@ textarea[part~=control]{min-block-size:calc(var(--cb-height) * 2.4);resize:verti
 [part~=spinner-ring]{display:inline-block;inline-size:22px;block-size:22px;border:2px solid var(--color-track);border-inline-end-color:var(--color-primary);border-radius:50%;animation:cb-studio-spin .8s linear infinite}
 [part~=field-shell]{display:flex;align-items:stretch;min-inline-size:180px}
 [part~=field-shell] [part~=control]{border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
+[part~=field-shell][part~=stepper]{isolation:isolate}
+[part~=field-shell][part~=stepper] > *{position:relative;border-radius:0}
+[part~=field-shell][part~=stepper] > * + *{margin-inline-start:-1px}
+[part~=field-shell][part~=stepper] [part~=control]{flex:1;text-align:center;border-radius:0;appearance:textfield}
+[part~=field-shell][part~=stepper] [part~=control]::-webkit-inner-spin-button,[part~=field-shell][part~=stepper] [part~=control]::-webkit-outer-spin-button{margin:0;appearance:none}
+[part~=field-shell][part~=stepper] [part~=stepper-button]{display:grid;place-items:center;flex:none;inline-size:var(--cb-height);min-inline-size:var(--cb-height);padding:0;background:var(--color-surface-muted)}
+[part~=field-shell][part~=stepper] [part~=decrement-button]{border-start-start-radius:var(--radius-sm);border-end-start-radius:var(--radius-sm)}
+[part~=field-shell][part~=stepper] [part~=increment-button]{border-start-end-radius:var(--radius-sm);border-end-end-radius:var(--radius-sm)}
+[part~=field-shell][part~=stepper] > :hover:not(:disabled){z-index:1}
+[part~=field-shell][part~=stepper] > :focus-visible{z-index:2}
+:host([data-invalid]) [part~=field-shell][part~=stepper] > *{border-color:var(--color-danger)}
 [part~=field-affix]{display:grid;place-items:center;min-inline-size:42px;padding-inline:8px;border:1px solid var(--color-border);border-inline-start:0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;background:var(--color-surface-muted);color:var(--color-muted-foreground)}
 [part~=unit-select]{--component-select-width:auto;display:block;inline-size:auto;min-inline-size:58px;flex:none}
 [part~=unit-select]::part(field){display:block;block-size:100%}
@@ -371,11 +382,30 @@ export function createStudioView(host: StudioComponentBase): StudioView {
             }
         } else if (host.componentName === 'stepper') {
             const shell = el('div', 'field-shell stepper')
-            const decrement = el('button', 'stepper-button', '−'); decrement.type = 'button'; decrement.setAttribute('aria-label', componentText(host, 'decrementLabel'))
-            const increment = el('button', 'stepper-button', '+'); increment.type = 'button'; increment.setAttribute('aria-label', componentText(host, 'incrementLabel'))
-            decrement.addEventListener('click', event => host.setValue(Number(node.value || 0) - host.studioNumber('step'), event))
-            increment.addEventListener('click', event => host.setValue(Number(node.value || 0) + host.studioNumber('step'), event))
-            shell.append(decrement, node, increment); body.append(shell)
+            const decrement = el('button', 'stepper-button decrement-button', '−')
+            const increment = el('button', 'stepper-button increment-button', '+')
+            decrement.type = 'button'
+            increment.type = 'button'
+            decrement.addEventListener('click', event => {
+                const next = Math.max(host.studioNumber('min'), Number(node.value || 0) - host.studioNumber('step'))
+                host.setValue(next, event)
+            })
+            increment.addEventListener('click', event => {
+                const next = Math.min(host.studioNumber('max'), Number(node.value || 0) + host.studioNumber('step'))
+                host.setValue(next, event)
+            })
+            shell.append(decrement, node, increment)
+            body.append(shell)
+            const originalUpdate = updateBody
+            updateBody = (): void => {
+                originalUpdate()
+                const unavailable = host.studioDisabled() || host.studioReadOnly()
+                const value = Number(node.value || 0)
+                decrement.disabled = unavailable || value <= host.studioNumber('min')
+                increment.disabled = unavailable || value >= host.studioNumber('max')
+                decrement.setAttribute('aria-label', componentText(host, 'decrementLabel'))
+                increment.setAttribute('aria-label', componentText(host, 'incrementLabel'))
+            }
         } else if (host.componentKind === 'search') {
             const shell = el('div', 'field-shell search-shell'); shell.dataset.prefix = ''
             const prefix = el('span', 'field-affix'); prefix.dataset.side = 'start'; prefix.append(createIcon('search', 'icon'))

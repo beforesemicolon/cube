@@ -169,6 +169,58 @@ test('unit input offers configurable units without changing its numeric value', 
     expect(audit.violations).toEqual([])
 })
 
+test('stepper renders as one joined field and keeps its controls independently operable', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const stepper = document.createElement('cb-stepper') as HTMLElement & {
+            label: string
+            value: number
+            min: number
+            max: number
+            step: number
+            decrementLabel: string
+            incrementLabel: string
+        }
+        stepper.label = 'Quantity'
+        stepper.value = 2
+        stepper.min = 0
+        stepper.max = 3
+        stepper.step = 1
+        stepper.decrementLabel = 'Decrease quantity'
+        stepper.incrementLabel = 'Increase quantity'
+        document.querySelector('#fixture')?.append(stepper)
+    })
+
+    const stepper = page.locator('cb-stepper')
+    const decrement = stepper.getByRole('button', { name: 'Decrease quantity' })
+    const increment = stepper.getByRole('button', { name: 'Increase quantity' })
+    const input = stepper.getByRole('spinbutton', { name: 'Quantity' })
+    const geometry = await stepper.locator('[part~="field-shell"][part~="stepper"]').evaluate(shell => {
+        const [left, field, right] = [...shell.children].map(element => getComputedStyle(element))
+        return {
+            left: [left.borderTopLeftRadius, left.borderTopRightRadius],
+            field: [field.borderTopLeftRadius, field.borderTopRightRadius, field.marginInlineStart],
+            right: [right.borderTopLeftRadius, right.borderTopRightRadius, right.marginInlineStart],
+        }
+    })
+    expect(geometry.left[0]).not.toBe('0px')
+    expect(geometry.left[1]).toBe('0px')
+    expect(geometry.field).toEqual(['0px', '0px', '-1px'])
+    expect(geometry.right[0]).toBe('0px')
+    expect(geometry.right[1]).not.toBe('0px')
+    expect(geometry.right[2]).toBe('-1px')
+
+    await increment.click()
+    await expect(input).toHaveValue('3')
+    await expect(increment).toBeDisabled()
+    await decrement.click()
+    await expect(input).toHaveValue('2')
+    await expect(decrement).toBeEnabled()
+
+    const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
+    expect(audit.violations).toEqual([])
+})
+
 test('combobox stays closed initially, filters interactively and replaces autocomplete-only components', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
