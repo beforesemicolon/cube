@@ -196,11 +196,17 @@ test('stepper renders as one joined field and keeps its controls independently o
     const increment = stepper.getByRole('button', { name: 'Increase quantity' })
     const input = stepper.getByRole('spinbutton', { name: 'Quantity' })
     const geometry = await stepper.locator('[part~="field-shell"][part~="stepper"]').evaluate(shell => {
-        const [left, field, right] = [...shell.children].map(element => getComputedStyle(element))
+        const [leftHost, fieldNode, rightHost] = [...shell.children]
+        const leftNode = leftHost?.shadowRoot?.querySelector<HTMLElement>('[part~="control"]')
+        const rightNode = rightHost?.shadowRoot?.querySelector<HTMLElement>('[part~="control"]')
+        if (!leftNode || !fieldNode || !rightNode) throw new Error('Stepper segments are incomplete')
+        const left = getComputedStyle(leftNode)
+        const field = getComputedStyle(fieldNode)
+        const right = getComputedStyle(rightNode)
         return {
             left: [left.borderTopLeftRadius, left.borderTopRightRadius],
-            field: [field.borderTopLeftRadius, field.borderTopRightRadius, field.marginInlineStart],
-            right: [right.borderTopLeftRadius, right.borderTopRightRadius, right.marginInlineStart],
+            field: [field.borderTopLeftRadius, field.borderTopRightRadius, getComputedStyle(fieldNode).marginInlineStart],
+            right: [right.borderTopLeftRadius, right.borderTopRightRadius, getComputedStyle(rightHost).marginInlineStart],
         }
     })
     expect(geometry.left[0]).not.toBe('0px')
@@ -251,12 +257,21 @@ test('calendar and custom date and time pickers support keyboard-ready themed po
         time.label = 'Publish time'; time.value = '09:30'; time.min = '08:00'; time.max = '12:00'
         document.querySelector('#fixture')?.append(calendar, date, time)
     })
+    const calendar = page.locator('#fixture > cb-calendar')
     await expect(page.getByRole('group', { name: 'Publishing calendar' })).toBeVisible()
-    const selectedDay = page.locator('#fixture > cb-calendar').getByRole('button', { name: /Sunday, October 18, 2026/ })
+    await expect(calendar.locator('cb-icon-button[part="previous"]')).toHaveCount(1)
+    await expect(calendar.locator('cb-icon-button[part="next"]')).toHaveCount(1)
+    const previous = calendar.getByRole('button', { name: 'Previous month' })
+    const previousStyle = await previous.evaluate(element => {
+        const style = getComputedStyle(element)
+        return { backgroundColor: style.backgroundColor, borderTopColor: style.borderTopColor }
+    })
+    expect(previousStyle).toEqual({ backgroundColor: 'rgba(0, 0, 0, 0)', borderTopColor: 'rgba(0, 0, 0, 0)' })
+    const selectedDay = calendar.getByRole('button', { name: /Sunday, October 18, 2026/ })
     await expect(selectedDay).toHaveAttribute('aria-pressed', 'true')
     await selectedDay.focus()
     await selectedDay.press('Home')
-    await expect(page.locator('#fixture > cb-calendar').getByRole('button', { name: /Monday, October 12, 2026/ })).toBeFocused()
+    await expect(calendar.getByRole('button', { name: /Monday, October 12, 2026/ })).toBeFocused()
     const dateTrigger = page.locator('cb-date-picker').getByRole('button', { name: 'Publish date' })
     await dateTrigger.click()
     await expect(dateTrigger).toHaveAttribute('aria-expanded', 'true')

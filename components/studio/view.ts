@@ -1,6 +1,8 @@
 import { aria, editorCSS, el, fragment, sheet, slot, uid } from '../core/editor-dom.js'
 import { scalarText } from '../core/value.js'
 import { createIcon } from '../icons/paths.js'
+import { actionLabel, createButton, createIconButton } from '../action/create.js'
+import type { Button } from '../action/button/index.js'
 import type { Select } from '../form/select/index.js'
 import type { UnitInputBase } from '../form/unit-input/UnitInputBase.js'
 import type { StudioComponentBase } from './StudioComponentBase.js'
@@ -63,6 +65,7 @@ textarea[part~=control]{min-block-size:calc(var(--cb-height) * 2.4);resize:verti
 [part~=meter]{inline-size:100%;accent-color:var(--color-primary)}
 [part~=swatch]{inline-size:var(--cb-height);block-size:var(--cb-height);border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--cb-studio-color,transparent);flex:none}
 [part~=token]{display:inline-flex;align-items:center;gap:var(--spacing-xs,4px);border:1px solid var(--color-border);border-radius:999px;padding:2px var(--spacing-sm,8px);background:var(--color-surface-muted)}
+cb-button[part~=token]{border:0;padding:0;background:transparent}cb-button[part~=token]::part(token-control){min-block-size:24px;border-radius:999px;padding:2px var(--spacing-sm,8px)}
 [part~=token-list]{display:flex;flex-wrap:wrap;gap:var(--spacing-xs,4px)}
 [part~=status]{min-block-size:1lh}
 [part~=error]{font-size:var(--component-caption-font-size,11px);color:var(--color-danger);margin:0}
@@ -76,16 +79,16 @@ textarea[part~=control]{min-block-size:calc(var(--cb-height) * 2.4);resize:verti
 [part~=field-shell]{display:flex;align-items:stretch;min-inline-size:180px}
 [part~=field-shell] [part~=control]{border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
 [part~=field-shell][part~=stepper]{isolation:isolate}
-[part~=field-shell][part~=stepper] > *{position:relative;border-radius:0}
+[part~=field-shell][part~=stepper] > *{position:relative}
 [part~=field-shell][part~=stepper] > * + *{margin-inline-start:-1px}
 [part~=field-shell][part~=stepper] [part~=control]{flex:1;text-align:center;border-radius:0;appearance:textfield}
 [part~=field-shell][part~=stepper] [part~=control]::-webkit-inner-spin-button,[part~=field-shell][part~=stepper] [part~=control]::-webkit-outer-spin-button{margin:0;appearance:none}
-[part~=field-shell][part~=stepper] [part~=stepper-button]{display:grid;place-items:center;flex:none;inline-size:var(--cb-height);min-inline-size:var(--cb-height);padding:0;background:var(--color-surface-muted)}
-[part~=field-shell][part~=stepper] [part~=decrement-button]{border-start-start-radius:var(--radius-sm);border-end-start-radius:var(--radius-sm)}
-[part~=field-shell][part~=stepper] [part~=increment-button]{border-start-end-radius:var(--radius-sm);border-end-end-radius:var(--radius-sm)}
-[part~=field-shell][part~=stepper] > :hover:not(:disabled){z-index:1}
-[part~=field-shell][part~=stepper] > :focus-visible{z-index:2}
-:host([data-invalid]) [part~=field-shell][part~=stepper] > *{border-color:var(--color-danger)}
+[part~=field-shell][part~=stepper] [part~=stepper-button]{display:block;flex:none;inline-size:var(--cb-height);min-inline-size:var(--cb-height)}
+[part~=field-shell][part~=stepper] [part~=decrement-button]{--component-button-radius-start-start:var(--radius-sm);--component-button-radius-start-end:0;--component-button-radius-end-end:0;--component-button-radius-end-start:var(--radius-sm)}
+[part~=field-shell][part~=stepper] [part~=increment-button]{--component-button-radius-start-start:0;--component-button-radius-start-end:var(--radius-sm);--component-button-radius-end-end:var(--radius-sm);--component-button-radius-end-start:0}
+[part~=field-shell][part~=stepper] > :hover{z-index:1}
+[part~=field-shell][part~=stepper] > :focus-within{z-index:2}
+:host([data-invalid]) [part~=field-shell][part~=stepper] [part~=control],:host([data-invalid]) [part~=decrement-button]::part(decrement-button-control),:host([data-invalid]) [part~=increment-button]::part(increment-button-control){border-color:var(--color-danger)}
 [part~=field-affix]{display:grid;place-items:center;min-inline-size:42px;padding-inline:8px;border:1px solid var(--color-border);border-inline-start:0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;background:var(--color-surface-muted);color:var(--color-muted-foreground)}
 [part~=unit-select]{--component-select-width:auto;display:block;inline-size:auto;min-inline-size:58px;flex:none}
 [part~=unit-select]::part(field){display:block;block-size:100%}
@@ -105,7 +108,7 @@ textarea[part~=control]{min-block-size:calc(var(--cb-height) * 2.4);resize:verti
 [part~=editor-field]{display:grid;gap:3px}[part~=editor-field-label]{font-size:10px;color:var(--color-muted-foreground)}[part~=editor-field-value]{min-block-size:28px;padding:5px 8px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface-muted)}
 [part~=preview-block]{display:grid;place-items:center;min-block-size:86px;border:1px solid var(--color-separator);border-radius:var(--radius-sm);background:var(--color-surface-muted);color:var(--color-muted-foreground)}
 [part~=panel-toolbar]{display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--color-separator);border-radius:var(--radius-sm);background:var(--color-surface-muted)}
-[part~=panel-toolbar] [part~=tool]{min-inline-size:56px;border-color:transparent;background:transparent}
+[part~=panel-toolbar] [part~=tool]{min-inline-size:56px}[part~=panel-toolbar] [part~=tool]::part(tool-control){inline-size:100%}
 [part~=card-media]{min-block-size:96px;background:var(--color-selection);color:var(--color-signal-text)}
 [part~=shell-bar]{display:flex;align-items:center;justify-content:space-between;gap:8px;min-inline-size:min(520px,100%)}
 [part~=shell-group]{display:flex;align-items:center;gap:6px}
@@ -158,6 +161,13 @@ function initials(label: string): string {
 type StudioTextKey = 'nameLabel' | 'metadataLabel' | 'unitLabel' | 'decrementLabel' | 'incrementLabel' | 'fileLabel' | 'fileRequirements'
 function componentText(host: StudioComponentBase, key: StudioTextKey): string {
     return scalarText((host as StudioComponentBase & Partial<Record<StudioTextKey, string>>)[key])
+}
+
+function studioAction(host: StudioComponentBase, part: string, label: string, item?: StudioItem): Button {
+    const control = createButton(part, event => host.activate(item, event))
+    actionLabel(control, label)
+    control.disabled = host.studioDisabled() || item?.disabled === true
+    return control
 }
 
 function listView(host: StudioComponentBase, role: 'listbox' | 'tree' = 'listbox'): { node: HTMLElement; update: () => void } {
@@ -278,13 +288,13 @@ function shellContent(host: StudioComponentBase): HTMLElement {
     const items = host.studioItems()
     if (host.componentName === 'top-bar') {
         primary.append(createIcon('component', 'icon'), el('strong', 'shell-title', host.studioLabel()), el('span', 'description', host.studioStatus()))
-        for (const item of items.slice(0, 2)) secondary.append(el('button', 'action', item.label))
+        for (const item of items.slice(0, 2)) secondary.append(studioAction(host, 'action', item.label, item))
     } else if (host.componentName === 'status-bar') {
         for (const item of items.slice(0, 2)) primary.append(el('span', 'description', item.label))
         secondary.append(el('span', 'description', host.studioTextValue()))
     } else {
         primary.append(createIcon('layers', 'icon'), el('strong', 'shell-title', host.studioLabel()))
-        const action = el('button', 'action', host.studioActionLabel()); action.setAttribute('aria-label', host.studioActionLabel()); secondary.append(action)
+        secondary.append(studioAction(host, 'action', host.studioActionLabel()))
     }
     bar.append(primary, secondary)
     return bar
@@ -296,8 +306,7 @@ function panelContent(host: StudioComponentBase): HTMLElement {
     if (host.componentName === 'floating-toolbar') {
         const toolbar = el('div', 'panel-toolbar'); toolbar.setAttribute('role', 'toolbar'); toolbar.setAttribute('aria-label', host.studioAccessibleName())
         for (const item of items) {
-            const button = el('button', 'tool', item.label); button.type = 'button'; button.disabled = host.studioDisabled() || item.disabled === true
-            button.addEventListener('click', event => host.activate(item, event)); toolbar.append(button)
+            toolbar.append(studioAction(host, 'tool', item.label, item))
         }
         content.append(toolbar)
     } else if (host.componentName === 'card') {
@@ -382,18 +391,18 @@ export function createStudioView(host: StudioComponentBase): StudioView {
             }
         } else if (host.componentName === 'stepper') {
             const shell = el('div', 'field-shell stepper')
-            const decrement = el('button', 'stepper-button decrement-button', '−')
-            const increment = el('button', 'stepper-button increment-button', '+')
-            decrement.type = 'button'
-            increment.type = 'button'
-            decrement.addEventListener('click', event => {
+            const decrement = createIconButton('decrement-button', 'minus', event => {
                 const next = Math.max(host.studioNumber('min'), Number(node.value || 0) - host.studioNumber('step'))
                 host.setValue(next, event)
             })
-            increment.addEventListener('click', event => {
+            const increment = createIconButton('increment-button', 'plus', event => {
                 const next = Math.min(host.studioNumber('max'), Number(node.value || 0) + host.studioNumber('step'))
                 host.setValue(next, event)
             })
+            decrement.setAttribute('part', 'stepper-button decrement-button')
+            increment.setAttribute('part', 'stepper-button increment-button')
+            decrement.variant = 'secondary'
+            increment.variant = 'secondary'
             shell.append(decrement, node, increment)
             body.append(shell)
             const originalUpdate = updateBody
@@ -403,8 +412,8 @@ export function createStudioView(host: StudioComponentBase): StudioView {
                 const value = Number(node.value || 0)
                 decrement.disabled = unavailable || value <= host.studioNumber('min')
                 increment.disabled = unavailable || value >= host.studioNumber('max')
-                decrement.setAttribute('aria-label', componentText(host, 'decrementLabel'))
-                increment.setAttribute('aria-label', componentText(host, 'incrementLabel'))
+                actionLabel(decrement, componentText(host, 'decrementLabel'))
+                actionLabel(increment, componentText(host, 'incrementLabel'))
             }
         } else if (host.componentKind === 'search') {
             const shell = el('div', 'field-shell search-shell'); shell.dataset.prefix = ''
@@ -529,10 +538,8 @@ export function createStudioView(host: StudioComponentBase): StudioView {
         updateBody = (): void => {
             list.replaceChildren()
             for (const item of host.studioItems()) {
-                const token = el('button', 'token item', item.label)
-                token.type = 'button'
-                token.disabled = host.studioDisabled() || item.disabled === true
-                token.addEventListener('click', event => host.activate(item, event))
+                const token = studioAction(host, 'token', item.label, item)
+                token.setAttribute('part', 'token item')
                 list.append(token)
             }
             if (!list.childElementCount) list.append(el('span', 'empty', host.studioEmptyLabel()))
@@ -609,9 +616,7 @@ export function createStudioView(host: StudioComponentBase): StudioView {
         region.dataset.component = host.componentName
         const header = el('header', 'panel-header')
         const heading = el('span', 'panel-title')
-        const action = el('button', 'action')
-        action.type = 'button'
-        action.addEventListener('click', event => host.activate(undefined, event))
+        const action = createButton('action', event => host.activate(undefined, event))
         const suppliedContent = slot('', '', 'content')
         const generatedContent = el('div', 'generated-content')
         const content = el('div', 'content composed-content')
@@ -628,8 +633,7 @@ export function createStudioView(host: StudioComponentBase): StudioView {
         updateBody = (): void => {
             generatedContent.replaceChildren(renderGeneratedContent())
             heading.textContent = host.studioLabel()
-            action.textContent = host.studioActionLabel()
-            action.setAttribute('aria-label', host.studioActionLabel())
+            actionLabel(action, host.studioActionLabel())
             action.disabled = host.studioDisabled()
             action.hidden = !host.actionLabel
             aria(region, 'aria-label', host.studioAccessibleName())

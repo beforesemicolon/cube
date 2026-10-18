@@ -1,13 +1,14 @@
 import { register } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
-import { el } from '../../core/editor-dom.js'
+import { actionLabel, createButton } from '../../action/create.js'
+import type { Button } from '../../action/button/index.js'
 import { AlertDialogBase } from './AlertDialogBase.js'
 import { createModalView, type ModalView } from '../modal/view.js'
 
 export class AlertDialog extends AlertDialogBase {
     private view?: ModalView
-    private cancelButton?: HTMLButtonElement
-    private confirmButton?: HTMLButtonElement
+    private cancelButton?: Button
+    private confirmButton?: Button
 
     render(): Node {
         this.view = createModalView(
@@ -16,12 +17,9 @@ export class AlertDialog extends AlertDialogBase {
             event => this.handleBackdrop(event),
         )
         this.view.dialog.setAttribute('role', 'alertdialog')
-        this.cancelButton = el('button', 'cancel')
-        this.cancelButton.type = 'button'
-        this.cancelButton.addEventListener('click', event => this.cancel(event))
-        this.confirmButton = el('button', 'confirm')
-        this.confirmButton.type = 'button'
-        this.confirmButton.addEventListener('click', event => this.confirm(event))
+        this.cancelButton = createButton('cancel', event => this.cancel(event))
+        this.confirmButton = createButton('confirm', event => this.confirm(event))
+        this.confirmButton.variant = 'primary'
         this.view.footer.prepend(this.cancelButton, this.confirmButton)
         return this.view.root
     }
@@ -35,14 +33,12 @@ export class AlertDialog extends AlertDialogBase {
         view.description.textContent = scalarText(this.description)
         view.description.hidden = !scalarText(this.description)
         view.close.hidden = !bool(this.dismissible)
-        view.close.setAttribute('aria-label', this.closeText())
-        view.close.title = this.closeText()
-        this.cancelButton.textContent = this.cancelText()
-        this.confirmButton.textContent = this.confirmText()
+        actionLabel(view.close, this.closeText())
+        actionLabel(this.cancelButton, this.cancelText())
+        actionLabel(this.confirmButton, this.confirmText())
         this.cancelButton.disabled = bool(this.busy)
-        this.confirmButton.disabled = bool(this.busy)
-        this.confirmButton.toggleAttribute('data-destructive', bool(this.destructive))
-        this.confirmButton.setAttribute('aria-busy', String(bool(this.busy)))
+        this.confirmButton.loading = bool(this.busy)
+        this.confirmButton.variant = bool(this.destructive) ? 'destructive' : 'primary'
         this.setAttribute('modal-size', ['sm', 'md', 'lg', 'full'].includes(this.modalSize) ? this.modalSize : 'sm')
     }
 }

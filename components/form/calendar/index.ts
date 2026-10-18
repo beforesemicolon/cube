@@ -1,12 +1,13 @@
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
-import { createIcon } from '../../icons/paths.js'
+import { actionLabel, createIconButton } from '../../action/create.js'
+import type { IconButton } from '../../action/icon-button/index.js'
 import { CalendarBase } from './CalendarBase.js'
 
 const calendarCSS = editorCSS + `
 :host{display:block;inline-size:min(100%,var(--component-calendar-width,288px))}
 [part~=calendar]{display:grid;gap:var(--spacing-sm,8px);padding:var(--spacing-md,12px);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
-[part~=header]{display:grid;grid-template-columns:36px 1fr 36px;align-items:center;gap:4px}
+[part~=header]{display:grid;grid-template-columns:var(--component-control-height-sm,28px) 1fr var(--component-control-height-sm,28px);align-items:center;gap:4px}
 [part~=month]{text-align:center;font-weight:650}
 [part~=weekdays],[part~=days]{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
 [part~=weekday]{display:grid;place-items:center;min-block-size:28px;color:var(--color-muted-foreground);font-size:11px}
@@ -21,24 +22,18 @@ export class Calendar extends CalendarBase {
     private monthNode?: HTMLElement
     private weekdaysNode?: HTMLElement
     private daysNode?: HTMLElement
-    private previousButton?: HTMLButtonElement
-    private nextButton?: HTMLButtonElement
+    private previousButton?: IconButton
+    private nextButton?: IconButton
 
     render(): Node {
         const root = el('div', 'calendar')
         this.calendarNode = root
         root.setAttribute('role', 'group')
         const header = el('div', 'header')
-        this.previousButton = el('button', 'previous icon-button')
-        this.previousButton.type = 'button'
-        this.previousButton.append(createIcon('left', 'icon'))
-        this.previousButton.addEventListener('click', () => this.moveMonth(-1))
+        this.previousButton = createIconButton('previous', 'left', () => this.moveMonth(-1))
         this.monthNode = el('div', 'month')
         this.monthNode.setAttribute('aria-live', 'polite')
-        this.nextButton = el('button', 'next icon-button')
-        this.nextButton.type = 'button'
-        this.nextButton.append(createIcon('right', 'icon'))
-        this.nextButton.addEventListener('click', () => this.moveMonth(1))
+        this.nextButton = createIconButton('next', 'right', () => this.moveMonth(1))
         header.append(this.previousButton, this.monthNode, this.nextButton)
         this.weekdaysNode = el('div', 'weekdays')
         this.daysNode = el('div', 'days')
@@ -51,8 +46,10 @@ export class Calendar extends CalendarBase {
         if (!this.calendarNode || !this.monthNode || !this.weekdaysNode || !this.daysNode || !this.previousButton || !this.nextButton) return
         const locale = this.documentLanguage()
         this.calendarNode.setAttribute('aria-label', this.accessibleName())
-        this.previousButton.setAttribute('aria-label', this.previousLabel)
-        this.nextButton.setAttribute('aria-label', this.nextLabel)
+        actionLabel(this.previousButton, this.previousLabel)
+        actionLabel(this.nextButton, this.nextLabel)
+        this.previousButton.disabled = this.unavailable
+        this.nextButton.disabled = this.unavailable
         this.monthNode.textContent = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(this.visibleMonth)
         this.weekdaysNode.replaceChildren()
         const weekStart = this.weekStart()

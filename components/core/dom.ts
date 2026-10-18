@@ -6,9 +6,6 @@ export function el<K extends keyof HTMLElementTagNameMap>(name: K, part: string,
     return node
 }
 export function sheet(css: string): HTMLStyleElement { const s = el('style', 'styles'); s.textContent = css; return s }
-export function button(part: string, action: () => void): HTMLButtonElement {
-    const b = el('button', part); b.type = 'button'; b.addEventListener('click', action); return b
-}
 export function label(node: HTMLElement, value: string): void { node.setAttribute('aria-label', value); node.title = value }
 export const commonCSS = `
 :host{display:block;color:${v('--color-foreground')};font:${v('--typography-body-font-size')}/${v('--typography-body-line-height')} ${v('--typography-body-font-family')};container-type:inline-size}

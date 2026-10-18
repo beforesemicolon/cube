@@ -7,6 +7,8 @@ import typescript from 'highlight.js/lib/languages/typescript'
 import xml from 'highlight.js/lib/languages/xml'
 import { register } from '../../core/Component.js'
 import { editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
+import { actionLabel, createButton } from '../../action/create.js'
+import type { Button } from '../../action/button/index.js'
 import { scalarText } from '../../core/value.js'
 import { CodePreviewBase } from './CodePreviewBase.js'
 
@@ -20,16 +22,14 @@ hljs.registerLanguage('typescript', typescript)
 export class CodePreview extends CodePreviewBase {
     private codeNode?: HTMLElement
     private languageNode?: HTMLElement
-    private copyButton?: HTMLButtonElement
+    private copyButton?: Button
     private statusNode?: HTMLElement
 
     render(): Node {
         const root = el('figure', 'root code-preview')
         const toolbar = el('figcaption', 'toolbar row')
         this.languageNode = el('span', 'language')
-        this.copyButton = el('button', 'copy action')
-        this.copyButton.type = 'button'
-        this.copyButton.addEventListener('click', () => { void this.copySource() })
+        this.copyButton = createButton('copy', () => { void this.copySource() })
         toolbar.append(this.languageNode, this.copyButton)
         const pre = el('pre', 'pre')
         this.codeNode = el('code', 'code')
@@ -43,7 +43,7 @@ export class CodePreview extends CodePreviewBase {
 [part~=root]{margin:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:var(--color-surface)}
 [part~=toolbar]{justify-content:space-between;padding:var(--spacing-xs) var(--spacing-sm);border-block-end:1px solid var(--color-separator);background:var(--color-surface-muted)}
 [part~=language]{color:var(--color-muted-foreground);font-family:var(--typography-mono-font-family);text-transform:lowercase}
-[part~=copy]{min-block-size:24px;padding:2px var(--spacing-sm);background:transparent}
+[part~=copy]{flex:none}
 [part~=pre]{margin:0;max-block-size:420px;overflow:auto;padding:var(--spacing-md);background:var(--color-surface)}
 [part~=code]{font:400 var(--component-code-font-size,12px)/1.6 var(--typography-mono-font-family);white-space:pre;tab-size:2}
 .hljs-keyword,.hljs-selector-tag,.hljs-literal{color:var(--component-code-keyword,var(--color-primary))}
@@ -61,8 +61,7 @@ export class CodePreview extends CodePreviewBase {
         const language = hljs.getLanguage(requested) ? requested : 'plaintext'
         const source = this.source()
         this.languageNode.textContent = language
-        this.copyButton.textContent = this.copyText()
-        this.copyButton.setAttribute('aria-label', this.copyText())
+        actionLabel(this.copyButton, this.copyText())
         this.copyButton.disabled = this.studioDisabled() || !source
         this.codeNode.className = `language-${language}`
         if (language === 'plaintext') this.codeNode.textContent = source

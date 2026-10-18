@@ -1,6 +1,7 @@
 import { register } from '../../core/Component.js'
 import { editorCSS, el, fragment, safeHref, sheet } from '../../core/editor-dom.js'
 import { createIcon } from '../../icons/paths.js'
+import { actionLabel, createIconButton } from '../../action/create.js'
 import { BreadcrumbBase } from './BreadcrumbBase.js'
 
 export class Breadcrumb extends BreadcrumbBase {
@@ -18,7 +19,7 @@ export class Breadcrumb extends BreadcrumbBase {
             const li = el('li', 'item')
             if (index > 0) li.append(createIcon('right', 'separator'))
             if (item === 'ellipsis') {
-                const expand = el('button', 'expand', '…'); expand.type = 'button'; expand.setAttribute('aria-label', this.expandLabel); expand.addEventListener('click', () => { this.expanded = true; this.syncView() }); li.append(expand); return li
+                const expand = createIconButton('expand', 'more', () => { this.expanded = true; this.syncView() }); actionLabel(expand, this.expandLabel); li.append(expand); return li
             }
             const last = index === crumbs.length - 1 && item === this.crumbs.at(-1)
             if (last) { const current = el('span', 'current', item.label); current.setAttribute('aria-current', 'page'); li.append(current); return li }

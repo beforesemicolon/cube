@@ -1,5 +1,6 @@
 import { register } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
+import { actionLabel } from '../../action/create.js'
 import { ModalBase } from './ModalBase.js'
 import { createModalView, type ModalView } from './view.js'
 
@@ -24,8 +25,7 @@ export class Modal extends ModalBase {
         view.description.textContent = scalarText(this.description)
         view.description.hidden = !scalarText(this.description)
         view.close.hidden = !bool(this.dismissible)
-        view.close.setAttribute('aria-label', this.closeText())
-        view.close.title = this.closeText()
+        actionLabel(view.close, this.closeText())
         this.setAttribute('modal-size', ['sm', 'md', 'lg', 'full'].includes(this.modalSize) ? this.modalSize : 'md')
     }
 }

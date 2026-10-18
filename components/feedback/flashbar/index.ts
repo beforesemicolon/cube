@@ -1,6 +1,7 @@
 import { register } from '../../core/Component.js'
 import { editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { createIcon } from '../../icons/paths.js'
+import { actionLabel, createButton, createIconButton } from '../../action/create.js'
 import { scalarText } from '../../core/value.js'
 import { FlashbarBase, type NormalizedFlashbarMessage } from './FlashbarBase.js'
 
@@ -21,7 +22,7 @@ export class Flashbar extends FlashbarBase {
 [part=region]{display:flex;flex-direction:column;gap:var(--spacing-sm,8px)}[part=message]{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--spacing-sm,8px);align-items:start;padding:var(--spacing-md,12px);pointer-events:auto;border:1px solid var(--color-separator,#dae0e4);border-inline-start:3px solid var(--color-signal-text,#1d50b3);border-radius:var(--radius-md,10px);background:var(--color-surface-raised,#fff);box-shadow:0 12px 36px rgba(12,18,24,.16);animation:cb-flash-in var(--motion-duration-normal,160ms) ease-out}
 [part=message][data-type=success]{border-inline-start-color:var(--color-success,#08764f)}[part=message][data-type=warning]{border-inline-start-color:var(--color-warning,#855700)}[part=message][data-type=danger]{border-inline-start-color:var(--color-danger,#b4233c)}
 [part~=message-icon]{inline-size:18px;block-size:18px;color:var(--color-signal-text,#1d50b3)}[data-type=success] [part~=message-icon]{color:var(--color-success,#08764f)}[data-type=warning] [part~=message-icon]{color:var(--color-warning,#855700)}[data-type=danger] [part~=message-icon]{color:var(--color-danger,#b4233c)}[data-type=loading] [part~=message-icon]{animation:cb-spin 1s linear infinite}
-[part=heading]{font-weight:650}[part=content]{min-inline-size:0}[part=message-text]{margin:2px 0 0;color:var(--color-muted-foreground,#606b73)}[part=message-actions]{display:flex;align-items:center;gap:var(--spacing-xs,4px)}[part=action],[part=dismiss]{min-block-size:24px;padding:2px 6px;background:transparent}[part=dismiss]{inline-size:24px;display:grid;place-items:center}
+[part=heading]{font-weight:650}[part=content]{min-inline-size:0}[part=message-text]{margin:2px 0 0;color:var(--color-muted-foreground,#606b73)}[part=message-actions]{display:flex;align-items:center;gap:var(--spacing-xs,4px)}
 @keyframes cb-flash-in{from{opacity:0;translate:12px 0}}@keyframes cb-spin{to{rotate:1turn}}@media(max-width:480px){:host{inset-inline:8px;inline-size:auto}}
 `), this.region)
     }
@@ -46,18 +47,15 @@ export class Flashbar extends FlashbarBase {
         content.append(el('p', 'message-text', message.message))
         const actions = el('div', 'message-actions')
         if (message.actionLabel) {
-            const action = el('button', 'action', message.actionLabel)
-            action.type = 'button'
-            action.addEventListener('click', event => this.action(message, event))
+            const action = createButton('action', event => this.action(message, event))
+            actionLabel(action, message.actionLabel)
+            action.size = 'xs'
             actions.append(action)
         }
         if (message.dismissible && message.dismissLabel) {
-            const dismiss = el('button', 'dismiss')
-            dismiss.type = 'button'
-            dismiss.setAttribute('aria-label', message.dismissLabel)
-            dismiss.title = message.dismissLabel
-            dismiss.append(createIcon('close'))
-            dismiss.addEventListener('click', () => this.dismiss(message.id, 'dismiss-button'))
+            const dismiss = createIconButton('dismiss', 'close', () => this.dismiss(message.id, 'dismiss-button'))
+            actionLabel(dismiss, message.dismissLabel)
+            dismiss.size = 'xs'
             actions.append(dismiss)
         }
         article.append(content, actions)

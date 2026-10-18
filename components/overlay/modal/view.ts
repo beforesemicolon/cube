@@ -1,5 +1,6 @@
 import { editorCSS, el, fragment, sheet, slot, uid } from '../../core/editor-dom.js'
-import { createIcon } from '../../icons/paths.js'
+import { createIconButton } from '../../action/create.js'
+import type { IconButton } from '../../action/icon-button/index.js'
 
 export interface ModalView {
     root: DocumentFragment
@@ -7,7 +8,7 @@ export interface ModalView {
     header: HTMLElement
     heading: HTMLSlotElement
     description: HTMLSlotElement
-    close: HTMLButtonElement
+    close: IconButton
     body: HTMLElement
     footer: HTMLElement
 }
@@ -20,10 +21,9 @@ export const modalCSS = editorCSS + `
 [part~=header]{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--spacing-md,12px);align-items:start;padding:var(--spacing-lg,16px);border-block-end:1px solid var(--color-separator,#dae0e4)}
 [part~=heading]{font-size:var(--component-title-font-size,14px);font-weight:650;line-height:1.35}
 [part~=description]{display:block;margin-block-start:var(--spacing-xs,4px);color:var(--color-muted-foreground,#606b73);font-size:var(--component-caption-font-size,11px)}
-[part~=close]{inline-size:var(--component-control-height,28px);block-size:var(--component-control-height,28px);min-block-size:0;padding:5px;display:grid;place-items:center;background:transparent;border-color:transparent}
+[part~=close]{align-self:start}
 [part~=body]{padding:var(--spacing-lg,16px);overflow:auto;overscroll-behavior:contain}
 [part~=footer]{display:flex;justify-content:flex-end;align-items:center;gap:var(--spacing-sm,8px);padding:var(--spacing-md,12px) var(--spacing-lg,16px);border-block-start:1px solid var(--color-separator,#dae0e4)}
-[part~=confirm][data-destructive]{background:var(--color-danger,#b4233c);border-color:var(--color-danger,#b4233c);color:var(--color-danger-foreground,#fff)}
 :host([modal-size=sm]) [part~=dialog]{--component-modal-width:400px}:host([modal-size=lg]) [part~=dialog]{--component-modal-width:800px}:host([modal-size=full]) [part~=dialog]{inline-size:calc(100vw - 32px);block-size:calc(100dvh - 32px)}
 @media(max-width:520px){[part~=dialog]{inline-size:calc(100vw - 16px);max-block-size:calc(100dvh - 16px)}[part~=header],[part~=body]{padding:var(--spacing-md,12px)}}
 `
@@ -43,10 +43,7 @@ export function createModalView(onClose: () => void, onCancel: (event: Event) =>
     const description = slot('description', '', 'description')
     description.id = descriptionId
     copy.append(heading, description)
-    const close = el('button', 'close')
-    close.type = 'button'
-    close.append(createIcon('close'))
-    close.addEventListener('click', onClose)
+    const close = createIconButton('close', 'close', onClose)
     header.append(copy, close)
     const body = el('section', 'body')
     body.append(slot('', '', 'content'))
