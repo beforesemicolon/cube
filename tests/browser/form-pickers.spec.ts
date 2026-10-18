@@ -57,6 +57,7 @@ test('select supports searchable multi-selection in the same component', async (
             { value: 'react', label: 'React' }, { value: 'solid', label: 'Solid' },
             { value: 'svelte', label: 'Svelte' }, { value: 'vue', label: 'Vue' },
         ]
+        select.style.inlineSize = '180px'
         document.querySelector('#fixture')?.append(select)
     })
 
@@ -72,6 +73,15 @@ test('select supports searchable multi-selection in the same component', async (
     await expect(select).toHaveJSProperty('value', ['react', 'vue'])
     await expect(select.locator('[part~="popup"]')).toBeVisible()
     await expect(select.getByRole('button', { name: 'Frameworks: React, Vue' })).toHaveAttribute('aria-expanded', 'true')
+
+    await search.fill('svelte')
+    await select.getByRole('option', { name: 'Svelte' }).click()
+    await search.fill('solid')
+    await select.getByRole('option', { name: 'Solid' }).click()
+    const trigger = select.getByRole('button', { name: 'Frameworks: React, Solid, Svelte, Vue' })
+    const triggerHeight = await trigger.evaluate(element => element.getBoundingClientRect().height)
+    expect(triggerHeight).toBeGreaterThan(28)
+    await expect(select.locator('[part~="value-item"]')).toHaveCount(4)
 
     await search.fill('missing')
     await expect(select.getByRole('status')).toHaveText('No matching frameworks')

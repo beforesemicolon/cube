@@ -9,6 +9,10 @@ const css = editorCSS + `
 :host{display:inline-block;inline-size:var(--component-select-width,240px)}[part~=root]{position:relative;display:grid}
 [part~=trigger]{display:flex;align-items:center;justify-content:space-between;gap:8px;inline-size:100%;text-align:start}[part~=value][data-placeholder]{color:var(--color-muted-foreground)}
 [part~=value]{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+[part~=trigger][data-multi]{align-items:flex-start;block-size:auto}
+[part~=trigger][data-multi] [part~=value]{display:flex;flex:1;flex-wrap:wrap;gap:2px 4px;overflow:visible;text-overflow:clip;white-space:normal}
+[part~=value-item]{white-space:nowrap}
+[part~=trigger][data-multi] [part~=indicator]{margin-block-start:2px}
     [part~=popup]{z-index:var(--z-index-dropdown,1000);display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:4px;inline-size:max-content;box-sizing:border-box;overflow:hidden;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
 [part~=search-wrap]{display:flex;padding:2px}
 [part~=search]{inline-size:100%;min-block-size:var(--cb-height);padding-inline:10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);color:var(--color-foreground);font:inherit}
@@ -96,7 +100,11 @@ export class Select extends SelectBase {
             this.listbox.append(button)
         }
         const labels = options.filter(option => selection.includes(option.value)).map(option => option.label)
-        this.valueNode.textContent = labels.join(', ') || placeholder; this.valueNode.toggleAttribute('data-placeholder', labels.length === 0)
+        this.valueNode.replaceChildren()
+        if (bool(this.multi) && labels.length) {
+            labels.forEach((label, index) => this.valueNode?.append(el('span', 'value-item', `${label}${index < labels.length - 1 ? ',' : ''}`)))
+        } else this.valueNode.textContent = labels[0] ?? placeholder
+        this.valueNode.toggleAttribute('data-placeholder', labels.length === 0)
         const native = bool(this.native); this.trigger.hidden = native; this.nativeControl.hidden = !native
         this.searchWrap.hidden = !searching
         this.searchInput.value = this.query
@@ -112,8 +120,9 @@ export class Select extends SelectBase {
         this.listbox.setAttribute('aria-label', this.accessibleName())
         this.nativeControl.multiple = bool(this.multi); this.nativeControl.disabled = this.unavailable || bool(this.readOnly); this.nativeControl.required = bool(this.required) && !bool(this.readOnly); this.nativeControl.setAttribute('aria-label', this.accessibleName())
         this.trigger.disabled = this.unavailable || bool(this.readOnly)
+        this.trigger.toggleAttribute('data-multi', bool(this.multi))
         const accessibleName = this.accessibleName()
-        const visibleValue = this.valueNode.textContent ?? ''
+        const visibleValue = labels.join(', ') || placeholder
         this.trigger.setAttribute('aria-label', visibleValue && visibleValue !== accessibleName ? `${accessibleName}: ${visibleValue}` : accessibleName)
         this.trigger.setAttribute('aria-haspopup', 'listbox'); this.trigger.setAttribute('aria-controls', this.listbox.id); aria(this.trigger, 'aria-expanded', bool(this.open))
         this.syncForm(bool(this.multi) ? this.multipleFormValue(selection) : selection[0] ?? '')
