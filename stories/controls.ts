@@ -34,16 +34,19 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 const booleanProperties = new Set([
     'animated', 'autoplay', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'disabled', 'dismissible',
     'expanded', 'formNoValidate', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
-    'open', 'patterns', 'popupExpanded', 'pressed', 'readOnly', 'required', 'reverse', 'wrap', 'zoomable',
+    'open', 'patterns', 'popupExpanded', 'pressed', 'readOnly', 'required', 'resizable', 'reverse', 'rowActivation',
+    'stickyHeader', 'striped', 'wrap', 'zoomable',
 ])
 
 const numberProperties = new Set([
     'delay', 'firstDayOfWeek', 'height', 'lines', 'max', 'maxItems', 'maxVisible', 'min', 'page', 'playbackRate',
-    'progress', 'searchThreshold', 'seekStep', 'selectionCount', 'siblings', 'step', 'totalPages', 'x', 'y',
+    'loadingRows', 'progress', 'searchThreshold', 'seekStep', 'selectionCount', 'siblings', 'step', 'stickyColumns',
+    'totalPages', 'x', 'y',
 ])
 
 const objectProperties = new Set([
-    'items', 'messages', 'options', 'series', 'theme', 'tracks', 'units', 'visibleSegments', 'visibleSeries',
+    'collapsedGroupKeys', 'expandedKeys', 'items', 'messages', 'options', 'selectedKeys', 'series', 'theme', 'tracks',
+    'units', 'visibleSegments', 'visibleSeries',
     'xAxis', 'yAxis',
 ])
 
@@ -59,7 +62,7 @@ const layoutProperties = new Set([
 ])
 
 const dataProperties = new Set([
-    'items', 'messages', 'options', 'series', 'theme', 'tracks', 'units', 'value', 'visibleSegments',
+    'collapsedGroupKeys', 'expandedKeys', 'items', 'messages', 'options', 'selectedKeys', 'series', 'theme', 'tracks', 'units', 'value', 'visibleSegments',
     'visibleSeries', 'xAxis', 'yAxis',
 ])
 
@@ -99,6 +102,7 @@ const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly Contr
     'cb-popover': { placement: ['bottom-start', 'bottom-end', 'top-start', 'top-end'] },
     'cb-hover-card': { placement: ['bottom-start', 'bottom-end', 'top-start', 'top-end'] },
     'cb-skeleton': { variant: ['text', 'card', 'table'] },
+    'cb-table': { density: ['comfortable', 'compact'], selectionMode: ['none', 'single', 'multiple'], sortDirection: ['asc', 'desc'] },
 }
 
 const numberControls: Readonly<Record<string, NumberControl>> = {
@@ -106,6 +110,7 @@ const numberControls: Readonly<Record<string, NumberControl>> = {
     firstDayOfWeek: { type: 'number', min: 0, max: 6, step: 1 },
     height: { type: 'number', min: 160, max: 1200, step: 10 },
     lines: { type: 'number', min: 1, max: 12, step: 1 },
+    loadingRows: { type: 'number', min: 1, max: 20, step: 1 },
     maxItems: { type: 'number', min: 1, step: 1 },
     maxVisible: { type: 'number', min: 1, max: 20, step: 1 },
     page: { type: 'number', min: 1, step: 1 },
@@ -115,6 +120,7 @@ const numberControls: Readonly<Record<string, NumberControl>> = {
     searchThreshold: { type: 'number', min: 0, step: 1 },
     selectionCount: { type: 'number', min: 0, step: 1 },
     siblings: { type: 'number', min: 0, max: 5, step: 1 },
+    stickyColumns: { type: 'number', min: 0, max: 10, step: 1 },
     totalPages: { type: 'number', min: 1, step: 1 },
 }
 
@@ -166,6 +172,28 @@ const descriptions: Readonly<Record<string, string>> = {
     columns: 'Number of placeholder columns rendered by the table skeleton.',
     lines: 'Number of text placeholder lines rendered by text and card skeletons.',
     rows: 'Number of placeholder rows rendered by the table skeleton.',
+    collapsedGroupKeys: 'Controlled group keys that are currently collapsed.',
+    density: 'Controls comfortable or compact row spacing.',
+    expandedKeys: 'Controlled row keys whose nested children are visible.',
+    loadingRows: 'Number of placeholder rows displayed while table data is loading.',
+    parentBy: 'Nested path containing each row’s parent key.',
+    childrenBy: 'Nested path containing each row’s child row array.',
+    groupBy: 'Nested path used to group rows.',
+    groupLabelBy: 'Nested path used to label row groups.',
+    itemKey: 'Nested path containing the stable unique key for each row.',
+    selectableField: 'Nested path containing whether each row can be selected.',
+    selectedKeys: 'Controlled keys for selected rows.',
+    selectionMode: 'Enables no selection, single selection, or multiple selection.',
+    sortBy: 'ID of the column currently controlling row order.',
+    sortDirection: 'Ascending or descending order for the active sort column.',
+    rowActivation: 'Makes each non-interactive row area pointer and keyboard actionable.',
+    resizable: 'Allows every column to be resized by pointer or keyboard.',
+    stickyHeader: 'Keeps column headers visible while the table viewport scrolls.',
+    stickyColumns: 'Number of leading data columns kept visible during horizontal scrolling.',
+    striped: 'Alternates row surface colors for dense comparison tables.',
+    selectionAnnouncement: 'Localized live-region template. Supports {count}.',
+    sortAnnouncement: 'Localized live-region template. Supports {column} and {direction}.',
+    expansionAnnouncement: 'Localized live-region template. Supports {row} and {state}.',
 }
 
 const defaultSummaries: Readonly<Record<string, string>> = {
@@ -179,13 +207,14 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     preload: 'metadata', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', searchable: 'auto', searchThreshold: '10', seekStep: '10',
     series: '[]', size: 'sm', status: 'finished', step: '1', theme: 'null', tracks: '[]', units: '[]', value: "''",
     visibleSegments: 'null', visibleSeries: 'null', wrap: 'false', xAxis: '{}', yAxis: '{}', zoomable: 'false',
-    animated: 'true', lines: '3',
+    animated: 'true', lines: '3', loadingRows: '5', resizable: 'true', rowActivation: 'false', selectionMode: 'none',
+    sortDirection: 'asc', stickyColumns: '0', stickyHeader: 'false', striped: 'false', density: 'comfortable',
 }
 
 const primitiveDefaults: Readonly<Record<string, string | number | boolean | null>> = {
     accessibleLabel: '', actionLabel: '', actionValue: '', activation: 'automatic', align: 'stretch', appearance: 'system',
     autoFlow: 'row', autocomplete: 'list', autoplay: false, background: '', blockSize: '', border: '', busy: false,
-    cancelLabel: '', checked: false, closeLabel: '', closeOnBackdrop: true, code: '', codeLanguage: 'html', collapseAt: '', columns: '',
+    cancelLabel: '', checked: false, closeLabel: '', closeOnBackdrop: true, code: '', codeLanguage: 'html', collapsible: false, collapseAt: '', columns: '',
     confirmLabel: '', content: '', copiedLabel: '', copyLabel: '', crossOrigin: '', decorative: false, delay: 0,
     description: '', destructive: false, disabled: false, dismissible: true, download: '', emptyLabel: '', error: '',
     errorText: '', expanded: false, firstDayOfWeek: 0, formNoValidate: false, gap: '', heading: '', height: 320,
@@ -198,7 +227,8 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     pressed: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
     seekStep: 10, selectionCount: 0, siblings: 1, size: 'sm', src: '', status: '', step: 1, target: '_self',
     totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', wrap: false, x: 0, y: 0, zoomable: false,
-    animated: true, lines: 3,
+    animated: true, lines: 3, loadingRows: 5, resizable: true, rowActivation: false, selectionMode: 'none',
+    sortDirection: 'asc', stickyColumns: 0, stickyHeader: false, striped: false, density: 'comfortable',
 }
 
 const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue>>>> = {
@@ -233,7 +263,8 @@ function humanize(property: string): string {
     return property.replace(/[A-Z]/g, letter => ` ${letter.toLowerCase()}`)
 }
 
-function categoryFor(property: string): string {
+function categoryFor(tag: string, property: string): string {
+    if (tag === 'cb-table' && property === 'columns') return 'Data'
     if (property === 'accessibleLabel' || property === 'searchLabel' || property === 'unitLabel') return 'Accessibility'
     if (stateProperties.has(property)) return 'State'
     if (layoutProperties.has(property)) return 'Layout'
@@ -257,6 +288,7 @@ function controlFor(tag: string, property: string): StoryControl['control'] {
     if ((property === 'min' || property === 'max') && dateBoundTags.has(tag)) return 'text'
     if (optionsFor(tag, property)) return 'select'
     if (tag === 'cb-skeleton' && (property === 'rows' || property === 'columns')) return { type: 'number', min: 1, max: 12, step: 1 }
+    if (tag === 'cb-table' && property === 'columns') return 'object'
     if (booleanProperties.has(property)) return 'boolean'
     if (numberProperties.has(property)) return numberControl(property)
     if (objectProperties.has(property)) return 'object'
@@ -266,6 +298,8 @@ function controlFor(tag: string, property: string): StoryControl['control'] {
 function typeSummary(tag: string, property: string, control: StoryControl['control'], options: readonly ControlOption[] | undefined): string {
     if (property === 'valueFormatter') return '(value: number) => string'
     if (property === 'items') return 'Item[]'
+    if (tag === 'cb-table' && property === 'columns') return 'TableColumn[]'
+    if (['selectedKeys', 'expandedKeys', 'collapsedGroupKeys'].includes(property)) return 'string[]'
     if (property === 'options') return 'SelectOption[]'
     if (property === 'units') return 'UnitOption[]'
     if (property === 'series') return tag === 'cb-pie-chart' ? 'PieSeries' : 'Series[]'
@@ -294,7 +328,7 @@ function definitionFor(tag: string, property: string): StoryControl {
         ...(property === 'valueFormatter' ? { mapping: formatterMapping } : {}),
         description: descriptions[property] ?? `Controls the ${humanize(property)} property.`,
         table: {
-            category: categoryFor(property),
+            category: categoryFor(tag, property),
             type: { summary: typeSummary(tag, property, control, options) },
             defaultValue: { summary: defaultSummary },
         },
@@ -302,6 +336,7 @@ function definitionFor(tag: string, property: string): StoryControl {
 }
 
 function objectDefault(tag: string, property: string): object | null | undefined {
+    if (tag === 'cb-table' && property === 'columns') return []
     if (property === 'xAxis' || property === 'yAxis') return {}
     if (property === 'theme' && tag !== 'cb-theme-provider') return {}
     if (property === 'theme' || property === 'visibleSegments' || property === 'visibleSeries') return null

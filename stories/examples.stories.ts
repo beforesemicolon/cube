@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
+import type { TableColumn, TableRecord } from '../components/data-display/table/base.js'
 import '../components/client.js'
 
 const meta: Meta = { title: 'Examples', parameters: { docs: { description: { component: 'Application-level compositions built from Cube components. These are examples, not additional custom elements.' } } } }
@@ -147,6 +148,63 @@ export const AssetBrowser: Story = {
             assets.append(component('cb-card', { label, value, items: [{ id: 'metadata', label: 'Format', description: value }] }))
         }
         return surface(component('cb-combobox', { label: 'Search assets', placeholder: 'Name or type', options: [{ value: 'hero', label: 'Hero image' }, { value: 'logo', label: 'Logo' }] }), assets)
+    },
+}
+
+export const ResourceTable: Story = {
+    name: 'Data display / Rich resource table',
+    render: () => {
+        const rows: TableRecord[] = [
+            { id: 'website', parentId: '', team: 'web', teamLabel: 'Web experience', name: 'Marketing website', status: 'Published', owner: 'Maya Chen', updated: 'Oct 18, 2026', selectable: true },
+            { id: 'home', parentId: 'website', team: 'web', teamLabel: 'Web experience', name: 'Home page', status: 'Published', owner: 'Maya Chen', updated: 'Oct 18, 2026', selectable: true },
+            { id: 'pricing', parentId: 'website', team: 'web', teamLabel: 'Web experience', name: 'Pricing page', status: 'Draft', owner: 'Noah Williams', updated: 'Oct 17, 2026', selectable: true },
+            { id: 'tokens', parentId: '', team: 'system', teamLabel: 'Design system', name: 'Theme tokens', status: 'In review', owner: 'Sofia Martins', updated: 'Oct 16, 2026', selectable: true },
+            { id: 'legacy', parentId: '', team: 'system', teamLabel: 'Design system', name: 'Legacy icons', status: 'Archived', owner: 'Liam Okafor', updated: 'Sep 29, 2026', selectable: false },
+        ]
+        const columns: TableColumn[] = [
+            { id: 'name', header: 'Name', field: 'name', sortable: true, minWidth: 220, cell: ({ value }) => {
+                const link = component('cb-link', { label: String(value ?? ''), href: '#resource' })
+                return link
+            } },
+            {
+                id: 'status', header: 'Status', field: 'status', sortable: true, width: 130,
+                cell: ({ value }) => component('cb-badge', { value: String(value ?? '') }),
+                cellVariant: ({ value }) => value === 'Published' ? 'success' : value === 'Archived' ? 'muted' : 'warning',
+            },
+            { id: 'owner', header: 'Owner', field: 'owner', sortable: true, minWidth: 160 },
+            { id: 'updated', header: 'Updated', field: 'updated', sortable: true, minWidth: 140 },
+            { id: 'actions', header: 'Actions', ariaLabel: 'Resource actions', width: 88, align: 'center', cell: ({ item }) => component('cb-icon-button', { icon: 'more', label: `Actions for ${String(item.name ?? '')}`, accessibleLabel: `Actions for ${String(item.name ?? '')}`, variant: 'ghost' }) },
+        ]
+        const table = document.createElement('cb-table') as HTMLElement & {
+            items: readonly TableRecord[]
+            columns: readonly TableColumn[]
+            expandedKeys: readonly string[]
+            selectedKeys: readonly string[]
+        }
+        Object.assign(table, {
+            label: 'Project resources', items: rows, columns, itemKey: 'id', parentBy: 'parentId', expandedKeys: ['website'],
+            groupBy: 'team', groupLabelBy: 'teamLabel', selectionMode: 'multiple', selectedKeys: ['home'], selectableField: 'selectable',
+            sortBy: 'name', sortDirection: 'asc', rowActivation: true, resizable: true, stickyHeader: true, stickyColumns: 1,
+            emptyLabel: 'No project resources', loadingLabel: 'Loading project resources', selectAllLabel: 'Select all visible rows',
+            deselectAllLabel: 'Deselect all visible rows', selectRowLabel: 'Select {row}', deselectRowLabel: 'Deselect {row}',
+            expandRowLabel: 'Expand {row}', collapseRowLabel: 'Collapse {row}', expandGroupLabel: 'Expand {group}',
+            collapseGroupLabel: 'Collapse {group}', sortAscendingLabel: 'Sort {column} ascending', sortDescendingLabel: 'Sort {column} descending',
+            ascendingLabel: 'ascending', descendingLabel: 'descending', expandedLabel: 'expanded', collapsedLabel: 'collapsed',
+            resizeColumnLabel: 'Resize {column} column', selectionAnnouncement: '{count} rows selected',
+            sortAnnouncement: '{column} sorted {direction}', expansionAnnouncement: '{row} is {state}',
+        })
+        const header = component('cb-row', { gap: '8px', justify: 'space-between', padding: '12px' })
+        header.slot = 'header'
+        const title = document.createElement('div')
+        const heading = document.createElement('strong')
+        const count = document.createElement('span')
+        heading.textContent = 'Project resources'
+        count.textContent = `${rows.length} resources`
+        count.style.cssText = 'display:block;color:var(--color-muted-foreground);font-size:11px;margin-top:2px'
+        title.append(heading, count)
+        header.append(title, component('cb-button', { label: 'Create resource', variant: 'primary', icon: 'plus' }))
+        table.append(header)
+        return surface(table)
     },
 }
 
