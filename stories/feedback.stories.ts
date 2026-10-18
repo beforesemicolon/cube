@@ -11,7 +11,7 @@ export const Status: Story = componentStory('cb-status', { label: 'Status', valu
 
 export const EmptyState: Story = componentStory('cb-empty-state', { label: 'Empty state', value: 'Ready', status: 'Updated' })
 
-export const Skeleton: Story = componentStory('cb-skeleton', { label: 'Skeleton', value: 'Ready', status: 'Updated' })
+export const Skeleton: Story = componentStory('cb-skeleton', { variant: 'text', lines: 3, rows: 3, columns: 3, animated: true, accessibleLabel: 'Loading content' })
 
 export const Progress: Story = componentStory('cb-progress', { label: 'Progress', progress: 64, max: 100, status: '64%' })
 

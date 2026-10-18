@@ -71,3 +71,14 @@ test('built Storybook: overlay stories are launchable and dismissible',async({pa
     await page.getByText('Right-click this area').click({button:'right'})
     await expect(page.locator('cb-context-menu')).toBeVisible()
 })
+
+test('built Storybook: Skeleton has visible loading shapes and complete controls',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=feedback--skeleton&viewMode=story')
+    const skeleton=page.locator('cb-skeleton')
+    await expect(skeleton.locator('[part~=shape]')).toHaveCount(3)
+    await expect(skeleton.locator('[part~=shape]').first()).toBeVisible()
+
+    await page.goto('http://127.0.0.1:6006/?path=/story/feedback--skeleton&addonPanel=storybook/controls/panel')
+    const panel=page.getByRole('tabpanel',{name:/Controls/})
+    for(const name of ['variant','lines','rows','columns','animated','accessibleLabel']) await expect(panel.getByText(name,{exact:true}).first()).toBeVisible({timeout:20000})
+})

@@ -32,13 +32,13 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 }
 
 const booleanProperties = new Set([
-    'autoplay', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'disabled', 'dismissible',
+    'animated', 'autoplay', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'disabled', 'dismissible',
     'expanded', 'formNoValidate', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
     'open', 'patterns', 'popupExpanded', 'pressed', 'readOnly', 'required', 'reverse', 'wrap', 'zoomable',
 ])
 
 const numberProperties = new Set([
-    'delay', 'firstDayOfWeek', 'height', 'max', 'maxItems', 'maxVisible', 'min', 'page', 'playbackRate',
+    'delay', 'firstDayOfWeek', 'height', 'lines', 'max', 'maxItems', 'maxVisible', 'min', 'page', 'playbackRate',
     'progress', 'searchThreshold', 'seekStep', 'selectionCount', 'siblings', 'step', 'totalPages', 'x', 'y',
 ])
 
@@ -97,12 +97,14 @@ const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly Contr
     'cb-drawer': { placement: ['start', 'end'] },
     'cb-popover': { placement: ['bottom-start', 'bottom-end', 'top-start', 'top-end'] },
     'cb-hover-card': { placement: ['bottom-start', 'bottom-end', 'top-start', 'top-end'] },
+    'cb-skeleton': { variant: ['text', 'card', 'table'] },
 }
 
 const numberControls: Readonly<Record<string, NumberControl>> = {
     delay: { type: 'number', min: 0, max: 5000, step: 50 },
     firstDayOfWeek: { type: 'number', min: 0, max: 6, step: 1 },
     height: { type: 'number', min: 160, max: 1200, step: 10 },
+    lines: { type: 'number', min: 1, max: 12, step: 1 },
     maxItems: { type: 'number', min: 1, step: 1 },
     maxVisible: { type: 'number', min: 1, max: 20, step: 1 },
     page: { type: 'number', min: 1, step: 1 },
@@ -159,6 +161,10 @@ const descriptions: Readonly<Record<string, string>> = {
     visibleSeries: 'Controlled list of visible Cartesian series IDs.',
     xAxis: 'Editable Cartesian x-axis configuration.',
     yAxis: 'Editable Cartesian y-axis configuration.',
+    animated: 'Animates the loading shimmer unless reduced motion is requested.',
+    columns: 'Number of placeholder columns rendered by the table skeleton.',
+    lines: 'Number of text placeholder lines rendered by text and card skeletons.',
+    rows: 'Number of placeholder rows rendered by the table skeleton.',
 }
 
 const defaultSummaries: Readonly<Record<string, string>> = {
@@ -172,6 +178,7 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     preload: 'metadata', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', searchable: 'auto', searchThreshold: '10', seekStep: '10',
     series: '[]', size: 'sm', status: 'finished', step: '1', theme: 'null', tracks: '[]', units: '[]', value: "''",
     visibleSegments: 'null', visibleSeries: 'null', wrap: 'false', xAxis: '{}', yAxis: '{}', zoomable: 'false',
+    animated: 'true', lines: '3',
 }
 
 const primitiveDefaults: Readonly<Record<string, string | number | boolean | null>> = {
@@ -190,6 +197,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     pressed: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
     seekStep: 10, selectionCount: 0, siblings: 1, size: 'sm', src: '', status: '', step: 1, target: '_self',
     totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', wrap: false, x: 0, y: 0, zoomable: false,
+    animated: true, lines: 3,
 }
 
 const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue>>>> = {
@@ -199,6 +207,7 @@ const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue
     'cb-toggle-button': { variant: 'secondary' },
     'cb-cartesian-chart': { status: 'finished', stacking: false, inverted: false },
     'cb-pie-chart': { status: 'finished', variant: 'pie' },
+    'cb-skeleton': { variant: 'text', rows: 3, columns: 3 },
     'cb-grid': { columns: 'minmax(0, 1fr)', autoFlow: 'row' },
 }
 
@@ -246,6 +255,7 @@ function controlFor(tag: string, property: string): StoryControl['control'] {
     if (property === 'value' && colorValueTags.has(tag)) return 'color'
     if ((property === 'min' || property === 'max') && dateBoundTags.has(tag)) return 'text'
     if (optionsFor(tag, property)) return 'select'
+    if (tag === 'cb-skeleton' && (property === 'rows' || property === 'columns')) return { type: 'number', min: 1, max: 12, step: 1 }
     if (booleanProperties.has(property)) return 'boolean'
     if (numberProperties.has(property)) return numberControl(property)
     if (objectProperties.has(property)) return 'object'
@@ -273,6 +283,10 @@ function typeSummary(tag: string, property: string, control: StoryControl['contr
 function definitionFor(tag: string, property: string): StoryControl {
     const options = property === 'valueFormatter' ? Object.keys(formatterMapping) : optionsFor(tag, property)
     const control = controlFor(tag, property)
+    const taggedDefault = taggedDefaults[tag]?.[property]
+    const defaultSummary = taggedDefault === undefined
+        ? defaultSummaries[property] ?? "''"
+        : typeof taggedDefault === 'string' ? `'${taggedDefault}'` : String(taggedDefault)
     return {
         control,
         ...(options ? { options } : {}),
@@ -281,7 +295,7 @@ function definitionFor(tag: string, property: string): StoryControl {
         table: {
             category: categoryFor(property),
             type: { summary: typeSummary(tag, property, control, options) },
-            defaultValue: { summary: defaultSummaries[property] ?? "''" },
+            defaultValue: { summary: defaultSummary },
         },
     }
 }
