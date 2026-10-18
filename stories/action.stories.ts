@@ -9,6 +9,8 @@ const items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary ite
 
 export const Button: Story = componentStory('cb-button', { label: 'Button', value: 'add-section', variant: 'primary', icon: 'plus', loading: false })
 
+export const IconButton: Story = componentStory('cb-icon-button', { label: 'Settings', accessibleLabel: 'Settings', value: 'settings', variant: 'secondary', icon: 'settings', loading: false })
+
 export const SplitButton: Story = componentStory('cb-split-button', { label: 'Split button', actionValue: 'create', menuLabel: 'More create actions', items, open: false, placement: 'bottom-start', loading: false })
 
 export const ToggleButton: Story = componentStory('cb-toggle-button', { label: 'Toggle button', pressed: true, variant: 'secondary', icon: '' })

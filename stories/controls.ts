@@ -86,6 +86,7 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
 
 const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly ControlOption[]>>>> = {
     'cb-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
+    'cb-icon-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-button-group': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-link': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-toggle-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },

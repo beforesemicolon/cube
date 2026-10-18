@@ -22,6 +22,15 @@ test('built Storybook: Split Button exposes its complete interactive API',async(
     await expect(panel.locator('button[aria-label="add a new item to the \'items\' array"]')).toBeVisible()
 })
 
+test('built Storybook: Icon Button and Flashbar share the action primitive',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=action--icon-button&viewMode=story')
+    await expect(page.locator('cb-icon-button[data-variant=secondary]').getByRole('button',{name:'Settings'})).toBeVisible()
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=feedback--flashbar&viewMode=story')
+    const dismiss=page.locator('cb-flashbar cb-icon-button[part=dismiss]')
+    await expect(dismiss).toHaveAttribute('data-variant','secondary')
+    await expect(dismiss.getByRole('button',{name:'Dismiss'})).toBeVisible()
+})
+
 test('built Storybook: layout panel stories expose working controls',async({page})=>{
     await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--collapsible-sidebar&viewMode=story')
     const sidebar=page.locator('cb-collapsible-sidebar')

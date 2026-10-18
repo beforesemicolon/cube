@@ -56,6 +56,7 @@ export class Flashbar extends FlashbarBase {
             const dismiss = createIconButton('dismiss', 'close', () => this.dismiss(message.id, 'dismiss-button'))
             actionLabel(dismiss, message.dismissLabel)
             dismiss.size = 'xs'
+            dismiss.variant = 'secondary'
             actions.append(dismiss)
         }
         article.append(content, actions)

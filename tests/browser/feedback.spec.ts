@@ -35,3 +35,21 @@ test('skeleton renders visible text, card and table placeholders', async ({ page
     const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
     expect(audit.violations).toEqual([])
 })
+
+test('flashbar composes its dismiss action from the shared icon button', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const flashbar = document.createElement('cb-flashbar') as HTMLElement & {
+            messages: Array<{ id: string; type: string; heading: string; message: string; dismissLabel: string; dismissible: boolean; duration: number }>
+        }
+        flashbar.messages = [{ id: 'saved', type: 'success', heading: 'Saved', message: 'Changes are current.', dismissLabel: 'Dismiss notification', dismissible: true, duration: 0 }]
+        document.querySelector('#fixture')?.append(flashbar)
+    })
+    const flashbar = page.locator('cb-flashbar')
+    const dismiss = flashbar.locator('cb-icon-button[part=dismiss]')
+    await expect(dismiss).toBeVisible()
+    await expect(dismiss).toHaveAttribute('data-variant', 'secondary')
+    await expect(dismiss.getByRole('button', { name: 'Dismiss notification' })).toBeVisible()
+    await dismiss.click()
+    await expect(flashbar.locator('[part=message]')).toHaveCount(0)
+})
