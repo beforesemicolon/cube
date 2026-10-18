@@ -11,6 +11,7 @@ const css = editorCSS + `
 [part~=root]{display:grid;min-inline-size:0;border:1px solid var(--component-table-border,${v('--color-separator')});border-radius:var(--component-table-radius,var(--radius-md));background:var(--component-table-background,${v('--color-surface')});box-shadow:var(--component-table-shadow,none);overflow:hidden}
 [part~=header],[part~=footer]{display:block}:host(:not(:has([slot=header]))) [part~=header],:host(:not(:has([slot=footer]))) [part~=footer]{display:none}
 [part~=viewport]{overflow:auto;max-block-size:var(--component-table-max-height,none);overscroll-behavior:contain;scrollbar-gutter:stable}
+[part~=viewport]:focus-visible{outline:var(--focus-ring);outline-offset:-2px}
 [part~=table]{border-collapse:separate;border-spacing:0;table-layout:fixed;inline-size:100%;min-inline-size:var(--table-resolved-min-width,var(--component-table-min-width,640px));color:${v('--color-foreground')}}
 [part~=caption]{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 [part~=head]{background:var(--component-table-header-background,${v('--color-surface-muted')})}
@@ -98,6 +99,7 @@ export class Table extends TableBase {
         const header = el('header', 'header')
         header.append(slot('header', '', 'header-slot'))
         this.viewport = el('div', 'viewport')
+        this.viewport.tabIndex = 0
         const footer = el('footer', 'footer')
         footer.append(slot('footer', '', 'footer-slot'))
         this.live = el('div', 'live')
@@ -117,6 +119,9 @@ export class Table extends TableBase {
         const left = this.viewport.scrollLeft
         const top = this.viewport.scrollTop
         this.viewport.replaceChildren()
+        const viewportLabel = this.accessibleName()
+        if (viewportLabel) this.viewport.setAttribute('aria-label', viewportLabel)
+        else this.viewport.removeAttribute('aria-label')
         if (bool(this.loading)) this.viewport.append(this.loadingState())
         else if (!this.itemList().length || !this.columnList().length) this.viewport.append(this.emptyState())
         else this.viewport.append(this.createTable())

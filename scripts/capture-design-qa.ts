@@ -53,7 +53,7 @@ const boards: Readonly<Record<string, BoardConfig>> = {
     },
     data: {
         file: '05/Data & feedback.png', width: 3376, height: 7728,
-        components: ['badge','status','avatar','card','list','description-row','property-row','table','tree','accordion','divider','empty-state','skeleton','progress','spinner','toast','alert','validation','banner','stat','code-preview','activity-log'],
+        components: ['badge','status','avatar','card','list','description-row','property-row','table','tree','accordion','expandable-section','divider','empty-state','skeleton','progress','spinner','toast','alert','validation','banner','stat','code-preview','activity-log'],
     },
     overlays: {
         file: '06/Overlays.png', width: 3376, height: 6300,

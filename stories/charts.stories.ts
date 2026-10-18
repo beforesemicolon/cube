@@ -14,7 +14,7 @@ type Story=StoryObj
 const play:Story['play']=async({canvasElement})=>exerciseChart(canvasElement)
 const cartesianArgTypes=controlsFor('cb-cartesian-chart')
 const pieArgTypes=controlsFor('cb-pie-chart')
-function cartesian(args:StoryArgs,interactive=false):Story{return{args:storyArgsFor('cb-cartesian-chart',args),argTypes:cartesianArgTypes,...(interactive?{play}:{})}}
+function cartesian(args:StoryArgs,interactive=false):Story{return{args:storyArgsFor('cb-cartesian-chart',{...chartText,...chartExamples.line.props,...args}),argTypes:cartesianArgTypes,...(interactive?{play}:{})}}
 
 export const Bar:Story=cartesian({...chartExamples.bar.props},true)
 export const Line:Story=cartesian({...chartExamples.line.props},true)
@@ -34,7 +34,7 @@ export const Error:Story=cartesian({status:'error'})
 export const PatternedSeries:Story=cartesian({...chartExamples.mixed.props,patterns:true},true)
 
 const renderPie:NonNullable<Story['render']>=(args,context)=>preview('cb-pie-chart',args,context.globals.appearance)
-function pie(args:StoryArgs,interactive=false):Story{return{args:storyArgsFor('cb-pie-chart',args),argTypes:pieArgTypes,render:renderPie,...(interactive?{play}:{})}}
+function pie(args:StoryArgs,interactive=false):Story{return{args:storyArgsFor('cb-pie-chart',{...chartText,...chartExamples.pie.props,...args}),argTypes:pieArgTypes,render:renderPie,...(interactive?{play}:{})}}
 export const Pie:Story=pie({...chartExamples.pie.props},true)
 export const Donut:Story=pie({...chartExamples.donut.props},true)
 export const AllZero:Story=pie({series:{data:[{id:'a',name:'A',value:0},{id:'b',name:'B',value:0}]}})

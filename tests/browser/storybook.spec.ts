@@ -91,3 +91,29 @@ test('built Storybook: Skeleton has visible loading shapes and complete controls
     const panel=page.getByRole('tabpanel',{name:/Controls/})
     for(const name of ['variant','lines','rows','columns','animated','accessibleLabel']) await expect(panel.getByText(name,{exact:true}).first()).toBeVisible({timeout:20000})
 })
+
+test('built Storybook: chart actions and labeled data table disclosure render',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=charts--zoomable-mixed&viewMode=story')
+    const chart=page.locator('cb-cartesian-chart')
+    await expect(chart.getByRole('button',{name:/^Explore chart/})).toBeVisible({timeout:20000})
+    for(const name of ['Zoom in','Zoom out','Reset zoom']) await expect(chart.getByRole('button',{name,exact:true})).toBeVisible()
+    await expect(chart.getByRole('button',{name:/^View data table/})).toBeVisible()
+    await chart.getByRole('button',{name:/^View data table/}).click()
+    await expect(chart.locator('cb-expandable-section [part~="label"]')).toHaveText('View data table')
+    await expect(chart.locator('cb-table').getByRole('table',{name:'View data table'})).toBeVisible()
+})
+
+test('built Storybook: every chart state has visible output',async({page})=>{
+    for(const [id,message] of [
+        ['loading','Loading chart'],['empty','No data available.'],['no-match','No visible data'],['error','Unable to load chart.'],
+        ['all-zero','No data available.'],['invalid','No data available.'],
+    ] as const){
+        await page.goto(`http://127.0.0.1:6006/iframe.html?id=charts--${id}&viewMode=story`)
+        await expect(page.getByRole('status').first()).toHaveText(message,{timeout:20000})
+    }
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=charts--controlled-filter&viewMode=story')
+    const chart=page.locator('cb-pie-chart')
+    await expect(chart.locator('[part=plot] svg')).toBeVisible({timeout:20000})
+    await expect(chart.getByRole('button',{name:'Show all',exact:true})).toBeVisible()
+    await expect(chart.getByRole('button',{name:/^View data table/})).toBeVisible()
+})

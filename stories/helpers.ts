@@ -67,7 +67,8 @@ function seedPreview(tag: string, node: HTMLElement): void {
     else if (tag === 'cb-docked-panel') node.append(demoSurface('Docked inspector content'))
     else if (tag === 'cb-panel-header') {
         const action = demoButton('Reset', 'ghost'); action.slot = 'actions'; node.append(action)
-    } else if (tag === 'cb-flashbar') Object.assign(node, { messages: [
+    } else if (tag === 'cb-expandable-section') node.append(demoSurface('Expandable section content'))
+    else if (tag === 'cb-flashbar') Object.assign(node, { messages: [
         { id: 'saved', type: 'success', heading: 'Changes saved', message: 'Your project is up to date.', dismissible: true, duration: 0 },
         { id: 'publish', type: 'loading', heading: 'Publishing', message: 'Preparing the latest version.', duration: 0 },
     ] })

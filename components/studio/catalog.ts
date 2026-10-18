@@ -72,6 +72,7 @@ const allStudioDefinitions = [
     { board:'data-feedback', category:'data-display', name:'table', className:'Table', title:'Table', kind:'collection' },
     { board:'data-feedback', category:'data-display', name:'tree', className:'Tree', title:'Tree', kind:'collection' },
     { board:'data-feedback', category:'data-display', name:'accordion', className:'Accordion', title:'Accordion', kind:'panel' },
+    { board:'data-feedback', category:'data-display', name:'expandable-section', className:'ExpandableSection', title:'Expandable section', kind:'panel' },
     { board:'data-feedback', category:'feedback', name:'empty-state', className:'EmptyState', title:'Empty state', kind:'status' },
     { board:'data-feedback', category:'feedback', name:'skeleton', className:'Skeleton', title:'Skeleton', kind:'status' },
     { board:'data-feedback', category:'feedback', name:'progress', className:'Progress', title:'Progress', kind:'progress' },
@@ -416,7 +417,7 @@ const allStudioBoardItems = [
     { board:'collaboration-ai', category:'collaboration', name:'approval', title:'Approval' },
 ] as const satisfies readonly StudioBoardItem[]
 
-export const publicStudioComponentNames: ReadonlySet<string> = new Set(['text-input','textarea','number-input','unit-input','combobox','checkbox','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input','color-picker','color-swatch','eyedropper','gradient-editor','gradient-stops','collapsible-sidebar','resizable-panel','docked-panel','panel-header','badge','avatar','card','list','description-row','table','tree','accordion','code-preview','status','empty-state','skeleton','progress','spinner','toast','alert','banner','popover','drawer','hover-card','bottom-sheet','viewport','artboard','rulers','device-frame','expression','bezier','timeline','presence','remote-cursor','comment-pin','comment-thread'])
+export const publicStudioComponentNames: ReadonlySet<string> = new Set(['text-input','textarea','number-input','unit-input','combobox','checkbox','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input','color-picker','color-swatch','eyedropper','gradient-editor','gradient-stops','collapsible-sidebar','resizable-panel','docked-panel','panel-header','badge','avatar','card','list','description-row','table','tree','accordion','expandable-section','code-preview','status','empty-state','skeleton','progress','spinner','toast','alert','banner','popover','drawer','hover-card','bottom-sheet','viewport','artboard','rulers','device-frame','expression','bezier','timeline','presence','remote-cursor','comment-pin','comment-thread'])
 export const studioDefinitions = allStudioDefinitions.filter(definition => publicStudioComponentNames.has(definition.name))
 export const studioBoardItems = allStudioBoardItems.filter(item => publicStudioComponentNames.has(item.name))
 export const studioDesignReferences = allStudioBoardItems

@@ -29,7 +29,8 @@ test('actual ECharts SVG, keyboard navigation, pinning and legend filtering',asy
     await chart.getByRole('button',{name:'Two',exact:true}).click()
     await expect(chart.locator('[part="status"]')).toContainText('No visible data')
     await chart.getByRole('button',{name:'Show all',exact:true}).click();await expect(chart.locator('[part="plot"] svg')).toBeVisible()
-    await chart.locator('summary').click();await expect(chart.getByRole('table')).toBeVisible()
+    await chart.getByRole('button',{name:/^View data table/}).click()
+    await expect(chart.locator('cb-table').getByRole('table',{name:'View data table'})).toBeVisible()
 })
 test('donut percentages, safe text rendering, theme inheritance and responsive resize',async({page})=>{
     await start(page)

@@ -138,6 +138,16 @@ export const Accordion: Story = componentStory('cb-accordion', {
     emptyLabel: 'No settings available',
 })
 
+export const ExpandableSection: Story = componentStory('cb-expandable-section', {
+    label: 'Data table',
+    description: 'Review the values represented in the visualization.',
+    counter: '5 rows',
+    expanded: false,
+    variant: 'container',
+    headingLevel: 3,
+    disableContentPadding: false,
+})
+
 export const CodePreview: Story = componentStory('cb-code-preview', {
     label: 'JavaScript repository example',
     code: javascriptExample,

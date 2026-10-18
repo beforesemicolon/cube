@@ -29,6 +29,7 @@ export const studioComponentLoaders = {
     'table': () => import('../data-display/table/index.js'),
     'tree': () => import('../data-display/tree/index.js'),
     'accordion': () => import('../data-display/accordion/index.js'),
+    'expandable-section': () => import('../data-display/expandable-section/index.js'),
     'empty-state': () => import('../feedback/empty-state/index.js'),
     'skeleton': () => import('../feedback/skeleton/index.js'),
     'progress': () => import('../feedback/progress/index.js'),

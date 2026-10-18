@@ -33,7 +33,7 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 
 const booleanProperties = new Set([
     'animated', 'autoplay', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'disabled', 'dismissible',
-    'expanded', 'formNoValidate', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
+    'disableContentPadding', 'expanded', 'formNoValidate', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
     'open', 'patterns', 'popupExpanded', 'pressed', 'readOnly', 'required', 'resizable', 'reverse', 'rowActivation',
     'stickyHeader', 'striped', 'wrap', 'zoomable',
 ])
@@ -104,6 +104,7 @@ const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly Contr
     'cb-skeleton': { variant: ['text', 'card', 'table'] },
     'cb-table': { density: ['comfortable', 'compact'], selectionMode: ['none', 'single', 'multiple'], sortDirection: ['asc', 'desc'] },
     'cb-accordion': { variant: ['simple', 'container'] },
+    'cb-expandable-section': { variant: ['default', 'container', 'footer'] },
 }
 
 const numberControls: Readonly<Record<string, NumberControl>> = {
@@ -200,12 +201,14 @@ const descriptions: Readonly<Record<string, string>> = {
     selectionAnnouncement: 'Localized live-region template. Supports {count}.',
     sortAnnouncement: 'Localized live-region template. Supports {column} and {direction}.',
     expansionAnnouncement: 'Localized live-region template. Supports {row} and {state}.',
+    counter: 'Optional count or short status displayed beside the section label.',
+    disableContentPadding: 'Removes the built-in content padding for full-bleed tables and other surfaces.',
 }
 
 const defaultSummaries: Readonly<Record<string, string>> = {
     activation: 'automatic', align: 'stretch', appearance: 'system', autoFlow: 'row', autocomplete: 'list',
     autoplay: 'false', busy: 'false', checked: 'false', closeOnBackdrop: 'true', collapseAt: "''",
-    crossOrigin: "''", decorative: 'false', destructive: 'false', disabled: 'false', dismissible: 'true',
+    crossOrigin: "''", decorative: 'false', destructive: 'false', disabled: 'false', disableContentPadding: 'false', dismissible: 'true',
     expanded: 'false', firstDayOfWeek: '0', height: 'auto', invalid: 'false', items: '[]',
     loading: 'false', loop: 'false', max: '100', maxVisible: '4', messages: '[]', min: '0',
     modalSize: 'md', multi: 'false', multiple: 'false', muted: 'false', native: 'false', open: 'false', options: '[]',
@@ -222,7 +225,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     autoFlow: 'row', autocomplete: 'list', autoplay: false, background: '', blockSize: '', border: '', busy: false,
     cancelLabel: '', checked: false, closeLabel: '', closeOnBackdrop: true, code: '', codeLanguage: 'html', collapsible: false, collapseAt: '', columns: '',
     confirmLabel: '', content: '', copiedLabel: '', copyLabel: '', crossOrigin: '', decorative: false, delay: 0,
-    description: '', destructive: false, disabled: false, dismissible: true, download: '', emptyLabel: '', error: '',
+    description: '', destructive: false, disabled: false, disableContentPadding: false, dismissible: true, download: '', emptyLabel: '', error: '',
     errorText: '', expanded: false, firstDayOfWeek: 0, formNoValidate: false, gap: '', heading: '', height: 320,
     href: '', icon: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
     keys: '', label: '', loading: false, loop: false, margin: '', max: 100, maxBlockSize: '', maxInlineSize: '',
@@ -239,6 +242,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
 
 const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue>>>> = {
     'cb-accordion': { variant: 'simple' },
+    'cb-expandable-section': { variant: 'default' },
     'cb-button': { variant: 'secondary' },
     'cb-button-group': { variant: 'secondary' },
     'cb-link': { variant: 'secondary' },
