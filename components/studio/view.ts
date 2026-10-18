@@ -91,7 +91,7 @@ cb-button[part~=token]{border:0;padding:0;background:transparent}cb-button[part~
 [part~=unit-select]::part(field){display:block;block-size:100%}
 [part~=unit-select]::part(label),[part~=unit-select]::part(description),[part~=unit-select]::part(error),[part~=unit-select]::part(native){display:none}
 [part~=unit-select]::part(trigger){block-size:100%;min-block-size:var(--cb-height);padding-inline:8px;border-inline-start:0;border-start-start-radius:0;border-end-start-radius:0;background:var(--color-surface-muted);color:var(--color-muted-foreground)}
-[part~=unit-select]::part(popup){inset-inline-start:auto;min-inline-size:max(100%,88px)}
+[part~=unit-select]::part(popup){inline-size:max-content;min-inline-size:88px}
 [part~=field-affix][data-side=start]{border-inline:1px solid var(--color-border);border-inline-end:0;border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
 [part~=field-shell][data-prefix] [part~=control]{border-radius:0 var(--radius-sm) var(--radius-sm) 0}
 [part~=suggestions]{margin-block-start:4px}
@@ -370,6 +370,8 @@ export function createStudioView(host: StudioComponentBase): StudioView {
                 unitSelect.accessibleLabel = componentText(host, 'unitLabel')
                 unitSelect.disabled = unitHost.studioDisabled()
                 unitSelect.readOnly = unitHost.studioReadOnly()
+                unitSelect.popupMaxWidth = unitHost.popupMaxWidth
+                unitSelect.popupMaxHeight = unitHost.popupMaxHeight
                 if (visibleUnit && node instanceof HTMLInputElement) node.setAttribute('aria-valuetext', `${node.value} ${visibleUnit}`)
                 else node.removeAttribute('aria-valuetext')
             }

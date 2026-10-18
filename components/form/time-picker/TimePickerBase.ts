@@ -1,9 +1,11 @@
 import { FormFieldBase, type FormFieldProps } from '../FormFieldBase.js'
 import { bool, finite, scalarText } from '../../core/value.js'
-export interface TimePickerProps extends FormFieldProps { value?: string; min?: string; max?: string; step?: number; placeholder?: string; native?: boolean; open?: boolean }
+import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength } from '../../core/popup.js'
+export interface TimePickerProps extends FormFieldProps, PopupConstraintProps { value?: string; min?: string; max?: string; step?: number; placeholder?: string; native?: boolean; open?: boolean }
 export abstract class TimePickerBase<P extends TimePickerProps = TimePickerProps> extends FormFieldBase<P> {
-    static observedAttributes = [...FormFieldBase.observedAttributes, 'value', 'min', 'max', 'step', 'placeholder', 'native', 'open']
+    static observedAttributes = [...FormFieldBase.observedAttributes, 'value', 'min', 'max', 'step', 'placeholder', 'native', 'open', ...popupConstraintAttributes]
     value = ''; min = ''; max = ''; step = 1800; placeholder = ''; native = false; open = false
+    popupMaxWidth: PopupLength = '240px'; popupMaxHeight: PopupLength = '240px'
     protected captureValue(): string { return this.value }
     protected restoreValue(value: string | File | FormData | null): void { this.value = typeof value === 'string' ? value : value instanceof FormData ? scalarText(value.get(this.name)) : '' }
     protected interval(): number { return Math.max(60, Math.trunc(finite(this.step, 1800))) }

@@ -1,11 +1,13 @@
 import { FormFieldBase, type FormFieldProps } from '../FormFieldBase.js'
 import { normalizeOptions, type SelectOption } from '../model.js'
 import { bool,finite,text,scalarText } from '../../core/value.js'
+import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength } from '../../core/popup.js'
 export type SelectSearchMode = 'auto' | boolean
-export interface SelectProps extends FormFieldProps { options?:SelectOption[]; value?:string|string[]; multi?:boolean; placeholder?:string; native?:boolean; open?:boolean; searchable?:SelectSearchMode; searchThreshold?:number; searchLabel?:string; searchPlaceholder?:string; emptyLabel?:string }
+export interface SelectProps extends FormFieldProps, PopupConstraintProps { options?:SelectOption[]; value?:string|string[]; multi?:boolean; placeholder?:string; native?:boolean; open?:boolean; searchable?:SelectSearchMode; searchThreshold?:number; searchLabel?:string; searchPlaceholder?:string; emptyLabel?:string }
 export abstract class SelectBase extends FormFieldBase<SelectProps> {
-    static observedAttributes=[...FormFieldBase.observedAttributes,'options','value','multi','placeholder','native','open','searchable','search-threshold','search-label','search-placeholder','empty-label']
+    static observedAttributes=[...FormFieldBase.observedAttributes,'options','value','multi','placeholder','native','open','searchable','search-threshold','search-label','search-placeholder','empty-label',...popupConstraintAttributes]
     options:SelectOption[]=[];value:string|string[]='';multi=false;placeholder='';native=false;open=false;searchable:SelectSearchMode='auto';searchThreshold=10;searchLabel='';searchPlaceholder='';emptyLabel=''
+    popupMaxWidth: PopupLength = '320px'; popupMaxHeight: PopupLength = '280px'
     get normalizedOptions(){return normalizeOptions(this.options)}
     get selection():string[]{const values=(Array.isArray(this.value)?this.value:[this.value]).map(v=>scalarText(v));const selected=values.filter(v=>this.normalizedOptions.some(o=>o.value===v));return bool(this.multi)?selected:selected.slice(0,1)}
     get searchEnabled():boolean{return this.searchable===true||(this.searchable==='auto'&&this.normalizedOptions.length>Math.max(0,finite(this.searchThreshold,10)))}

@@ -40,6 +40,7 @@
     "categoryAction": "Action",
     "categoryForm": "Form",
     "formNative": "Select, DatePicker and TimePicker use consistent Cube rendering by default. Add the native flag only when the host browser’s native picker is preferred. Combobox provides both list and autocomplete behavior through its autocomplete property, and Calendar is available as a standalone component.",
+    "popupConstraintsBody": "Anchored menus and pickers size themselves to their content and stay within the viewport. Use popupMaxWidth and popupMaxHeight with a CSS length or a numeric pixel value to override the defaults; constrained content scrolls inside the popup.",
     "unitInputBody": "UnitInput accepts a current unit and a units collection. A single unit is rendered as a static suffix; multiple units become a keyboard-accessible selector. Unit changes emit cb-unit-change without changing the numeric value.",
     "selectBody": "Select handles both single and multiple selection through the multi flag. Search can be enabled, disabled, or left on auto; auto displays the filter when the option count exceeds searchThreshold, which defaults to 10.",
     "formCompositionBody": "Field supplies reusable label, help, details, and validation anatomy. EditableList owns accessible add, rename, reorder, and remove behavior. CodeEditor and JsonEditor provide syntax-aware editing, while LinkedValues coordinates proportional numeric fields. Applications provide all visible and accessible copy.",

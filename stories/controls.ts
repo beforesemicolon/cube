@@ -57,7 +57,7 @@ const stateProperties = new Set([
 
 const layoutProperties = new Set([
     'align', 'alignContent', 'alignItems', 'alignSelf', 'area', 'autoColumns', 'autoCols', 'autoFlow', 'autoRows', 'background', 'bg', 'blockSize', 'border', 'collapseAt', 'columnGap', 'columns', 'gap', 'height', 'inline', 'inlineSize',
-    'justify', 'justifyContent', 'margin', 'maxBlockSize', 'maxHeight', 'maxInlineSize', 'maxWidth', 'minBlockSize', 'minHeight', 'minInlineSize', 'minWidth', 'orientation',
+    'justify', 'justifyContent', 'margin', 'maxBlockSize', 'maxHeight', 'maxInlineSize', 'maxWidth', 'minBlockSize', 'minHeight', 'minInlineSize', 'minWidth', 'orientation', 'popupMaxHeight', 'popupMaxWidth',
     'overflow', 'padding', 'radius', 'reverse', 'rowGap', 'rows', 'shadow', 'size', 'template', 'templateAreas', 'templateColumns', 'templateCols', 'templateRows', 'variant', 'width', 'wrap',
 ])
 
@@ -199,6 +199,8 @@ const descriptions: Readonly<Record<string, string>> = {
     allowAlpha: 'Enables transparency editing and eight-digit HEX values.',
     allowSampler: 'Shows the screen color sampler when the browser supports it.',
     native: 'Uses the browser-native control instead of the themed Cube renderer.',
+    popupMaxWidth: 'Maximum popup width as a CSS length, or a number interpreted as pixels. The viewport remains the final boundary.',
+    popupMaxHeight: 'Maximum popup height as a CSS length, or a number interpreted as pixels. Overflow scrolls within the popup.',
     pressed: 'When defined, gives the button persistent toggle state and exposes aria-pressed. Leave undefined for a normal action button.',
     recentColors: 'Controlled list of colors most recently committed in the picker.',
     open: 'Controls whether the popup or overlay is open.',
@@ -360,12 +362,21 @@ const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue
     'cb-presence': { maxVisible: 2 },
     'cb-button': { variant: 'secondary' },
     'cb-button-group': { variant: 'secondary' },
+    'cb-split-button': { popupMaxWidth: '320px', popupMaxHeight: '360px' },
     'cb-link': { variant: 'secondary' },
     'cb-cartesian-chart': { status: 'finished', stacking: false, inverted: false },
     'cb-pie-chart': { status: 'finished', variant: 'pie' },
     'cb-skeleton': { variant: 'text', rows: 3, columns: 3 },
     'cb-grid': { columns: 'minmax(0, 1fr)', autoFlow: 'row', variant: '' },
-    'cb-select': { searchable: 'auto' },
+    'cb-select': { searchable: 'auto', popupMaxWidth: '320px', popupMaxHeight: '280px' },
+    'cb-unit-input': { popupMaxWidth: '160px', popupMaxHeight: '240px' },
+    'cb-combobox': { popupMaxWidth: '360px', popupMaxHeight: '240px' },
+    'cb-date-picker': { popupMaxWidth: '360px', popupMaxHeight: '440px' },
+    'cb-time-picker': { popupMaxWidth: '240px', popupMaxHeight: '240px' },
+    'cb-dropdown': { popupMaxWidth: '320px', popupMaxHeight: '360px' },
+    'cb-popover': { popupMaxWidth: '360px', popupMaxHeight: '480px' },
+    'cb-hover-card': { popupMaxWidth: '360px', popupMaxHeight: '480px' },
+    'cb-color-picker': { popupMaxWidth: '344px', popupMaxHeight: '640px' },
     'cb-code-editor': { language: 'plaintext', lineNumbers: true, wrap: false, tabSize: 2, minLines: 8, maxLines: 32 },
     'cb-json-editor': { indent: 2, lineNumbers: true, wrap: false },
     'cb-editable-list': { minItems: 0, maxItems: 8, allowReorder: true },
@@ -455,6 +466,7 @@ function typeSummary(tag: string, property: string, control: StoryControl['contr
     if (property === 'targets') return 'MarqueeTarget[]'
     if (property === 'rect') return 'EditorRect'
     if (property === 'handleLabels') return 'Partial<Record<SelectionHandle, string>>'
+    if (property === 'popupMaxWidth' || property === 'popupMaxHeight') return 'string | number'
     if (property === 'xAxis' || property === 'yAxis') return 'Axis | Axis[]'
     if (property === 'visibleSeries' || property === 'visibleSegments') return 'string[] | null'
     if (options) return options.map(option => typeof option === 'string' ? `'${option}'` : String(option)).join(' | ')

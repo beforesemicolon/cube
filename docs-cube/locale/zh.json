@@ -40,6 +40,7 @@
     "categoryAction": "操作",
     "categoryForm": "表单",
     "formNative": "Select、DatePicker 和 TimePicker 默认使用一致的 Cube 渲染。仅在希望使用浏览器原生选择器时添加 native 标志。Combobox 通过 autocomplete 属性同时提供列表和自动补全行为，Calendar 也可作为独立组件使用。",
+    "popupConstraintsBody": "锚定菜单和选择器会根据内容调整大小，并保持在视口范围内。可使用 popupMaxWidth 和 popupMaxHeight，通过 CSS 长度或以像素为单位的数值覆盖默认限制；受限内容会在弹出层内滚动。",
     "unitInputBody": "UnitInput 接受当前 unit 和 units 集合。单个单位显示为静态后缀；多个单位则显示为支持键盘操作的选择器。单位变化会触发 cb-unit-change，且不会修改数值。",
     "selectBody": "Select 通过 multi 标志同时支持单选和多选。搜索可以开启、关闭或设为 auto；当选项数量超过 searchThreshold 时，auto 会显示筛选框，默认阈值为 10。",
     "formCompositionBody": "Field 提供可复用的标签、帮助、详情与验证结构。EditableList 负责无障碍的添加、重命名、排序和删除。CodeEditor 与 JsonEditor 提供语法感知编辑，LinkedValues 用于协调成比例的数值字段。所有可见文本和无障碍文本均由应用提供。",

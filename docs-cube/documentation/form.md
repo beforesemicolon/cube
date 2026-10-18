@@ -12,6 +12,8 @@ order: 21
 
 {{t.cube.formNative}}
 
+{{t.cube.popupConstraintsBody}}
+
 :::cube studio-form
 :::
 

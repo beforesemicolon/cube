@@ -17,7 +17,7 @@ export class Dropdown extends DropdownBase {
         this.popup = el('div', 'popup'); this.popup.hidden = true
         this.menu = document.createElement('cb-menu') as Menu; this.menu.setAttribute('part', 'menu'); this.menu.addEventListener('cb-action', event => { this.emit('cb-action', (event as CustomEvent).detail); this.setOpen(false) })
         this.popup.append(this.menu)
-        return fragment(sheet(editorCSS + `:host{display:inline-block}[part=popup]{z-index:var(--z-index-dropdown,40);padding:0;border:0;background:transparent;overflow:visible}`), this.trigger, this.popup)
+        return fragment(sheet(editorCSS + `:host{display:inline-block}[part=popup]{z-index:var(--z-index-dropdown,40);inline-size:max-content;box-sizing:border-box;max-inline-size:100%;padding:0;border:0;background:transparent;overflow:auto}`), this.trigger, this.popup)
     }
     protected triggerElement(): HTMLElement | undefined { return this.trigger }
     protected popupElement(): HTMLElement | undefined { return this.popup }

@@ -21,11 +21,15 @@ export class Popover extends PopoverBase {
         this.triggerSlot.addEventListener('slotchange', () => this.syncTrigger())
         return fragment(sheet(editorCSS + `
 :host{display:inline-flex;position:relative}[part~=anchor]{display:inline-flex}
-[part~=popover]{z-index:var(--z-index-popover,50);inline-size:var(--component-popover-width,max-content);max-inline-size:min(360px,calc(100vw - 16px));padding:var(--spacing-md,12px);border:1px solid var(--color-separator);border-radius:var(--radius-md);background:var(--color-surface-raised,var(--color-surface));color:var(--color-foreground);box-shadow:var(--component-popover-shadow,0 12px 32px color-mix(in srgb,var(--color-foreground) 18%,transparent))}
+[part~=popover]{z-index:var(--z-index-popover,50);inline-size:var(--component-popover-width,max-content);box-sizing:border-box;overflow:auto;padding:var(--spacing-md,12px);border:1px solid var(--color-separator);border-radius:var(--radius-md);background:var(--color-surface-raised,var(--color-surface));color:var(--color-foreground);box-shadow:var(--component-popover-shadow,0 12px 32px color-mix(in srgb,var(--color-foreground) 18%,transparent))}
 `), this.anchor, this.panel)
     }
     protected mount(): void {
-        if (this.panel && this.anchor) this.popup = new PopupController(this.panel, this.anchor, () => this.close(), () => this.validPlacement())
+        if (this.panel && this.anchor) this.popup = new PopupController(this.panel, this.anchor, () => this.close(), {
+            placement: () => this.validPlacement(),
+            maxWidth: () => this.popupMaxWidth,
+            maxHeight: () => this.popupMaxHeight,
+        })
         super.mount()
     }
     protected unmount(): void { this.popup?.dispose(); this.popup = undefined }

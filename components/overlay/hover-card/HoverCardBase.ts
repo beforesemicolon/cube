@@ -1,15 +1,17 @@
 import { Component, type CommonProps } from '../../core/Component.js'
 import { bool, finite } from '../../core/value.js'
-import type { PopupPlacement } from '../../core/popup.js'
+import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength, type PopupPlacement } from '../../core/popup.js'
 
-export interface HoverCardProps extends CommonProps { open?: boolean; placement?: PopupPlacement; delay?: number }
+export interface HoverCardProps extends CommonProps, PopupConstraintProps { open?: boolean; placement?: PopupPlacement; delay?: number }
 
 /** Hover/focus intent and dismissal behavior without prescribing card content. */
 export abstract class HoverCardBase<P extends HoverCardProps = HoverCardProps> extends Component<P> {
-    static observedAttributes = [...Component.observedAttributes, 'open', 'placement', 'delay']
+    static observedAttributes = [...Component.observedAttributes, 'open', 'placement', 'delay', ...popupConstraintAttributes]
     open = false
     placement: PopupPlacement = 'bottom-start'
     delay = 250
+    popupMaxWidth: PopupLength = '360px'
+    popupMaxHeight: PopupLength = '480px'
     private timer?: number
     protected isOpen(): boolean { return this.hasAttribute('open') || bool(this.open) }
     protected abstract syncView(): void

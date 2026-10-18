@@ -1,10 +1,11 @@
 import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
 import type { StudioKind, StudioProps } from '../../studio/types.js'
 import { normalizeOptions, type SelectOption } from '../model.js'
+import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength } from '../../core/popup.js'
 
 export type UnitOption = string | SelectOption
 
-export interface UnitInputProps extends StudioProps {
+export interface UnitInputProps extends StudioProps, PopupConstraintProps {
     unit?: string
     units?: readonly UnitOption[]
     unitLabel?: string
@@ -12,10 +13,12 @@ export interface UnitInputProps extends StudioProps {
 
 /** Headless behavior for the Unit input component. */
 export abstract class UnitInputBase extends StudioComponentBase<UnitInputProps> {
-    static observedAttributes = [...StudioComponentBase.observedAttributes, 'unit', 'units', 'unit-label']
+    static observedAttributes = [...StudioComponentBase.observedAttributes, 'unit', 'units', 'unit-label', ...popupConstraintAttributes]
     unit = ''
     units: readonly UnitOption[] = []
     unitLabel = ''
+    popupMaxWidth: PopupLength = '160px'
+    popupMaxHeight: PopupLength = '240px'
     readonly componentName = 'unit-input'
     readonly componentKind: StudioKind = 'number'
 

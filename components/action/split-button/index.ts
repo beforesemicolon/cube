@@ -29,7 +29,7 @@ export class SplitButton extends SplitButtonBase {
 [part=primary]{--component-button-radius-start-end:0;--component-button-radius-end-end:0}
 [part=trigger]{position:relative;margin-inline-start:-1px;--component-button-radius-start-start:0;--component-button-radius-end-start:0}
 [part=primary]:focus-within,[part=trigger]:focus-within{z-index:1}
-[part=popup]{z-index:var(--z-index-dropdown,40);padding:0;border:0;background:transparent;overflow:visible}
+[part=popup]{z-index:var(--z-index-dropdown,40);inline-size:max-content;box-sizing:border-box;max-inline-size:100%;padding:0;border:0;background:transparent;overflow:auto}
 `), this.group, this.popup)
     }
     protected triggerElement(): HTMLElement | undefined { return this.trigger }

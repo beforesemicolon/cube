@@ -1,8 +1,9 @@
 import { FormFieldBase, type FormFieldProps } from '../FormFieldBase.js'
 import { normalizeOptions, type SelectOption } from '../model.js'
 import { scalarText } from '../../core/value.js'
+import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength } from '../../core/popup.js'
 
-export interface ComboboxProps extends FormFieldProps {
+export interface ComboboxProps extends FormFieldProps, PopupConstraintProps {
     options?: SelectOption[]
     value?: string
     placeholder?: string
@@ -13,7 +14,7 @@ export interface ComboboxProps extends FormFieldProps {
 }
 
 export abstract class ComboboxBase<P extends ComboboxProps = ComboboxProps> extends FormFieldBase<P> {
-    static observedAttributes = [...FormFieldBase.observedAttributes, 'options', 'value', 'placeholder', 'toggle-label', 'empty-label', 'open', 'autocomplete']
+    static observedAttributes = [...FormFieldBase.observedAttributes, 'options', 'value', 'placeholder', 'toggle-label', 'empty-label', 'open', 'autocomplete', ...popupConstraintAttributes]
     options: SelectOption[] = []
     value = ''
     placeholder = ''
@@ -21,6 +22,8 @@ export abstract class ComboboxBase<P extends ComboboxProps = ComboboxProps> exte
     emptyLabel = ''
     open = false
     autocomplete: ComboboxProps['autocomplete'] = 'list'
+    popupMaxWidth: PopupLength = '360px'
+    popupMaxHeight: PopupLength = '240px'
     get normalizedOptions() { return normalizeOptions(this.options) }
     protected filteredOptions() {
         const query = scalarText(this.value).trim().toLocaleLowerCase()

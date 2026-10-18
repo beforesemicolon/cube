@@ -9,11 +9,11 @@ const css = editorCSS + `
 :host{display:inline-block;inline-size:var(--component-select-width,240px)}[part~=field]{position:relative;display:grid;gap:var(--spacing-xs,4px)}
 [part~=trigger]{display:flex;align-items:center;justify-content:space-between;gap:8px;inline-size:100%;text-align:start}[part~=value][data-placeholder]{color:var(--color-muted-foreground)}
 [part~=value]{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-[part~=popup]{z-index:var(--z-index-dropdown,1000);display:grid;gap:4px;max-block-size:280px;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
+    [part~=popup]{z-index:var(--z-index-dropdown,1000);display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:4px;inline-size:max-content;box-sizing:border-box;overflow:hidden;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
 [part~=search-wrap]{display:flex;padding:2px}
 [part~=search]{inline-size:100%;min-block-size:var(--cb-height);padding-inline:10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);color:var(--color-foreground);font:inherit}
 [part~=search]:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset)}
-[part~=listbox]{display:grid;gap:2px;max-block-size:220px;overflow:auto}
+    [part~=listbox]{display:grid;gap:2px;min-block-size:0;max-block-size:220px;overflow:auto}
 [part~=option]{display:flex;align-items:center;justify-content:space-between;inline-size:100%;border-color:transparent;background:transparent;text-align:start}[part~=option][aria-selected=true]{background:var(--color-selection);color:var(--color-signal-text)}
 [part~=empty]{padding:10px;color:var(--color-muted-foreground);text-align:center}
 [part~=native]{inline-size:100%;appearance:auto;color-scheme:inherit}
@@ -66,7 +66,12 @@ export class Select extends SelectBase {
 
     protected mount(): void {
         if (this.popup && this.trigger) {
-            this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false), () => 'bottom-start', true)
+            this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false), {
+                placement: () => 'bottom-start',
+                matchAnchorWidth: true,
+                maxWidth: () => this.popupMaxWidth,
+                maxHeight: () => this.popupMaxHeight,
+            })
             this.cleanup(() => this.popupController?.dispose())
         }
         super.mount()

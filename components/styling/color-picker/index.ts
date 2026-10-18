@@ -17,7 +17,7 @@ const css = editorCSS + `
 [part~=trigger-swatch]{display:block;inline-size:100%;block-size:100%;border-radius:calc(var(--component-color-picker-radius,var(--radius-sm)) - 3px);background:var(--cb-selected-color)}
 [part~=native]{appearance:auto;color-scheme:inherit;cursor:pointer}
 [part~=native]::-webkit-color-swatch-wrapper{padding:0}[part~=native]::-webkit-color-swatch{border:0;border-radius:calc(var(--component-color-picker-radius,var(--radius-sm)) - 3px)}
-[part~=popup]{z-index:var(--z-index-popover,1000);display:grid;gap:var(--spacing-md,12px);inline-size:var(--component-color-picker-popup-width,344px);max-inline-size:calc(100vw - 16px);max-block-size:calc(100vh - 16px);padding:var(--spacing-md,12px);overflow:auto;border:1px solid ${v('--color-border')};border-radius:var(--radius-lg,12px);background:${v('--color-surface-raised')};color:${v('--color-foreground')};box-shadow:var(--shadow-lg,0 18px 50px color-mix(in srgb,${v('--color-foreground')} 22%,transparent))}
+    [part~=popup]{z-index:var(--z-index-popover,1000);display:grid;gap:var(--spacing-md,12px);inline-size:var(--component-color-picker-popup-width,344px);box-sizing:border-box;padding:var(--spacing-md,12px);overflow:auto;border:1px solid ${v('--color-border')};border-radius:var(--radius-lg,12px);background:${v('--color-surface-raised')};color:${v('--color-foreground')};box-shadow:var(--shadow-lg,0 18px 50px color-mix(in srgb,${v('--color-foreground')} 22%,transparent))}
 [part~=toolbar]{display:grid;grid-template-columns:32px minmax(0,1fr) auto auto;align-items:end;gap:var(--spacing-sm,8px)}
 [part~=preview],[part~=swatch-preview]{position:relative;overflow:hidden;background:conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0) 0 0/8px 8px}
 [part~=preview]{inline-size:32px;block-size:32px;border:1px solid ${v('--color-border')};border-radius:var(--radius-sm)}
@@ -143,7 +143,10 @@ export class ColorPicker extends ColorPickerBase {
     }
 
     protected mount(): void {
-        if (this.popup && this.trigger) this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false))
+        if (this.popup && this.trigger) this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false), {
+            maxWidth: () => this.popupMaxWidth,
+            maxHeight: () => this.popupMaxHeight,
+        })
         super.mount()
     }
 

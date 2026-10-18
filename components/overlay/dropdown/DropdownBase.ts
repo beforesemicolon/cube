@@ -1,17 +1,19 @@
 import { UIComponent, type UIProps } from '../../core/UIComponent.js'
 import type { ActionItem } from '../../core/items.js'
-import { PopupController, type PopupPlacement } from '../../core/popup.js'
+import { PopupController, popupConstraintAttributes, type PopupConstraintProps, type PopupLength, type PopupPlacement } from '../../core/popup.js'
 import { bool } from '../../core/value.js'
 
-export interface DropdownProps extends UIProps { items?: ActionItem[]; open?: boolean; placement?: PopupPlacement; icon?: string }
+export interface DropdownProps extends UIProps, PopupConstraintProps { items?: ActionItem[]; open?: boolean; placement?: PopupPlacement; icon?: string }
 
 /** Trigger, popup positioning and open-state behavior without choosing either renderer. */
 export abstract class DropdownBase<P extends DropdownProps = DropdownProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'items', 'open', 'placement', 'icon']
+    static observedAttributes = [...UIComponent.observedAttributes, 'items', 'open', 'placement', 'icon', ...popupConstraintAttributes]
     items: ActionItem[] = []
     open = false
     placement: PopupPlacement = 'bottom-start'
     icon = ''
+    popupMaxWidth: PopupLength = '320px'
+    popupMaxHeight: PopupLength = '360px'
     private popupController?: PopupController
     protected abstract triggerElement(): HTMLElement | undefined
     protected abstract popupElement(): HTMLElement | undefined
@@ -19,7 +21,11 @@ export abstract class DropdownBase<P extends DropdownProps = DropdownProps> exte
     protected mount(): void {
         const trigger = this.triggerElement(), popup = this.popupElement()
         if (trigger && popup) {
-            this.popupController = new PopupController(popup, trigger, () => this.setOpen(false), () => this.placement)
+            this.popupController = new PopupController(popup, trigger, () => this.setOpen(false), {
+                placement: () => this.placement,
+                maxWidth: () => this.popupMaxWidth,
+                maxHeight: () => this.popupMaxHeight,
+            })
             this.cleanup(() => this.popupController?.dispose())
         }
         super.mount()

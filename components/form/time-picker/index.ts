@@ -9,7 +9,7 @@ const css = editorCSS + `
 :host{display:inline-block;inline-size:var(--component-time-picker-width,220px)}
 [part~=field]{position:relative;display:grid;gap:var(--spacing-xs,4px)}
 [part~=trigger]{display:flex;align-items:center;justify-content:space-between;inline-size:100%;text-align:start}
-[part~=popup]{z-index:var(--z-index-dropdown,1000);max-block-size:240px;overflow:auto;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
+[part~=popup]{z-index:var(--z-index-dropdown,1000);inline-size:max-content;box-sizing:border-box;overflow:auto;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
 [part~=option]{inline-size:100%;border-color:transparent;background:transparent;text-align:start}
 [part~=option][aria-selected=true]{background:var(--color-selection);color:var(--color-signal-text)}
 [part~=native]{inline-size:100%;color-scheme:inherit}
@@ -54,7 +54,12 @@ export class TimePicker extends TimePickerBase {
 
     protected mount(): void {
         if (this.popup && this.trigger) {
-            this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false), () => 'bottom-start', true)
+            this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false), {
+                placement: () => 'bottom-start',
+                matchAnchorWidth: true,
+                maxWidth: () => this.popupMaxWidth,
+                maxHeight: () => this.popupMaxHeight,
+            })
             this.cleanup(() => this.popupController?.dispose())
         }
         super.mount()
@@ -113,7 +118,11 @@ export class TimePicker extends TimePickerBase {
 
     private syncPopup(): void {
         if (!this.popup) return
-        if (bool(this.native) || !bool(this.open)) this.popupController?.hide(); else this.popupController?.show()
+        if (bool(this.native) || !bool(this.open)) this.popupController?.hide()
+        else {
+            this.popupController?.show()
+            this.popup.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({ block: 'center' })
+        }
         if (!this.popupController) this.popup.hidden = bool(this.native) || !bool(this.open)
     }
 

@@ -21,11 +21,15 @@ export class HoverCard extends HoverCardBase {
         this.anchor.addEventListener('focusout', () => this.schedule(false))
         return fragment(sheet(editorCSS + `
 :host{display:inline-flex;position:relative}[part~=anchor]{display:inline-flex}
-[part~=card]{z-index:var(--z-index-popover,50);inline-size:var(--component-hover-card-width,300px);max-inline-size:calc(100vw - 16px);padding:var(--spacing-md,12px);border:1px solid var(--color-separator);border-radius:var(--radius-md);background:var(--color-surface-raised,var(--color-surface));color:var(--color-foreground);box-shadow:0 12px 32px color-mix(in srgb,var(--color-foreground) 18%,transparent)}
+[part~=card]{z-index:var(--z-index-popover,50);inline-size:var(--component-hover-card-width,300px);box-sizing:border-box;overflow:auto;padding:var(--spacing-md,12px);border:1px solid var(--color-separator);border-radius:var(--radius-md);background:var(--color-surface-raised,var(--color-surface));color:var(--color-foreground);box-shadow:0 12px 32px color-mix(in srgb,var(--color-foreground) 18%,transparent)}
 `), this.anchor, this.card)
     }
     protected mount(): void {
-        if (this.card && this.anchor) this.popup = new PopupController(this.card, this.anchor, () => this.setOpen(false), () => this.validPlacement())
+        if (this.card && this.anchor) this.popup = new PopupController(this.card, this.anchor, () => this.setOpen(false), {
+            placement: () => this.validPlacement(),
+            maxWidth: () => this.popupMaxWidth,
+            maxHeight: () => this.popupMaxHeight,
+        })
         super.mount()
     }
     protected unmount(): void { super.unmount(); this.popup?.dispose(); this.popup = undefined }

@@ -10,7 +10,7 @@ import { ComboboxBase } from './ComboboxBase.js'
 const css = editorCSS + `
 :host{display:inline-block;inline-size:var(--component-combobox-width,280px)}[part~=field]{position:relative;display:grid;gap:var(--spacing-xs,4px)}[part~=input-shell]{display:flex;align-items:center;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface-muted)}
 [part~=input]{inline-size:100%;border:0;background:transparent;outline:0}[part~=toggle]{align-self:stretch}[part~=toggle]::part(toggle-control){block-size:100%;border-radius:0 var(--radius-sm) var(--radius-sm) 0}
-[part~=popup]{z-index:var(--z-index-dropdown,1000);max-block-size:240px;overflow:auto;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
+    [part~=popup]{z-index:var(--z-index-dropdown,1000);inline-size:max-content;box-sizing:border-box;overflow:auto;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
 [part~=option]{display:flex;inline-size:100%;border-color:transparent;background:transparent;text-align:start}[part~=option][aria-selected=true]{background:var(--color-selection)}[part~=empty]{display:block;padding:10px;color:var(--color-muted-foreground)}
 `
 
@@ -39,7 +39,12 @@ export class Combobox extends ComboboxBase {
     }
     protected mount(): void {
         if (this.popup && this.inputShell) {
-            this.popupController = new PopupController(this.popup, this.inputShell, () => this.setOpen(false), () => 'bottom-start', true)
+            this.popupController = new PopupController(this.popup, this.inputShell, () => this.setOpen(false), {
+                placement: () => 'bottom-start',
+                matchAnchorWidth: true,
+                maxWidth: () => this.popupMaxWidth,
+                maxHeight: () => this.popupMaxHeight,
+            })
             this.cleanup(() => this.popupController?.dispose())
         }
         super.mount()

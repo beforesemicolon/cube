@@ -1,8 +1,9 @@
 import { bool, finite } from '../../core/value.js'
 import { FormFieldBase, type FormFieldProps } from '../../form/FormFieldBase.js'
 import { colorToHex, normalizeColor, parseHexColor, type HSVAColor } from './color.js'
+import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength } from '../../core/popup.js'
 
-export interface ColorPickerProps extends FormFieldProps {
+export interface ColorPickerProps extends FormFieldProps, PopupConstraintProps {
     value?: string
     native?: boolean
     open?: boolean
@@ -38,6 +39,7 @@ export abstract class ColorPickerBase extends FormFieldBase<ColorPickerProps> {
         ...FormFieldBase.observedAttributes, 'value', 'native', 'open', 'allow-alpha', 'allow-sampler', 'swatches',
         'recent-colors', 'max-recent', 'hue-label', 'saturation-label', 'value-label', 'alpha-label', 'red-label',
         'green-label', 'blue-label', 'hex-label', 'plane-label', 'sampler-label', 'close-label', 'swatches-label', 'transparent-label',
+        ...popupConstraintAttributes,
     ]
 
     value = '#000000'
@@ -61,6 +63,8 @@ export abstract class ColorPickerBase extends FormFieldBase<ColorPickerProps> {
     closeLabel = ''
     swatchesLabel = ''
     transparentLabel = ''
+    popupMaxWidth: PopupLength = '344px'
+    popupMaxHeight: PopupLength = '640px'
 
     protected captureValue(): string { return this.normalizedValue() }
     protected restoreValue(value: string | File | FormData | null): void {

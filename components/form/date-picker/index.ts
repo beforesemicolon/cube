@@ -7,7 +7,7 @@ import { PopupController } from '../../core/popup.js'
 import { DatePickerBase } from './DatePickerBase.js'
 import type { Calendar } from '../calendar/index.js'
 
-const css = editorCSS + `:host{display:inline-block;inline-size:var(--component-date-picker-width,240px)}[part~=field]{position:relative;display:grid;gap:var(--spacing-xs,4px)}[part~=trigger]{display:flex;align-items:center;justify-content:space-between;inline-size:100%;text-align:start}[part~=popup]{z-index:var(--z-index-dropdown,1000);padding:0;border:0;background:transparent;color:var(--color-foreground)}[part~=native]{inline-size:100%;color-scheme:inherit}`
+const css = editorCSS + `:host{display:inline-block;inline-size:var(--component-date-picker-width,240px)}[part~=field]{position:relative;display:grid;gap:var(--spacing-xs,4px)}[part~=trigger]{display:flex;align-items:center;justify-content:space-between;inline-size:100%;text-align:start}[part~=popup]{z-index:var(--z-index-dropdown,1000);inline-size:max-content;box-sizing:border-box;overflow:auto;padding:0;border:0;background:transparent;color:var(--color-foreground)}[part~=native]{inline-size:100%;color-scheme:inherit}`
 export class DatePicker extends DatePickerBase {
     private nativeControl?: HTMLInputElement; private trigger?: HTMLButtonElement; private valueNode?: HTMLElement; private popup?: HTMLElement; private popupController?: PopupController; private calendar?: Calendar; private labelNode?: HTMLLabelElement; private descriptionNode?: HTMLElement; private errorNode?: HTMLElement
     render(): Node {
@@ -22,7 +22,11 @@ export class DatePicker extends DatePickerBase {
     }
     protected mount(): void {
         if (this.popup && this.trigger) {
-            this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false), () => 'bottom-start')
+            this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false), {
+                placement: () => 'bottom-start',
+                maxWidth: () => this.popupMaxWidth,
+                maxHeight: () => this.popupMaxHeight,
+            })
             this.cleanup(() => this.popupController?.dispose())
         }
         super.mount()

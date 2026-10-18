@@ -148,6 +148,12 @@ test('unit input offers configurable units without changing its numeric value', 
     await trigger.focus()
     await trigger.press('ArrowDown')
     await expect(unitSelect.getByRole('option', { name: 'px' })).toBeFocused()
+    const defaultPopupSize = await unitSelect.locator('[part~="popup"]').evaluate(popup => {
+        const rect = popup.getBoundingClientRect()
+        return { width: rect.width, height: rect.height }
+    })
+    expect(defaultPopupSize.width).toBeLessThanOrEqual(160.5)
+    expect(defaultPopupSize.height).toBeLessThanOrEqual(240.5)
     await page.keyboard.press('ArrowDown')
     await expect(unitSelect.getByRole('option', { name: 'percent' })).toBeFocused()
     await page.keyboard.press('Enter')
@@ -164,6 +170,22 @@ test('unit input offers configurable units without changing its numeric value', 
         component.chooseUnit('px')
     }))
     expect(event).toEqual({ unit: 'px', value: 320 })
+
+    await input.evaluate(element => {
+        const component = element as HTMLElement & { popupMaxWidth: string; popupMaxHeight: string }
+        component.popupMaxWidth = '104px'
+        component.popupMaxHeight = '72px'
+    })
+    await trigger.click()
+    const constrainedPopupSize = await unitSelect.locator('[part~="popup"]').evaluate(popup => {
+        const rect = popup.getBoundingClientRect()
+        const listbox = popup.querySelector<HTMLElement>('[part~="listbox"]')
+        return { width: rect.width, height: rect.height, scrollHeight: listbox?.scrollHeight ?? 0, clientHeight: listbox?.clientHeight ?? 0 }
+    })
+    expect(constrainedPopupSize.width).toBeLessThanOrEqual(104.5)
+    expect(constrainedPopupSize.height).toBeLessThanOrEqual(72.5)
+    expect(constrainedPopupSize.scrollHeight).toBeGreaterThan(constrainedPopupSize.clientHeight)
+    await trigger.press('Escape')
 
     const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
     expect(audit.violations).toEqual([])
@@ -253,7 +275,7 @@ test('calendar and custom date and time pickers support keyboard-ready themed po
         calendar.label = 'Publishing calendar'; calendar.value = '2026-10-18'; calendar.firstDayOfWeek = 1; calendar.previousLabel = 'Previous month'; calendar.nextLabel = 'Next month'
         const date = document.createElement('cb-date-picker') as HTMLElement & { label: string; value: string; previousLabel: string; nextLabel: string }
         date.label = 'Publish date'; date.value = '2026-10-18'; date.previousLabel = 'Previous month'; date.nextLabel = 'Next month'
-        const time = document.createElement('cb-time-picker') as HTMLElement & { label: string; value: string; min: string; max: string }
+        const time = document.createElement('cb-time-picker') as HTMLElement & { label: string; value: string; min: string; max: string; popupMaxWidth: string; popupMaxHeight: string }
         time.label = 'Publish time'; time.value = '09:30'; time.min = '08:00'; time.max = '12:00'
         document.querySelector('#fixture')?.append(calendar, date, time)
     })
@@ -279,8 +301,28 @@ test('calendar and custom date and time pickers support keyboard-ready themed po
     await timeTrigger.focus()
     await timeTrigger.press('ArrowDown')
     await expect(page.locator('cb-time-picker').getByRole('option', { name: '9:30 AM' })).toBeFocused()
+    const defaultTimePopupSize = await page.locator('cb-time-picker').locator('[part~="popup"]').evaluate(popup => {
+        const rect = popup.getBoundingClientRect()
+        return { width: rect.width, height: rect.height }
+    })
+    expect(defaultTimePopupSize.width).toBeLessThanOrEqual(240.5)
+    expect(defaultTimePopupSize.height).toBeLessThanOrEqual(240.5)
     await page.locator('cb-time-picker').getByRole('option', { name: '10:00 AM' }).click()
     await expect(page.locator('cb-time-picker')).toHaveJSProperty('value', '10:00')
+    await page.locator('cb-time-picker').evaluate(element => {
+        const component = element as HTMLElement & { popupMaxWidth: string; popupMaxHeight: string }
+        component.popupMaxWidth = '180px'
+        component.popupMaxHeight = '120px'
+    })
+    await timeTrigger.click()
+    const constrainedTimePopupSize = await page.locator('cb-time-picker').locator('[part~="popup"]').evaluate(popup => {
+        const rect = popup.getBoundingClientRect()
+        return { width: rect.width, height: rect.height, scrollHeight: popup.scrollHeight, clientHeight: popup.clientHeight }
+    })
+    expect(constrainedTimePopupSize.width).toBeLessThanOrEqual(180.5)
+    expect(constrainedTimePopupSize.height).toBeLessThanOrEqual(120.5)
+    expect(constrainedTimePopupSize.scrollHeight).toBeGreaterThan(constrainedTimePopupSize.clientHeight)
+    await timeTrigger.press('Escape')
     const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
     expect(audit.violations).toEqual([])
 })

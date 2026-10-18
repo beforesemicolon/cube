@@ -40,6 +40,7 @@
     "categoryAction": "Ações",
     "categoryForm": "Formulários",
     "formNative": "Select, DatePicker e TimePicker usam a renderização consistente do Cube por padrão. Adicione a flag native apenas quando preferir o seletor nativo do browser. Combobox fornece os comportamentos de lista e preenchimento automático através da propriedade autocomplete, e Calendar também está disponível como componente independente.",
+    "popupConstraintsBody": "Menus e seletores ancorados adaptam o tamanho ao conteúdo e permanecem dentro da janela. Use popupMaxWidth e popupMaxHeight com uma medida CSS ou um valor numérico em pixels para substituir os padrões; o conteúdo limitado rola dentro do popup.",
     "unitInputBody": "UnitInput aceita uma unidade atual e uma coleção de unidades. Uma única unidade é exibida como sufixo estático; várias unidades tornam-se um seletor acessível por teclado. As alterações de unidade emitem cb-unit-change sem modificar o valor numérico.",
     "selectBody": "Select suporta seleção única e múltipla através da flag multi. A pesquisa pode ser ativada, desativada ou deixada em auto; auto mostra o filtro quando o número de opções ultrapassa searchThreshold, cujo padrão é 10.",
     "formCompositionBody": "Field fornece uma estrutura reutilizável de rótulo, ajuda, detalhes e validação. EditableList controla adicionar, renomear, reordenar e remover com acessibilidade. CodeEditor e JsonEditor oferecem edição com sintaxe, enquanto LinkedValues coordena campos numéricos proporcionais. A aplicação fornece todo o texto visível e acessível.",
