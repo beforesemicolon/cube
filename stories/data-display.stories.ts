@@ -19,6 +19,56 @@ const tableColumns = [
     { id: 'owner', header: 'Owner', field: 'owner', sortable: true, minWidth: 160 },
     { id: 'updated', header: 'Updated', field: 'updated', sortable: true, minWidth: 140 },
 ]
+const javascriptExample = [
+    "import { createClient } from '@beforesemicolon/api'",
+    '',
+    'const DEFAULT_RETRIES = 3',
+    'const projectPattern = /^cube-[a-z0-9-]+$/i',
+    '',
+    'class ProjectRepository {',
+    '  #cache = new Map()',
+    '',
+    '  constructor({ baseUrl, token }) {',
+    '    this.baseUrl = new URL(baseUrl)',
+    '    this.client = createClient({',
+    '      baseUrl: this.baseUrl,',
+    "      headers: { accept: 'application/json', authorization: `Bearer ${token}` },",
+    '    })',
+    '  }',
+    '',
+    '  async find(projectId, { signal } = {}) {',
+    '    if (!projectPattern.test(projectId)) {',
+    '      throw new TypeError(`Invalid project: ${projectId}`)',
+    '    }',
+    '',
+    '    const cached = this.#cache.get(projectId)',
+    '    if (cached?.expiresAt > Date.now()) return cached.value',
+    '',
+    '    for (let attempt = 1; attempt <= DEFAULT_RETRIES; attempt += 1) {',
+    '      try {',
+    '        const response = await this.client.get(`/projects/${projectId}`, { signal })',
+    '        const project = await response.json()',
+    '        this.#cache.set(projectId, {',
+    '          value: project,',
+    '          expiresAt: Date.now() + 60_000,',
+    '        })',
+    '        return project',
+    '      } catch (error) {',
+    "        console.warn('Project request failed', { attempt, error })",
+    '        if (signal?.aborted || attempt === DEFAULT_RETRIES) throw error',
+    '        await new Promise(resolve => setTimeout(resolve, attempt * 250))',
+    '      }',
+    '    }',
+    '  }',
+    '}',
+    '',
+    "const repository = new ProjectRepository({ baseUrl: 'https://api.example.com', token: 'demo' })",
+    "const project = await repository.find('cube-homepage')",
+    '',
+    'export const publishedNames = project.pages',
+    "  .filter(({ status }) => status === 'published')",
+    '  .map(({ name }) => name.trim())',
+].join('\n')
 
 export const Badge: Story = componentStory('cb-badge', { label: 'Badge', value: 'Example', status: 'Ready' })
 
@@ -88,4 +138,10 @@ export const Accordion: Story = componentStory('cb-accordion', {
     emptyLabel: 'No settings available',
 })
 
-export const CodePreview: Story = componentStory('cb-code-preview', { label: 'Code preview', code: '<cb-button label="Save"></cb-button>', codeLanguage: 'html', copyLabel: 'Copy code', copiedLabel: 'Copied' })
+export const CodePreview: Story = componentStory('cb-code-preview', {
+    label: 'JavaScript repository example',
+    code: javascriptExample,
+    codeLanguage: 'javascript',
+    copyLabel: 'Copy JavaScript',
+    copiedLabel: 'JavaScript copied',
+})

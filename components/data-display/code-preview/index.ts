@@ -6,7 +6,7 @@ import json from 'highlight.js/lib/languages/json'
 import typescript from 'highlight.js/lib/languages/typescript'
 import xml from 'highlight.js/lib/languages/xml'
 import { register } from '../../core/Component.js'
-import { editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
+import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { actionLabel, createButton } from '../../action/create.js'
 import type { Button } from '../../action/button/index.js'
 import { scalarText } from '../../core/value.js'
@@ -24,6 +24,7 @@ export class CodePreview extends CodePreviewBase {
     private languageNode?: HTMLElement
     private copyButton?: Button
     private statusNode?: HTMLElement
+    private preNode?: HTMLPreElement
 
     render(): Node {
         const root = el('figure', 'root code-preview')
@@ -31,36 +32,46 @@ export class CodePreview extends CodePreviewBase {
         this.languageNode = el('span', 'language')
         this.copyButton = createButton('copy', () => { void this.copySource() })
         toolbar.append(this.languageNode, this.copyButton)
-        const pre = el('pre', 'pre')
+        this.preNode = el('pre', 'pre')
+        this.preNode.tabIndex = 0
+        this.preNode.setAttribute('role', 'region')
         this.codeNode = el('code', 'code')
-        pre.append(this.codeNode)
+        this.preNode.append(this.codeNode)
         this.statusNode = el('span', 'status sr-only')
         this.statusNode.setAttribute('role', 'status')
         this.statusNode.setAttribute('aria-live', 'polite')
-        root.append(toolbar, pre, this.statusNode)
+        root.append(toolbar, this.preNode, this.statusNode)
         return fragment(sheet(editorCSS + `
 :host{display:block;inline-size:100%;container-type:inline-size}
 [part~=root]{margin:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:var(--color-surface)}
 [part~=toolbar]{justify-content:space-between;padding:var(--spacing-xs) var(--spacing-sm);border-block-end:1px solid var(--color-separator);background:var(--color-surface-muted)}
-[part~=language]{color:var(--color-muted-foreground);font-family:var(--typography-mono-font-family);text-transform:lowercase}
+[part~=language]{color:var(--color-muted-foreground);font:600 11px/1.4 var(--typography-mono-font-family);letter-spacing:.04em;text-transform:lowercase}
 [part~=copy]{flex:none}
 [part~=pre]{margin:0;max-block-size:420px;overflow:auto;padding:var(--spacing-md);background:var(--color-surface)}
-[part~=code]{font:400 var(--component-code-font-size,12px)/1.6 var(--typography-mono-font-family);white-space:pre;tab-size:2}
-.hljs-keyword,.hljs-selector-tag,.hljs-literal{color:var(--component-code-keyword,var(--color-primary))}
+[part~=code]{color:var(--component-code-foreground,var(--color-foreground));font:400 var(--component-code-font-size,12px)/1.65 var(--typography-mono-font-family);white-space:pre;tab-size:2}
+[part~=code]::selection,[part~=code] *::selection{background:var(--color-selection)}
+.hljs-keyword,.hljs-selector-tag,.hljs-literal,.hljs-type,.hljs-built_in{color:var(--component-code-keyword,var(--color-primary))}
 .hljs-string,.hljs-attribute,.hljs-template-tag{color:var(--component-code-string,var(--color-success))}
-.hljs-number,.hljs-symbol,.hljs-bullet{color:var(--component-code-number,var(--color-warning))}
+.hljs-number,.hljs-symbol,.hljs-bullet,.hljs-variable.constant_{color:var(--component-code-number,var(--color-warning))}
 .hljs-comment,.hljs-quote{color:var(--color-muted-foreground);font-style:italic}
-.hljs-title,.hljs-section,.hljs-selector-id{color:var(--component-code-title,var(--color-signal-text));font-weight:600}
+.hljs-title,.hljs-section,.hljs-selector-id,.hljs-title.class_,.hljs-title.function_{color:var(--component-code-title,var(--color-signal-text));font-weight:600}
+.hljs-attr,.hljs-property,.hljs-selector-class{color:var(--component-code-property,var(--color-signal-text))}
+.hljs-regexp,.hljs-meta{color:var(--component-code-special,var(--color-danger))}
+.hljs-variable,.hljs-template-variable,.hljs-params,.hljs-subst{color:var(--component-code-variable,var(--color-foreground))}
+.hljs-operator,.hljs-punctuation{color:var(--component-code-punctuation,var(--color-muted-foreground))}
+.hljs-addition{color:var(--color-success)}.hljs-deletion{color:var(--color-danger)}
+.hljs-strong{font-weight:700}.hljs-emphasis{font-style:italic}
 @container (max-width:360px){[part~=toolbar]{align-items:stretch;flex-direction:column}[part~=copy]{inline-size:100%}}
 `), root)
     }
 
     protected syncView(): void {
-        if (!this.codeNode || !this.languageNode || !this.copyButton || !this.statusNode) return
+        if (!this.codeNode || !this.languageNode || !this.copyButton || !this.statusNode || !this.preNode) return
         const requested = scalarText(this.codeLanguage, 'plaintext').toLowerCase()
         const language = hljs.getLanguage(requested) ? requested : 'plaintext'
         const source = this.source()
         this.languageNode.textContent = language
+        aria(this.preNode, 'aria-label', this.studioAccessibleName())
         actionLabel(this.copyButton, this.copyText())
         this.copyButton.disabled = this.studioDisabled() || !source
         this.codeNode.className = `language-${language}`
