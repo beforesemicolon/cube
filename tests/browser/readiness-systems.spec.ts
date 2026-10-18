@@ -242,7 +242,13 @@ test('global modal and flashbar services support asynchronous application workfl
         const { createFlashbar, configureFlashbarHost } = await import('/components/feedback/flashbar/service.ts')
         configureFlashbarHost({ parent: document.querySelector('#fixture') as HTMLElement, accessibleLabel: 'Application notifications' })
         launcher.addEventListener('click', async () => {
-            const handle = showModal({ heading: 'Publish project', description: 'Confirm the publish action.', cancelLabel: 'Cancel', actions: [{ id: 'publish', label: 'Publish', value: 'published', onAction: async () => Promise.resolve() }] })
+            const handle = showModal({
+                heading: 'Publish project',
+                description: 'Confirm the publish action.',
+                cancelLabel: 'Cancel',
+                onCancel: () => { launcher.dataset.cancelled = 'true' },
+                actions: [{ id: 'publish', label: 'Publish', value: 'published', onAction: async () => Promise.resolve() }],
+            })
             const result = await handle
             if (result.reason === 'action') createFlashbar({ id: 'published', type: 'success', heading: 'Published', message: 'The project is live.', dismissible: true, dismissLabel: 'Dismiss published message' })
         })
@@ -254,6 +260,12 @@ test('global modal and flashbar services support asynchronous application workfl
     await page.getByRole('button', { name: 'Publish', exact: true }).click()
     await expect(page.getByRole('dialog', { name: 'Publish project' })).toBeHidden()
     await expect(page.getByRole('status').filter({ hasText: 'Published' })).toBeVisible()
+    await expect(launcher).toBeFocused()
+
+    await launcher.click()
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await expect(page.getByRole('dialog', { name: 'Publish project' })).toBeHidden()
+    await expect(launcher).toHaveAttribute('data-cancelled', 'true')
     await expect(launcher).toBeFocused()
 
     const cancelled = await page.evaluate(async () => {

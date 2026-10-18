@@ -3,21 +3,18 @@ import { ModalBase, type ModalProps } from '../modal/ModalBase.js'
 
 export interface AlertDialogProps extends ModalProps {
     confirmLabel?: string
-    cancelLabel?: string
     destructive?: boolean
     busy?: boolean
 }
 
 /** Confirmation semantics layered on the common modal lifecycle. */
 export abstract class AlertDialogBase<P extends AlertDialogProps = AlertDialogProps> extends ModalBase<P> {
-    static observedAttributes = [...ModalBase.observedAttributes, 'confirm-label', 'cancel-label', 'destructive', 'busy']
+    static observedAttributes = [...ModalBase.observedAttributes, 'confirm-label', 'cancel-label', 'show-cancel', 'destructive', 'busy']
     confirmLabel = ''
-    cancelLabel = ''
     destructive = false
     busy = false
 
     protected confirmText(): string { return scalarText(this.confirmLabel) }
-    protected cancelText(): string { return scalarText(this.cancelLabel) }
 
     protected confirm(event: Event): void {
         if (bool(this.busy)) return
@@ -29,7 +26,6 @@ export abstract class AlertDialogBase<P extends AlertDialogProps = AlertDialogPr
 
     protected cancel(event: Event): void {
         if (bool(this.busy)) return
-        this.emit('cb-cancel', { reason: 'cancelled', originalEvent: event })
-        this.close('cancelled')
+        super.cancel(event)
     }
 }

@@ -10,6 +10,8 @@ export interface ModalProps extends CommonProps {
     heading?: string
     description?: string
     closeLabel?: string
+    cancelLabel?: string
+    showCancel?: boolean
     dismissible?: boolean
     closeOnBackdrop?: boolean
     modalSize?: ModalSize
@@ -36,6 +38,8 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
     heading = ''
     description = ''
     closeLabel = ''
+    cancelLabel = ''
+    showCancel = true
     dismissible = true
     closeOnBackdrop = true
     modalSize: ModalSize = 'md'
@@ -75,16 +79,25 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
 
     protected handleCancel(event: Event): void {
         event.preventDefault()
-        if (!bool(this.dismissible)) return
-        this.emit('cb-cancel', { reason: 'escape' })
-        this.close('escape')
+        this.dismiss('escape', event)
     }
 
     protected handleBackdrop(event: MouseEvent): void {
-        if (event.target === this.dialogElement() && bool(this.dismissible) && bool(this.closeOnBackdrop)) this.close('backdrop')
+        if (event.target === this.dialogElement() && bool(this.closeOnBackdrop)) this.dismiss('backdrop', event)
     }
 
     protected closeText(): string { return scalarText(this.closeLabel) }
+    protected cancelText(): string { return scalarText(this.cancelLabel) }
+
+    protected cancel(event: Event): void {
+        this.dismiss('cancelled', event)
+    }
+
+    protected dismiss(reason: ModalCloseReason, originalEvent?: Event): void {
+        if (!bool(this.dismissible)) return
+        this.emit('cb-cancel', { reason, originalEvent })
+        this.close(reason)
+    }
 
     private setOpen(value: boolean): void {
         this.reflectingOpen = true

@@ -12,7 +12,7 @@ export class AlertDialog extends AlertDialogBase {
 
     render(): Node {
         this.view = createModalView(
-            () => { this.close('close-button') },
+            event => { this.dismiss('close-button', event) },
             event => this.handleCancel(event),
             event => this.handleBackdrop(event),
         )
@@ -36,6 +36,7 @@ export class AlertDialog extends AlertDialogBase {
         actionLabel(view.close, this.closeText())
         actionLabel(this.cancelButton, this.cancelText())
         actionLabel(this.confirmButton, this.confirmText())
+        this.cancelButton.hidden = !bool(this.dismissible) || !bool(this.showCancel) || !this.cancelText()
         this.cancelButton.disabled = bool(this.busy)
         this.confirmButton.loading = bool(this.busy)
         this.confirmButton.variant = bool(this.destructive) ? 'destructive' : 'primary'

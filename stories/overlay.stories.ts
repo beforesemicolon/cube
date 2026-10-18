@@ -23,6 +23,6 @@ export const CommandPalette: Story = componentStory('cb-command-palette', { labe
 
 export const Tooltip: Story = componentStory('cb-tooltip', { content: 'Align selected layers', placement: 'top', delay: 250, open: false })
 
-export const Modal: Story = componentStory('cb-modal', { heading: 'Create a page', description: 'Add a page to this project.', open: false, dismissible: true, closeOnBackdrop: true, modalSize: 'md', closeLabel: 'Close' })
+export const Modal: Story = componentStory('cb-modal', { heading: 'Create a page', description: 'Add a page to this project.', open: false, dismissible: true, closeOnBackdrop: true, modalSize: 'md', closeLabel: 'Close', cancelLabel: 'Cancel', showCancel: true })
 
 export const AlertDialog: Story = componentStory('cb-alert-dialog', { heading: 'Delete component?', description: 'This action cannot be undone.', open: false, dismissible: true, closeOnBackdrop: true, modalSize: 'sm', confirmLabel: 'Delete', cancelLabel: 'Cancel', destructive: true, busy: false })

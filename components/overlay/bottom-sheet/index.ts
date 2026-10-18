@@ -24,7 +24,7 @@ export class BottomSheet extends BottomSheetBase {
         this.headingNode = slot('heading', '', 'heading'); this.headingNode.id = headingId
         this.descriptionNode = slot('description', '', 'description'); this.descriptionNode.id = descriptionId
         copy.append(this.headingNode, this.descriptionNode)
-        this.closeButton = createIconButton('close', 'close', () => { this.close('close-button') })
+        this.closeButton = createIconButton('close', 'close', event => { this.dismiss('close-button', event) })
         header.append(copy, this.closeButton)
         const body = el('section', 'body'); body.append(slot('', '', 'content'))
         const footer = el('footer', 'footer'); footer.append(slot('footer', '', 'footer-content'))

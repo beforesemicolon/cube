@@ -35,7 +35,7 @@ const booleanProperties = new Set([
     'allowAlpha', 'allowReorder', 'allowSampler', 'animated', 'autoplay', 'bottomOpen', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'dirty', 'disabled', 'dismissible',
     'controls', 'disableContentPadding', 'expanded', 'formNoValidate', 'grid', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
     'editable', 'editing', 'endOpen', 'guide', 'inline', 'lineNumbers', 'linked', 'mixed', 'movable', 'open', 'patterns', 'pinned', 'popupExpanded', 'pressed', 'readOnly', 'reorderable', 'required', 'resizable', 'returnFocus', 'reverse', 'rotatable', 'rowActivation',
-    'pannable', 'playing', 'searchable', 'selectable', 'selected', 'selectOnEdit', 'showChrome', 'showCursor', 'showDimensions', 'showLock', 'showOrientationControl', 'showSize', 'showVisibility', 'startOpen', 'stickyHeader', 'striped', 'submitOnBlur', 'success', 'unmask', 'wrap', 'zoomable',
+    'pannable', 'playing', 'searchable', 'selectable', 'selected', 'selectOnEdit', 'showCancel', 'showChrome', 'showCursor', 'showDimensions', 'showLock', 'showOrientationControl', 'showSize', 'showVisibility', 'startOpen', 'stickyHeader', 'striped', 'submitOnBlur', 'success', 'unmask', 'wrap', 'zoomable',
 ])
 
 const numberProperties = new Set([
@@ -175,6 +175,8 @@ const descriptions: Readonly<Record<string, string>> = {
     autocomplete: 'Controls list suggestions and inline completion behavior.',
     closeLabel: 'Accessible text for the close button.',
     closeOnBackdrop: 'Allows a backdrop click to dismiss the dialog.',
+    cancelLabel: 'Localized label for the modal-owned cancel action.',
+    showCancel: 'Displays the modal-owned cancel action when the modal is dismissible.',
     code: 'Source code displayed by the preview.',
     codeLanguage: 'Syntax language passed to the highlighter.',
     description: 'Supporting text associated with the component.',
@@ -329,7 +331,7 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     preload: 'metadata', pressed: 'undefined', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', searchable: 'auto', searchThreshold: '10', seekStep: '10',
     recentColors: '[]', series: '[]', size: 'sm', src: "''", status: 'finished', statusLabel: "''", step: '1', stops: '[]', summary: "''", swatches: '[]', theme: 'null', tracks: '[]', units: '[]', value: "''",
     visibleSegments: 'null', visibleSeries: 'null', wrap: 'false', xAxis: '{}', yAxis: '{}', zoomable: 'false',
-    animated: 'true', controls: 'true', currentTime: '0', duration: '4', grid: 'true', maxZoom: '400', minZoom: '25', pannable: 'true', playing: 'false',
+    animated: 'true', controls: 'true', currentTime: '0', duration: '4', grid: 'true', maxZoom: '400', minZoom: '25', pannable: 'true', playing: 'false', showCancel: 'true',
     selectable: 'true', selected: 'false', showChrome: 'true', showCursor: 'true', showDimensions: 'true', showOrientationControl: 'true', snap: '0.1', zoom: '100', zoomStep: '10',
     headingLevel: '2', lines: '3', loadingRows: '5', resizable: 'true', rowActivation: 'false', selectionMode: 'none',
     sortDirection: 'asc', stickyColumns: '0', stickyHeader: 'false', striped: 'false', density: 'comfortable',
@@ -354,7 +356,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     popupControls: '', popupExpanded: false, popupType: '', position: 'top-end', poster: '', preload: 'metadata', searchLabel: '', searchable: 'auto', searchPlaceholder: '', searchThreshold: 10,
     pannable: true, playing: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
     seekStep: 10, selectionCount: 0, shape: 'circle', siblings: 1, size: 'sm', src: '', status: '', statusLabel: '', step: 1, summary: '', target: '_self',
-    selectable: true, selected: false, showChrome: true, showCursor: true, showDimensions: true, showOrientationControl: true, snap: .1,
+    selectable: true, selected: false, showCancel: true, showChrome: true, showCursor: true, showDimensions: true, showOrientationControl: true, snap: .1,
     totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', width: 640, wrap: false, x: 0, x1: .25, x2: .25, y: 0, y1: .1, y2: 1, zoom: 100, zoomStep: 10, zoomable: false,
     animated: true, allowReorder: true, bottomOpen: false, dirty: false, editable: true, editing: false, endOpen: true, guide: true, headingLevel: 2, inline: false,
     lineNumbers: true, linked: false, lines: 3, loadingRows: 5, maxLines: 32, minItems: 0, minLines: 8, mixed: false,

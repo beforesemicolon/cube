@@ -101,7 +101,21 @@ test('built Storybook: overlay stories are launchable and dismissible',async({pa
     ]){
         await page.goto(`http://127.0.0.1:6006/iframe.html?id=overlay--${id}&viewMode=story`)
         await page.getByRole('button',{name:openLabel}).click()
-        await expect(page.getByRole(id==='alert-dialog'?'alertdialog':'dialog',{name:dialogName})).toBeVisible()
+        const dialog = page.getByRole(id==='alert-dialog'?'alertdialog':'dialog',{name:dialogName})
+        await expect(dialog).toBeVisible()
+        if(id==='modal'){
+            const cancel=dialog.getByRole('button',{name:'Cancel'})
+            const primary=page.getByRole('button',{name:'Create page'})
+            await expect(cancel).toBeVisible()
+            const cancelBox=await cancel.boundingBox()
+            const primaryBox=await primary.boundingBox()
+            expect(cancelBox).not.toBeNull()
+            expect(primaryBox).not.toBeNull()
+            expect((primaryBox?.x??0)-((cancelBox?.x??0)+(cancelBox?.width??0))).toBeGreaterThanOrEqual(7)
+            await cancel.click()
+            await expect(dialog).toBeHidden()
+            continue
+        }
         await page.keyboard.press('Escape')
     }
 

@@ -105,12 +105,12 @@ function seedPreview(tag: string, node: HTMLElement): void {
         node.append(demoSurface(tag === 'cb-drawer' ? 'Drawer content' : 'Sheet content'))
         const footer = document.createElement('div'); footer.slot = 'footer'; footer.append(demoButton('Done', 'primary')); node.append(footer)
     } else if (tag === 'cb-modal') {
-        Object.assign(node, { heading: 'Create a page', description: 'Add a page to this project.' })
+        Object.assign(node, { heading: 'Create a page', description: 'Add a page to this project.', cancelLabel: 'Cancel' })
         const form = document.createElement('div')
         form.style.cssText = 'display:grid;gap:12px;min-width:320px'
         form.append(demoSurface('Page name · Services'), demoSurface('URL path · /services'))
         node.append(form)
-        const footer = document.createElement('div'); footer.slot = 'footer'; footer.append(demoButton('Cancel'), demoButton('Create page', 'primary')); node.append(footer)
+        const footer = document.createElement('div'); footer.slot = 'footer'; footer.append(demoButton('Create page', 'primary')); node.append(footer)
     } else if (tag === 'cb-alert-dialog') {
         Object.assign(node, { heading: 'Delete component?', description: 'This action cannot be undone.', confirmLabel: 'Delete', cancelLabel: 'Cancel', destructive: true })
     } else if (tag === 'cb-box') {

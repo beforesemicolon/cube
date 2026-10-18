@@ -111,28 +111,77 @@ test('drawer and bottom sheet launch and dismiss through their composed controls
     await page.keyboard.press('Escape')
     await expect(page.getByRole('dialog', { name: 'Insert block' })).toBeHidden()
 })
-test('modal uses native dialog semantics and reports keyboard dismissal', async ({ page }) => {
+test('modal owns its cancel action, spaces footer actions, and respects dismissal settings', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
         const modal = document.createElement('cb-modal') as HTMLElement & {
             heading: string
             description: string
-            open: boolean
+            closeLabel: string
+            cancelLabel: string
+            dismissible: boolean
+            showCancel: boolean
+            show(): boolean
+            close(): boolean
         }
         modal.heading = 'Create a page'
         modal.description = 'Add a page to this project.'
+        modal.closeLabel = 'Close create page'
+        modal.cancelLabel = 'Cancel'
         modal.append(document.createTextNode('Page settings'))
+        const footer = document.createElement('div')
+        footer.slot = 'footer'
+        const save = document.createElement('cb-button') as HTMLElement & { label: string; variant: string }
+        Object.assign(save, { label: 'Create page', variant: 'primary' })
+        footer.append(save)
+        modal.append(footer)
+        modal.addEventListener('cb-close', event => {
+            modal.dataset.closeReason = (event as CustomEvent<{ reason: string }>).detail.reason
+        })
+        modal.addEventListener('cb-cancel', event => {
+            modal.dataset.cancelReason = (event as CustomEvent<{ reason: string }>).detail.reason
+        })
         document.querySelector('#fixture')?.append(modal)
-        modal.open = true
+        modal.show()
     })
     const dialog = page.getByRole('dialog', { name: 'Create a page' })
     await expect(dialog).toBeVisible()
     await expect(dialog).toHaveCSS('border-top-width', '1px')
     await expect(dialog).toHaveCSS('padding', '0px')
-    await dialog.press('Escape')
-    await expect(dialog).toBeHidden()
+    const cancel = dialog.getByRole('button', { name: 'Cancel' })
+    const primary = dialog.getByRole('button', { name: 'Create page' })
+    await expect(cancel).toBeVisible()
+    const cancelBox = await cancel.boundingBox()
+    const primaryBox = await primary.boundingBox()
+    expect(cancelBox).not.toBeNull()
+    expect(primaryBox).not.toBeNull()
+    expect((primaryBox?.x ?? 0) - ((cancelBox?.x ?? 0) + (cancelBox?.width ?? 0))).toBeGreaterThanOrEqual(7)
     const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
     expect(audit.violations).toEqual([])
+
+    await cancel.click()
+    await expect(dialog).toBeHidden()
+    await expect(page.locator('cb-modal')).toHaveAttribute('data-close-reason', 'cancelled')
+
+    await page.locator('cb-modal').evaluate((modal: HTMLElement & { dismissible: boolean; show(): boolean }) => {
+        modal.dismissible = false
+        modal.show()
+    })
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'Cancel' })).toHaveCount(0)
+    await expect(dialog.getByRole('button', { name: 'Close create page' })).toHaveCount(0)
+    await dialog.press('Escape')
+    await expect(dialog).toBeVisible()
+
+    await page.locator('cb-modal').evaluate((modal: HTMLElement & { dismissible: boolean; showCancel: boolean }) => {
+        modal.dismissible = true
+        modal.showCancel = false
+    })
+    await expect(dialog.getByRole('button', { name: 'Cancel' })).toHaveCount(0)
+    await dialog.getByRole('button', { name: 'Close create page' }).click()
+    await expect(dialog).toBeHidden()
+    await expect(page.locator('cb-modal')).toHaveAttribute('data-close-reason', 'close-button')
+    await expect(page.locator('cb-modal')).toHaveAttribute('data-cancel-reason', 'close-button')
 })
 
 test('alert dialog confirmation is cancelable and flashbars update in place', async ({ page }) => {
