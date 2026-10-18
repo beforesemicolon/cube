@@ -130,12 +130,16 @@ test('layout examples preserve their intended composition instead of collapsing 
         return {
             width: element.getBoundingClientRect().width,
             columns: getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length,
+            columnGap: getComputedStyle(element).columnGap,
+            rowGap: getComputedStyle(element).rowGap,
             firstTop: children[0]?.top,
             secondTop: children[1]?.top,
         }
     })
     expect(controlsLayout.width).toBeGreaterThan(600)
     expect(controlsLayout.columns).toBeGreaterThanOrEqual(3)
+    expect(controlsLayout.columnGap).toBe('12px')
+    expect(controlsLayout.rowGap).toBe('12px')
     expect(controlsLayout.firstTop).toBeCloseTo(controlsLayout.secondTop ?? 0, 0)
 
     await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--box-model&viewMode=story')

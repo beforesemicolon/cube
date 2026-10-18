@@ -77,7 +77,8 @@ export abstract class GridBase<P extends GridProps = GridProps> extends BoxBase<
         this.style.justifyItems = scalarText(this.justify, 'stretch')
         this.style.alignContent = scalarText(this.alignContent)
         this.style.justifyContent = scalarText(this.justifyContent)
-        this.style.columnGap = layoutSpacing(this.columnGap)
-        this.style.rowGap = layoutSpacing(this.rowGap)
+        const gap = layoutSpacing(this.gap)
+        this.style.columnGap = layoutSpacing(this.columnGap) || gap
+        this.style.rowGap = layoutSpacing(this.rowGap) || gap
     }
 }
