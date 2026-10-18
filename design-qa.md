@@ -84,6 +84,27 @@ Findings and iteration history:
 
 The focused Storybook accessibility scan reports zero violations. The post-reload interaction pass produced no console errors. `npm run typecheck`, all 51 unit tests, `npm run test:catalog`, `npm run test:exports`, `npm run build:storybook`, and `npm run build` pass.
 
+## Focused visual QA — Presence
+
+- final result: passed
+- audited: 2026-10-18
+- source visual truth: user-provided `/Users/ecorreia/Desktop/screengrabs/Screenshot 2026-10-18 at 1.08.12 PM.png` (1226 × 208) and `Screenshot 2026-10-18 at 1.09.50 PM.png` (806 × 208)
+- implementation: `http://127.0.0.1:6006/?path=/story/collaboration--presence`
+- browser: Google Chrome
+- implementation viewport/output: 1555 × 1117 pixels at device scale factor 1; focused component capture 520 × 128 pixels
+- states checked: light default, light hover, dark hover, participant action, overflow action, focus, and Axe scan
+- visual evidence: the source images and focused Chrome captures were opened and displayed during the audit; Chrome provided the capture in-session without a persistent filesystem path
+- comparison scope: component geometry and interaction styling were normalized around the default 32 CSS-pixel avatar; the reference portrait content is example data rather than a required asset baseline
+
+Findings and iteration history:
+
+1. P1 — The Presence stylesheet targeted the button's exported `participant-control` alias from inside the same shadow root. That alias is for external consumers, so the reset never reached the actual `control` part. The resulting control measured 58 × 42 pixels with `4px 12px` padding and a 6px rectangular radius. Resolved by targeting the composed button's real `control` part.
+2. P1 — The padded buttons kept avatar centers roughly 52 pixels apart. Resolved with controls that exactly match the 32 × 32 avatar and a tokenized 4px overlap, producing a compact 28px center interval and the grouped treatment shown by the reference.
+3. P1 — Hover painted the generic ghost-button rectangle around the avatar. Resolved by keeping the control background transparent in hover/active states and applying the visual feedback to the circular avatar through a theme-token halo and surface brightness change.
+4. P2 — Applying brightness to the avatar host would also dim its presence-status dot. Resolved by applying brightness only to the avatar `surface` part while leaving the status indicator unchanged.
+
+Fidelity surfaces: typography and copy retain the theme caption tokens and localized participant text; spacing now follows the compact overlapping anatomy; hover, separation rings, and dark/light colors use semantic theme tokens; image avatars and initials remain data-driven through `cb-avatar`, with no raster or masking regression. Focus stays circular and visible, the native button semantics remain intact, the Storybook Axe scan reports zero violations, and the focused console check reports no errors.
+
 ## Resolved findings
 
 - Removed generated pseudo-components such as Width/Height, Min/Max, Aspect Ratio, Z-index, Search, Autocomplete, Preview Switch, Theme Switch, app-shell assemblies, and single-purpose asset/editor views.

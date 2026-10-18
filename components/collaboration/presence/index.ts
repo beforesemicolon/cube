@@ -9,16 +9,22 @@ const css = editorCSS + `
 :host{display:inline-block;max-inline-size:100%}
 [part~=presence]{display:flex;align-items:center;gap:var(--spacing-sm,8px);min-block-size:var(--component-avatar-size-sm,32px);min-inline-size:0}
 [part~=list]{display:flex;align-items:center;min-inline-size:0;margin:0;padding:0;list-style:none}
-[part~=member]{position:relative;display:block;margin-inline-start:-6px}
+[part~=member]{position:relative;display:block;margin-inline-start:calc(0px - var(--component-presence-overlap,4px))}
 [part~=member]:first-child{margin-inline-start:0}
-[part~=participant]{display:block;--component-button-min-width:32px}
-[part~=participant]::part(participant-control){inline-size:32px;block-size:32px;min-inline-size:32px;min-block-size:32px;padding:0;border:0;border-radius:50%;background:transparent}
+[part~=participant]{display:block;inline-size:var(--component-avatar-size-sm,32px);block-size:var(--component-avatar-size-sm,32px);--component-button-min-width:var(--component-avatar-size-sm,32px)}
+[part~=participant]::part(control){inline-size:100%;block-size:100%;min-inline-size:100%;min-block-size:100%;padding:0;border:0;border-radius:50%;background:transparent}
+[part~=participant]::part(control):hover:not(:disabled),[part~=participant]::part(control):active:not(:disabled){background:transparent}
 [part~=participant]:hover{position:relative;z-index:2}
 [part~=participant]:focus-within{position:relative;z-index:3}
-[part~=participant] cb-avatar{display:block}
+[part~=participant] cb-avatar{display:block;border-radius:50%;box-shadow:0 0 0 2px var(--color-surface);transition:box-shadow var(--motion-duration-fast) ease-out,transform var(--motion-duration-fast) ease-out}
+[part~=participant] cb-avatar::part(surface){transition:filter var(--motion-duration-fast) ease-out}
+[part~=participant]:hover cb-avatar{box-shadow:0 0 0 2px var(--color-surface),0 0 0 4px var(--color-active)}
+[part~=participant]:hover cb-avatar::part(surface){filter:brightness(.94)}
+[part~=participant]:active cb-avatar{transform:scale(.96)}
 [part~=overflow-avatar]{--component-avatar-color:var(--color-selection);--component-avatar-foreground:var(--color-signal-text)}
 [part~=summary]{min-inline-size:0;overflow:hidden;color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px);text-overflow:ellipsis;white-space:nowrap}
 [part~=empty]{color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px)}
+@media (forced-colors:active){[part~=participant] cb-avatar{box-shadow:0 0 0 1px Canvas}[part~=participant]:hover cb-avatar{box-shadow:0 0 0 2px Highlight}}
 `
 
 function participantLabel(item: PresenceItem): string {
