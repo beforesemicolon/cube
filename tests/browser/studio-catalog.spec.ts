@@ -131,6 +131,38 @@ test('range slider keeps its width and reaches both visual endpoints', async ({ 
     expect(styles).toEqual({ paddingInline: '0px', borderInlineWidth: '0px' })
 })
 
+test('token input keeps a usable width without overflowing narrow containers', async ({ page }) => {
+    await page.evaluate(() => {
+        type TokenInputElement = HTMLElement & {
+            accessibleLabel: string
+            items: ReadonlyArray<{ id: string; label: string; disabled?: boolean }>
+        }
+        const items = [
+            { id: 'one', label: 'Primary item' },
+            { id: 'two', label: 'Secondary item' },
+            { id: 'three', label: 'Disabled item', disabled: true },
+        ]
+        const input = document.createElement('cb-token-input') as TokenInputElement
+        input.accessibleLabel = 'Selected items'
+        input.items = items
+        const narrow = document.createElement('div')
+        narrow.style.inlineSize = '180px'
+        const responsiveInput = document.createElement('cb-token-input') as TokenInputElement
+        responsiveInput.accessibleLabel = 'Responsive selected items'
+        responsiveInput.items = items
+        narrow.append(responsiveInput)
+        document.querySelector('#fixture')?.append(input, narrow)
+    })
+
+    const inputs = page.locator('cb-token-input')
+    const inputWidth = await inputs.first().evaluate(element => element.getBoundingClientRect().width)
+    const responsiveWidth = await inputs.nth(1).evaluate(element => element.getBoundingClientRect().width)
+    expect(inputWidth).toBeGreaterThanOrEqual(240)
+    expect(responsiveWidth).toBeLessThanOrEqual(180)
+    await expect(inputs.first().getByRole('button', { name: 'Primary item' })).toBeVisible()
+    await expect(inputs.first().getByRole('button', { name: 'Secondary item' })).toBeVisible()
+})
+
 test('Studio fields expose invalid and read-only states without throwing or accepting changes', async ({ page }) => {
     await page.evaluate(() => {
         const control = document.createElement('cb-text-input') as HTMLElement & {

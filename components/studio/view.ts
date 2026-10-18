@@ -24,6 +24,7 @@ const studioCSS = editorCSS + `
 :host([data-kind=text]),:host([data-kind=textarea]),:host([data-kind=number]),:host([data-kind=search]),:host([data-kind=select]),:host([data-kind=range]),:host([data-kind=file]),:host([data-kind=color]),:host([data-kind=tokens]){inline-size:min(100%,var(--component-studio-control-width,320px))}
 :host([data-kind=text]),:host([data-kind=textarea]){inline-size:var(--component-studio-control-width,320px);max-inline-size:100%;min-inline-size:min(100%,var(--component-studio-control-min-width,240px))}
 :host([data-kind=range]){inline-size:var(--component-range-slider-width,var(--component-studio-control-width,320px));max-inline-size:100%;min-inline-size:min(100%,var(--component-range-slider-min-width,240px))}
+:host([data-kind=tokens]){inline-size:var(--component-token-input-width,var(--component-studio-control-width,320px));max-inline-size:100%;min-inline-size:min(100%,var(--component-token-input-min-width,var(--component-studio-control-min-width,240px)))}
 :host([data-kind=collection]),:host([data-kind=collaboration]),:host([data-kind=status]),:host([data-kind=progress]),:host([data-kind=display]),:host([data-kind=panel]),:host([data-kind=editor]){inline-size:min(100%,var(--component-studio-panel-width,360px))}
 :host([data-kind=canvas]),:host([data-kind=shell]){inline-size:min(100%,var(--component-studio-canvas-width,520px))}
 [part~=root]{display:grid;gap:var(--spacing-xs,4px);min-inline-size:0}
