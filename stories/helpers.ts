@@ -151,7 +151,12 @@ function seedPreview(tag: string, node: HTMLElement): void {
         const bottom = demoSurface('Timeline'); bottom.slot = 'bottom'; bottom.style.cssText += ';min-width:100%;border:0;border-radius:0'
         const canvas = demoSurface('Responsive editor canvas'); canvas.style.cssText += ';min-height:420px;border:0;border-radius:0;background:linear-gradient(90deg,var(--color-separator) 1px,transparent 1px),linear-gradient(var(--color-separator) 1px,transparent 1px);background-size:20px 20px'
         node.append(header, start, canvas, end, bottom)
-    } else if (tag === 'cb-expandable-section') node.append(demoSurface('Expandable section content'))
+    } else if (tag === 'cb-expandable-section') {
+        const content = document.createElement('p')
+        content.textContent = 'After you enable static website hosting, visitors can access the published content through its website endpoint.'
+        content.style.cssText = 'margin:0;color:var(--color-muted-foreground);font:400 12px/1.5 var(--typography-body-font-family)'
+        node.append(content)
+    }
     else if (tag === 'cb-flashbar') Object.assign(node, { messages: [
         { id: 'saved', type: 'success', heading: 'Changes saved', message: 'Your project is up to date.', dismissible: true, duration: 0 },
         { id: 'publish', type: 'loading', heading: 'Publishing', message: 'Preparing the latest version.', duration: 0 },

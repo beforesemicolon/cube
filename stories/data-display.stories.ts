@@ -142,11 +142,11 @@ export const Accordion: Story = componentStory('cb-accordion', {
 })
 
 export const ExpandableSection: Story = componentStory('cb-expandable-section', {
-    label: 'Data table',
-    description: 'Review the values represented in the visualization.',
-    counter: '5 rows',
+    label: 'Static website hosting',
+    description: '',
+    counter: '',
     expanded: false,
-    variant: 'container',
+    variant: 'default',
     headingLevel: 3,
     disableContentPadding: false,
 })

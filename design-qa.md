@@ -20,6 +20,27 @@ The original 217 Studio cards remain available as design references. They are no
 
 Visual checks establish that every public component renders with the Cube theme and the intended Studio anatomy. The generated board crops are navigation aids rather than pixel-diff baselines because several Studio boards contain grouped examples instead of one isolated component per cell.
 
+## Focused visual QA — Expandable section
+
+- final result: passed
+- audited: 2026-10-18
+- source visual truth: user-provided `Screenshot 2026-10-18 at 12.44.52 PM.png`, `12.45.00 PM.png`, `12.46.05 PM.png`, and `12.46.11 PM.png`
+- implementation: `http://127.0.0.1:6006/?path=/story/data-display--expandable-section`
+- browser: Google Chrome
+- viewport: 1100 × 760 CSS pixels, 1100 × 760 output pixels, device scale factor 1
+- states checked: collapsed, expanded, hover, keyboard expansion, light appearance, and dark appearance
+- full comparison evidence: `design-qa-artifacts/comparison/expandable-section.png`
+- focused implementation evidence: `design-qa-artifacts/implementation/data-display/expandable-section-light.png`, `expandable-section-light-hover.png`, `expandable-section-light-expanded.png`, `expandable-section-dark.png`, and `expandable-section-dark-expanded.png`
+
+Findings and iteration history:
+
+1. P1 — The interactive story used the filled `container` variant and placed another bordered demo surface inside it. Resolved by using the transparent default disclosure and natural body copy.
+2. P1 — The shared button hover rule painted the full trigger background. Resolved with a component-specific transparent hover/active surface and primary text/icon feedback.
+3. P1 — Rotating the icon host clipped the expanded chevron. Resolved by switching the composed `cb-icon` between the `right` and `down` glyphs.
+4. P2 — The default presentation lacked the quiet divider shown by the reference. Resolved with a theme-token divider below the collapsed header and between the open header and content.
+
+Primary interactions were exercised by pointer and keyboard. `aria-expanded`, region linkage, cancelable expansion, public expansion methods, and the right/down glyph states are covered by browser tests. The focused live Storybook console had zero errors. The repository-wide visual capture also recorded zero errors for `data-display/expandable-section`; it reported a separate existing Gradient Editor recursion error outside this focused change.
+
 ## Resolved findings
 
 - Removed generated pseudo-components such as Width/Height, Min/Max, Aspect Ratio, Z-index, Search, Autocomplete, Preview Switch, Theme Switch, app-shell assemblies, and single-purpose asset/editor views.

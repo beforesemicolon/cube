@@ -35,9 +35,11 @@ test('has a visible labeled trigger, semantic state, header actions and preserve
     await expect(section.locator('[part~="counter"]')).toHaveText('3 rows')
     await expect(section.getByRole('heading', { level: 2 })).toContainText('Chart data')
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(await section.locator('cb-icon[part~="icon"]').evaluate(element => (element as HTMLElement & { name: string }).name)).toBe('right')
     await expect(section.getByText('Three data rows')).toBeHidden()
     await trigger.focus(); await page.keyboard.press('Enter')
     await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    expect(await section.locator('cb-icon[part~="icon"]').evaluate(element => (element as HTMLElement & { name: string }).name)).toBe('down')
     await expect(section.getByText('Three data rows')).toBeVisible()
     await section.getByRole('button', { name: 'Download', exact: true }).click()
     await expect(trigger).toHaveAttribute('aria-expanded', 'true')
@@ -52,4 +54,20 @@ test('supports cancelable expansion changes and public state controls', async ({
     expect(collapsed).toBe(false)
     const accessibility = await new AxeBuilder({ page }).include('cb-expandable-section').analyze()
     expect(accessibility.violations).toEqual([])
+})
+
+test('keeps the disclosure surface transparent and highlights only its text and icon on hover', async ({ page }) => {
+    const section = page.locator('cb-expandable-section')
+    await section.evaluate(element => { (element as ExpandableSectionElement).variant = 'default' })
+    const trigger = section.getByRole('button', { name: /^Chart data/ })
+    const label = trigger.locator('[part~="label"]')
+    const before = await trigger.evaluate(element => ({
+        backgroundColor: getComputedStyle(element).backgroundColor,
+        labelColor: getComputedStyle(element.querySelector('[part~="label"]') as Element).color,
+    }))
+    await trigger.hover()
+    await expect.poll(() => label.evaluate(element => getComputedStyle(element).color)).not.toBe(before.labelColor)
+    const backgroundColor = await trigger.evaluate(element => getComputedStyle(element).backgroundColor)
+    expect(backgroundColor).toBe(before.backgroundColor)
+    await expect(label).toBeVisible()
 })
