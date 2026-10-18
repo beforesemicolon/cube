@@ -1,5 +1,5 @@
-import { createButton,createToggleButton,createIconButton,actionLabel } from '../actions/create.js'
-import type { ToggleButton } from '../actions/toggle-button/index.js'
+import { createButton,createToggleButton,createIconButton,actionLabel } from '../action/create.js'
+import type { ToggleButton } from '../action/toggle-button/index.js'
 import { commonCSS, el, label, sheet } from '../core/dom.js'
 import { bool, clamp, finite, record, text } from '../core/value.js'
 import { lightTokens, token as v } from '../theme/tokens.js'

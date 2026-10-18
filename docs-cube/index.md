@@ -22,6 +22,6 @@ npm install
 npm run storybook
 ```
 
-`Charts / CartesianChart` · `Charts / PieChart` · `Media / Players` · `Shared controls`
+`Action` · `Form` · `Layout` · `Navigation` · `Overlay` · `Feedback` · `Data display` · `Media` · `Charts` · `Styling` · `Editor` · `Assets` · `Collaboration`
 
 `Design references / Uploaded sheets`

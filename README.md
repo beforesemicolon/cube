@@ -1,8 +1,8 @@
 # Cube by Before Semicolon
 
-A TypeScript, headless-first web-component library for visual editors. This is the **0.3.0 alpha implementation branch**, not a released or complete 241-entry design system.
+A TypeScript, headless-first web-component library for visual editors. This is the **0.3.0 alpha implementation branch**, not a published release.
 
-This increment implements `AudioPlayer`, `VideoPlayer`, `CartesianChart`, `PieChart` and their shared foundations, including `ThemeProvider`. Each concrete component registers its `cb-*` element when imported. Every component has a headless base, exposes styling parts, and consumes site-builder-compatible theme variables.
+The implementation covers all 219 components named on the eleven Studio design boards, plus Cube-specific wrapper-free layout primitives, LinkButton, Flashbar, media players, Cartesian and pie charts, icons, and `ThemeProvider`. The package exposes 230 independently loadable component entries across category folders. Each concrete component registers its `cb-*` element when imported. Every component has a headless base, exposes styling parts, and consumes site-builder-compatible theme variables.
 
 ## Develop
 
@@ -39,6 +39,14 @@ Object.assign(chart, {
 document.body.append(chart)
 ```
 
+Import a whole category when an application uses most of it, or import a single component to keep registration lazy and explicit:
+
+```ts
+import '@beforesemicolon/cube/form'
+import '@beforesemicolon/cube/navigation/menu'
+import { MenuBase } from '@beforesemicolon/cube/navigation/menu/base'
+```
+
 The package root is DOM-independent and exports pure models, controllers, tokens and a lazy loader. Node and Deno can import those utilities without `HTMLElement`. Concrete classes and their headless WebComponent bases still require a DOM: Node compatibility does **not** imply server-side HTML rendering. ESM and CJS builds are provided. Deno can use its npm compatibility layer; no separate Deno runtime test is claimed yet.
 
 ## Browser scripts
@@ -54,7 +62,7 @@ Build the package first. These are distribution paths, not a claim that this alp
 </cb-theme-provider>
 ```
 
-Use `dist/client.js` for all currently implemented components, or independent `dist/media/audio-player/client.js`, `dist/media/video-player/client.js`, `dist/charts/cartesian-chart/client.js`, and `dist/charts/pie-chart/client.js`. Category scripts are also emitted. Browser exports live in `BFS.CUBE`. Repeated same-version scripts do not register tags twice. Do not mix different Cube versions in one custom-element registry.
+Use `dist/client.js` for the complete implemented catalog, a category path such as `dist/form/client.js`, or an independent path such as `dist/navigation/menu/client.js`. The public categories are `action`, `form`, `layout`, `navigation`, `overlay`, `feedback`, `data-display`, `media`, `charts`, `styling`, `editor`, `assets`, `collaboration`, `icons`, and `theme`. Every component receives its own browser bundle. Browser exports live in `BFS.CUBE`. Repeated same-version scripts do not register tags twice. Do not mix different Cube versions in one custom-element registry.
 
 The WebComponent runtime is **external**, not compiled into Cube's browser scripts. Chart scripts also keep ECharts external: load `echarts/dist/echarts.min.js` before mounting a chart, or configure a promise-based loader with `BFS.CUBE.configureChartEngine`. Module consumers lazily import the ECharts dependency on the first chart render. Media-only scripts never load charting code.
 
@@ -69,6 +77,8 @@ The WebComponent runtime is **external**, not compiled into Cube's browser scrip
 Theme JSON follows site-builder's `schemaVersion: "1.0"`, `name`, `tokens` contract, including mode-aware leaves and uppercase `DEFAULT` scales. Built outputs include `themes/cube.json`, `light.json`, `dark.json` and CSS equivalents. Nested providers scope variables; an explicit inner theme defines its own palette. External theme loads are abortable and stale responses cannot replace a newer theme. Token files reject stylesheet/network injection; use authored stylesheets for fonts, images and `@keyframes`.
 
 Built-in control labels are available in English, Portuguese, Spanish, French and Chinese. All labels, including ARIA names, can be overridden with the `labels` property before or after mounting. Unknown locales fall back to English. Documentation uses the same five locales and the `fading-citrus` site-builder theme as Markup. The `:::cube component-name` markdown extension renders a fixed, safe example visualizer; it does not evaluate arbitrary pasted code. Markdown highlighting uses site-builder's existing highlight.js integration.
+
+Every original icon is emitted as an individual SVG, as a combined `dist/icons/sprite.svg`, and through `dist/icons/icons.css` mask classes. The CSS form behaves like an icon font while retaining SVG geometry and `currentColor`: `<span class="cb-icon cb-icon--undo" aria-hidden="true"></span>`. Use `<cb-icon>` when you need the component API and styling parts.
 
 ## Media
 
@@ -98,12 +108,12 @@ The chart graphic is decorative to assistive technology; Cube owns the textual e
 
 ## Styling and extension
 
-Import bases from `@beforesemicolon/cube/media/audio-player/base`, `.../video-player/base`, `.../charts/cartesian-chart/base`, or `.../pie-chart/base`. A custom renderer extends the base, supplies its media element or chart view, and registers a different `cb-*` tag. Base imports do not register elements.
+Import bases through a component's `/base` export, for example `@beforesemicolon/cube/navigation/menu/base`, `.../layout/grid/base`, `.../overlay/modal/base`, or `.../charts/cartesian-chart/base`. A custom renderer extends the base and registers a different `cb-*` tag. Base imports do not register elements.
 
-Media parts include `player`, `media`, `controls`, `play`, `stop`, `backward`, `forward`, `seek`, `volume`, `mute`, `rate`, `captions`, `fullscreen`, `status`, `transcript` and `icon`. Chart parts include `chart`, `title`, `description`, `legend`, `legend-item`, `plot`, `graphic`, `actions`, `navigator`, `details`, `data`, `table` and `table-cell`. Use `::part` for structural overrides and theme variables for appearance. ECharts-owned SVG descendants are engine internals, not individually stable Cube parts.
+Action parts include semantic surfaces such as `control`, `trigger`, `popup`, `menu`, `item`, `tab`, `navigation`, `page`, `tooltip`, `shortcut` and `key`. Layout primitives expose `content` or `line`; overlay parts include `dialog`, `header`, `heading`, `description`, `body`, `footer`, `message` and `message-actions`. Media and chart parts retain their documented control and data surfaces. Use `::part` for structural overrides and theme variables for appearance. Third-party engine descendants are not stable Cube parts.
 
 ## Scope and status
 
-This is the media/chart increment of the larger Cube rewrite. The other component families, BOS-style global modal/flashbar services, layout utilities, full design inventory and release migration remain outside this increment. Legacy `src/`, `docs/` and old build scripts are retained in the repository for comparison, but excluded from the new package and build. Their final cleanup belongs to the broader migration review.
+This remains an alpha increment of the larger Cube rewrite. The full Studio inventory is implemented and indexed from `components/studio/catalog.ts`; Storybook and the localized documentation site provide category-level visualizers. The source boards in `design/figma-layers/Studio` remain the visual acceptance reference. Legacy `src/`, `docs/` and old build scripts remain for comparison but are excluded from the new package and build.
 
-The Figma Starter tool quota blocked insertion of these four new references. They are **not yet added to Figma**. Browser reference screenshots are separate review artifacts, not a substitute for editable Figma component states. No npm release, production deployment or main-branch merge is performed by this implementation.
+No npm release, production deployment or main-branch merge is performed by this implementation.

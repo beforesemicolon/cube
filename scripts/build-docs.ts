@@ -3,7 +3,7 @@ import { buildBrowser } from '@beforesemicolon/builder'
 import { cp, mkdir, access } from 'node:fs/promises'
 import { resolve } from 'node:path'
 await buildBrowser({ entry: resolve('docs-cube/_template/template.config.ts'), out: 'docs-cube/_template/template.config.js', esbuildOptions: { format: 'esm', platform: 'node', minify: false, sourcemap: false } })
-const result = await buildDocs({ prod: true })
+const result = await buildDocs({ rootDir: resolve('docs-cube'), prod: true })
 const out = resolve(result.publicDir, 'assets/cube')
 await mkdir(out, { recursive: true })
 await cp('node_modules/@beforesemicolon/web-component/dist/client.js', resolve(out,'web-component.js'))

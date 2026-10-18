@@ -3,9 +3,9 @@ import { preview } from './helpers.js'
 import { chartExamples } from './fixtures/chart-types.js'
 import { exerciseChart } from './chart-interactions.js'
 const meta:Meta={
-    title:'Charts/CartesianChart',tags:['autodocs'],args:{...chartExamples.line.props,height:320,locale:'en'},
-    argTypes:{locale:{control:'select',options:['en','pt','es','fr','zh']},height:{control:{type:'number',min:160,max:1200}},status:{control:'select',options:['finished','loading','error']},inverted:{control:'boolean'},zoomable:{control:'boolean'},patterns:{control:'boolean'}},
-    parameters:{docs:{description:{component:'One Cartesian component supports bar, line, mixed line/bar, area, bubble and scatter series. Cube buttons and toggles compose the controls; Apache ECharts draws the plot. Switch the appearance toolbar for light and dark. Values, labels, axes, stacking and data are editable in Controls.'}}},
+    title:'Charts',tags:['autodocs'],args:{...chartExamples.line.props,height:320,locale:'en'},
+    argTypes:{locale:{control:'select',options:['en','pt','es','fr','zh']},height:{control:{type:'number',min:160,max:1200}},status:{control:'select',options:['finished','loading','error']},variant:{control:'select',options:['pie','donut']},inverted:{control:'boolean'},zoomable:{control:'boolean'},patterns:{control:'boolean'}},
+    parameters:{docs:{description:{component:'Cartesian, pie and donut visualizations share Cube controls, theme tokens, accessibility behavior and Apache ECharts rendering. Switch the appearance toolbar for light and dark; values, labels, axes, stacking and data remain editable in Controls.'}}},
     render:(args,c)=>preview('cb-cartesian-chart',args,c.globals.appearance),
 }
 export default meta
@@ -27,3 +27,11 @@ export const Empty:Story={args:{series:[]}}
 export const NoMatch:Story={args:{visibleSeries:[]}}
 export const Error:Story={args:{status:'error'}}
 export const PatternedSeries:Story={args:{...chartExamples.mixed.props,patterns:true},play}
+
+const renderPie:NonNullable<Story['render']>=(args,context)=>preview('cb-pie-chart',args,context.globals.appearance)
+export const Pie:Story={args:chartExamples.pie.props,render:renderPie,play}
+export const Donut:Story={args:chartExamples.donut.props,render:renderPie,play}
+export const AllZero:Story={args:{series:{data:[{id:'a',name:'A',value:0},{id:'b',name:'B',value:0}]}},render:renderPie}
+export const Invalid:Story={args:{series:{data:[{id:'a',value:-2},{id:'b',value:NaN}]}},render:renderPie}
+export const ControlledFilter:Story={args:{visibleSegments:['direct','search']},render:renderPie}
+export const PatternedDonut:Story={args:{...chartExamples.donut.props,patterns:true},render:renderPie,play}

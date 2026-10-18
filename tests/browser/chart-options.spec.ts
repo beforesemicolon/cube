@@ -1,20 +1,21 @@
 import {test,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {chartExamples,type ChartExampleName} from '../../stories/fixtures/chart-types.js'
+type ThemeElement = HTMLElement & { appearance: string }
 for(const appearance of ['light','dark'])for(const type of Object.keys(chartExamples) as ChartExampleName[])test(`${type} renders with real ECharts and shared controls in ${appearance}`,async({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/tests/browser/fixture.html')
     await page.waitForFunction(()=>!!customElements.get('cb-cartesian-chart'))
-    await page.locator('#theme').evaluate((n:any,mode)=>n.appearance=mode,appearance)
+    await page.locator('#theme').evaluate((n:ThemeElement,mode)=>n.appearance=mode,appearance)
     const example=chartExamples[type]
     await page.evaluate(({tag,props})=>{const n=document.createElement(tag);Object.assign(n,props);document.querySelector('#fixture')!.append(n)},example)
     const chart=page.locator(example.tag);await expect(chart.locator('[part=plot] svg')).toBeVisible()
     const toggle=chart.locator('cb-toggle-button[part=legend-item]').first();await expect(toggle).toBeVisible()
     const button=toggle.getByRole('button');await button.click();await expect(button).toHaveAttribute('aria-pressed','false');await button.click();await expect(button).toHaveAttribute('aria-pressed','true')
     const before=await chart.locator('[part=details]').textContent();const nav=chart.locator('[part=navigator]').getByRole('button');await nav.focus();await expect(nav).toBeFocused();await page.keyboard.press('ArrowRight');await expect(chart.locator('[part=details]')).not.toHaveText(before??'')
-    await chart.locator('summary').click();await expect(chart.getByRole('table')).toBeVisible();await chart.locator('summary').click()
+    const summary=chart.locator('summary');await summary.focus();await page.keyboard.press('Enter');await expect(chart.getByRole('table')).toBeVisible();await page.keyboard.press('Enter')
     const violations=await new AxeBuilder({page}).include(example.tag).analyze();expect(violations.violations).toEqual([])
     await page.setViewportSize({width:390,height:844});await expect(chart.locator('[part=plot] svg')).toBeVisible()
-    expect(await chart.evaluate(n=>n.scrollWidth<=n.clientWidth+1)).toBe(true)
+    await expect.poll(()=>chart.evaluate(n=>n.scrollWidth<=n.clientWidth+1)).toBe(true)
     await chart.screenshot({path:`test-results/${type}-${appearance}.png`})
 })
 test('media players compose the library icon buttons, range inputs and selects',async({page})=>{
@@ -24,7 +25,7 @@ test('media players compose the library icon buttons, range inputs and selects',
     await expect.poll(()=>player.locator('audio').evaluate((n:HTMLAudioElement)=>n.duration)).toBe(8)
     const seek=player.getByRole('slider',{name:'Playback position',exact:true});await expect(seek).toBeEnabled();await seek.focus();await page.keyboard.press('ArrowRight');expect(await player.locator('audio').evaluate((n:HTMLAudioElement)=>n.currentTime)).toBeGreaterThan(0)
     await player.getByRole('combobox',{name:'Playback speed'}).selectOption('1.5');await expect.poll(()=>player.locator('audio').evaluate((n:HTMLAudioElement)=>n.playbackRate)).toBe(1.5)
-    await page.locator('#theme').evaluate((n:any)=>n.appearance='dark');await expect(player.locator('[part=player]')).toHaveCSS('background-color','rgb(29, 33, 36)')
+    await page.locator('#theme').evaluate((n:ThemeElement)=>n.appearance='dark');await expect(player.locator('[part=player]')).toHaveCSS('background-color','rgb(29, 33, 36)')
     await page.setViewportSize({width:320,height:844});expect(await player.evaluate(n=>n.scrollWidth<=n.clientWidth+1)).toBe(true);await player.screenshot({path:'test-results/audio-ready-dark-narrow.png'})
 })
 
@@ -41,7 +42,7 @@ test('video playback, finite seeking, captions and themed composed controls',asy
     await expect.poll(()=>media.evaluate((n:HTMLVideoElement)=>n.textTracks[0]?.mode)).toBe('showing')
     await player.getByRole('button',{name:'Stop',exact:true}).click();await expect.poll(()=>media.evaluate((n:HTMLVideoElement)=>n.currentTime)).toBe(0)
     await player.screenshot({path:'test-results/video-ready-light.png'})
-    await page.locator('#theme').evaluate((n:any)=>n.appearance='dark');await page.setViewportSize({width:390,height:844})
+    await page.locator('#theme').evaluate((n:ThemeElement)=>n.appearance='dark');await page.setViewportSize({width:390,height:844})
     await expect(player.locator('[part=player]')).toHaveCSS('background-color','rgb(29, 33, 36)')
     expect(await player.evaluate(n=>n.scrollWidth<=n.clientWidth+1)).toBe(true)
     await player.screenshot({path:'test-results/video-ready-dark-narrow.png'})

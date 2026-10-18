@@ -5,7 +5,7 @@ export default {
         name: 'cubeExample', level: 'block',
         start(source: string) { return source.indexOf(':::cube ') },
         tokenizer(source: string) {
-            const match = /^:::cube (audio-player|video-player|cartesian-chart|pie-chart)\s*\n:::\s*(?:\n|$)/.exec(source)
+            const match = /^:::cube (audio-player|video-player|cartesian-chart|pie-chart|action|layout|overlay|studio-(?:action|form|layout|navigation|overlay|feedback|data-display|media|styling|editor|assets|collaboration))\s*\n:::\s*(?:\n|$)/.exec(source)
             if (match) return { type: 'cubeExample', raw: match[0], component: match[1] }
         },
         renderer(token: { component: string }) { return `<div data-cube-example="${token.component}"></div>` },

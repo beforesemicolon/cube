@@ -103,6 +103,7 @@ server
 .test-stubs/
 website/
 storybook-static/
+design-qa-artifacts/
 playwright-report/
 test-results/
 docs-cube/_template/template.config.js

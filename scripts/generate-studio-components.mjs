@@ -1,0 +1,240 @@
+import { mkdir, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { componentCategoryOrder, componentCategoryTitles, resolveComponentCategory } from './component-taxonomy.mjs'
+
+const groups = [
+    ['inputs', [
+        ['text-input','Text input','text'],['textarea','Textarea','textarea'],['number-input','Number input','number'],['unit-input','Unit input','number'],
+        ['search','Search','search'],['combobox','Combobox','search'],['autocomplete','Autocomplete','search'],['multi-select','Multi select','select'],
+        ['checkbox','Checkbox','choice'],['radio','Radio','choice'],['switch','Switch','choice'],['range-slider','Range slider','range'],
+        ['stepper','Stepper','number'],['date-picker','Date picker','text'],['time-picker','Time picker','text'],['file-picker','File picker','file'],
+        ['token-input','Token input','tokens'],['editable-label','Editable label','text'],['masked-input','Masked input','text'],
+    ]],
+    ['color-style', [
+        ['color-picker','Color picker','color'],['color-swatch','Color swatch','color'],['eyedropper','Eyedropper','color'],['hue','Hue','range'],
+        ['alpha','Alpha','range'],['gradient-editor','Gradient editor','editor'],['gradient-stops','Gradient stops','tokens'],['fill','Fill','color'],
+        ['stroke','Stroke','color'],['shadow','Shadow','editor'],['opacity','Opacity','range'],['blend-mode','Blend mode','select'],
+        ['radius','Radius','number'],['spacing','Spacing','number'],['typography','Typography','editor'],['font-family','Font family','select'],
+        ['font-weight','Font weight','select'],['decoration','Decoration','editor'],['alignment','Alignment','collection'],['css-variable','CSS variable','text'],
+        ['design-token','Design token','tokens'],['image-background','Image background','file'],['filter','Filter','editor'],
+    ]],
+    ['layout', [
+        ['width-height','Width height','editor'],['min-max','Min max','editor'],['aspect-ratio','Aspect ratio','text'],['box-model','Box model','editor'],
+        ['margin-padding','Margin padding','editor'],['flex-direction','Flex direction','collection'],['flex-alignment','Flex alignment','collection'],['gap','Gap','number'],
+        ['grid-editor','Grid editor','editor'],['grid-track','Grid track','tokens'],['position','Position','select'],['anchor','Anchor','collection'],
+        ['overflow','Overflow','select'],['breakpoints','Breakpoints','tokens'],['layout-visibility','Visibility','choice'],['transform','Transform','editor'],
+        ['rotation','Rotation','range'],['z-index','Z index','number'],['sizing-mode','Sizing mode','collection'],
+    ]],
+    ['data-feedback', [
+        ['badge','Badge','display'],['status','Status','status'],['avatar','Avatar','display'],['card','Card','panel'],['list','List','collection'],
+        ['description-row','Description row','display'],['property-row','Property row','editor'],['table','Table','collection'],['tree','Tree','collection'],
+        ['accordion','Accordion','panel'],['empty-state','Empty state','status'],['skeleton','Skeleton','status'],['progress','Progress','progress'],
+        ['spinner','Spinner','progress'],['toast','Toast','status'],['alert','Alert','status'],['validation','Validation','status'],['banner','Banner','status'],
+        ['stat','Stat','status'],['code-preview','Code preview','display'],['activity-log','Activity log','collection'],
+    ]],
+    ['overlays', [
+        ['popover','Popover','panel'],['drawer','Drawer','panel'],['floating-panel','Floating panel','panel'],['inspector','Inspector','panel'],
+        ['floating-toolbar','Floating toolbar','panel'],['nested-menu','Nested menu','collection'],['hover-card','Hover card','panel'],['bottom-sheet','Bottom sheet','panel'],
+        ['collapsible-sidebar','Collapsible sidebar','panel'],['resizable-panel','Resizable panel','panel'],['docked-panel','Docked panel','panel'],
+        ['panel-tabs','Panel tabs','collection'],['panel-header','Panel header','panel'],
+    ]],
+    ['canvas', [
+        ['viewport','Viewport','canvas'],['artboard','Artboard','canvas'],['selection-box','Selection box','canvas'],['resize-handle','Resize handle','canvas'],
+        ['rotation-handle','Rotation handle','canvas'],['multi-selection','Multi selection','canvas'],['hover-outline','Hover outline','canvas'],
+        ['smart-guides','Smart guides','canvas'],['snap-lines','Snap lines','canvas'],['rulers','Rulers','canvas'],['grid-overlay','Grid overlay','canvas'],
+        ['spacing-measure','Spacing measure','canvas'],['alignment-guide','Alignment guide','canvas'],['drop-indicator','Drop indicator','canvas'],
+        ['drag-preview','Drag preview','canvas'],['zoom','Zoom','range'],['pan','Pan','canvas'],['cursor','Cursor','canvas'],['inline-text','Inline text','text'],
+        ['marquee','Marquee','canvas'],['insertion','Insertion','canvas'],['canvas-menu','Canvas menu','collection'],['component-outline','Component outline','canvas'],
+        ['lock-overlay','Lock overlay','canvas'],['hidden-indicator','Hidden indicator','canvas'],['device-frame','Device frame','canvas'],
+    ]],
+    ['assets-structure', [
+        ['layer-tree','Layer tree','collection'],['layer-row','Layer row','display'],['layer-visibility','Visibility','choice'],['lock','Lock','choice'],
+        ['reorder','Reorder','collection'],['component-browser','Component browser','collection'],['component-preview','Component preview','display'],
+        ['instance-indicator','Instance indicator','status'],['asset-manager','Asset manager','collection'],['image-browser','Image browser','collection'],
+        ['media-preview','Media preview','display'],['font-browser','Font browser','collection'],['icon-browser','Icon browser','collection'],
+        ['page-navigator','Page navigator','collection'],['page-thumbnail','Page thumbnail','display'],['symbol-library','Symbol library','collection'],
+        ['variants','Variants','collection'],['breakpoint-navigator','Breakpoint navigator','collection'],['history','History','collection'],
+        ['undo-redo','Undo redo','editor'],['properties-inspector','Properties inspector','panel'],['property-group','Property group','panel'],
+    ]],
+    ['advanced-editors', [
+        ['multi-value','Multi value','editor'],['linked-dimension','Linked dimension','editor'],['unit-conversion','Unit conversion','editor'],
+        ['expression','Expression','text'],['variable-binding','Variable binding','select'],['responsive-override','Responsive override','editor'],
+        ['state-selector','State selector','select'],['pseudo-state','Pseudo state','select'],['transition','Transition','editor'],['easing','Easing','select'],
+        ['bezier','Bezier','canvas'],['timeline','Timeline','canvas'],['keyframe','Keyframe','editor'],['trigger','Trigger','select'],
+        ['conditional-visibility','Conditional visibility','editor'],['data-binding','Data binding','editor'],['action-editor','Action editor','editor'],
+        ['constraints','Constraints','collection'],
+    ]],
+    ['app-shell', [
+        ['top-bar','Top bar','shell'],['workspace-switcher','Workspace switcher','select'],['project-picker','Project picker','select'],
+        ['save-status','Save status','status'],['publish-status','Publish status','status'],['preview-switch','Preview switch','choice'],
+        ['design-code','Design code','collection'],['device-selector','Device selector','select'],['inspector-sidebar','Inspector sidebar','shell'],
+        ['asset-sidebar','Asset sidebar','shell'],['status-bar','Status bar','shell'],['selection-trail','Selection trail','collection'],
+        ['shortcuts','Shortcuts','collection'],['preferences','Preferences','panel'],['theme-switch','Theme switch','choice'],['user-menu','User menu','collection'],
+        ['version-history','Version history','collection'],['share-dialog','Share dialog','panel'],['publish-dialog','Publish dialog','panel'],
+    ]],
+    ['collaboration-ai', [
+        ['presence','Presence','collaboration'],['remote-cursor','Remote cursor','canvas'],['comment-pin','Comment pin','canvas'],
+        ['comment-thread','Comment thread','collaboration'],['annotation','Annotation','collaboration'],['review-status','Review status','status'],
+        ['suggested-change','Suggested change','collaboration'],['ai-command','AI command','text'],['ai-action-menu','AI action menu','collection'],
+        ['ai-selection-toolbar','AI selection toolbar','panel'],['diff-preview','Diff preview','display'],['accept-reject','Accept reject','editor'],
+        ['generation','Generation','progress'],['conflict','Conflict','status'],['approval','Approval','editor'],
+    ]],
+]
+
+const pascal = value => value.split('-').map(part => part === 'ai' ? 'AI' : part === 'css' ? 'CSS' : part.charAt(0).toUpperCase() + part.slice(1)).join('')
+const definitions = groups.flatMap(([board, entries]) => entries.map(([name, title, kind]) => ({
+    board,
+    category: resolveComponentCategory(board, name),
+    name,
+    title,
+    kind,
+    className: pascal(name),
+})))
+const quote = value => `'${value.replaceAll("'", "\\'")}'`
+const reusedBoardItems = {
+    actions: [
+        ['button','Button'],['icon-button','Icon button'],['split-button','Split button'],['toggle-button','Toggle button'],['button-group','Button group'],
+        ['segmented-control','Segmented control'],['tabs','Tabs'],['breadcrumb','Breadcrumb'],['menu','Menu'],['context-menu','Context menu'],
+        ['dropdown','Dropdown'],['command-palette','Command palette'],['toolbar','Toolbar'],['action-bar','Action bar'],['link','Link'],
+        ['pagination','Pagination'],['tooltip','Tooltip'],['shortcut','Shortcut'],
+    ],
+    inputs: [['select','Select'],['slider','Slider']],
+    'data-feedback': [['divider','Divider']],
+    overlays: [['modal','Modal'],['alert-dialog','Alert dialog']],
+    'app-shell': [['undo-redo','Undo redo']],
+}
+const reusedSourceCategories = { actions:'actions', inputs:'inputs', 'data-feedback':'layout', overlays:'overlays', 'app-shell':'assets-structure' }
+const reusedKinds = {
+    button:'text', 'icon-button':'text', 'split-button':'panel', 'toggle-button':'choice', 'button-group':'collection',
+    'segmented-control':'collection', tabs:'collection', breadcrumb:'collection', menu:'collection', 'context-menu':'collection',
+    dropdown:'collection', 'command-palette':'collection', toolbar:'collection', 'action-bar':'collection', link:'text',
+    pagination:'number', tooltip:'panel', shortcut:'display', select:'select', slider:'range', divider:'display',
+    modal:'panel', 'alert-dialog':'panel', 'undo-redo':'editor',
+}
+const reusedDefinitions = Object.entries(reusedBoardItems).flatMap(([board, entries]) => entries.map(([name,title]) => ({
+    board,
+    category: resolveComponentCategory(reusedSourceCategories[board], name),
+    name,
+    title,
+    kind: reusedKinds[name],
+    className: pascal(name),
+})))
+const studioBoardItems = [
+    ...reusedDefinitions.map(({board,category,name,title}) => ({board,category,name,title})),
+    ...definitions.map(({board,category,name,title}) => ({board,category,name,title})),
+]
+const existingCategoryExports = {
+    action: ["export * from './button/index.js'", "export * from './icon-button/index.js'", "export * from './toggle-button/index.js'", "export * from './link-button/index.js'", "export * from './split-button/index.js'", "export * from './button-group/index.js'", "export * from './toolbar/index.js'", "export * from './action-bar/index.js'", "export * from './shortcut/index.js'"],
+    form: ["export * from './slider/index.js'", "export * from './select/index.js'", "export { normalizeRange, normalizeOptions } from './model.js'"],
+    layout: ["export * from './box/index.js'", "export * from './row/index.js'", "export * from './col/index.js'", "export * from './grid/index.js'", "export * from './divider/index.js'"],
+    navigation: ["export * from './link/index.js'", "export * from './segmented-control/index.js'", "export * from './tabs/index.js'", "export * from './breadcrumb/index.js'", "export * from './menu/index.js'", "export * from './pagination/index.js'"],
+    overlay: ["export * from './context-menu/index.js'", "export * from './dropdown/index.js'", "export * from './command-palette/index.js'", "export * from './tooltip/index.js'", "export * from './modal/index.js'", "export * from './alert-dialog/index.js'"],
+    feedback: ["export * from './flashbar/index.js'"],
+    media: ["export * from './audio-player/index.js'", "export * from './video-player/index.js'"],
+}
+const documentationKeys = {
+    action:'categoryAction', form:'categoryForm', layout:'studioLayout', navigation:'categoryNavigation', overlay:'categoryOverlay',
+    feedback:'categoryFeedback', 'data-display':'categoryDataDisplay', media:'categoryMedia', styling:'categoryStyling', editor:'categoryEditor',
+    assets:'categoryAssets', collaboration:'categoryCollaboration',
+}
+const definitionGroups = componentCategoryOrder
+    .map(category => [category, definitions.filter(definition => definition.category === category)])
+    .filter(([, entries]) => entries.length > 0)
+
+const catalog = `import type { StudioBoardItem, StudioDefinition } from './types.js'\n\nexport const studioDefinitions = [\n${definitions.map(d => `    { board:${quote(d.board)}, category:${quote(d.category)}, name:${quote(d.name)}, className:${quote(d.className)}, title:${quote(d.title)}, kind:${quote(d.kind)} },`).join('\n')}\n] as const satisfies readonly StudioDefinition[]\n\nexport const studioBoardItems = [\n${studioBoardItems.map(item => `    { board:${quote(item.board)}, category:${quote(item.category)}, name:${quote(item.name)}, title:${quote(item.title)} },`).join('\n')}\n] as const satisfies readonly StudioBoardItem[]\n\nexport const studioGroups = [${definitionGroups.map(([name]) => quote(name)).join(', ')}] as const\nexport const studioEntries = studioDefinitions.map(({category,name,className}) => ({path:\`${'${category}'}/${'${name}'}\`,name,className}))\n`
+await mkdir(resolve('components/studio'), { recursive: true })
+await writeFile(resolve('components/studio/catalog.ts'), catalog)
+
+for (const [category, entries] of definitionGroups) {
+    const categoryDir = resolve('components', category)
+    await mkdir(categoryDir, { recursive: true })
+    const exports = [...(existingCategoryExports[category] ?? [])]
+    for (const {name, title, kind, className} of entries) {
+        const dir = resolve(categoryDir, name)
+        await mkdir(dir, { recursive: true })
+        if (name === 'code-preview') {
+            exports.push(`export * from './${name}/index.js'`)
+            continue
+        }
+        await writeFile(resolve(dir, `${className}Base.ts`), `import { StudioComponentBase } from '../../studio/StudioComponentBase.js'\nimport type { StudioKind, StudioProps } from '../../studio/types.js'\n\nexport interface ${className}Props extends StudioProps {}\n\n/** Headless behavior for the ${title} component. */\nexport abstract class ${className}Base extends StudioComponentBase<${className}Props> {\n    readonly componentName = '${name}'\n    readonly componentKind: StudioKind = '${kind}'\n}\n`)
+        await writeFile(resolve(dir, 'base.ts'), `export { ${className}Base } from './${className}Base.js'\nexport type { ${className}Props } from './${className}Base.js'\n`)
+        await writeFile(resolve(dir, 'index.ts'), `import { register } from '../../core/Component.js'\nimport { createStudioView, type StudioView } from '../../studio/view.js'\nimport { ${className}Base } from './${className}Base.js'\n\nexport class ${className} extends ${className}Base {\n    private view?: StudioView\n    render(): Node { this.view = createStudioView(this); return this.view.root }\n    protected syncView(): void { this.view?.update() }\n}\n\nregister('cb-${name}', ${className})\nexport { ${className}Base }\nexport type { ${className}Props } from './${className}Base.js'\n`)
+        exports.push(`export * from './${name}/index.js'`)
+    }
+    await writeFile(resolve(categoryDir, 'index.ts'), exports.join('\n') + '\n')
+}
+
+const loaders = `export const studioComponentLoaders = {\n${definitions.map(d => `    '${d.name}': () => import('../${d.category}/${d.name}/index.js'),`).join('\n')}\n} as const\n`
+await writeFile(resolve('components/studio/registry.ts'), loaders)
+
+const sampleByKind = {
+    text: `{ label: '${'${title}'}', value: '12 px', placeholder: '${'${title}'}' }`,
+    textarea: `{ label: '${'${title}'}', value: 'Editable content' }`,
+    number: `{ label: '${'${title}'}', value: 24, min: 0, max: 100, step: 1 }`,
+    search: `{ label: '${'${title}'}', value: '', placeholder: 'Search' }`,
+    select: `{ label: '${'${title}'}', value: 'one', items }`,
+    choice: `{ label: '${'${title}'}', checked: true }`,
+    range: `{ label: '${'${title}'}', value: 64, min: 0, max: 100, step: 1 }`,
+    file: `{ label: '${'${title}'}' }`,
+    color: `{ label: '${'${title}'}', value: '#2563eb' }`,
+    tokens: `{ label: '${'${title}'}', items }`,
+    display: `{ label: '${'${title}'}', value: 'Example', status: 'Ready' }`,
+    collection: `{ label: '${'${title}'}', value: 'one', items }`,
+    status: `{ label: '${'${title}'}', value: 'Ready', status: 'Updated' }`,
+    progress: `{ label: '${'${title}'}', progress: 64, max: 100, status: '64%' }`,
+    panel: `{ label: '${'${title}'}', actionLabel: 'Open', expanded: true }`,
+    canvas: `{ label: '${'${title}'}', accessibleLabel: '${'${title}'} canvas' }`,
+    editor: `{ label: '${'${title}'}', actionLabel: 'Edit', value: '12 px' }`,
+    shell: `{ label: '${'${title}'}', actionLabel: 'Open' }`,
+    collaboration: `{ label: '${'${title}'}', items }`,
+}
+
+const storyExtras = [
+    {category:'action',name:'link-button',title:'Link button',kind:'text',className:'LinkButton'},
+    {category:'layout',name:'box',title:'Box',kind:'panel',className:'Box'},
+    {category:'layout',name:'row',title:'Row',kind:'collection',className:'Row'},
+    {category:'layout',name:'col',title:'Col',kind:'collection',className:'Col'},
+    {category:'layout',name:'grid',title:'Grid',kind:'collection',className:'Grid'},
+    {category:'feedback',name:'flashbar',title:'Flashbar',kind:'status',className:'Flashbar'},
+    {category:'media',name:'audio-player',title:'Audio player',kind:'panel',className:'AudioPlayer'},
+    {category:'media',name:'video-player',title:'Video player',kind:'panel',className:'VideoPlayer'},
+    {category:'icons',name:'icon',title:'Icon',kind:'display',className:'Icon'},
+    {category:'theme',name:'theme-provider',title:'Theme provider',kind:'panel',className:'ThemeProvider'},
+]
+const reusedStoryDefinitions = reusedDefinitions.filter(reused => !definitions.some(definition => definition.name === reused.name))
+const storyDefinitions = [...definitions, ...reusedStoryDefinitions, ...storyExtras]
+const storyGroups = componentCategoryOrder
+    .map(category => [category, storyDefinitions.filter(definition => definition.category === category)])
+    .filter(([, entries]) => entries.length > 0 && !['media', 'charts'].includes(entries[0].category))
+
+for (const [category, entries] of storyGroups) {
+    const categoryTitle = componentCategoryTitles[category]
+    const story = `import type { Meta, StoryObj } from '@storybook/web-components-vite'\nimport { preview } from './helpers.js'\nimport '../components/${category}/index.js'\n\nconst meta: Meta = { title: '${categoryTitle}', tags: ['autodocs'], parameters: { docs: { description: { component: '${categoryTitle} components with headless bases, themed parts, standalone imports and browser bundles.' } } } }\nexport default meta\ntype Story = StoryObj\nconst items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]\n\n${entries.map(({name, title, kind, className}) => {
+        const args = name === 'code-preview'
+            ? `{ label: 'Code preview', code: '<cb-button label="Save"></cb-button>', codeLanguage: 'html' }`
+            : sampleByKind[kind].replaceAll('${title}', title)
+        return `export const ${className}: Story = { args: ${args}, render: (args, context) => preview('cb-${name}', args, context.globals.appearance) }`
+    }).join('\n\n')}\n`
+    await writeFile(resolve('stories', `${category}.stories.ts`), story)
+}
+
+const summaryDefinitions = [...definitions, ...reusedStoryDefinitions, ...storyExtras]
+    .filter(definition => !['icons', 'theme'].includes(definition.category))
+const summary = summaryDefinitions.reduce((result, definition) => {
+    result[definition.category] ??= []
+    result[definition.category].push(definition)
+    return result
+}, {})
+const documentationCategories = componentCategoryOrder.filter(category => summary[category])
+
+for (const category of documentationCategories) {
+    const entries = summary[category]
+    const heading = componentCategoryTitles[category]
+    const rows = entries.map(entry => `| ${entry.title} | \`<cb-${entry.name}>\` | \`@beforesemicolon/cube/${category}/${entry.name}\` |`).join('\n')
+    const key = documentationKeys[category]
+    const order = 20 + documentationCategories.indexOf(category)
+    const markdown = `---\nname: '{{t.cube.${key}}}'\ntitle: '{{t.cube.${key}}}'\npath: /documentation/${category}\nlayout: document\norder: ${order}\n---\n\n# {{t.cube.${key}}}\n\n{{t.cube.studioCatalogBody}}\n\n:::cube studio-${category}\n:::\n\n| Component | Custom element | Package entry |\n| --- | --- | --- |\n${rows}\n\n## API\n\n{{t.cube.studioCatalogApi}}\n`
+    await writeFile(resolve('docs-cube/documentation', `${category}.md`), markdown)
+}
+
+console.log(`Generated ${definitions.length} Studio component families in ${definitionGroups.length} consumer categories.`)

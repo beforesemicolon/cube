@@ -47,4 +47,8 @@ for (const mode of ['light', 'dark'] as const) {
 }
 await writeFile('dist/themes/cube.css', `:root{${declarations('light')}}@media(prefers-color-scheme:dark){:root{${declarations('dark')}}}[data-theme="light"]{${declarations('light')}}[data-theme="dark"]{${declarations('dark')}}\n`)
 for (const [name, d] of Object.entries(iconPaths)) await writeFile(`dist/icons/${name}.svg`, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>\n`)
+const iconSymbols = Object.entries(iconPaths).map(([name,d]) => `<symbol id="${name}" viewBox="0 0 24 24"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>`).join('')
+await writeFile('dist/icons/sprite.svg', `<svg xmlns="http://www.w3.org/2000/svg">${iconSymbols}</svg>\n`)
+const iconClasses = Object.keys(iconPaths).map(name => `.cb-icon--${name}{--cb-icon-url:url('./${name}.svg')}`).join('')
+await writeFile('dist/icons/icons.css', `.cb-icon{display:inline-block;inline-size:1em;block-size:1em;background:currentColor;mask:var(--cb-icon-url) center/contain no-repeat;-webkit-mask:var(--cb-icon-url) center/contain no-repeat}${iconClasses}\n`)
 await writeFile('dist/build-report.json', JSON.stringify({ external: ['@beforesemicolon/web-component', 'echarts'], browserBytes: sizes }, null, 2) + '\n')
