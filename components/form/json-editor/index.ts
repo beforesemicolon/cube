@@ -8,7 +8,7 @@ import { bool, scalarText } from '../../core/value.js'
 import { JsonEditorBase } from './JsonEditorBase.js'
 
 const css = editorCSS + `
-:host{display:block;inline-size:min(100%,var(--component-json-editor-width,720px))}[part~=root]{display:grid;gap:var(--spacing-xs,4px)}
+:host{display:block;inline-size:var(--component-json-editor-width,720px);max-inline-size:100%;min-inline-size:min(100%,var(--component-json-editor-min-width,320px))}[part~=root]{display:grid;gap:var(--spacing-xs,4px)}
 [part~=toolbar]{display:flex;align-items:center;justify-content:flex-end;gap:var(--spacing-sm,8px)}[part~=status]{margin-inline-end:auto;color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px)}
 [part~=status][data-invalid]{color:var(--color-danger)}[part~=editor]{display:block;inline-size:100%}
 `
@@ -45,11 +45,11 @@ export class JsonEditor extends JsonEditorBase {
         Object.assign(this.editor, {
             label: scalarText(this.label), accessibleLabel: scalarText(this.accessibleLabel), description: scalarText(this.description),
             value: this.sourceText(), language: 'json', placeholder: scalarText(this.placeholder), lineNumbers: bool(this.lineNumbers),
-            wrap: bool(this.wrap), positionLabel: scalarText(this.positionLabel), disabled: this.unavailable, readOnly: bool(this.readOnly),
+            wrap: bool(this.wrap), tabSize: Math.max(1, this.normalizedIndent()), positionLabel: scalarText(this.positionLabel), disabled: this.unavailable, readOnly: bool(this.readOnly),
             required: bool(this.required), errorText: error,
         })
         actionLabel(this.formatButton, scalarText(this.formatLabel))
-        this.formatButton.disabled = this.unavailable || bool(this.readOnly) || !this.sourceText()
+        this.formatButton.disabled = this.unavailable || bool(this.readOnly) || !this.sourceText() || Boolean(error)
         const invalidLabel = scalarText(this.invalidLabel)
         this.status.textContent = error
             ? error === invalidLabel ? invalidLabel.replaceAll('{error}', '').trim() : invalidLabel ? invalidLabel.replaceAll('{error}', error) : error

@@ -12,7 +12,7 @@ const syntaxCSS = `
 .hljs-attr,.hljs-property,.hljs-selector-class{color:var(--component-code-property,var(--color-signal-text))}.hljs-regexp,.hljs-meta{color:var(--component-code-special,var(--color-danger))}
 `
 const css = editorCSS + syntaxCSS + `
-:host{display:block;inline-size:min(100%,var(--component-code-editor-width,720px));min-inline-size:0}
+:host{display:block;inline-size:var(--component-code-editor-width,720px);max-inline-size:100%;min-inline-size:min(100%,var(--component-code-editor-min-width,320px))}
 [part~=shell]{overflow:hidden;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)}
 [part~=toolbar]{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-sm,8px);min-block-size:32px;padding:var(--spacing-xs,4px) var(--spacing-sm,8px);border-block-end:1px solid var(--color-separator);background:var(--color-surface-muted)}
 [part~=language],[part~=position]{color:var(--color-muted-foreground);font:600 11px/1.4 var(--typography-mono-font-family)}
@@ -50,7 +50,9 @@ export class CodeEditor extends CodeEditorBase {
         this.control.autocomplete = 'off'
         this.control.addEventListener('input', event => this.setValue(this.control?.value ?? '', event))
         this.control.addEventListener('change', event => this.setValue(this.control?.value ?? '', event, true))
-        this.control.addEventListener('keydown', event => { if (!this.indent(event)) this.submit(event) })
+        this.control.addEventListener('keydown', event => {
+            if (!this.editJson(event) && !this.indent(event)) this.submit(event)
+        })
         this.control.addEventListener('scroll', () => this.syncScroll())
         this.control.addEventListener('select', () => this.syncPosition())
         this.control.addEventListener('keyup', () => this.syncPosition())

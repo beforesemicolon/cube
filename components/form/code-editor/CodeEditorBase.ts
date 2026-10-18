@@ -82,6 +82,69 @@ export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps
         return true
     }
 
+    protected editJson(event: KeyboardEvent): boolean {
+        const editor = this.editorElement()
+        if (!editor || scalarText(this.language).toLowerCase() !== 'json' || event.isComposing || event.ctrlKey || event.metaKey || event.altKey || this.unavailable || bool(this.readOnly)) return false
+        const value = editor.value
+        const start = editor.selectionStart
+        const end = editor.selectionEnd
+        const selection = value.slice(start, end)
+        const key = event.shiftKey && event.code === 'Semicolon' ? ':' : event.key
+        const pairs: Readonly<Record<string, string>> = { '{': '}', '[': ']', '"': '"' }
+        const apply = (rangeStart: number, rangeEnd: number, replacement: string, selectionStart: number, selectionEnd = selectionStart, inputType = 'insertText'): boolean => {
+            event.preventDefault()
+            editor.setSelectionRange(rangeStart, rangeEnd)
+            const nativeEdit = document.execCommand('insertText', false, replacement)
+            if (!nativeEdit) {
+                editor.setRangeText(replacement, rangeStart, rangeEnd, 'end')
+                editor.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, inputType, data: replacement }))
+            }
+            editor.setSelectionRange(selectionStart, selectionEnd)
+            return true
+        }
+        if (key === 'Backspace' && start === end && start > 0 && pairs[value[start - 1] ?? ''] === value[start]) {
+            return apply(start - 1, start + 1, '', start - 1, start - 1, 'deleteContentBackward')
+        }
+        if (key === 'Enter' && !this.insideJsonString(value, start)) {
+            const before = value.slice(0, start)
+            const after = value.slice(end)
+            const lineStart = before.lastIndexOf('\n') + 1
+            const currentIndent = before.slice(lineStart).match(/^[\t ]*/)?.[0] ?? ''
+            const previous = before.trimEnd().at(-1) ?? ''
+            const next = after.trimStart().at(0) ?? ''
+            const opensBlock = (previous === '{' && next === '}') || (previous === '[' && next === ']')
+            const continuedIndent = `${currentIndent}${previous === '{' || previous === '[' ? ' '.repeat(this.normalizedTabSize()) : ''}`
+            const replacement = opensBlock ? `\n${continuedIndent}\n${currentIndent}` : `\n${continuedIndent}`
+            return apply(start, end, replacement, start + 1 + continuedIndent.length, undefined, 'insertLineBreak')
+        }
+        if ((key === '}' || key === ']' || key === '"') && start === end && value[start] === key) {
+            event.preventDefault()
+            editor.setSelectionRange(start + 1, start + 1)
+            return true
+        }
+        if (key === ':' && start === end && !this.insideJsonString(value, start) && value[start] !== ' ' && value[start] !== '\t') {
+            return apply(start, end, ': ', start + 2)
+        }
+        const closing = pairs[key]
+        if (!closing || key === '"' && start === end && this.insideJsonString(value, start)) return false
+        const replacement = `${key}${selection}${closing}`
+        return selection
+            ? apply(start, end, replacement, start + 1, end + 1)
+            : apply(start, end, replacement, start + 1)
+    }
+
+    private insideJsonString(value: string, position: number): boolean {
+        let inside = false
+        let escaped = false
+        for (let index = 0; index < position; index += 1) {
+            const character = value[index]
+            if (escaped) { escaped = false; continue }
+            if (character === '\\') { escaped = true; continue }
+            if (character === '"') inside = !inside
+        }
+        return inside
+    }
+
     protected indent(event: KeyboardEvent): boolean {
         const editor = this.editorElement()
         if (!editor || event.key !== 'Tab' || this.unavailable || bool(this.readOnly)) return false
