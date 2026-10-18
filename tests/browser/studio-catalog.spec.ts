@@ -77,6 +77,28 @@ test('representative Studio controls expose keyboard semantics, parts, theme inh
     await expect(page.locator('cb-artboard').locator('[part~="canvas"]')).toHaveCSS('background-color', 'rgb(29, 33, 36)')
 })
 
+test('text input and textarea keep a usable minimum width without overflowing narrow containers', async ({ page }) => {
+    await page.evaluate(() => {
+        const input = document.createElement('cb-text-input') as HTMLElement & { value: string }
+        input.value = 'Short'
+        const textarea = document.createElement('cb-textarea') as HTMLElement & { value: string }
+        textarea.value = 'Short'
+        const narrow = document.createElement('div')
+        narrow.style.inlineSize = '180px'
+        const responsiveInput = document.createElement('cb-text-input') as HTMLElement & { value: string }
+        responsiveInput.value = 'Short'
+        narrow.append(responsiveInput)
+        document.querySelector('#fixture')?.append(input, textarea, narrow)
+    })
+
+    const inputWidth = await page.locator('cb-text-input').first().evaluate(element => element.getBoundingClientRect().width)
+    const textareaWidth = await page.locator('cb-textarea').evaluate(element => element.getBoundingClientRect().width)
+    const responsiveWidth = await page.locator('div[style] cb-text-input').evaluate(element => element.getBoundingClientRect().width)
+    expect(inputWidth).toBeGreaterThanOrEqual(240)
+    expect(textareaWidth).toBeGreaterThanOrEqual(240)
+    expect(responsiveWidth).toBeLessThanOrEqual(180)
+})
+
 test('Studio fields expose invalid and read-only states without throwing or accepting changes', async ({ page }) => {
     await page.evaluate(() => {
         const control = document.createElement('cb-text-input') as HTMLElement & {
