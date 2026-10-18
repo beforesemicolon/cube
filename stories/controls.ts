@@ -32,7 +32,7 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 }
 
 const booleanProperties = new Set([
-    'autoplay', 'busy', 'checked', 'closeOnBackdrop', 'decorative', 'destructive', 'disabled', 'dismissible',
+    'autoplay', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'disabled', 'dismissible',
     'expanded', 'formNoValidate', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
     'open', 'patterns', 'popupExpanded', 'pressed', 'readOnly', 'required', 'reverse', 'wrap', 'zoomable',
 ])
@@ -91,6 +91,12 @@ const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly Contr
     'cb-toggle-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-cartesian-chart': { status: ['finished', 'loading', 'error'], stacking: [false, 'normal'] },
     'cb-pie-chart': { status: ['finished', 'loading', 'error'], variant: ['pie', 'donut'] },
+    'cb-collapsible-sidebar': { placement: ['start', 'end'] },
+    'cb-resizable-panel': { placement: ['start', 'end'] },
+    'cb-docked-panel': { placement: ['start', 'end', 'bottom'] },
+    'cb-drawer': { placement: ['start', 'end'] },
+    'cb-popover': { placement: ['bottom-start', 'bottom-end', 'top-start', 'top-end'] },
+    'cb-hover-card': { placement: ['bottom-start', 'bottom-end', 'top-start', 'top-end'] },
 }
 
 const numberControls: Readonly<Record<string, NumberControl>> = {
@@ -197,7 +203,7 @@ const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue
 }
 
 const numericValueTags = new Set([
-    'cb-number-input', 'cb-unit-input', 'cb-range-slider', 'cb-slider', 'cb-stepper',
+    'cb-number-input', 'cb-unit-input', 'cb-range-slider', 'cb-slider', 'cb-stepper', 'cb-resizable-panel',
 ])
 
 const colorValueTags = new Set(['cb-color-picker', 'cb-color-swatch', 'cb-eyedropper'])

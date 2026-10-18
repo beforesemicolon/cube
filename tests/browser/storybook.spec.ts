@@ -21,3 +21,53 @@ test('built Storybook: Split Button exposes its complete interactive API',async(
     await expect(panel.getByText('actionValue',{exact:true})).toBeVisible()
     await expect(panel.locator('button[aria-label="add a new item to the \'items\' array"]')).toBeVisible()
 })
+
+test('built Storybook: layout panel stories expose working controls',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--collapsible-sidebar&viewMode=story')
+    const sidebar=page.locator('cb-collapsible-sidebar')
+    await sidebar.getByRole('button',{name:'Collapse sidebar'}).click()
+    await expect(sidebar).not.toHaveAttribute('expanded','')
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--resizable-panel&viewMode=story')
+    const separator=page.getByRole('separator',{name:'Resize properties panel'})
+    await separator.press('ArrowRight')
+    await expect(page.locator('cb-resizable-panel')).toHaveJSProperty('value',304)
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--docked-panel&viewMode=story')
+    const docked=page.locator('cb-docked-panel')
+    await docked.getByRole('button',{name:'Collapse inspector'}).click()
+    await expect(docked).not.toHaveAttribute('expanded','')
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--panel-header&viewMode=story')
+    const header=page.locator('cb-panel-header')
+    await header.getByRole('button',{name:'Collapse typography'}).click()
+    await expect(header).not.toHaveAttribute('expanded','')
+})
+
+test('built Storybook: overlay stories are launchable and dismissible',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=overlay--popover&viewMode=story')
+    await page.getByRole('button',{name:'Open popover'}).click()
+    await expect(page.locator('cb-popover [part~=popover]')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('cb-popover [part~=popover]')).toBeHidden()
+
+    for(const [id,openLabel,dialogName]of [
+        ['drawer','Open drawer','Page settings'],
+        ['bottom-sheet','Open bottom sheet','Insert block'],
+        ['modal','Open modal','Create a page'],
+        ['alert-dialog','Open alert dialog','Delete component?'],
+    ]){
+        await page.goto(`http://127.0.0.1:6006/iframe.html?id=overlay--${id}&viewMode=story`)
+        await page.getByRole('button',{name:openLabel}).click()
+        await expect(page.getByRole(id==='alert-dialog'?'alertdialog':'dialog',{name:dialogName})).toBeVisible()
+        await page.keyboard.press('Escape')
+    }
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=overlay--command-palette&viewMode=story')
+    await page.getByRole('button',{name:'Open command palette'}).click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=overlay--context-menu&viewMode=story')
+    await page.getByText('Right-click this area').click({button:'right'})
+    await expect(page.locator('cb-context-menu')).toBeVisible()
+})

@@ -7,13 +7,13 @@ export default meta
 type Story = StoryObj
 const items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]
 
-export const Popover: Story = componentStory('cb-popover', { label: 'Popover', actionLabel: 'Open', expanded: true })
+export const Popover: Story = componentStory('cb-popover', { label: 'Layer actions', accessibleLabel: 'Layer actions', open: false, placement: 'bottom-start' })
 
-export const Drawer: Story = componentStory('cb-drawer', { label: 'Drawer', actionLabel: 'Open', expanded: true })
+export const Drawer: Story = componentStory('cb-drawer', { heading: 'Page settings', description: 'Update the current page.', closeLabel: 'Close page settings', open: false, dismissible: true, closeOnBackdrop: true, placement: 'end' })
 
-export const HoverCard: Story = componentStory('cb-hover-card', { label: 'Hover card', actionLabel: 'Open', expanded: true })
+export const HoverCard: Story = componentStory('cb-hover-card', { open: false, placement: 'bottom-start', delay: 250 })
 
-export const BottomSheet: Story = componentStory('cb-bottom-sheet', { label: 'Bottom sheet', actionLabel: 'Open', expanded: true })
+export const BottomSheet: Story = componentStory('cb-bottom-sheet', { heading: 'Insert block', description: 'Choose content to add to the page.', closeLabel: 'Close block picker', open: false, dismissible: true, closeOnBackdrop: true })
 
 export const ContextMenu: Story = componentStory('cb-context-menu', { label: 'Context menu', items, open: false, x: 32, y: 32, loop: true })
 

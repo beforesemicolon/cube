@@ -39,6 +39,13 @@ function seedPreview(tag: string, node: HTMLElement): void {
     else if (tag === 'cb-tooltip') {
         Object.assign(node, { content: 'Align selected layers' })
         node.append(demoButton('Hover or focus'))
+    } else if (tag === 'cb-popover') {
+        const trigger = demoButton('Open popover'); trigger.slot = 'trigger'; node.append(trigger, demoSurface('Popover content'))
+    } else if (tag === 'cb-hover-card') {
+        const trigger = demoButton('Hover or focus'); trigger.slot = 'trigger'; node.append(trigger, demoSurface('A compact preview with useful context.'))
+    } else if (tag === 'cb-drawer' || tag === 'cb-bottom-sheet') {
+        node.append(demoSurface(tag === 'cb-drawer' ? 'Drawer content' : 'Sheet content'))
+        const footer = document.createElement('div'); footer.slot = 'footer'; footer.append(demoButton('Done', 'primary')); node.append(footer)
     } else if (tag === 'cb-modal') {
         Object.assign(node, { heading: 'Create a page', description: 'Add a page to this project.' })
         const form = document.createElement('div')
@@ -55,6 +62,11 @@ function seedPreview(tag: string, node: HTMLElement): void {
     else if (tag === 'cb-grid') {
         node.style.gridTemplateColumns = 'repeat(3,minmax(0,1fr))'; node.style.gap = '8px'
         node.append(demoSurface('1'), demoSurface('2'), demoSurface('3'), demoSurface('4'), demoSurface('5'), demoSurface('6'))
+    } else if (tag === 'cb-collapsible-sidebar') node.append(demoSurface('Pages and layers'))
+    else if (tag === 'cb-resizable-panel') node.append(demoSurface('Drag the outside edge or focus it and use arrow keys.'))
+    else if (tag === 'cb-docked-panel') node.append(demoSurface('Docked inspector content'))
+    else if (tag === 'cb-panel-header') {
+        const action = demoButton('Reset', 'ghost'); action.slot = 'actions'; node.append(action)
     } else if (tag === 'cb-flashbar') Object.assign(node, { messages: [
         { id: 'saved', type: 'success', heading: 'Changes saved', message: 'Your project is up to date.', dismissible: true, duration: 0 },
         { id: 'publish', type: 'loading', heading: 'Publishing', message: 'Preparing the latest version.', duration: 0 },
@@ -65,12 +77,41 @@ function seedPreview(tag: string, node: HTMLElement): void {
     }
 }
 
+function launchButton(label: string, action: () => void): HTMLElement {
+    const button = demoButton(label, 'primary')
+    button.addEventListener('cb-action', action)
+    return button
+}
+
+function wireInteraction(tag: string, node: HTMLElement, wrapper: HTMLElement): void {
+    if (tag === 'cb-modal' || tag === 'cb-alert-dialog' || tag === 'cb-drawer' || tag === 'cb-bottom-sheet') {
+        const labels: Record<string, string> = { 'cb-modal': 'Open modal', 'cb-alert-dialog': 'Open alert dialog', 'cb-drawer': 'Open drawer', 'cb-bottom-sheet': 'Open bottom sheet' }
+        wrapper.append(launchButton(labels[tag] ?? 'Open', () => (node as HTMLElement & { show(): boolean }).show()), node)
+        return
+    }
+    if (tag === 'cb-command-palette') {
+        wrapper.append(launchButton('Open command palette', () => (node as HTMLElement & { show(): boolean }).show()), node)
+        return
+    }
+    if (tag === 'cb-context-menu') {
+        const target = demoSurface('Right-click this area')
+        target.tabIndex = 0
+        target.addEventListener('contextmenu', event => {
+            event.preventDefault()
+            ;(node as HTMLElement & { showAt(x: number, y: number): void }).showAt(event.clientX, event.clientY)
+        })
+        wrapper.append(target, node)
+        return
+    }
+    wrapper.append(node)
+}
+
 export function preview(tag: string, args: Record<string, unknown>, appearance: string) {
     const provider = document.createElement('cb-theme-provider')
     Object.assign(provider, { appearance })
     const wrapper = document.createElement('div'); wrapper.style.cssText = 'min-height:140px;max-width:960px;width:100%;padding:24px;box-sizing:border-box;background:var(--color-background);color:var(--color-foreground)'
     const node = document.createElement(tag); seedPreview(tag, node); Object.assign(node, args)
-    wrapper.append(node); provider.append(wrapper)
+    wireInteraction(tag, node, wrapper); provider.append(wrapper)
     return provider
 }
 export function silentAudio(seconds = 4): string {

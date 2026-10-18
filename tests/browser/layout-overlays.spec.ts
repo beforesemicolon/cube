@@ -23,6 +23,74 @@ test('layout primitives remain wrapper-free and expose semantic divider behavior
     await expect(page.locator('cb-divider')).toHaveAttribute('role', 'separator')
     await expect(page.locator('cb-divider')).toHaveAttribute('aria-orientation', 'horizontal')
 })
+
+test('panel components expose real disclosure and keyboard resize behavior', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const sidebar = document.createElement('cb-collapsible-sidebar') as HTMLElement & { label: string; expanded: boolean; expandLabel: string; collapseLabel: string }
+        Object.assign(sidebar, { label: 'Layers', expanded: true, expandLabel: 'Expand layers', collapseLabel: 'Collapse layers' })
+        sidebar.append(document.createTextNode('Layer list'))
+        const resizable = document.createElement('cb-resizable-panel') as HTMLElement & { label: string; value: number; min: number; max: number; step: number; resizeLabel: string }
+        Object.assign(resizable, { label: 'Properties', value: 320, min: 240, max: 400, step: 20, resizeLabel: 'Resize properties' })
+        resizable.append(document.createTextNode('Property list'))
+        const docked = document.createElement('cb-docked-panel') as HTMLElement & { label: string; expanded: boolean; collapsible: boolean; expandLabel: string; collapseLabel: string }
+        Object.assign(docked, { label: 'Inspector', expanded: true, collapsible: true, expandLabel: 'Expand inspector', collapseLabel: 'Collapse inspector' })
+        docked.append(document.createTextNode('Inspector content'))
+        document.querySelector('#fixture')?.append(sidebar, resizable, docked)
+    })
+    const sidebar = page.locator('cb-collapsible-sidebar')
+    await sidebar.getByRole('button', { name: 'Collapse layers' }).click()
+    await expect(sidebar).not.toHaveAttribute('expanded', '')
+    await expect(sidebar.locator('div[part=content]')).toBeHidden()
+    const separator = page.getByRole('separator', { name: 'Resize properties' })
+    await separator.press('ArrowRight')
+    await expect(page.locator('cb-resizable-panel')).toHaveJSProperty('value', 300)
+    const docked = page.locator('cb-docked-panel')
+    await docked.getByRole('button', { name: 'Collapse inspector' }).click()
+    await expect(docked.locator('div[part=content]')).toBeHidden()
+})
+
+test('popover and hover card are trigger-driven and light dismiss', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const popover = document.createElement('cb-popover')
+        const trigger = document.createElement('button'); trigger.slot = 'trigger'; trigger.textContent = 'Show details'
+        popover.append(trigger, document.createTextNode('Popover details'))
+        const hoverCard = document.createElement('cb-hover-card') as HTMLElement & { delay: number }
+        hoverCard.delay = 0
+        const hoverTrigger = document.createElement('button'); hoverTrigger.slot = 'trigger'; hoverTrigger.textContent = 'Preview profile'
+        hoverCard.append(hoverTrigger, document.createTextNode('Profile preview'))
+        document.querySelector('#fixture')?.append(popover, hoverCard)
+    })
+    const popover = page.locator('cb-popover')
+    await page.getByRole('button', { name: 'Show details' }).click()
+    await expect(popover.locator('[part~=popover]')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(popover.locator('[part~=popover]')).toBeHidden()
+    await page.getByRole('button', { name: 'Preview profile' }).hover()
+    await expect(page.locator('cb-hover-card').locator('[part~=card]')).toBeVisible()
+})
+
+test('drawer and bottom sheet launch and dismiss through their composed controls', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const drawer = document.createElement('cb-drawer') as HTMLElement & { heading: string; closeLabel: string; show(): boolean }
+        Object.assign(drawer, { heading: 'Page settings', closeLabel: 'Close page settings' })
+        drawer.append(document.createTextNode('Drawer content'))
+        const sheet = document.createElement('cb-bottom-sheet') as HTMLElement & { heading: string; closeLabel: string; show(): boolean }
+        Object.assign(sheet, { heading: 'Insert block', closeLabel: 'Close block picker' })
+        sheet.append(document.createTextNode('Sheet content'))
+        document.querySelector('#fixture')?.append(drawer, sheet)
+        drawer.show()
+    })
+    await expect(page.getByRole('dialog', { name: 'Page settings' })).toBeVisible()
+    await page.getByRole('button', { name: 'Close page settings' }).click()
+    await expect(page.getByRole('dialog', { name: 'Page settings' })).toBeHidden()
+    await page.locator('cb-bottom-sheet').evaluate((node: HTMLElement & { show(): boolean }) => node.show())
+    await expect(page.getByRole('dialog', { name: 'Insert block' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog', { name: 'Insert block' })).toBeHidden()
+})
 test('modal uses native dialog semantics and reports keyboard dismissal', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {

@@ -1,10 +1,6 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { ModalBase, type ModalProps } from '../modal/ModalBase.js'
 
-export interface BottomSheetProps extends StudioProps {}
+export interface BottomSheetProps extends ModalProps {}
 
-/** Headless behavior for the Bottom sheet component. */
-export abstract class BottomSheetBase extends StudioComponentBase<BottomSheetProps> {
-    readonly componentName = 'bottom-sheet'
-    readonly componentKind: StudioKind = 'panel'
-}
+/** Bottom-anchored dialog behavior without prescribing sheet content. */
+export abstract class BottomSheetBase<P extends BottomSheetProps = BottomSheetProps> extends ModalBase<P> {}

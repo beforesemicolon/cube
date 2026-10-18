@@ -7,7 +7,7 @@ for(const {path,name,className}of componentEntries){
     assert.match(await readFile(`components/${path}/index.ts`,'utf8'),new RegExp(`register\\('cb-${name}'`))
 }
 for(const {category,name,className}of studioDefinitions){
-    assert.match(await readFile(`components/${category}/${name}/${className}Base.ts`,'utf8'),/extends (?:StudioComponentBase|FormFieldBase)/)
+    assert.match(await readFile(`components/${category}/${name}/${className}Base.ts`,'utf8'),/extends (?:StudioComponentBase|FormFieldBase|UIComponent|Component|ModalBase)/)
     await access(`components/${category}/${name}/base.ts`)
 }
 assert.equal(studioDefinitions.length,56,'The audited Studio catalog contains 56 component families')
