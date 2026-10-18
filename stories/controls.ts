@@ -43,7 +43,7 @@ const numberProperties = new Set([
 ])
 
 const objectProperties = new Set([
-    'items', 'messages', 'options', 'series', 'theme', 'tracks', 'visibleSegments', 'visibleSeries',
+    'items', 'messages', 'options', 'series', 'theme', 'tracks', 'units', 'visibleSegments', 'visibleSeries',
     'xAxis', 'yAxis',
 ])
 
@@ -59,7 +59,7 @@ const layoutProperties = new Set([
 ])
 
 const dataProperties = new Set([
-    'items', 'messages', 'options', 'series', 'theme', 'tracks', 'value', 'visibleSegments',
+    'items', 'messages', 'options', 'series', 'theme', 'tracks', 'units', 'value', 'visibleSegments',
     'visibleSeries', 'xAxis', 'yAxis',
 ])
 
@@ -137,6 +137,9 @@ const descriptions: Readonly<Record<string, string>> = {
     series: 'Editable chart series and data points.',
     theme: 'Site-builder-compatible theme definition applied as CSS variables.',
     tracks: 'Editable caption-track collection for media playback.',
+    unit: 'Current unit displayed beside the numeric value.',
+    unitLabel: 'Accessible label for the unit selector.',
+    units: 'Editable units the user can choose from. A single unit is displayed as a static suffix.',
     value: 'Current controlled value.',
     valueFormatter: 'Storybook formatter preset used for chart values.',
     visibleSegments: 'Controlled list of visible pie or donut segment IDs.',
@@ -154,7 +157,7 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     modalSize: 'md', multiple: 'false', muted: 'false', native: 'false', open: 'false', options: '[]',
     orientation: 'horizontal', patterns: 'false', placement: 'bottom-start', playbackRate: '1', position: 'top-end',
     preload: 'metadata', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', seekStep: '10',
-    series: '[]', size: 'sm', status: 'finished', step: '1', theme: 'null', tracks: '[]', value: "''",
+    series: '[]', size: 'sm', status: 'finished', step: '1', theme: 'null', tracks: '[]', units: '[]', value: "''",
     visibleSegments: 'null', visibleSeries: 'null', wrap: 'false', xAxis: '{}', yAxis: '{}', zoomable: 'false',
 }
 
@@ -173,7 +176,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     popupControls: '', popupExpanded: false, popupType: '', position: 'top-end', poster: '', preload: 'metadata',
     pressed: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
     seekStep: 10, selectionCount: 0, siblings: 1, size: 'sm', src: '', status: '', step: 1, target: '_self',
-    totalPages: 1, type: 'button', value: '', valueText: '', wrap: false, x: 0, y: 0, zoomable: false,
+    totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', wrap: false, x: 0, y: 0, zoomable: false,
 }
 
 const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue>>>> = {
@@ -240,6 +243,7 @@ function typeSummary(tag: string, property: string, control: StoryControl['contr
     if (property === 'valueFormatter') return '(value: number) => string'
     if (property === 'items') return 'Item[]'
     if (property === 'options') return 'SelectOption[]'
+    if (property === 'units') return 'UnitOption[]'
     if (property === 'series') return tag === 'cb-pie-chart' ? 'PieSeries' : 'Series[]'
     if (property === 'tracks') return 'CaptionTrack[]'
     if (property === 'messages') return 'FlashbarMessage[]'

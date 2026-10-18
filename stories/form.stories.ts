@@ -13,7 +13,7 @@ export const Textarea: Story = componentStory('cb-textarea', { label: 'Textarea'
 
 export const NumberInput: Story = componentStory('cb-number-input', { label: 'Number input', value: 24, min: 0, max: 100, step: 1 })
 
-export const UnitInput: Story = componentStory('cb-unit-input', { label: 'Unit input', value: 24, min: 0, max: 100, step: 1, unitLabel: 'Unit' })
+export const UnitInput: Story = componentStory('cb-unit-input', { label: 'Unit input', value: 24, min: 0, max: 100, step: 1, unit: 'px', units: [{ value: 'px', label: 'px' }, { value: '%', label: '%' }, { value: 'rem', label: 'rem' }, { value: 'vw', label: 'vw' }], unitLabel: 'Unit' })
 
 export const Combobox: Story = componentStory('cb-combobox', { label: 'Font family', placeholder: 'Search fonts', toggleLabel: 'Toggle options', emptyLabel: 'No fonts found', open: false, autocomplete: 'list', options: [{ value: 'inter', label: 'Inter' }, { value: 'source-sans', label: 'Source Sans 3' }] })
 

@@ -38,6 +38,16 @@ order: 21
 | Slider | `<cb-slider>` | `@beforesemicolon/cube/form/slider` |
 | Calendar | `<cb-calendar>` | `@beforesemicolon/cube/form/calendar` |
 
+{{t.cube.unitInputBody}}
+
+```html
+<cb-unit-input label="Width" value="320" unit="px" unit-label="Unit"></cb-unit-input>
+<script type="module">
+  const input = document.querySelector('cb-unit-input')
+  input.units = ['px', '%', 'rem', 'vw']
+</script>
+```
+
 ## API
 
 {{t.cube.studioCatalogApi}}

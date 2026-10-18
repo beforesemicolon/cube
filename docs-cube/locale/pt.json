@@ -40,6 +40,7 @@
     "categoryAction": "Ações",
     "categoryForm": "Formulários",
     "formNative": "Select, DatePicker e TimePicker usam a renderização consistente do Cube por padrão. Adicione a flag native apenas quando preferir o seletor nativo do browser. Combobox fornece os comportamentos de lista e preenchimento automático através da propriedade autocomplete, e Calendar também está disponível como componente independente.",
+    "unitInputBody": "UnitInput aceita uma unidade atual e uma coleção de unidades. Uma única unidade é exibida como sufixo estático; várias unidades tornam-se um seletor acessível por teclado. As alterações de unidade emitem cb-unit-change sem modificar o valor numérico.",
     "studioLayout": "Layout",
     "categoryNavigation": "Navegação",
     "categoryOverlay": "Sobreposições",

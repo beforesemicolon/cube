@@ -26,6 +26,52 @@ test('custom select is the default and native rendering is opt in', async ({ pag
     await expect(page.locator('cb-select').nth(1).getByRole('combobox', { name: 'Browser device' })).toHaveValue('mobile')
 })
 
+test('unit input offers configurable units without changing its numeric value', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const input = document.createElement('cb-unit-input') as HTMLElement & {
+            label: string
+            value: number
+            unit: string
+            units: Array<string | { value: string; label: string; disabled?: boolean }>
+            unitLabel: string
+        }
+        input.label = 'Width'
+        input.value = 320
+        input.unit = 'px'
+        input.units = ['px', { value: '%', label: 'percent' }, { value: 'rem', label: 'rem', disabled: true }]
+        input.unitLabel = 'Unit'
+        document.querySelector('#fixture')?.append(input)
+    })
+
+    const input = page.locator('cb-unit-input')
+    const unitSelect = input.locator('cb-select[part~="unit-select"]')
+    const trigger = unitSelect.getByRole('button', { name: 'Unit: px' })
+    await expect(input.locator('input[type="number"]')).toHaveAttribute('aria-valuetext', '320 px')
+    await trigger.focus()
+    await trigger.press('ArrowDown')
+    await expect(unitSelect.getByRole('option', { name: 'px' })).toBeFocused()
+    await page.keyboard.press('ArrowDown')
+    await expect(unitSelect.getByRole('option', { name: 'percent' })).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(input).toHaveJSProperty('unit', '%')
+    await expect(input).toHaveJSProperty('value', 320)
+    await expect(input.locator('input[type="number"]')).toHaveAttribute('aria-valuetext', '320 percent')
+
+    const event = await input.evaluate(element => new Promise<{ unit: string; value: number }>(resolve => {
+        element.addEventListener('cb-unit-change', customEvent => {
+            const detail = (customEvent as CustomEvent<{ unit: string }>).detail
+            resolve({ unit: detail.unit, value: (element as HTMLElement & { value: number }).value })
+        }, { once: true })
+        const component = element as HTMLElement & { chooseUnit(unit: string): boolean }
+        component.chooseUnit('px')
+    }))
+    expect(event).toEqual({ unit: 'px', value: 320 })
+
+    const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
+    expect(audit.violations).toEqual([])
+})
+
 test('combobox stays closed initially, filters interactively and replaces autocomplete-only components', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {

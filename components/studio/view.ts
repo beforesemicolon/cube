@@ -1,6 +1,8 @@
 import { aria, editorCSS, el, fragment, sheet, slot, uid } from '../core/editor-dom.js'
 import { scalarText } from '../core/value.js'
 import { createIcon } from '../icons/paths.js'
+import type { Select } from '../form/select/index.js'
+import type { UnitInputBase } from '../form/unit-input/UnitInputBase.js'
 import type { StudioComponentBase } from './StudioComponentBase.js'
 import type { StudioItem, StudioValue } from './types.js'
 
@@ -74,6 +76,11 @@ textarea[part~=control]{min-block-size:calc(var(--cb-height) * 2.4);resize:verti
 [part~=field-shell]{display:flex;align-items:stretch;min-inline-size:180px}
 [part~=field-shell] [part~=control]{border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
 [part~=field-affix]{display:grid;place-items:center;min-inline-size:42px;padding-inline:8px;border:1px solid var(--color-border);border-inline-start:0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;background:var(--color-surface-muted);color:var(--color-muted-foreground)}
+[part~=unit-select]{--component-select-width:auto;display:block;inline-size:auto;min-inline-size:58px;flex:none}
+[part~=unit-select]::part(field){display:block;block-size:100%}
+[part~=unit-select]::part(label),[part~=unit-select]::part(description),[part~=unit-select]::part(error),[part~=unit-select]::part(native){display:none}
+[part~=unit-select]::part(trigger){block-size:100%;min-block-size:var(--cb-height);padding-inline:8px;border-inline-start:0;border-start-start-radius:0;border-end-start-radius:0;background:var(--color-surface-muted);color:var(--color-muted-foreground)}
+[part~=unit-select]::part(popup){inset-inline-start:auto;min-inline-size:max(100%,88px)}
 [part~=field-affix][data-side=start]{border-inline:1px solid var(--color-border);border-inline-end:0;border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
 [part~=field-shell][data-prefix] [part~=control]{border-radius:0 var(--radius-sm) var(--radius-sm) 0}
 [part~=suggestions]{margin-block-start:4px}
@@ -329,9 +336,39 @@ export function createStudioView(host: StudioComponentBase): StudioView {
             node.setAttribute('aria-label', host.studioAccessibleName())
         }
         if (host.componentName === 'unit-input') {
+            const unitHost = host as UnitInputBase
             const shell = el('div', 'field-shell')
-            const unit = el('button', 'field-affix unit', 'px'); unit.type = 'button'; unit.setAttribute('aria-label', componentText(host, 'unitLabel'))
-            shell.append(node, unit); body.append(shell)
+            const unit = el('span', 'field-affix unit unit-static')
+            unit.setAttribute('aria-hidden', 'true')
+            const unitSelect = document.createElement('cb-select') as Select
+            unitSelect.setAttribute('part', 'unit unit-select')
+            unitSelect.addEventListener('cb-change', event => {
+                event.stopPropagation()
+                const detail = (event as CustomEvent<{ value: string | string[]; originalEvent?: Event }>).detail
+                const selectedUnit = Array.isArray(detail.value) ? detail.value[0] ?? '' : detail.value
+                unitHost.chooseUnit(selectedUnit, detail.originalEvent ?? event)
+            })
+            shell.append(node, unit, unitSelect)
+            body.append(shell)
+            const originalUpdate = updateBody
+            updateBody = (): void => {
+                originalUpdate()
+                const options = unitHost.normalizedUnits
+                const selectedUnit = unitHost.selectedUnit
+                const selectedOption = options.find(option => option.value === selectedUnit)
+                const visibleUnit = selectedOption?.label ?? selectedUnit
+                const interactive = options.length > 1
+                unit.textContent = visibleUnit
+                unit.hidden = interactive || !visibleUnit
+                unitSelect.hidden = !interactive
+                unitSelect.options = [...options]
+                unitSelect.value = selectedUnit
+                unitSelect.accessibleLabel = componentText(host, 'unitLabel')
+                unitSelect.disabled = unitHost.studioDisabled()
+                unitSelect.readOnly = unitHost.studioReadOnly()
+                if (visibleUnit && node instanceof HTMLInputElement) node.setAttribute('aria-valuetext', `${node.value} ${visibleUnit}`)
+                else node.removeAttribute('aria-valuetext')
+            }
         } else if (host.componentName === 'stepper') {
             const shell = el('div', 'field-shell stepper')
             const decrement = el('button', 'stepper-button', '−'); decrement.type = 'button'; decrement.setAttribute('aria-label', componentText(host, 'decrementLabel'))

@@ -1,5 +1,6 @@
 import { register } from '../../core/Component.js'
 import { createStudioView, type StudioView } from '../../studio/view.js'
+import '../select/index.js'
 import { UnitInputBase } from './UnitInputBase.js'
 
 export class UnitInput extends UnitInputBase {
@@ -10,4 +11,4 @@ export class UnitInput extends UnitInputBase {
 
 register('cb-unit-input', UnitInput)
 export { UnitInputBase }
-export type { UnitInputProps } from './UnitInputBase.js'
+export type { UnitInputProps, UnitOption } from './UnitInputBase.js'

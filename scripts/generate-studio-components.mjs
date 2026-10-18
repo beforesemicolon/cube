@@ -159,9 +159,8 @@ const catalog = `import type { StudioBoardItem, StudioDefinition } from './types
 await mkdir(resolve('components/studio'), { recursive: true })
 await writeFile(resolve('components/studio/catalog.ts'), catalog)
 
-const handBuiltComponents = new Set(['code-preview', 'combobox', 'date-picker', 'time-picker'])
+const handBuiltComponents = new Set(['code-preview', 'combobox', 'date-picker', 'time-picker', 'unit-input'])
 const componentTextProps = {
-    'unit-input': [['unitLabel', 'unit-label']],
     stepper: [['decrementLabel', 'decrement-label'], ['incrementLabel', 'increment-label']],
     'file-picker': [['fileLabel', 'file-label'], ['fileRequirements', 'file-requirements']],
     table: [['nameLabel', 'name-label'], ['metadataLabel', 'metadata-label']],
@@ -216,7 +215,7 @@ const sampleByKind = {
 }
 
 const foundationStoryArgs = {
-    'unit-input': `{ label: 'Unit input', value: 24, min: 0, max: 100, step: 1, unitLabel: 'Unit' }`,
+    'unit-input': `{ label: 'Unit input', value: 24, min: 0, max: 100, step: 1, unit: 'px', units: [{ value: 'px', label: 'px' }, { value: '%', label: '%' }, { value: 'rem', label: 'rem' }, { value: 'vw', label: 'vw' }], unitLabel: 'Unit' }`,
     stepper: `{ label: 'Stepper', value: 24, min: 0, max: 100, step: 1, decrementLabel: 'Decrease', incrementLabel: 'Increase' }`,
     'file-picker': `{ label: 'File picker', fileLabel: 'Choose a file', fileRequirements: 'Select a file from your device' }`,
     table: `{ label: 'Table', value: 'one', items, emptyLabel: 'No items', nameLabel: 'Name', metadataLabel: 'Details' }`,

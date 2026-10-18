@@ -5,6 +5,9 @@ const meta: Meta = { title: 'Examples', parameters: { docs: { description: { com
 export default meta
 type Story = StoryObj
 
+const lengthUnits = [{ value: 'px', label: 'px' }, { value: '%', label: '%' }, { value: 'rem', label: 'rem' }, { value: 'vw', label: 'vw' }]
+const lengthUnitProps = { unit: 'px', units: lengthUnits, unitLabel: 'Unit' }
+
 function surface(...children: HTMLElement[]): HTMLElement {
     const node = document.createElement('div')
     node.style.cssText = 'display:grid;gap:16px;max-width:720px;padding:24px;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface);color:var(--color-foreground)'
@@ -37,8 +40,8 @@ export const Dimensions: Story = {
     render: () => {
         const row = component('cb-row', { gap: '12px', wrap: true })
         row.append(
-            component('cb-unit-input', { label: 'Width', value: 320 }),
-            component('cb-unit-input', { label: 'Height', value: 180 }),
+            component('cb-unit-input', { label: 'Width', value: 320, ...lengthUnitProps }),
+            component('cb-unit-input', { label: 'Height', value: 180, ...lengthUnitProps }),
             component('cb-text-input', { label: 'Aspect ratio', value: '16 : 9' }),
             component('cb-number-input', { label: 'Z index', value: 10 }),
         )
@@ -62,10 +65,10 @@ export const BoxModel: Story = {
     render: () => {
         const inputs = component('cb-grid', { columns: 'repeat(2,minmax(0,1fr))', gap: '12px' })
         inputs.append(
-            component('cb-unit-input', { label: 'Padding block', value: 24 }),
-            component('cb-unit-input', { label: 'Padding inline', value: 32 }),
-            component('cb-unit-input', { label: 'Margin block', value: 0 }),
-            component('cb-unit-input', { label: 'Margin inline', value: 0 }),
+            component('cb-unit-input', { label: 'Padding block', value: 24, ...lengthUnitProps }),
+            component('cb-unit-input', { label: 'Padding inline', value: 32, ...lengthUnitProps }),
+            component('cb-unit-input', { label: 'Margin block', value: 0, ...lengthUnitProps }),
+            component('cb-unit-input', { label: 'Margin inline', value: 0, ...lengthUnitProps }),
         )
         return surface(inputs)
     },
@@ -76,7 +79,7 @@ export const LayoutControls: Story = {
     render: () => surface(
         component('cb-segmented-control', { label: 'Direction', accessibleLabel: 'Flex direction', value: 'row', items: [{ id: 'row', label: 'Row' }, { id: 'column', label: 'Column' }] }),
         component('cb-segmented-control', { label: 'Alignment', accessibleLabel: 'Alignment', value: 'center', items: [{ id: 'start', label: 'Start' }, { id: 'center', label: 'Center' }, { id: 'end', label: 'End' }] }),
-        component('cb-unit-input', { label: 'Gap', value: 16 }),
+        component('cb-unit-input', { label: 'Gap', value: 16, ...lengthUnitProps }),
         component('cb-switch', { label: 'Wrap children', checked: true }),
     ),
 }
@@ -87,7 +90,7 @@ export const StylingControls: Story = {
         component('cb-color-picker', { label: 'Fill', value: '#2563eb' }),
         component('cb-range-slider', { label: 'Opacity', value: 84, min: 0, max: 100, step: 1 }),
         component('cb-select', { label: 'Blend mode', value: 'normal', options: [{ value: 'normal', label: 'Normal' }, { value: 'multiply', label: 'Multiply' }, { value: 'screen', label: 'Screen' }] }),
-        component('cb-unit-input', { label: 'Corner radius', value: 12 }),
+        component('cb-unit-input', { label: 'Corner radius', value: 12, ...lengthUnitProps }),
     ),
 }
 
@@ -96,7 +99,7 @@ export const TypographyControls: Story = {
     render: () => surface(
         component('cb-combobox', { label: 'Font family', value: 'inter', options: [{ value: 'inter', label: 'Inter' }, { value: 'source', label: 'Source Sans 3' }, { value: 'system', label: 'System UI' }] }),
         component('cb-select', { label: 'Weight', value: '600', options: [{ value: '400', label: 'Regular' }, { value: '600', label: 'Semibold' }, { value: '700', label: 'Bold' }] }),
-        component('cb-unit-input', { label: 'Font size', value: 16 }),
+        component('cb-unit-input', { label: 'Font size', value: 16, ...lengthUnitProps }),
         component('cb-segmented-control', { label: 'Text alignment', value: 'left', items: [{ id: 'left', label: 'Left' }, { id: 'center', label: 'Center' }, { id: 'right', label: 'Right' }] }),
     ),
 }
