@@ -2,7 +2,8 @@ import type { Meta,StoryObj } from '@storybook/web-components-vite'
 import { expect,userEvent,waitFor } from 'storybook/test'
 import { preview,silentAudio } from './helpers.js'
 import { controlsFor, storyArgsFor } from './controls.js'
-const meta:Meta={title:'Media',tags:['autodocs'],args:storyArgsFor('cb-audio-player',{mediaTitle:'Studio recording',seekStep:10,locale:'en'}),argTypes:controlsFor('cb-audio-player'),parameters:{docs:{description:{component:'Transport buttons are cb-icon-button; timeline and volume are cb-slider; speed and captions are cb-select. Native audio/video elements retain playback state. Themes and CSS parts are inherited. The video example uses an original four-second offline clip with finite seekable duration.'}}},render:(args,c)=>preview('cb-audio-player',args,c.globals.appearance)}
+const mediaText={playLabel:'Play',pauseLabel:'Pause',stopLabel:'Stop',backwardLabel:'Seek backward',forwardLabel:'Seek forward',seekLabel:'Seek',volumeLabel:'Volume',muteLabel:'Mute',unmuteLabel:'Unmute',rateLabel:'Playback speed',captionsLabel:'Captions',captionsOffLabel:'Captions off',fullscreenLabel:'Enter fullscreen',exitFullscreenLabel:'Exit fullscreen',emptyText:'No media source.',errorText:'Unable to play this media.',bufferingText:'Buffering',liveText:'Live'}
+const meta:Meta={title:'Media',tags:['autodocs'],args:storyArgsFor('cb-audio-player',{...mediaText,mediaTitle:'Studio recording',seekStep:10}),argTypes:controlsFor('cb-audio-player'),parameters:{docs:{description:{component:'Transport buttons are cb-icon-button; timeline and volume are cb-slider; speed and captions are cb-select. Native audio/video elements retain playback state. All visible and accessible text is supplied by the application. Themes and CSS parts are inherited. The video example uses an original four-second offline clip with finite seekable duration.'}}},render:(args,c)=>preview('cb-audio-player',args,c.globals.appearance)}
 export default meta
 type Story=StoryObj
 export const EmptyAudio:Story={}
@@ -14,7 +15,7 @@ export const Audio:Story={render:(args,c)=>preview('cb-audio-player',{...args,sr
     const stop=host.shadowRoot!.querySelector('[part=stop]')!.shadowRoot!.querySelector('button')!
     await userEvent.click(stop);await expect(media.paused).toBe(true);host.dataset.storyReady='true'
 }}
-export const Portuguese:Story={...Audio,args:{locale:'pt',mediaTitle:'Gravação do estúdio'}}
+export const TranslatedCopy:Story={...Audio,args:{mediaTitle:'Gravação do estúdio',playLabel:'Ouvir',pauseLabel:'Pausar',stopLabel:'Parar',backwardLabel:'Recuar',forwardLabel:'Avançar',seekLabel:'Procurar',volumeLabel:'Volume',muteLabel:'Silenciar',unmuteLabel:'Ativar som',rateLabel:'Velocidade',emptyText:'Nenhuma fonte multimédia.',errorText:'Não foi possível reproduzir o conteúdo.',bufferingText:'A carregar',liveText:'Ao vivo'}}
 export const InvalidSource:Story={args:{src:'javascript:alert(1)'}}
 function video(args:Record<string,unknown>,appearance:string,captions=false){
     return preview('cb-video-player',{...args,mediaTitle:'Studio film',src:'/fixtures/studio.webm',poster:'/poster.svg',...(captions?{tracks:[{src:'/captions.vtt',language:'en',label:'English'}]}:{})},appearance)

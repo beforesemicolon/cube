@@ -7,4 +7,4 @@ export default meta
 type Story = StoryObj
 const items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]
 
-export const ThemeProvider: Story = componentStory('cb-theme-provider', { appearance: 'system', src: '', theme: null, locale: 'en', labels: {} })
+export const ThemeProvider: Story = componentStory('cb-theme-provider', { appearance: 'system', src: '', theme: null })

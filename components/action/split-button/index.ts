@@ -36,10 +36,10 @@ export class SplitButton extends SplitButtonBase {
     protected popupElement(): HTMLElement | undefined { return this.popup }
     protected syncView(): void {
         if (!this.group || !this.primary || !this.trigger || !this.menu) return
-        this.group.setAttribute('aria-label', this.accessibleName('action'))
-        Object.assign(this.primary, { label: scalarText(this.label) || this.ui('action'), accessibleLabel: this.accessibleName('action'), disabled: this.unavailable, loading: bool(this.loading), variant: 'primary' })
-        Object.assign(this.trigger, { icon: 'down', accessibleLabel: scalarText(this.menuLabel) || this.ui('moreActions'), disabled: this.unavailable, variant: 'primary', popupType: 'menu', popupExpanded: bool(this.open) })
-        Object.assign(this.menu, { items: this.items, disabled: this.unavailable, accessibleLabel: scalarText(this.menuLabel) || this.ui('moreActions') })
+        this.group.setAttribute('aria-label', this.accessibleName())
+        Object.assign(this.primary, { label: scalarText(this.label), accessibleLabel: this.accessibleName(), disabled: this.unavailable, loading: bool(this.loading), variant: 'primary' })
+        Object.assign(this.trigger, { icon: 'down', accessibleLabel: scalarText(this.menuLabel), disabled: this.unavailable, variant: 'primary', popupType: 'menu', popupExpanded: bool(this.open) })
+        Object.assign(this.menu, { items: this.items, disabled: this.unavailable, accessibleLabel: scalarText(this.menuLabel) })
     }
 }
 

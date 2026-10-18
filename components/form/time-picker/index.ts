@@ -85,7 +85,9 @@ export class TimePicker extends TimePickerBase {
             this.popup.append(option)
         }
         const match = /^(?<hours>[01]\d|2[0-3]):(?<minutes>[0-5]\d)$/.exec(this.value)
-        this.valueNode.textContent = match?.groups ? this.formatTime(Number(match.groups.hours), Number(match.groups.minutes)) : this.ui('choose')
+        this.valueNode.textContent = match?.groups ? this.formatTime(Number(match.groups.hours), Number(match.groups.minutes)) : text(this.placeholder)
+        const accessibleName = this.accessibleName(), visibleValue = this.valueNode.textContent ?? ''
+        this.trigger.setAttribute('aria-label', accessibleName && visibleValue ? `${accessibleName}: ${visibleValue}` : accessibleName || visibleValue)
         this.trigger.disabled = this.unavailable || bool(this.readOnly)
         this.trigger.setAttribute('aria-haspopup', 'listbox')
         this.trigger.setAttribute('aria-controls', this.popup.id)
@@ -106,7 +108,7 @@ export class TimePicker extends TimePickerBase {
     }
 
     focus(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.trigger)?.focus(options) }
-    private formatTime(hours: number, minutes: number): string { return new Intl.DateTimeFormat(this.language(), { hour: 'numeric', minute: '2-digit' }).format(new Date(2024, 0, 1, hours, minutes)) }
+    private formatTime(hours: number, minutes: number): string { return new Intl.DateTimeFormat(this.documentLanguage(), { hour: 'numeric', minute: '2-digit' }).format(new Date(2024, 0, 1, hours, minutes)) }
     private optionNodes(): HTMLButtonElement[] { return [...(this.popup?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [])] }
     private handleKey(event: KeyboardEvent): void {
         if (event.key === 'Escape') { event.preventDefault(); this.setOpen(false, event); this.trigger?.focus(); return }

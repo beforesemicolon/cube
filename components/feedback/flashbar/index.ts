@@ -1,7 +1,7 @@
 import { register } from '../../core/Component.js'
 import { editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { createIcon } from '../../icons/paths.js'
-import { editorMessage } from '../../core/editor-locales.js'
+import { scalarText } from '../../core/value.js'
 import { FlashbarBase, type NormalizedFlashbarMessage } from './FlashbarBase.js'
 
 const typeIcon: Readonly<Record<NormalizedFlashbarMessage['type'], string>> = {
@@ -13,7 +13,8 @@ export class Flashbar extends FlashbarBase {
 
     render(): Node {
         this.region = el('section', 'region')
-        this.region.setAttribute('aria-label', editorMessage(this.locale, this.labels, 'notifications'))
+        const label = scalarText(this.accessibleLabel)
+        if (label) this.region.setAttribute('aria-label', label)
         return fragment(sheet(editorCSS + `
 :host{position:fixed;z-index:var(--z-index-flashbar,90);inset-block-start:var(--spacing-lg,16px);inset-inline-end:var(--spacing-lg,16px);display:block;inline-size:min(400px,calc(100vw - 32px));pointer-events:none}
 :host([data-position=top-start]){inset-inline-start:var(--spacing-lg,16px);inset-inline-end:auto}:host([data-position=bottom-start]){inset-block-start:auto;inset-block-end:var(--spacing-lg,16px);inset-inline-start:var(--spacing-lg,16px);inset-inline-end:auto}:host([data-position=bottom-end]){inset-block-start:auto;inset-block-end:var(--spacing-lg,16px)}
@@ -27,7 +28,8 @@ export class Flashbar extends FlashbarBase {
 
     protected syncMessages(messages: readonly NormalizedFlashbarMessage[]): void {
         if (!this.region) return
-        this.region.setAttribute('aria-label', editorMessage(this.locale, this.labels, 'notifications'))
+        const label = scalarText(this.accessibleLabel)
+        if (label) this.region.setAttribute('aria-label', label); else this.region.removeAttribute('aria-label')
         const focused = this.ownerDocument.activeElement
         this.region.replaceChildren(...messages.map(message => this.messageNode(message)))
         if (focused instanceof HTMLElement && this.contains(focused)) focused.focus()
@@ -49,12 +51,11 @@ export class Flashbar extends FlashbarBase {
             action.addEventListener('click', event => this.action(message, event))
             actions.append(action)
         }
-        if (message.dismissible) {
+        if (message.dismissible && message.dismissLabel) {
             const dismiss = el('button', 'dismiss')
             dismiss.type = 'button'
-            const label = message.dismissLabel || editorMessage(this.locale, this.labels, 'dismiss')
-            dismiss.setAttribute('aria-label', label)
-            dismiss.title = label
+            dismiss.setAttribute('aria-label', message.dismissLabel)
+            dismiss.title = message.dismissLabel
             dismiss.append(createIcon('close'))
             dismiss.addEventListener('click', () => this.dismiss(message.id, 'dismiss-button'))
             actions.append(dismiss)

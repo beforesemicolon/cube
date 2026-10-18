@@ -108,10 +108,11 @@ test('Studio fields expose invalid and read-only states without throwing or acce
 
 test('code preview uses Highlight.js without interpreting source markup', async ({ page }) => {
     await page.evaluate(() => {
-        const preview = document.createElement('cb-code-preview') as HTMLElement & { label:string; code:string; codeLanguage:string }
+        const preview = document.createElement('cb-code-preview') as HTMLElement & { label:string; code:string; codeLanguage:string; copyLabel:string }
         preview.label = 'HTML example'
         preview.code = '<cb-button label="Save"></cb-button>'
         preview.codeLanguage = 'html'
+        preview.copyLabel = 'Copy'
         document.querySelector('#fixture')!.append(preview)
     })
     const preview = page.locator('cb-code-preview')

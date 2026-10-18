@@ -1,7 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { cubeTheme, flattenTheme } from '../components/theme/tokens.js'
-import { messages } from '../components/locales/index.js'
 const theme = (tokens: Record<string,unknown>)=>({schemaVersion:'1.0',name:'test',tokens:{color:{primary:'red'},...tokens}})
 test('default themes match site-builder mode-aware contract',()=>{
     const light=flattenTheme(cubeTheme,'light'), dark=flattenTheme(cubeTheme,'dark')
@@ -30,16 +29,4 @@ test('malicious, cyclic, colliding and oversized tokens fail atomically',()=>{
     assert.throws(()=>flattenTheme(theme({custom:cyclic}),'light'))
     assert.throws(()=>flattenTheme({schemaVersion:'1.0',name:'bad',tokens:{}},'light'))
     assert.throws(()=>flattenTheme(theme({custom:Object.fromEntries(Array.from({length:4097},(_,i)=>['t'+i,i]))}),'light'))
-})
-test('localized labels fall back safely and caller overrides win',()=>{
-    assert.equal(messages('pt-BR',{play:'Ouvir'}).play,'Ouvir')
-    assert.equal(messages('xx',{play:null} as any).play,'Play')
-    assert.equal(messages('en',{play:''}).play,'Play')
-})
-
-test('all supported component locales provide translated media and chart labels', () => {
-    for (const locale of ['pt-PT', 'es-ES', 'fr-FR', 'zh-CN']) {
-        assert.notEqual(messages(locale, {}).play, messages('en', {}).play)
-        assert.notEqual(messages(locale, {}).chart, messages('en', {}).chart)
-    }
 })

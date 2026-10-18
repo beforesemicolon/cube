@@ -3,8 +3,9 @@ import { preview } from './helpers.js'
 import { controlsFor, storyArgsFor, type StoryArgs } from './controls.js'
 import { chartExamples } from './fixtures/chart-types.js'
 import { exerciseChart } from './chart-interactions.js'
+const chartText={accessibleLabel:'Chart',loadingText:'Loading chart',emptyText:'No data available.',noMatchText:'No visible data',errorText:'Unable to load chart.',retryLabel:'Retry',showAllLabel:'Show all',legendLabel:'Legend',tableLabel:'View data table',seriesLabel:'Series',categoryLabel:'Category',valueLabel:'Value',rangeLabel:'Range',sizeLabel:'Size',percentageLabel:'Percentage',missingText:'Not available',navigateLabel:'Explore chart',instructionsText:'Use arrow keys to explore data points. Press Enter to pin and Escape to unpin.',pinnedText:'Pinned',unpinLabel:'Unpin',zoomInLabel:'Zoom in',zoomOutLabel:'Zoom out',resetZoomLabel:'Reset zoom'}
 const meta:Meta={
-    title:'Charts',tags:['autodocs'],args:{...chartExamples.line.props,height:320,locale:'en'},
+    title:'Charts',tags:['autodocs'],args:{...chartText,...chartExamples.line.props,height:320},
     parameters:{docs:{description:{component:'Cartesian, pie and donut visualizations share Cube controls, theme tokens, accessibility behavior and Apache ECharts rendering. Switch the appearance toolbar for light and dark; values, labels, axes, stacking and data remain editable in Controls.'}}},
     render:(args,c)=>preview('cb-cartesian-chart',args,c.globals.appearance),
 }

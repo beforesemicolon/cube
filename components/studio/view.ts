@@ -1,4 +1,5 @@
 import { aria, editorCSS, el, fragment, sheet, slot, uid } from '../core/editor-dom.js'
+import { scalarText } from '../core/value.js'
 import { createIcon } from '../icons/paths.js'
 import type { StudioComponentBase } from './StudioComponentBase.js'
 import type { StudioItem, StudioValue } from './types.js'
@@ -136,6 +137,11 @@ function initials(label: string): string {
     return label.split(/\s+/).map(part => part.charAt(0)).join('').slice(0, 2).toUpperCase()
 }
 
+type StudioTextKey = 'nameLabel' | 'metadataLabel' | 'unitLabel' | 'decrementLabel' | 'incrementLabel' | 'fileLabel' | 'fileRequirements'
+function componentText(host: StudioComponentBase, key: StudioTextKey): string {
+    return scalarText((host as StudioComponentBase & Partial<Record<StudioTextKey, string>>)[key])
+}
+
 function listView(host: StudioComponentBase, role: 'listbox' | 'tree' = 'listbox'): { node: HTMLElement; update: () => void } {
     const node = el('div', 'list collection')
     node.setAttribute('role', role)
@@ -158,7 +164,7 @@ function listView(host: StudioComponentBase, role: 'listbox' | 'tree' = 'listbox
         }
         if (layout === 'table') {
             const header = el('div', 'table-header')
-            header.append(el('span', 'table-heading', host.ui('name')), el('span', 'table-heading', host.ui('metadata')))
+            header.append(el('span', 'table-heading', componentText(host, 'nameLabel')), el('span', 'table-heading', componentText(host, 'metadataLabel')))
             node.append(header)
         }
         for (const item of items) {
@@ -324,12 +330,12 @@ export function createStudioView(host: StudioComponentBase): StudioView {
         }
         if (host.componentName === 'unit-input') {
             const shell = el('div', 'field-shell')
-            const unit = el('button', 'field-affix unit', 'px'); unit.type = 'button'; unit.setAttribute('aria-label', host.ui('unit'))
+            const unit = el('button', 'field-affix unit', 'px'); unit.type = 'button'; unit.setAttribute('aria-label', componentText(host, 'unitLabel'))
             shell.append(node, unit); body.append(shell)
         } else if (host.componentName === 'stepper') {
             const shell = el('div', 'field-shell stepper')
-            const decrement = el('button', 'stepper-button', '−'); decrement.type = 'button'; decrement.setAttribute('aria-label', host.ui('decrease'))
-            const increment = el('button', 'stepper-button', '+'); increment.type = 'button'; increment.setAttribute('aria-label', host.ui('increase'))
+            const decrement = el('button', 'stepper-button', '−'); decrement.type = 'button'; decrement.setAttribute('aria-label', componentText(host, 'decrementLabel'))
+            const increment = el('button', 'stepper-button', '+'); increment.type = 'button'; increment.setAttribute('aria-label', componentText(host, 'incrementLabel'))
             decrement.addEventListener('click', event => host.setValue(Number(node.value || 0) - host.studioNumber('step'), event))
             increment.addEventListener('click', event => host.setValue(Number(node.value || 0) + host.studioNumber('step'), event))
             shell.append(decrement, node, increment); body.append(shell)
@@ -432,7 +438,7 @@ export function createStudioView(host: StudioComponentBase): StudioView {
         updateBody = (): void => { input.disabled = host.studioDisabled() || host.studioReadOnly(); input.required = host.studioRequired(); input.multiple = host.studioMultiple(); input.setAttribute('aria-label', host.studioAccessibleName()) }
         input.hidden = true
         const dropzone = el('label', 'dropzone control')
-        dropzone.append(createIcon('upload', 'dropzone-icon icon'), el('strong', 'dropzone-title', host.ui('file')), el('span', 'description', host.ui('fileRequirements')), input)
+        dropzone.append(createIcon('upload', 'dropzone-icon icon'), el('strong', 'dropzone-title', componentText(host, 'fileLabel')), el('span', 'description', componentText(host, 'fileRequirements')), input)
         body.append(dropzone)
     } else if (host.componentKind === 'color') {
         const row = el('div', 'row color-row')

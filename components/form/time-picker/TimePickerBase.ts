@@ -1,9 +1,9 @@
 import { FormFieldBase, type FormFieldProps } from '../FormFieldBase.js'
 import { bool, finite, scalarText } from '../../core/value.js'
-export interface TimePickerProps extends FormFieldProps { value?: string; min?: string; max?: string; step?: number; native?: boolean; open?: boolean }
+export interface TimePickerProps extends FormFieldProps { value?: string; min?: string; max?: string; step?: number; placeholder?: string; native?: boolean; open?: boolean }
 export abstract class TimePickerBase<P extends TimePickerProps = TimePickerProps> extends FormFieldBase<P> {
-    static observedAttributes = [...FormFieldBase.observedAttributes, 'value', 'min', 'max', 'step', 'native', 'open']
-    value = ''; min = ''; max = ''; step = 1800; native = false; open = false
+    static observedAttributes = [...FormFieldBase.observedAttributes, 'value', 'min', 'max', 'step', 'placeholder', 'native', 'open']
+    value = ''; min = ''; max = ''; step = 1800; placeholder = ''; native = false; open = false
     protected captureValue(): string { return this.value }
     protected restoreValue(value: string | File | FormData | null): void { this.value = typeof value === 'string' ? value : value instanceof FormData ? scalarText(value.get(this.name)) : '' }
     protected interval(): number { return Math.max(60, Math.trunc(finite(this.step, 1800))) }

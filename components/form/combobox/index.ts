@@ -20,7 +20,7 @@ export class Combobox extends ComboboxBase {
     render(): Node {
         const field = el('div', 'field'); this.labelNode = el('label', 'label')
         const shell = el('div', 'input-shell control'); this.input = el('input', 'input'); this.input.type = 'text'; this.input.id = uid('cb-combobox')
-        const toggle = el('button', 'toggle'); toggle.type = 'button'; toggle.append(createIcon('down', 'icon')); toggle.setAttribute('aria-label', this.ui('open'))
+        const toggle = el('button', 'toggle'); toggle.type = 'button'; toggle.append(createIcon('down', 'icon')); toggle.setAttribute('aria-label', text(this.toggleLabel))
         this.popup = el('div', 'popup listbox'); this.popup.id = `${this.input.id}-popup`; this.popup.setAttribute('role', 'listbox')
         this.descriptionNode = el('p', 'description'); this.descriptionNode.id = `${this.input.id}-description`
         this.errorNode = el('p', 'error'); this.errorNode.id = `${this.input.id}-error`
@@ -43,7 +43,7 @@ export class Combobox extends ComboboxBase {
         this.input.setAttribute('role', 'combobox'); this.input.setAttribute('aria-autocomplete', this.autocomplete ?? 'list'); this.input.setAttribute('aria-controls', this.popup.id); aria(this.input, 'aria-expanded', this.open)
         this.popup.replaceChildren(); const options = this.filteredOptions()
         for (const option of options) { const button = el('button', 'option', option.label); button.type = 'button'; button.disabled = option.disabled; button.dataset.value = option.value; button.setAttribute('role', 'option'); aria(button, 'aria-selected', option.value === this.value); button.addEventListener('click', event => { this.setValue(option.value, event); this.setOpen(false, event); this.input?.focus() }); this.popup.append(button) }
-        if (!options.length) this.popup.append(el('span', 'empty', this.ui('noResults')))
+        if (!options.length && text(this.emptyLabel)) this.popup.append(el('span', 'empty', text(this.emptyLabel)))
         this.popup.hidden = !this.open
         this.labelNode.htmlFor = this.input.id; this.labelNode.textContent = text(this.label); this.labelNode.hidden = !text(this.label)
         this.descriptionNode.textContent = text(this.description); this.descriptionNode.hidden = !text(this.description)
@@ -56,7 +56,7 @@ export class Combobox extends ComboboxBase {
         this.setValue(query, event)
         this.setOpen(true, event)
         if (this.autocomplete !== 'both' || !query) return
-        const match = this.normalizedOptions.find(option => !option.disabled && option.label.toLocaleLowerCase(this.language()).startsWith(query.toLocaleLowerCase(this.language())))
+        const match = this.normalizedOptions.find(option => !option.disabled && option.label.toLocaleLowerCase().startsWith(query.toLocaleLowerCase()))
         if (!match) return
         this.input.value = match.label
         this.input.setSelectionRange(query.length, match.label.length)

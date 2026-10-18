@@ -6,6 +6,8 @@ export interface CalendarProps extends UIProps {
     min?: string
     max?: string
     firstDayOfWeek?: number
+    previousLabel?: string
+    nextLabel?: string
 }
 
 function validDate(value: string): Date | undefined {
@@ -21,11 +23,13 @@ function validDate(value: string): Date | undefined {
 }
 
 export abstract class CalendarBase<P extends CalendarProps = CalendarProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'value', 'min', 'max', 'first-day-of-week']
+    static observedAttributes = [...UIComponent.observedAttributes, 'value', 'min', 'max', 'first-day-of-week', 'previous-label', 'next-label']
     value = ''
     min = ''
     max = ''
     firstDayOfWeek = 0
+    previousLabel = ''
+    nextLabel = ''
     visibleMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
 
     protected mount(): void { this.syncMonth(); super.mount() }

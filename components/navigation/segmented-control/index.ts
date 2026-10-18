@@ -22,7 +22,7 @@ export class SegmentedControl extends SegmentedControlBase {
         if (!scalarText(this.value) && selected) this.value = selected
         this.dataset.orientation = this.orientation === 'vertical' ? 'vertical' : 'horizontal'
         this.group.setAttribute('aria-orientation', this.dataset.orientation)
-        this.group.setAttribute('aria-label', this.accessibleName('choices'))
+        this.group.setAttribute('aria-label', this.accessibleName())
         this.group.replaceChildren(...choices.map(item => {
             const control = el('button', 'item')
             control.type = 'button'; control.dataset.label = item.label; control.disabled = this.unavailable || item.disabled

@@ -13,14 +13,14 @@ export const Avatar: Story = componentStory('cb-avatar', { label: 'Avatar', valu
 
 export const Card: Story = componentStory('cb-card', { label: 'Card', actionLabel: 'Open', expanded: true })
 
-export const List: Story = componentStory('cb-list', { label: 'List', value: 'one', items })
+export const List: Story = componentStory('cb-list', { label: 'List', value: 'one', items, emptyLabel: 'No items' })
 
 export const DescriptionRow: Story = componentStory('cb-description-row', { label: 'Description row', value: 'Example', status: 'Ready' })
 
-export const Table: Story = componentStory('cb-table', { label: 'Table', value: 'one', items })
+export const Table: Story = componentStory('cb-table', { label: 'Table', value: 'one', items, emptyLabel: 'No items', nameLabel: 'Name', metadataLabel: 'Details' })
 
-export const Tree: Story = componentStory('cb-tree', { label: 'Tree', value: 'one', items })
+export const Tree: Story = componentStory('cb-tree', { label: 'Tree', value: 'one', items, emptyLabel: 'No items' })
 
 export const Accordion: Story = componentStory('cb-accordion', { label: 'Accordion', actionLabel: 'Open', expanded: true })
 
-export const CodePreview: Story = componentStory('cb-code-preview', { label: 'Code preview', code: '<cb-button label="Save"></cb-button>', codeLanguage: 'html' })
+export const CodePreview: Story = componentStory('cb-code-preview', { label: 'Code preview', code: '<cb-button label="Save"></cb-button>', codeLanguage: 'html', copyLabel: 'Copy code', copiedLabel: 'Copied' })

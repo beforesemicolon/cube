@@ -49,10 +49,10 @@ export class Calendar extends CalendarBase {
 
     protected syncView(): void {
         if (!this.calendarNode || !this.monthNode || !this.weekdaysNode || !this.daysNode || !this.previousButton || !this.nextButton) return
-        const locale = this.language()
-        this.calendarNode.setAttribute('aria-label', this.accessibleName('choose'))
-        this.previousButton.setAttribute('aria-label', this.ui('previous'))
-        this.nextButton.setAttribute('aria-label', this.ui('next'))
+        const locale = this.documentLanguage()
+        this.calendarNode.setAttribute('aria-label', this.accessibleName())
+        this.previousButton.setAttribute('aria-label', this.previousLabel)
+        this.nextButton.setAttribute('aria-label', this.nextLabel)
         this.monthNode.textContent = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(this.visibleMonth)
         this.weekdaysNode.replaceChildren()
         const weekStart = this.weekStart()

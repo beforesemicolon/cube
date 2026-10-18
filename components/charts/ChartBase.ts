@@ -5,13 +5,27 @@ export interface ChartProps extends CommonProps {
     heading?: string; description?: string; status?: 'finished' | 'loading' | 'error'
     height?: number; visibleSeries?: string[] | null; visibleSegments?: string[] | null; zoomable?: boolean
     valueFormatter?: ((value: number) => string) | null; patterns?:boolean
+    accessibleLabel?: string; loadingText?: string; emptyText?: string; noMatchText?: string; errorText?: string
+    retryLabel?: string; showAllLabel?: string; legendLabel?: string; tableLabel?: string
+    seriesLabel?: string; categoryLabel?: string; valueLabel?: string; rangeLabel?: string; sizeLabel?: string
+    percentageLabel?: string; missingText?: string; navigateLabel?: string; instructionsText?: string
+    pinnedText?: string; unpinLabel?: string; zoomInLabel?: string; zoomOutLabel?: string; resetZoomLabel?: string
 }
 export abstract class ChartBase<P extends ChartProps = ChartProps> extends Component<P> {
-    static observedAttributes = [...Component.observedAttributes, 'heading', 'description', 'status', 'height', 'visible-series', 'visible-segments', 'zoomable', 'value-formatter','patterns']
+    static observedAttributes = [...Component.observedAttributes, 'heading', 'description', 'status', 'height', 'visible-series', 'visible-segments', 'zoomable', 'value-formatter','patterns',
+        'accessible-label', 'loading-text', 'empty-text', 'no-match-text', 'error-text', 'retry-label', 'show-all-label',
+        'legend-label', 'table-label', 'series-label', 'category-label', 'value-label', 'range-label', 'size-label',
+        'percentage-label', 'missing-text', 'navigate-label', 'instructions-text', 'pinned-text', 'unpin-label',
+        'zoom-in-label', 'zoom-out-label', 'reset-zoom-label']
     heading = ''; description = ''; status: 'finished' | 'loading' | 'error' = 'finished'; height: number | undefined = undefined
     visibleSeries: string[] | null = null; visibleSegments: string[] | null = null; zoomable = false
     valueFormatter: ((value: number) => string) | null = null
     patterns=false
+    accessibleLabel = ''; loadingText = ''; emptyText = ''; noMatchText = ''; errorText = ''
+    retryLabel = ''; showAllLabel = ''; legendLabel = ''; tableLabel = ''
+    seriesLabel = ''; categoryLabel = ''; valueLabel = ''; rangeLabel = ''; sizeLabel = ''
+    percentageLabel = ''; missingText = ''; navigateLabel = ''; instructionsText = ''
+    pinnedText = ''; unpinLabel = ''; zoomInLabel = ''; zoomOutLabel = ''; resetZoomLabel = ''
     private hiddenItems = new Set<string>()
     private currentKey: string | null = null
     pinned = false
@@ -19,9 +33,7 @@ export abstract class ChartBase<P extends ChartProps = ChartProps> extends Compo
     abstract get kind(): 'cartesian' | 'pie'
     protected abstract build(skin: ChartSkin, visible?: ReadonlySet<string>): ChartModel
     protected abstract display(): void
-    get chartLabels() { return this.copy }
     refresh(): void { this.display() }
-    get chartLanguage() { return this.language() }
     protected update(_name: string): void { this.display() }
     getModel(skin: ChartSkin): ChartModel {
         const controlled = this.kind === 'pie' ? this.visibleSegments : this.visibleSeries
@@ -73,15 +85,14 @@ export abstract class ChartBase<P extends ChartProps = ChartProps> extends Compo
         this.select(points[index]); return points[index]
     }
     format(value: number | null | undefined): string {
-        if (value === null || value === undefined) return this.copy.missing
-        try { return this.valueFormatter ? text(this.valueFormatter(value), String(value)) : new Intl.NumberFormat(this.language(), { maximumFractionDigits: 6 }).format(value) }
+        if (value === null || value === undefined) return this.missingText
+        try { return this.valueFormatter ? text(this.valueFormatter(value), String(value)) : new Intl.NumberFormat(this.documentLanguage(), { maximumFractionDigits: 6 }).format(value) }
         catch (error) { this.onError(error); return String(value) }
     }
     pointText(point: ChartPoint): string {
-        const m = this.copy
-        const extra = point.low !== undefined && point.high !== undefined ? `; ${m.range}: ${this.format(point.low)}–${this.format(point.high)}` : point.size !== undefined ? `; ${m.size}: ${this.format(point.size)}` : ''
-        const percent = point.percentage !== undefined ? `; ${m.percentage}: ${this.format(point.percentage)}%` : ''
-        return `${point.seriesName}; ${String(point.x)}; ${m.value}: ${this.format(point.y)}${extra}${percent}`
+        const extra = point.low !== undefined && point.high !== undefined ? `; ${this.rangeLabel}: ${this.format(point.low)}–${this.format(point.high)}` : point.size !== undefined ? `; ${this.sizeLabel}: ${this.format(point.size)}` : ''
+        const percent = point.percentage !== undefined ? `; ${this.percentageLabel}: ${this.format(point.percentage)}%` : ''
+        return `${point.seriesName}; ${String(point.x)}; ${this.valueLabel}: ${this.format(point.y)}${extra}${percent}`
     }
     enginePoint(model: ChartModel, input: unknown): ChartPoint | undefined {
         const event = record(input)

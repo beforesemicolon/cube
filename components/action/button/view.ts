@@ -29,9 +29,9 @@ export function buttonView(host:ButtonBase,activate:(e:Event)=>void,tag:'button'
         aria(control,'aria-busy',busy?true:null);aria(control,'aria-describedby',scalarText(host.description)?desc.id:null)
         aria(control,'aria-haspopup',host.popupType||null);aria(control,'aria-expanded',host.popupType?bool(host.popupExpanded):null);aria(control,'aria-controls',scalarText(host.popupControls)||null)
         const name=scalarText(host.accessibleLabel)||scalarText(host.label)
-        aria(control,'aria-label',iconOnly?(name||host.ui('action')):scalarText(host.accessibleLabel)||null)
+        aria(control,'aria-label',iconOnly?name:scalarText(host.accessibleLabel)||null)
         const glyph=Object.hasOwn(iconPaths,host.icon)?iconPaths[host.icon]:''
-        content.textContent=scalarText(host.label)||host.ui('action');icon.toggleAttribute('hidden',busy||!glyph);icon.querySelector('path')!.setAttribute('d',glyph);loading.hidden=!busy
+        content.textContent=scalarText(host.label);icon.toggleAttribute('hidden',busy||!glyph);icon.querySelector('path')!.setAttribute('d',glyph);loading.hidden=!busy
         if(iconOnly){label.setAttribute('part','label sr-only');control.style.paddingInline='var(--spacing-xs,4px)';control.style.minInlineSize='var(--cb-height)'}
         desc.textContent=scalarText(host.description);desc.hidden=!scalarText(host.description)
     }

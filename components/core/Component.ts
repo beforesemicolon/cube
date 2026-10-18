@@ -1,13 +1,8 @@
 import { WebComponent } from '@beforesemicolon/web-component'
-import { messages, type Messages } from '../locales/index.js'
-import { text } from './value.js'
-export interface CommonProps { locale?: string; labels?: Partial<Messages> & Record<string, string | undefined> }
+export interface CommonProps {}
 export abstract class Component<P extends CommonProps = CommonProps> extends WebComponent<P> {
-    static observedAttributes = ['locale', 'labels']
-    locale = 'en'
-    labels: Partial<Messages> & Record<string, string | undefined> = {}
+    static observedAttributes: string[] = []
     private disposers: Array<() => void> = []
-    protected get copy(): Messages { return messages(this.locale, this.labels) }
     protected mount(): void {}
     protected update(_name: string): void {}
     protected unmount(): void {}
@@ -28,7 +23,7 @@ export abstract class Component<P extends CommonProps = CommonProps> extends Web
         this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }))
     }
     onError(error: unknown): void { this.emit('cb-error', { code: 'COMPONENT_ERROR', error, component: this.localName }) }
-    protected language(): string { return text(this.locale, 'en') || 'en' }
+    protected documentLanguage(): string | undefined { return this.ownerDocument.documentElement.lang || undefined }
 }
 const brand = Symbol.for('@beforesemicolon/cube/component-version')
 export function register(tag: string, ctor: CustomElementConstructor): void {

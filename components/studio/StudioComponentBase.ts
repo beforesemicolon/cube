@@ -36,13 +36,13 @@ export abstract class StudioComponentBase<P extends StudioProps = StudioProps> e
     abstract readonly componentName: string
     abstract readonly componentKind: StudioKind
 
-    studioLabel(): string { return scalarText(this.label) || this.ui('field') }
-    studioAccessibleName(): string { return this.accessibleName('field') }
+    studioLabel(): string { return scalarText(this.label) }
+    studioAccessibleName(): string { return this.accessibleName() }
     studioDescription(): string { return scalarText(this.description) }
     studioPlaceholder(): string { return scalarText(this.placeholder) }
     studioStatus(): string { return scalarText(this.status) }
-    studioEmptyLabel(): string { return scalarText(this.emptyLabel) || this.ui('noContent') }
-    studioActionLabel(): string { return scalarText(this.actionLabel) || this.ui('action') }
+    studioEmptyLabel(): string { return scalarText(this.emptyLabel) }
+    studioActionLabel(): string { return scalarText(this.actionLabel) }
     studioItems(): readonly StudioItem[] { return Array.isArray(this.items) ? this.items : [] }
     studioDisabled(): boolean { return this.unavailable }
     studioReadOnly(): boolean { return bool(this.readOnly) }

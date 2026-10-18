@@ -20,6 +20,6 @@ export abstract class CodePreviewBase extends StudioComponentBase<CodePreviewPro
     copiedLabel = ''
 
     source(): string { return scalarText(this.code) || this.studioTextValue() }
-    copyText(): string { return scalarText(this.copyLabel) || this.ui('copy') }
-    copiedText(): string { return scalarText(this.copiedLabel) || this.ui('copied') }
+    copyText(): string { return scalarText(this.copyLabel) }
+    copiedText(): string { return scalarText(this.copiedLabel) }
 }

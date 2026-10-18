@@ -9,7 +9,7 @@ export abstract class MenuBase<P extends MenuProps = MenuProps> extends UICompon
     items: ActionItem[] = []
     loop = true
     get normalizedItems(): NormalizedItem[] { return normalizeItems(this.items) }
-    resolvedMenuLabel(): string { return this.accessibleName('menu') }
+    resolvedMenuLabel(): string { return this.accessibleName() }
 
     protected activate(item: NormalizedItem, originalEvent: Event): void {
         if (this.unavailable || item.disabled || item.separator) return

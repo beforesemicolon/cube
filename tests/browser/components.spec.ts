@@ -1,12 +1,14 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+const mediaText={playLabel:'Play',pauseLabel:'Pause',stopLabel:'Stop',backwardLabel:'Seek backward',forwardLabel:'Seek forward',seekLabel:'Seek',volumeLabel:'Volume',muteLabel:'Mute',unmuteLabel:'Unmute',rateLabel:'Playback speed',captionsLabel:'Captions',captionsOffLabel:'Captions off',fullscreenLabel:'Enter fullscreen',exitFullscreenLabel:'Exit fullscreen',emptyText:'No media source.',errorText:'Unable to play this media.',bufferingText:'Buffering',liveText:'Live'}
+const chartText={accessibleLabel:'Chart',loadingText:'Loading chart',emptyText:'No data available.',noMatchText:'No visible data',errorText:'Unable to load chart.',retryLabel:'Retry',showAllLabel:'Show all',legendLabel:'Legend',tableLabel:'View data table',seriesLabel:'Series',categoryLabel:'Category',valueLabel:'Value',rangeLabel:'Range',sizeLabel:'Size',percentageLabel:'Percentage',missingText:'Not available',navigateLabel:'Explore chart',instructionsText:'Use arrow keys to explore data points. Press Enter to pin and Escape to unpin.',pinnedText:'Pinned',unpinLabel:'Unpin',zoomInLabel:'Zoom in',zoomOutLabel:'Zoom out',resetZoomLabel:'Reset zoom'}
 async function start(page: import('@playwright/test').Page) {
     await page.goto('/tests/browser/fixture.html')
     await page.waitForFunction(()=>!!customElements.get('cb-cartesian-chart'))
 }
-test('all four empty components mount with accessible controls and no missing-prop exceptions',async({page})=>{
+test('all four components accept application-supplied accessible copy and tolerate missing data',async({page})=>{
     const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await start(page)
-    await page.evaluate(()=>{for(const tag of ['cb-audio-player','cb-video-player','cb-cartesian-chart','cb-pie-chart'])document.querySelector('#fixture')!.append(document.createElement(tag))})
+    await page.evaluate(({mediaText,chartText})=>{for(const tag of ['cb-audio-player','cb-video-player','cb-cartesian-chart','cb-pie-chart']){const element=document.createElement(tag);Object.assign(element,tag.includes('player')?mediaText:chartText);document.querySelector('#fixture')!.append(element)}},{mediaText,chartText})
     await expect(page.locator('cb-audio-player').getByRole('button',{name:'Play',exact:true})).toBeDisabled()
     await expect(page.locator('cb-pie-chart').getByRole('status').first()).toHaveText('No data available.')
     expect(errors).toEqual([])
@@ -15,7 +17,7 @@ test('all four empty components mount with accessible controls and no missing-pr
 })
 test('actual ECharts SVG, keyboard navigation, pinning and legend filtering',async({page})=>{
     await start(page)
-    await page.evaluate(()=>{const c=document.createElement('cb-cartesian-chart');Object.assign(c,{heading:'Activity',series:[{id:'a',name:'One',data:[1,2,3]},{id:'b',name:'Two',type:'column',data:[4,5,6]}],zoomable:true});document.querySelector('#fixture')!.append(c)})
+    await page.evaluate(({chartText})=>{const c=document.createElement('cb-cartesian-chart');Object.assign(c,chartText,{heading:'Activity',series:[{id:'a',name:'One',data:[1,2,3]},{id:'b',name:'Two',type:'column',data:[4,5,6]}],zoomable:true});document.querySelector('#fixture')!.append(c)},{chartText})
     const chart=page.locator('cb-cartesian-chart')
     await expect(chart.locator('[part="plot"] svg')).toBeVisible()
     const nav=chart.locator('[part="navigator"]').getByRole('button');await nav.focus();await page.keyboard.press('ArrowRight')
@@ -31,7 +33,7 @@ test('actual ECharts SVG, keyboard navigation, pinning and legend filtering',asy
 })
 test('donut percentages, safe text rendering, theme inheritance and responsive resize',async({page})=>{
     await start(page)
-    await page.evaluate(()=>{const p=document.createElement('cb-pie-chart');Object.assign(p,{heading:'Sources',variant:'donut',innerTitle:'100',series:{data:[{id:'a',name:'<img src=x onerror=alert(1)>',value:75},{id:'b',name:'Other',value:25}]}});document.querySelector('#fixture')!.append(p)})
+    await page.evaluate(({chartText})=>{const p=document.createElement('cb-pie-chart');Object.assign(p,chartText,{heading:'Sources',variant:'donut',innerTitle:'100',series:{data:[{id:'a',name:'<img src=x onerror=alert(1)>',value:75},{id:'b',name:'Other',value:25}]}});document.querySelector('#fixture')!.append(p)},{chartText})
     const chart=page.locator('cb-pie-chart');await expect(chart.locator('[part="plot"] svg')).toBeVisible()
     expect(await chart.locator('img').count()).toBe(0)
     await chart.getByRole('button',{name:'Other',exact:true}).click();await expect(chart.locator('[part="details"]')).toContainText('100%')
@@ -40,11 +42,11 @@ test('donut percentages, safe text rendering, theme inheritance and responsive r
     await page.setViewportSize({width:390,height:844});await expect(chart.locator('[part="plot"] svg')).toBeVisible()
     expect(await chart.evaluate(n=>n.getBoundingClientRect().width)).toBeLessThan(390)
 })
-test('media node and focus survive prop changes; translation and rejected play are recoverable',async({page})=>{
+test('media node and focus survive translated text changes; rejected play is recoverable',async({page})=>{
     await start(page)
-    await page.evaluate(()=>{const a:any=document.createElement('cb-audio-player');document.querySelector('#fixture')!.append(a);(window as any).originalMedia=a.shadowRoot?.querySelector('audio')})
+    await page.evaluate(({mediaText})=>{const a=document.createElement('cb-audio-player');Object.assign(a,mediaText);document.querySelector('#fixture')!.append(a);Reflect.set(window,'originalMedia',a.shadowRoot?.querySelector('audio'))},{mediaText})
     const audio=page.locator('cb-audio-player'),mute=audio.getByRole('button',{name:'Mute',exact:true});await mute.focus()
-    await audio.evaluate((a:any)=>{a.mediaTitle='Recording';a.locale='pt';a.labels={play:'Ouvir'}})
+    await audio.evaluate(a=>{Object.assign(a,{mediaTitle:'Recording',playLabel:'Ouvir',errorText:'Não foi possível reproduzir o conteúdo.'})})
     await expect(audio.getByRole('button',{name:'Ouvir',exact:true})).toBeVisible()
     expect(await audio.evaluate((a:any)=>a.shadowRoot.querySelector('audio')===(window as any).originalMedia)).toBe(true)
     await audio.evaluate(async(a:any)=>{const media=a.shadowRoot.querySelector('audio');media.play=()=>Promise.reject(new Error('Blocked playback'));await a.play()})
@@ -52,11 +54,11 @@ test('media node and focus survive prop changes; translation and rejected play a
 })
 test('native audio playback, seek and stop work with a real WAV source',async({page})=>{
     await start(page)
-    await page.evaluate(async()=>{
+    await page.evaluate(async(mediaText)=>{
         const {silentAudio}=await import('/stories/helpers.ts')
-        const a:any=document.createElement('cb-audio-player');a.src=silentAudio(8);a.seekStep=2
+        const a=document.createElement('cb-audio-player');Object.assign(a,{...mediaText,src:silentAudio(8),seekStep:2})
         document.querySelector('#fixture')!.append(a)
-    })
+    },mediaText)
     const audio=page.locator('cb-audio-player')
     await expect.poll(()=>audio.locator('audio').evaluate((n:HTMLAudioElement)=>n.duration)).toBe(8)
     await audio.getByRole('button',{name:'Play',exact:true}).click()

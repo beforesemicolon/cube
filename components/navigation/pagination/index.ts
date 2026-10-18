@@ -12,13 +12,13 @@ export class Pagination extends PaginationBase {
     }
     protected syncView(): void {
         if (!this.nav || !this.list) return
-        this.nav.setAttribute('aria-label', this.accessibleName('pagination'))
-        const previous = el('button', 'previous'); previous.type = 'button'; previous.setAttribute('aria-label', this.ui('previous')); previous.disabled = this.unavailable || this.currentPage <= 1; previous.append(createIcon('left')); previous.addEventListener('click', event => this.selectPage(this.currentPage - 1, event))
-        const next = el('button', 'next'); next.type = 'button'; next.setAttribute('aria-label', this.ui('next')); next.disabled = this.unavailable || this.currentPage >= this.pageCount; next.append(createIcon('right')); next.addEventListener('click', event => this.selectPage(this.currentPage + 1, event))
+        this.nav.setAttribute('aria-label', this.accessibleName())
+        const previous = el('button', 'previous'); previous.type = 'button'; previous.setAttribute('aria-label', this.previousLabel); previous.disabled = this.unavailable || this.currentPage <= 1; previous.append(createIcon('left')); previous.addEventListener('click', event => this.selectPage(this.currentPage - 1, event))
+        const next = el('button', 'next'); next.type = 'button'; next.setAttribute('aria-label', this.nextLabel); next.disabled = this.unavailable || this.currentPage >= this.pageCount; next.append(createIcon('right')); next.addEventListener('click', event => this.selectPage(this.currentPage + 1, event))
         const pages = this.pages.map(value => {
             if (value === 'ellipsis') return el('span', 'ellipsis', '…')
             const button = el('button', 'page', String(value)); button.type = 'button'; button.disabled = this.unavailable
-            button.setAttribute('aria-label', this.ui('page', { page: value })); if (value === this.currentPage) button.setAttribute('aria-current', 'page')
+            const label = this.labelForPage(value); if (label) button.setAttribute('aria-label', label); if (value === this.currentPage) button.setAttribute('aria-current', 'page')
             button.addEventListener('click', event => this.selectPage(value, event)); return button
         })
         this.list.replaceChildren(previous, ...pages, next)

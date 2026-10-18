@@ -68,17 +68,21 @@ Use `dist/client.js` for the complete implemented catalog, a category path such 
 
 The WebComponent runtime is **external**, not compiled into Cube's browser scripts. Chart scripts also keep ECharts external: load `echarts/dist/echarts.min.js` before mounting a chart, or configure a promise-based loader with `BFS.CUBE.configureChartEngine`. Module consumers lazily import the ECharts dependency on the first chart render. Media-only scripts never load charting code.
 
-## Themes and localization
+## Themes and application-supplied text
 
 ```html
 <cb-theme-provider src="/themes/brand.json" appearance="system">
-  <cb-video-player locale="pt" src="/media/film.mp4"></cb-video-player>
+  <cb-video-player
+    src="/media/film.mp4"
+    play-label="Reproduzir"
+    pause-label="Pausar"
+  ></cb-video-player>
 </cb-theme-provider>
 ```
 
 Theme JSON follows site-builder's `schemaVersion: "1.0"`, `name`, `tokens` contract, including mode-aware leaves and uppercase `DEFAULT` scales. Built outputs include `themes/cube.json`, `light.json`, `dark.json` and CSS equivalents. Nested providers scope variables; an explicit inner theme defines its own palette. External theme loads are abortable and stale responses cannot replace a newer theme. Token files reject stylesheet/network injection; use authored stylesheets for fonts, images and `@keyframes`.
 
-Built-in control labels are available in English, Portuguese, Spanish, French and Chinese. All labels, including ARIA names, can be overridden with the `labels` property before or after mounting. Unknown locales fall back to English. Documentation uses the same five locales and the `fading-citrus` site-builder theme as Markup. The `:::cube component-name` markdown extension renders a fixed, safe example visualizer; it does not evaluate arbitrary pasted code. Markdown highlighting uses site-builder's existing highlight.js integration.
+Cube is localization-agnostic: it does not own a `locale` attribute, translation catalog, or dependency on `@beforesemicolon/intl`. Applications provide final translated visible and ARIA text through the component’s explicit text properties. Native number, date, and time formatting uses the document’s `lang` as a formatting hint. The documentation itself is available in five languages and uses the `fading-citrus` site-builder theme as Markup. The `:::cube component-name` markdown extension renders a fixed, safe example visualizer; it does not evaluate arbitrary pasted code. Markdown highlighting uses site-builder's existing highlight.js integration.
 
 Every original icon is emitted as an individual SVG, as a combined `dist/icons/sprite.svg`, and through `dist/icons/icons.css` mask classes. The CSS form behaves like an icon font while retaining SVG geometry and `currentColor`: `<span class="cb-icon cb-icon--undo" aria-hidden="true"></span>`. Use `<cb-icon>` when you need the component API and styling parts.
 
@@ -88,7 +92,8 @@ Simple native media with play/pause, stop, configurable backward/forward seeking
 
 ```ts
 player.seekStep = 15
-player.labels = { backward: 'Back 15 seconds', forward: 'Ahead 15 seconds' }
+player.backwardLabel = 'Back 15 seconds'
+player.forwardLabel = 'Ahead 15 seconds'
 player.tracks = [{ src: '/captions/en.vtt', language: 'en', label: 'English', default: true }]
 await player.play() // false on a rejected play attempt; cb-error reports the cause
 player.stop()

@@ -16,8 +16,8 @@ export abstract class AlertDialogBase<P extends AlertDialogProps = AlertDialogPr
     destructive = false
     busy = false
 
-    protected confirmText(): string { return scalarText(this.confirmLabel) || this.ui('action') }
-    protected cancelText(): string { return scalarText(this.cancelLabel) || this.ui('cancel') }
+    protected confirmText(): string { return scalarText(this.confirmLabel) }
+    protected cancelText(): string { return scalarText(this.cancelLabel) }
 
     protected confirm(event: Event): void {
         if (bool(this.busy)) return

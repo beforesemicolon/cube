@@ -49,7 +49,7 @@ export class Select extends SelectBase {
 
     protected syncView(): void {
         if (!this.nativeControl || !this.trigger || !this.valueNode || !this.popup || !this.titleNode || !this.descriptionNode || !this.errorNode) return
-        const options = this.normalizedOptions, selection = this.selection, placeholder = text(this.placeholder) || this.ui('choose')
+        const options = this.normalizedOptions, selection = this.selection, placeholder = text(this.placeholder)
         this.nativeControl.replaceChildren(); this.popup.replaceChildren()
         if (!bool(this.multiple) && !options.some(option => option.value === '')) { const empty = el('option', 'option', placeholder); empty.value = ''; this.nativeControl.append(empty) }
         for (const option of options) {
@@ -63,9 +63,9 @@ export class Select extends SelectBase {
         this.valueNode.textContent = labels.join(', ') || placeholder; this.valueNode.toggleAttribute('data-placeholder', labels.length === 0)
         const native = bool(this.native); this.trigger.hidden = native; this.popup.hidden = native || !bool(this.open); this.nativeControl.hidden = !native
         aria(this.popup, 'aria-multiselectable', bool(this.multiple) ? true : null)
-        this.nativeControl.multiple = bool(this.multiple); this.nativeControl.disabled = this.unavailable || bool(this.readOnly); this.nativeControl.required = bool(this.required) && !bool(this.readOnly); this.nativeControl.setAttribute('aria-label', this.accessibleName('choose'))
+        this.nativeControl.multiple = bool(this.multiple); this.nativeControl.disabled = this.unavailable || bool(this.readOnly); this.nativeControl.required = bool(this.required) && !bool(this.readOnly); this.nativeControl.setAttribute('aria-label', this.accessibleName())
         this.trigger.disabled = this.unavailable || bool(this.readOnly)
-        const accessibleName = this.accessibleName('choose')
+        const accessibleName = this.accessibleName()
         const visibleValue = this.valueNode.textContent ?? ''
         this.trigger.setAttribute('aria-label', visibleValue && visibleValue !== accessibleName ? `${accessibleName}: ${visibleValue}` : accessibleName)
         this.trigger.setAttribute('aria-haspopup', 'listbox'); this.trigger.setAttribute('aria-controls', this.popup.id); aria(this.trigger, 'aria-expanded', bool(this.open))

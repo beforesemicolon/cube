@@ -2,13 +2,14 @@ import { UIComponent, type UIProps } from '../../core/UIComponent.js'
 import { normalizeItems, type ActionItem, type NormalizedItem } from '../../core/items.js'
 import { finite } from '../../core/value.js'
 
-export interface BreadcrumbProps extends UIProps { items?: ActionItem[]; maxItems?: number }
+export interface BreadcrumbProps extends UIProps { items?: ActionItem[]; maxItems?: number; expandLabel?: string }
 
 /** Breadcrumb normalization and navigation events without choosing link rendering. */
 export abstract class BreadcrumbBase<P extends BreadcrumbProps = BreadcrumbProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'items', 'max-items']
+    static observedAttributes = [...UIComponent.observedAttributes, 'items', 'max-items', 'expand-label']
     items: ActionItem[] = []
     maxItems = 5
+    expandLabel = ''
     protected expanded = false
     protected get crumbs(): NormalizedItem[] { return normalizeItems(this.items).filter(item => !item.separator) }
     protected visibleCrumbs(): Array<NormalizedItem | 'ellipsis'> {

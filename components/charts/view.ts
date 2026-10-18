@@ -93,14 +93,14 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
         probe.remove(); return skin
     }
     private async draw(): Promise<void> {
-        const rev = ++this.revision, copy = this.owner.chartLabels
+        const rev = ++this.revision
         this.model = this.owner.getModel(this.skin())
         const heading = text(this.owner.heading), description = text(this.owner.description)
         this.title.textContent = heading; this.title.hidden = !heading; this.description.textContent = description; this.description.hidden = !description
-        label(this.group, heading || copy.chart); this.group.setAttribute('aria-describedby', this.description.id)
-        label(this.legend, copy.legend); this.summary.textContent = copy.table; this.instructions.textContent = copy.instructions
-        for (const [node, value] of [[this.navigator, copy.navigate],[this.retry,copy.retry],[this.all,copy.showAll],[this.unpin,copy.unpin],[this.zoomIn,copy.zoomIn],[this.zoomOut,copy.zoomOut],[this.reset,copy.resetZoom]] as const) { Object.assign(node,{locale:this.owner.locale,labels:this.owner.labels});actionLabel(node,value) }
-        this.navigator.description=copy.instructions
+        label(this.group, heading || this.owner.accessibleLabel); this.group.setAttribute('aria-describedby', this.description.id)
+        label(this.legend, this.owner.legendLabel); this.summary.textContent = this.owner.tableLabel; this.instructions.textContent = this.owner.instructionsText
+        for (const [node, value] of [[this.navigator, this.owner.navigateLabel],[this.retry,this.owner.retryLabel],[this.all,this.owner.showAllLabel],[this.unpin,this.owner.unpinLabel],[this.zoomIn,this.owner.zoomInLabel],[this.zoomOut,this.owner.zoomOutLabel],[this.reset,this.owner.resetZoomLabel]] as const) actionLabel(node,value)
+        this.navigator.description=this.owner.instructionsText
         if (typeof this.owner.height === 'number' && Number.isFinite(this.owner.height)) this.plot.style.height = `${clamp(this.owner.height, 160, 1200)}px`
         else this.plot.style.removeProperty('height')
         this.renderLegend(); this.showDetails(); if (this.data.open) this.renderTable()
@@ -138,8 +138,8 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
         this.showDetails(this.owner.pinned||this.keyboardActive||this.hoverActive)
     }
     private updateStatus(): void {
-        const m = this.owner.chartLabels, model = this.model
-        const status = this.owner.status === 'error' || this.failure ? m.error : this.owner.status === 'loading' || this.loadingEngine ? m.loading : model?.empty ? m.empty : model?.noMatch ? m.noMatch : ''
+        const model = this.model
+        const status = this.owner.status === 'error' || this.failure ? this.owner.errorText : this.owner.status === 'loading' || this.loadingEngine ? this.owner.loadingText : model?.empty ? this.owner.emptyText : model?.noMatch ? this.owner.noMatchText : ''
         this.state.textContent = status; this.state.hidden = !status
         this.plot.hidden = !!status
         this.group.setAttribute('aria-busy', String(this.owner.status === 'loading' || this.loadingEngine))
@@ -165,7 +165,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
                 })
                 const swatch=el('span','legend-swatch');swatch.slot='prefix';swatch.setAttribute('aria-hidden','true');node.append(swatch);this.legends.set(item.id,node)
             }
-            node.pressed=item.visible;Object.assign(node,{locale:this.owner.locale,labels:this.owner.labels});actionLabel(node,item.name)
+            node.pressed=item.visible;actionLabel(node,item.name)
             ;(node.children[0] as HTMLElement).style.backgroundColor = item.color
             // Label rendering belongs to cb-toggle-button.
             if (this.legend.children[index] !== node) this.legend.insertBefore(node, this.legend.children[index] ?? null)
@@ -183,9 +183,9 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
     }
     private showDetails(highlight = false): void {
         if (!this.model) return
-        const selected = this.owner.selected(this.model), m = this.owner.chartLabels
-        this.details.textContent = selected ? `${this.owner.pinned ? m.pinned + ': ' : ''}${this.owner.pointText(selected)}` : ''
-        this.navigator.accessibleLabel=selected ? `${m.navigate}: ${this.owner.pointText(selected)}` : m.navigate
+        const selected = this.owner.selected(this.model)
+        this.details.textContent = selected ? `${this.owner.pinned && this.owner.pinnedText ? this.owner.pinnedText + ': ' : ''}${this.owner.pointText(selected)}` : ''
+        this.navigator.accessibleLabel=selected ? `${this.owner.navigateLabel}: ${this.owner.pointText(selected)}` : this.owner.navigateLabel
         this.navigator.pressed=this.owner.pinned; this.unpin.hidden = !this.owner.pinned
         if (selected && highlight && this.instance) {
             this.instance.dispatchAction({ type: 'downplay' }); this.instance.dispatchAction({ type: 'highlight', seriesId: selected.seriesId, dataIndex: selected.index })
@@ -195,16 +195,17 @@ table{width:100%;border-collapse:collapse}th,td{text-align:start;border-bottom:1
     }
     private renderTable(): void {
         if (!this.model) return
-        const m = this.owner.chartLabels, rows = this.model.points
-        const key = JSON.stringify([m, rows, this.owner.chartLanguage, rows.map(p => this.owner.format(p.y))])
+        const rows = this.model.points
+        const labels = [this.owner.accessibleLabel, this.owner.seriesLabel, this.owner.categoryLabel, this.owner.valueLabel, this.owner.rangeLabel, this.owner.sizeLabel, this.owner.percentageLabel, this.owner.missingText]
+        const key = JSON.stringify([labels, rows, rows.map(p => this.owner.format(p.y))])
         if (key === this.tableKey) return
         this.tableKey = key; this.table.replaceChildren()
-        const caption = el('caption', 'table-caption', text(this.owner.heading) || m.chart), head = el('thead', 'table-head'), hrow = el('tr', 'table-row')
-        for (const title of [m.series, m.category, m.value, m.range, m.size, m.percentage]) { const th = el('th', 'table-header', title); th.scope = 'col'; hrow.append(th) }
+        const caption = el('caption', 'table-caption', text(this.owner.heading) || this.owner.accessibleLabel), head = el('thead', 'table-head'), hrow = el('tr', 'table-row')
+        for (const title of [this.owner.seriesLabel, this.owner.categoryLabel, this.owner.valueLabel, this.owner.rangeLabel, this.owner.sizeLabel, this.owner.percentageLabel]) { const th = el('th', 'table-header', title); th.scope = 'col'; hrow.append(th) }
         head.append(hrow); const body = el('tbody', 'table-body')
         for (const p of rows) {
             const row = el('tr', 'table-row')
-            const cells = [p.seriesName, String(p.x), this.owner.format(p.y), p.low !== undefined && p.high !== undefined ? `${this.owner.format(p.low)}–${this.owner.format(p.high)}` : m.missing, this.owner.format(p.size), p.percentage !== undefined ? `${this.owner.format(p.percentage)}%` : m.missing]
+            const cells = [p.seriesName, String(p.x), this.owner.format(p.y), p.low !== undefined && p.high !== undefined ? `${this.owner.format(p.low)}–${this.owner.format(p.high)}` : this.owner.missingText, this.owner.format(p.size), p.percentage !== undefined ? `${this.owner.format(p.percentage)}%` : this.owner.missingText]
             cells.forEach(value => row.append(el('td', 'table-cell', value))); body.append(row)
         }
         this.table.append(caption, head, body)

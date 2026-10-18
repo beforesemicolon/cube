@@ -71,8 +71,8 @@ test('button group owns its buttons and renders one continuous control', async (
 test('split button joins its primary and menu trigger into one control', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
-        const split = document.createElement('cb-split-button') as HTMLElement & { label: string; items: Array<{ id: string; label: string }> }
-        split.label = 'Create'; split.items = [{ id: 'page', label: 'Page' }]
+        const split = document.createElement('cb-split-button') as HTMLElement & { label: string; menuLabel: string; items: Array<{ id: string; label: string }> }
+        split.label = 'Create'; split.menuLabel = 'More create actions'; split.items = [{ id: 'page', label: 'Page' }]
         split.addEventListener('cb-action', () => { split.dataset.actionCount = String(Number(split.dataset.actionCount ?? 0) + 1) })
         document.querySelector('#fixture')?.append(split)
     })
@@ -97,8 +97,8 @@ test('dropdown, menu, pagination and tooltip expose canonical accessible interac
     await page.evaluate(() => {
         const dropdown = document.createElement('cb-dropdown') as HTMLElement & { label: string; items: Array<{ id: string; label: string }> }
         dropdown.label = 'Add element'; dropdown.items = [{ id: 'text', label: 'Text' }, { id: 'image', label: 'Image' }]
-        const pagination = document.createElement('cb-pagination') as HTMLElement & { page: number; totalPages: number }
-        pagination.page = 2; pagination.totalPages = 12
+        const pagination = document.createElement('cb-pagination') as HTMLElement & { page: number; totalPages: number; accessibleLabel: string; previousLabel: string; nextLabel: string; pageLabel: string }
+        pagination.page = 2; pagination.totalPages = 12; pagination.accessibleLabel = 'Results pages'; pagination.previousLabel = 'Previous page'; pagination.nextLabel = 'Next page'; pagination.pageLabel = 'Page {page}'
         const tooltip = document.createElement('cb-tooltip') as HTMLElement & { content: string }
         tooltip.content = 'Duplicate selection'; const trigger = document.createElement('button'); trigger.textContent = 'Duplicate'; tooltip.append(trigger)
         document.querySelector('#fixture')?.append(dropdown, pagination, tooltip)

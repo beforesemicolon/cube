@@ -23,4 +23,4 @@ export const Alert: Story = componentStory('cb-alert', { label: 'Alert', value: 
 
 export const Banner: Story = componentStory('cb-banner', { label: 'Banner', value: 'Ready', status: 'Updated' })
 
-export const Flashbar: Story = componentStory('cb-flashbar', { position: 'top-end', maxVisible: 4, messages: [{ id: 'saved', type: 'success', heading: 'Changes saved', message: 'Your project is up to date.', dismissible: true, duration: 0 }] })
+export const Flashbar: Story = componentStory('cb-flashbar', { accessibleLabel: 'Notifications', position: 'top-end', maxVisible: 4, messages: [{ id: 'saved', type: 'success', heading: 'Changes saved', message: 'Your project is up to date.', dismissLabel: 'Dismiss', dismissible: true, duration: 0 }] })

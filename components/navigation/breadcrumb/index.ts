@@ -12,13 +12,13 @@ export class Breadcrumb extends BreadcrumbBase {
     }
     protected syncView(): void {
         if (!this.nav || !this.list) return
-        this.nav.setAttribute('aria-label', this.accessibleName('breadcrumb'))
+        this.nav.setAttribute('aria-label', this.accessibleName())
         const crumbs = this.visibleCrumbs()
         this.list.replaceChildren(...crumbs.map((item, index) => {
             const li = el('li', 'item')
             if (index > 0) li.append(createIcon('right', 'separator'))
             if (item === 'ellipsis') {
-                const expand = el('button', 'expand', '…'); expand.type = 'button'; expand.setAttribute('aria-label', this.ui('expandPath')); expand.addEventListener('click', () => { this.expanded = true; this.syncView() }); li.append(expand); return li
+                const expand = el('button', 'expand', '…'); expand.type = 'button'; expand.setAttribute('aria-label', this.expandLabel); expand.addEventListener('click', () => { this.expanded = true; this.syncView() }); li.append(expand); return li
             }
             const last = index === crumbs.length - 1 && item === this.crumbs.at(-1)
             if (last) { const current = el('span', 'current', item.label); current.setAttribute('aria-current', 'page'); li.append(current); return li }

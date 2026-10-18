@@ -16,7 +16,7 @@ export class Toolbar extends ToolbarBase {
         const orientation = this.orientation === 'vertical' ? 'vertical' : 'horizontal'
         this.dataset.orientation = orientation
         this.toolbar.setAttribute('aria-orientation', orientation)
-        this.toolbar.setAttribute('aria-label', scalarText(this.accessibleLabel) || scalarText(this.label) || this.ui('toolbar'))
+        this.toolbar.setAttribute('aria-label', scalarText(this.accessibleLabel) || scalarText(this.label))
     }
 }
 

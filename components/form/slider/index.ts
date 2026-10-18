@@ -32,7 +32,7 @@ export class Slider extends SliderBase {
         const range=this.range;this.dataset.orientation=this.orientation==='vertical'?'vertical':'horizontal'
         this.control.min=String(range.min);this.control.max=String(range.max);this.control.step=String(range.step)
         this.control.value=String(range.value);this.control.disabled=this.unavailable;this.control.style.setProperty('--cb-slider-fill',range.percent+'%')
-        this.control.setAttribute('aria-label',this.accessibleName('field'));this.control.setAttribute('aria-orientation',this.dataset.orientation)
+        this.control.setAttribute('aria-label',this.accessibleName());this.control.setAttribute('aria-orientation',this.dataset.orientation)
         aria(this.control,'aria-valuetext',text(this.valueText)||null);aria(this.control,'aria-readonly',bool(this.readOnly)?true:null)
         this.titleNode.textContent=text(this.label);this.titleNode.hidden=!text(this.label)
         this.descriptionNode.textContent=text(this.description);this.descriptionNode.hidden=!text(this.description)

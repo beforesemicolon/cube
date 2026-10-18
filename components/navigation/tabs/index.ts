@@ -25,7 +25,7 @@ export class Tabs extends TabsBase {
         if (!scalarText(this.value) && selected) this.value = selected
         this.dataset.orientation = this.orientation === 'vertical' ? 'vertical' : 'horizontal'
         this.list.setAttribute('aria-orientation', this.dataset.orientation)
-        this.list.setAttribute('aria-label', this.accessibleName('tabs'))
+        this.list.setAttribute('aria-label', this.accessibleName())
         this.list.replaceChildren(...choices.map(item => {
             const tab = el('button', 'tab', item.label)
             tab.type = 'button'; tab.dataset.label = item.label; tab.disabled = this.unavailable || item.disabled

@@ -1,5 +1,4 @@
 export * from './theme/tokens.js'
-export * from './locales/index.js'
 export * from './media/controller.js'
 export * from './charts/model.js'
 export * from './charts/engine.js'

@@ -23,8 +23,8 @@ export class Dropdown extends DropdownBase {
     protected popupElement(): HTMLElement | undefined { return this.popup }
     protected syncView(): void {
         if (!this.trigger || !this.menu) return
-        Object.assign(this.trigger, { label: scalarText(this.label) || this.ui('action'), accessibleLabel: this.accessibleName('action'), disabled: this.unavailable, icon: this.icon, popupType: 'menu', popupExpanded: bool(this.open) })
-        Object.assign(this.menu, { items: this.items, disabled: this.unavailable, accessibleLabel: this.accessibleName('menu') })
+        Object.assign(this.trigger, { label: scalarText(this.label), accessibleLabel: this.accessibleName(), disabled: this.unavailable, icon: this.icon, popupType: 'menu', popupExpanded: bool(this.open) })
+        Object.assign(this.menu, { items: this.items, disabled: this.unavailable, accessibleLabel: this.accessibleName() })
     }
 }
 

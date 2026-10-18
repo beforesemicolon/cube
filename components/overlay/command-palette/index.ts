@@ -24,9 +24,9 @@ export class CommandPalette extends CommandPaletteBase {
     }
     protected syncView(): void {
         if (!this.dialog || !this.input || !this.menu || !this.empty) return
-        this.input.placeholder = scalarText(this.placeholder) || this.ui('commands'); this.input.setAttribute('aria-label', this.accessibleName('commands')); if (this.input.value !== scalarText(this.query)) this.input.value = scalarText(this.query)
-        Object.assign(this.menu, { items: this.results, accessibleLabel: this.accessibleName('commands') })
-        this.empty.textContent = this.ui('noResults'); this.empty.hidden = this.results.length > 0
+        this.input.placeholder = scalarText(this.placeholder); this.input.setAttribute('aria-label', this.accessibleName()); if (this.input.value !== scalarText(this.query)) this.input.value = scalarText(this.query)
+        Object.assign(this.menu, { items: this.results, accessibleLabel: this.accessibleName() })
+        this.empty.textContent = scalarText(this.emptyLabel); this.empty.hidden = this.results.length > 0 || !this.empty.textContent
         if (bool(this.open) && !this.dialog.open) { try { this.dialog.showModal(); this.input.focus() } catch (error) { this.onError(error) } }
         else if (!bool(this.open) && this.dialog.open) this.dialog.close()
     }

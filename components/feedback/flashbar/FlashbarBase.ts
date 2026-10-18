@@ -27,6 +27,7 @@ export interface NormalizedFlashbarMessage {
 }
 
 export interface FlashbarProps extends CommonProps {
+    accessibleLabel?: string
     position?: FlashbarPosition
     maxVisible?: number
     messages?: FlashbarMessage[]
@@ -34,7 +35,8 @@ export interface FlashbarProps extends CommonProps {
 
 /** Queue, update and dismissal behavior independent of notification rendering. */
 export abstract class FlashbarBase<P extends FlashbarProps = FlashbarProps> extends Component<P> {
-    static observedAttributes = [...Component.observedAttributes, 'position', 'max-visible', 'messages']
+    static observedAttributes = [...Component.observedAttributes, 'accessible-label', 'position', 'max-visible', 'messages']
+    accessibleLabel = ''
     position: FlashbarPosition = 'top-end'
     maxVisible = 4
     messages: FlashbarMessage[] = []

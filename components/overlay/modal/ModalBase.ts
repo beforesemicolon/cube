@@ -1,6 +1,5 @@
 import { Component, type CommonProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
-import { editorMessage, type EditorMessages } from '../../core/editor-locales.js'
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'full'
 export type ModalCloseReason = 'close-button' | 'escape' | 'backdrop' | 'programmatic' | 'confirmed' | 'cancelled'
@@ -40,10 +39,6 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
     protected abstract dialogElement(): HTMLDialogElement | undefined
     protected abstract syncDialog(): void
 
-    protected ui(key: keyof EditorMessages): string {
-        return editorMessage(this.locale, this.labels, key)
-    }
-
     protected mount(): void { this.syncOpenState(); this.syncDialog() }
     protected update(): void { this.syncOpenState(); this.syncDialog() }
 
@@ -75,7 +70,7 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
         if (event.target === this.dialogElement() && bool(this.dismissible) && bool(this.closeOnBackdrop)) this.close('backdrop')
     }
 
-    protected closeText(): string { return scalarText(this.closeLabel) || this.ui('close') }
+    protected closeText(): string { return scalarText(this.closeLabel) }
 
     private setOpen(value: boolean): void {
         this.reflectingOpen = true

@@ -3,20 +3,27 @@ import { bool, finite, mediaURL, text } from '../core/value.js'
 import { MediaController, type PlaybackState } from './controller.js'
 export interface CaptionTrack { src?: string; language?: string; label?: string; default?: boolean }
 export interface MediaProps extends CommonProps {
-    src?: string; mediaTitle?: string; muted?: boolean; autoplay?: boolean; loop?: boolean
+    src?: string; mediaTitle?: string; accessibleLabel?: string; muted?: boolean; autoplay?: boolean; loop?: boolean
     preload?: 'none' | 'metadata' | 'auto'; seekStep?: number; playbackRate?: number
     poster?: string; tracks?: CaptionTrack[]; crossOrigin?: '' | 'anonymous' | 'use-credentials'
+    playLabel?: string; pauseLabel?: string; stopLabel?: string; backwardLabel?: string; forwardLabel?: string
+    seekLabel?: string; volumeLabel?: string; muteLabel?: string; unmuteLabel?: string; rateLabel?: string
+    captionsLabel?: string; captionsOffLabel?: string; fullscreenLabel?: string; exitFullscreenLabel?: string
+    emptyText?: string; errorText?: string; bufferingText?: string; liveText?: string
 }
 export abstract class MediaBase extends Component<MediaProps> {
-    static observedAttributes = [...Component.observedAttributes, 'src', 'media-title', 'muted', 'autoplay', 'loop', 'preload', 'seek-step', 'playback-rate', 'poster', 'tracks', 'cross-origin']
-    src = ''; mediaTitle = ''; muted = false; autoplay = false; loop = false
+    static observedAttributes = [...Component.observedAttributes, 'src', 'media-title', 'accessible-label', 'muted', 'autoplay', 'loop', 'preload', 'seek-step', 'playback-rate', 'poster', 'tracks', 'cross-origin', 'play-label', 'pause-label', 'stop-label', 'backward-label', 'forward-label', 'seek-label', 'volume-label', 'mute-label', 'unmute-label', 'rate-label', 'captions-label', 'captions-off-label', 'fullscreen-label', 'exit-fullscreen-label', 'empty-text', 'error-text', 'buffering-text', 'live-text']
+    src = ''; mediaTitle = ''; accessibleLabel = ''; muted = false; autoplay = false; loop = false
     preload: 'none' | 'metadata' | 'auto' = 'metadata'; seekStep = 10; playbackRate = 1
     poster = ''; tracks: CaptionTrack[] = []; crossOrigin: '' | 'anonymous' | 'use-credentials' = ''
+    playLabel = ''; pauseLabel = ''; stopLabel = ''; backwardLabel = ''; forwardLabel = ''
+    seekLabel = ''; volumeLabel = ''; muteLabel = ''; unmuteLabel = ''; rateLabel = ''
+    captionsLabel = ''; captionsOffLabel = ''; fullscreenLabel = ''; exitFullscreenLabel = ''
+    emptyText = ''; errorText = ''; bufferingText = ''; liveText = ''
     private controller?: MediaController
     protected playbackError: unknown = null
     protected abstract mediaElement(): HTMLMediaElement | undefined
     protected abstract playbackChanged(state: PlaybackState): void
-    get mediaLabels() { return this.copy }
     protected mount(): void {
         const media = this.mediaElement(); if (!media) return
         this.controller = new MediaController(media, state => {

@@ -6,21 +6,25 @@ export interface ComboboxProps extends FormFieldProps {
     options?: SelectOption[]
     value?: string
     placeholder?: string
+    toggleLabel?: string
+    emptyLabel?: string
     open?: boolean
     autocomplete?: 'none' | 'list' | 'both'
 }
 
 export abstract class ComboboxBase<P extends ComboboxProps = ComboboxProps> extends FormFieldBase<P> {
-    static observedAttributes = [...FormFieldBase.observedAttributes, 'options', 'value', 'placeholder', 'open', 'autocomplete']
+    static observedAttributes = [...FormFieldBase.observedAttributes, 'options', 'value', 'placeholder', 'toggle-label', 'empty-label', 'open', 'autocomplete']
     options: SelectOption[] = []
     value = ''
     placeholder = ''
+    toggleLabel = ''
+    emptyLabel = ''
     open = false
     autocomplete: ComboboxProps['autocomplete'] = 'list'
     get normalizedOptions() { return normalizeOptions(this.options) }
     protected filteredOptions() {
-        const query = scalarText(this.value).trim().toLocaleLowerCase(this.language())
-        return query ? this.normalizedOptions.filter(option => option.label.toLocaleLowerCase(this.language()).includes(query)) : this.normalizedOptions
+        const query = scalarText(this.value).trim().toLocaleLowerCase()
+        return query ? this.normalizedOptions.filter(option => option.label.toLocaleLowerCase().includes(query)) : this.normalizedOptions
     }
     protected captureValue(): string { return this.value }
     protected restoreValue(value: string | File | FormData | null): void { this.value = typeof value === 'string' ? value : value instanceof FormData ? scalarText(value.get(this.name)) : '' }

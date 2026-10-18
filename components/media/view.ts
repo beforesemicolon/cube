@@ -49,27 +49,26 @@ audio{display:none}
 :host(:fullscreen){background:${v('--color-background')};display:grid;place-items:center}
 @container(max-width:360px){[part=timeline]{gap:${v('--spacing-sm')}}[part=settings]{flex:1;justify-content:flex-end}[part=volume]{inline-size:var(--component-media-volume-compact-width,48px)}}
 `),group)
-    let captionKey='',rateLocale: string | undefined
+    let captionKey='', rateReady = false
     return {root,media,update(state:PlaybackState){
-        const m=owner.mediaLabels,source=!!media.getAttribute('src')
-        label(group,text(owner.mediaTitle)||m[kind]);label(media,text(owner.mediaTitle)||m[kind]);title.textContent=text(owner.mediaTitle);title.hidden=!title.textContent
-        for(const node of [play,stop,backward,forward,mute,fullscreen,seek,volume,rate,captions])Object.assign(node,{locale:owner.locale,labels:owner.labels})
-        actionLabel(play,state.paused?m.play:m.pause);play.icon=state.paused?'play':'pause';actionLabel(stop,m.stop);actionLabel(backward,m.backward);actionLabel(forward,m.forward)
-        actionLabel(mute,state.muted?m.unmute:m.mute);mute.icon=state.muted?'muted':'volume'
-        actionLabel(fullscreen,document.fullscreenElement===owner?m.exitFullscreen:m.fullscreen);fullscreen.hidden=kind!=='video'||!document.fullscreenEnabled||!owner.requestFullscreen
+        const source=!!media.getAttribute('src'), accessibleName=text(owner.accessibleLabel)||text(owner.mediaTitle)
+        label(group,accessibleName);label(media,accessibleName);title.textContent=text(owner.mediaTitle);title.hidden=!title.textContent
+        actionLabel(play,state.paused?owner.playLabel:owner.pauseLabel);play.icon=state.paused?'play':'pause';actionLabel(stop,owner.stopLabel);actionLabel(backward,owner.backwardLabel);actionLabel(forward,owner.forwardLabel)
+        actionLabel(mute,state.muted?owner.unmuteLabel:owner.muteLabel);mute.icon=state.muted?'muted':'volume'
+        actionLabel(fullscreen,document.fullscreenElement===owner?owner.exitFullscreenLabel:owner.fullscreenLabel);fullscreen.hidden=kind!=='video'||!document.fullscreenEnabled||!owner.requestFullscreen
         for(const control of [play,stop])if(bool(control.disabled)!==!source)control.disabled=!source
         const noSeek=state.seekEnd<=state.seekStart||!source
         for(const control of [backward,forward,seek])if(bool(control.disabled)!==noSeek)control.disabled=noSeek
-        Object.assign(seek,{accessibleLabel:m.seek,min:state.seekStart,max:Math.max(state.seekStart,state.seekEnd),valueText:`${clock(state.position)} / ${Number.isFinite(state.duration)?clock(state.duration):m.live}`})
+        Object.assign(seek,{accessibleLabel:owner.seekLabel,min:state.seekStart,max:Math.max(state.seekStart,state.seekEnd),valueText:`${clock(state.position)} / ${Number.isFinite(state.duration)?clock(state.duration):owner.liveText}`})
         if(!seek.interacting)seek.value=state.position
-        volume.accessibleLabel=m.volume;if(!volume.interacting)volume.value=state.volume
-        rate.accessibleLabel=m.rate;captions.accessibleLabel=m.captions
-        if(rateLocale!==owner.locale){rateLocale=owner.locale;let format:(value:number)=>string=String;try{const formatter=new Intl.NumberFormat(owner.locale||'en');format=n=>formatter.format(n)}catch{/* Invalid locales use numerical fallback. */}rate.options=[.5,.75,1,1.25,1.5,2].map(n=>({value:String(n),label:`${format(n)}×`}))}
+        volume.accessibleLabel=owner.volumeLabel;if(!volume.interacting)volume.value=state.volume
+        rate.accessibleLabel=owner.rateLabel;captions.accessibleLabel=owner.captionsLabel
+        if(!rateReady){rateReady=true;rate.options=[.5,.75,1,1.25,1.5,2].map(value=>({value:String(value),label:`${String(value)}×`}))}
         rate.value=String(state.rate)
-        time.textContent=`${clock(state.position)} / ${Number.isFinite(state.duration)?clock(state.duration):state.duration===Infinity?m.live:'0:00'}`
-        status.textContent=owner.hasPlaybackError||state.error?m.mediaError:!source?m.mediaEmpty:state.buffering?m.buffering:'';status.hidden=!status.textContent
-        const tracks=Array.from(media.querySelectorAll('track')),key=JSON.stringify([m.captionsOff,tracks.map(t=>[t.src,t.srclang,t.label])])
-        if(key!==captionKey){captionKey=key;captions.options=[{value:'-1',label:m.captionsOff},...tracks.map((track,i)=>({value:String(i),label:track.label||track.srclang}))]}
+        time.textContent=`${clock(state.position)} / ${Number.isFinite(state.duration)?clock(state.duration):state.duration===Infinity?owner.liveText:'0:00'}`
+        status.textContent=owner.hasPlaybackError||state.error?owner.errorText:!source?owner.emptyText:state.buffering?owner.bufferingText:'';status.hidden=!status.textContent
+        const tracks=Array.from(media.querySelectorAll('track')),key=JSON.stringify([owner.captionsOffLabel,tracks.map(t=>[t.src,t.srclang,t.label])])
+        if(key!==captionKey){captionKey=key;captions.options=[{value:'-1',label:owner.captionsOffLabel},...tracks.map((track,i)=>({value:String(i),label:track.label||track.srclang}))]}
         captions.value=String(Array.from(media.textTracks).findIndex(t=>t.mode==='showing'));captions.hidden=!tracks.length
     }}
 }

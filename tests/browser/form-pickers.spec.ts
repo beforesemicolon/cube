@@ -48,10 +48,10 @@ test('combobox stays closed initially, filters interactively and replaces autoco
 test('calendar and custom date and time pickers support keyboard-ready themed popups', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
-        const calendar = document.createElement('cb-calendar') as HTMLElement & { label: string; value: string; firstDayOfWeek: number }
-        calendar.label = 'Publishing calendar'; calendar.value = '2026-10-18'; calendar.firstDayOfWeek = 1
-        const date = document.createElement('cb-date-picker') as HTMLElement & { label: string; value: string }
-        date.label = 'Publish date'; date.value = '2026-10-18'
+        const calendar = document.createElement('cb-calendar') as HTMLElement & { label: string; value: string; firstDayOfWeek: number; previousLabel: string; nextLabel: string }
+        calendar.label = 'Publishing calendar'; calendar.value = '2026-10-18'; calendar.firstDayOfWeek = 1; calendar.previousLabel = 'Previous month'; calendar.nextLabel = 'Next month'
+        const date = document.createElement('cb-date-picker') as HTMLElement & { label: string; value: string; previousLabel: string; nextLabel: string }
+        date.label = 'Publish date'; date.value = '2026-10-18'; date.previousLabel = 'Previous month'; date.nextLabel = 'Next month'
         const time = document.createElement('cb-time-picker') as HTMLElement & { label: string; value: string; min: string; max: string }
         time.label = 'Publish time'; time.value = '09:30'; time.min = '08:00'; time.max = '12:00'
         document.querySelector('#fixture')?.append(calendar, date, time)

@@ -19,7 +19,7 @@ export class ActionBar extends ActionBarBase {
         if (!this.bar || !this.statusNode) return
         this.statusNode.textContent = this.statusText()
         this.statusNode.hidden = !this.statusText()
-        this.bar.setAttribute('aria-label', this.accessibleName('action'))
+        this.bar.setAttribute('aria-label', this.accessibleName())
         this.bar.setAttribute('aria-busy', String(bool(this.busy)))
     }
 }

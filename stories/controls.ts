@@ -43,7 +43,7 @@ const numberProperties = new Set([
 ])
 
 const objectProperties = new Set([
-    'items', 'labels', 'messages', 'options', 'series', 'theme', 'tracks', 'visibleSegments', 'visibleSeries',
+    'items', 'messages', 'options', 'series', 'theme', 'tracks', 'visibleSegments', 'visibleSeries',
     'xAxis', 'yAxis',
 ])
 
@@ -59,7 +59,7 @@ const layoutProperties = new Set([
 ])
 
 const dataProperties = new Set([
-    'items', 'labels', 'messages', 'options', 'series', 'theme', 'tracks', 'value', 'visibleSegments',
+    'items', 'messages', 'options', 'series', 'theme', 'tracks', 'value', 'visibleSegments',
     'visibleSeries', 'xAxis', 'yAxis',
 ])
 
@@ -72,7 +72,6 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
     collapseAt: ['', 'sm', 'md', 'lg'],
     crossOrigin: ['', 'anonymous', 'use-credentials'],
     justify: ['start', 'center', 'end', 'space-between', 'space-around', 'space-evenly', 'stretch'],
-    locale: ['en', 'pt', 'es', 'fr', 'zh'],
     modalSize: ['sm', 'md', 'lg', 'full'],
     orientation: ['horizontal', 'vertical'],
     placement: ['bottom-start', 'bottom-end', 'top-start', 'top-end'],
@@ -127,8 +126,6 @@ const descriptions: Readonly<Record<string, string>> = {
     icon: 'Icon name displayed by the control.',
     items: 'Editable item collection. Add, remove, reorder, label, value, or disable entries here.',
     label: 'Visible component label.',
-    labels: 'Localized runtime copy overrides keyed by message name.',
-    locale: 'Locale used for messages, numbers, dates, and times.',
     menuLabel: 'Accessible label for the split button menu trigger.',
     messages: 'Editable Flashbar notification queue.',
     native: 'Uses the browser-native control instead of the themed Cube renderer.',
@@ -152,8 +149,8 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     activation: 'automatic', align: 'stretch', appearance: 'system', autoFlow: 'row', autocomplete: 'list',
     autoplay: 'false', busy: 'false', checked: 'false', closeOnBackdrop: 'true', collapseAt: "''",
     crossOrigin: "''", decorative: 'false', destructive: 'false', disabled: 'false', dismissible: 'true',
-    expanded: 'false', firstDayOfWeek: '0', height: 'auto', invalid: 'false', items: '[]', labels: '{}',
-    loading: 'false', locale: 'en', loop: 'false', max: '100', maxVisible: '4', messages: '[]', min: '0',
+    expanded: 'false', firstDayOfWeek: '0', height: 'auto', invalid: 'false', items: '[]',
+    loading: 'false', loop: 'false', max: '100', maxVisible: '4', messages: '[]', min: '0',
     modalSize: 'md', multiple: 'false', muted: 'false', native: 'false', open: 'false', options: '[]',
     orientation: 'horizontal', patterns: 'false', placement: 'bottom-start', playbackRate: '1', position: 'top-end',
     preload: 'metadata', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', seekStep: '10',
@@ -169,7 +166,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     description: '', destructive: false, disabled: false, dismissible: true, download: '', emptyLabel: '', error: '',
     errorText: '', expanded: false, firstDayOfWeek: 0, formNoValidate: false, gap: '', heading: '', height: 320,
     href: '', icon: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
-    keys: '', label: '', loading: false, locale: 'en', loop: false, margin: '', max: 100, maxBlockSize: '', maxInlineSize: '',
+    keys: '', label: '', loading: false, loop: false, margin: '', max: 100, maxBlockSize: '', maxInlineSize: '',
     maxItems: 4, maxVisible: 4, mediaTitle: '', menuLabel: '', min: 0, minBlockSize: '', minInlineSize: '',
     modalSize: 'md', multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal',
     overflow: '', padding: '', page: 1, patterns: false, placement: 'bottom-start', placeholder: '', playbackRate: 1,
@@ -212,7 +209,6 @@ function humanize(property: string): string {
 
 function categoryFor(property: string): string {
     if (property === 'accessibleLabel') return 'Accessibility'
-    if (property === 'locale' || property === 'labels') return 'Localization'
     if (stateProperties.has(property)) return 'State'
     if (layoutProperties.has(property)) return 'Layout'
     if (dataProperties.has(property)) return 'Data'
@@ -274,7 +270,7 @@ function definitionFor(tag: string, property: string): StoryControl {
 }
 
 function objectDefault(tag: string, property: string): object | null | undefined {
-    if (property === 'labels' || property === 'xAxis' || property === 'yAxis') return {}
+    if (property === 'xAxis' || property === 'yAxis') return {}
     if (property === 'theme' && tag !== 'cb-theme-provider') return {}
     if (property === 'theme' || property === 'visibleSegments' || property === 'visibleSeries') return null
     if (property === 'series') return tag === 'cb-pie-chart' ? null : []
@@ -290,7 +286,10 @@ function defaultValueFor(tag: string, property: string): StoryValue | undefined 
     if (property === 'value' && colorValueTags.has(tag)) return '#000000'
     if ((property === 'min' || property === 'max') && dateBoundTags.has(tag)) return ''
     const structured = objectDefault(tag, property)
-    return structured !== undefined ? structured : primitiveDefaults[property]
+    if (structured !== undefined) return structured
+    const primitive = primitiveDefaults[property]
+    if (primitive !== undefined) return primitive
+    return controlFor(tag, property) === 'text' ? '' : undefined
 }
 
 export function storyArgsFor(tag: string, args: StoryArgs): StoryArgs {

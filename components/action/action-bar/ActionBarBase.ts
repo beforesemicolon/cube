@@ -10,6 +10,6 @@ export abstract class ActionBarBase<P extends ActionBarProps = ActionBarProps> e
     busy = false
     status = ''
     protected statusText(): string {
-        return scalarText(this.status) || (finite(this.selectionCount) > 0 ? this.ui('selected', { count: Math.max(0, Math.trunc(finite(this.selectionCount))) }) : '')
+        return scalarText(this.status)
     }
 }

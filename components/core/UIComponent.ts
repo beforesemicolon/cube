@@ -1,6 +1,5 @@
 import { Component, type CommonProps } from './Component.js'
-import { editorMessage, type EditorMessages } from './editor-locales.js'
-import { bool, text, scalarText } from './value.js'
+import { bool, scalarText } from './value.js'
 export type ControlSize = 'xs' | 'sm' | 'md' | 'lg'
 export interface UIProps extends CommonProps {
     label?: string; accessibleLabel?: string; description?: string; disabled?: boolean; size?: ControlSize
@@ -12,10 +11,8 @@ export abstract class UIComponent<P extends UIProps = UIProps> extends Component
     private reflectingNativeState=false
     protected abstract syncView(): void
     protected get unavailable(): boolean { return bool(this.disabled) }
-    ui(key: keyof EditorMessages, values: Record<string,string|number> = {}): string { return editorMessage(this.locale, this.labels, key, values) }
-    protected displayLabel(fallback: keyof EditorMessages = 'action'): string { return scalarText(this.label) || this.ui(fallback) }
-    protected accessibleName(fallback: keyof EditorMessages = 'action'): string { return scalarText(this.accessibleLabel) || scalarText(this.label) || this.ui(fallback) }
-    protected language():string { try { return Intl.getCanonicalLocales(text(this.locale)||'en')[0]||'en' } catch { return 'en' } }
+    protected displayLabel(): string { return scalarText(this.label) }
+    protected accessibleName(): string { return scalarText(this.accessibleLabel) || scalarText(this.label) }
     protected syncCommon(): void {
         // For form-associated elements, even disabled="false" is natively disabled.
         // Normalize presence before consulting the browser's formDisabledCallback state.

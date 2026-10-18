@@ -19,7 +19,7 @@ export const ContextMenu: Story = componentStory('cb-context-menu', { label: 'Co
 
 export const Dropdown: Story = componentStory('cb-dropdown', { label: 'Dropdown', items, open: false, placement: 'bottom-start', icon: 'down' })
 
-export const CommandPalette: Story = componentStory('cb-command-palette', { label: 'Command palette', items, open: false, query: '', placeholder: 'Search commands' })
+export const CommandPalette: Story = componentStory('cb-command-palette', { label: 'Command palette', items, open: false, query: '', placeholder: 'Search commands', emptyLabel: 'No commands found' })
 
 export const Tooltip: Story = componentStory('cb-tooltip', { content: 'Align selected layers', placement: 'top', delay: 250, open: false })
 

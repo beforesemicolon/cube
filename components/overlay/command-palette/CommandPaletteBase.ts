@@ -2,15 +2,16 @@ import { UIComponent, type UIProps } from '../../core/UIComponent.js'
 import { normalizeItems, type ActionItem, type NormalizedItem } from '../../core/items.js'
 import { scalarText } from '../../core/value.js'
 
-export interface CommandPaletteProps extends UIProps { items?: ActionItem[]; open?: boolean; query?: string; placeholder?: string }
+export interface CommandPaletteProps extends UIProps { items?: ActionItem[]; open?: boolean; query?: string; placeholder?: string; emptyLabel?: string }
 
 /** Command filtering and modal open state without prescribing result rendering. */
 export abstract class CommandPaletteBase<P extends CommandPaletteProps = CommandPaletteProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'items', 'open', 'query', 'placeholder']
+    static observedAttributes = [...UIComponent.observedAttributes, 'items', 'open', 'query', 'placeholder', 'empty-label']
     items: ActionItem[] = []
     open = false
     query = ''
     placeholder = ''
+    emptyLabel = ''
     protected get results(): NormalizedItem[] {
         const query = scalarText(this.query).trim().toLocaleLowerCase()
         const items = normalizeItems(this.items).filter(item => !item.separator)

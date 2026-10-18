@@ -11,10 +11,10 @@ export const SegmentedControl: Story = componentStory('cb-segmented-control', { 
 
 export const Tabs: Story = componentStory('cb-tabs', { label: 'Workspace', value: 'one', items, orientation: 'horizontal', activation: 'automatic' })
 
-export const Breadcrumb: Story = componentStory('cb-breadcrumb', { label: 'Breadcrumb', items, maxItems: 4 })
+export const Breadcrumb: Story = componentStory('cb-breadcrumb', { label: 'Breadcrumb', items, maxItems: 4, expandLabel: 'Show all breadcrumbs' })
 
 export const Menu: Story = componentStory('cb-menu', { label: 'Menu', items, loop: true })
 
 export const Link: Story = componentStory('cb-link', { label: 'Documentation', href: '#documentation', target: '_self', variant: 'ghost' })
 
-export const Pagination: Story = componentStory('cb-pagination', { label: 'Results pages', page: 2, totalPages: 8, siblings: 1 })
+export const Pagination: Story = componentStory('cb-pagination', { label: 'Results pages', page: 2, totalPages: 8, siblings: 1, previousLabel: 'Previous page', nextLabel: 'Next page', pageLabel: 'Page {page}' })
