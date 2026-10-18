@@ -99,6 +99,38 @@ test('text input and textarea keep a usable minimum width without overflowing na
     expect(responsiveWidth).toBeLessThanOrEqual(180)
 })
 
+test('range slider keeps its width and reaches both visual endpoints', async ({ page }) => {
+    await page.evaluate(() => {
+        const slider = document.createElement('cb-range-slider') as HTMLElement & {
+            accessibleLabel: string
+            value: number
+            min: number
+            max: number
+            step: number
+        }
+        Object.assign(slider, { accessibleLabel: 'Opacity', value: 50, min: 0, max: 100, step: 1 })
+        document.querySelector('#fixture')?.append(slider)
+    })
+
+    const host = page.locator('cb-range-slider')
+    const slider = host.getByRole('slider', { name: 'Opacity' })
+    const box = await slider.boundingBox()
+    expect(box).not.toBeNull()
+    if (!box) return
+    expect(box.width).toBeGreaterThanOrEqual(240)
+    await slider.click({ position: { x: 1, y: box.height / 2 } })
+    await expect(slider).toHaveValue('0')
+    await expect(host).toHaveJSProperty('value', 0)
+    await slider.click({ position: { x: box.width - 1, y: box.height / 2 } })
+    await expect(slider).toHaveValue('100')
+    await expect(host).toHaveJSProperty('value', 100)
+    const styles = await slider.evaluate(element => {
+        const style = getComputedStyle(element)
+        return { paddingInline: style.paddingInline, borderInlineWidth: style.borderInlineWidth }
+    })
+    expect(styles).toEqual({ paddingInline: '0px', borderInlineWidth: '0px' })
+})
+
 test('Studio fields expose invalid and read-only states without throwing or accepting changes', async ({ page }) => {
     await page.evaluate(() => {
         const control = document.createElement('cb-text-input') as HTMLElement & {

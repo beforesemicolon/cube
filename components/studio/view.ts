@@ -5,6 +5,7 @@ import { actionLabel, createButton, createIconButton } from '../action/create.js
 import type { Button } from '../action/button/index.js'
 import type { Select } from '../form/select/index.js'
 import type { UnitInputBase } from '../form/unit-input/UnitInputBase.js'
+import { normalizeRange } from '../form/model.js'
 import type { StudioComponentBase } from './StudioComponentBase.js'
 import type { StudioItem, StudioValue } from './types.js'
 
@@ -22,6 +23,7 @@ const studioCSS = editorCSS + `
 :host{inline-size:var(--component-studio-inline-size,auto);min-inline-size:0;container-type:inline-size}
 :host([data-kind=text]),:host([data-kind=textarea]),:host([data-kind=number]),:host([data-kind=search]),:host([data-kind=select]),:host([data-kind=range]),:host([data-kind=file]),:host([data-kind=color]),:host([data-kind=tokens]){inline-size:min(100%,var(--component-studio-control-width,320px))}
 :host([data-kind=text]),:host([data-kind=textarea]){inline-size:var(--component-studio-control-width,320px);max-inline-size:100%;min-inline-size:min(100%,var(--component-studio-control-min-width,240px))}
+:host([data-kind=range]){inline-size:var(--component-range-slider-width,var(--component-studio-control-width,320px));max-inline-size:100%;min-inline-size:min(100%,var(--component-range-slider-min-width,240px))}
 :host([data-kind=collection]),:host([data-kind=collaboration]),:host([data-kind=status]),:host([data-kind=progress]),:host([data-kind=display]),:host([data-kind=panel]),:host([data-kind=editor]){inline-size:min(100%,var(--component-studio-panel-width,360px))}
 :host([data-kind=canvas]),:host([data-kind=shell]){inline-size:min(100%,var(--component-studio-canvas-width,520px))}
 [part~=root]{display:grid;gap:var(--spacing-xs,4px);min-inline-size:0}
@@ -29,6 +31,13 @@ const studioCSS = editorCSS + `
 [part~=body]{min-inline-size:0}
 [part~=control]{inline-size:100%;min-inline-size:0}
 textarea[part~=control]{min-block-size:calc(var(--cb-height) * 2.4);resize:vertical}
+input[type=range][part~=control]{display:block;appearance:none;inline-size:100%;min-block-size:var(--cb-height);padding:0;border:0;background:transparent;cursor:pointer}
+input[type=range][part~=control]::-webkit-slider-runnable-track{block-size:var(--component-range-slider-track-height,4px);border-radius:999px;background:linear-gradient(to right,var(--color-primary) var(--cb-range-fill,0%),var(--color-track) var(--cb-range-fill,0%))}
+input[type=range][part~=control]::-webkit-slider-thumb{appearance:none;inline-size:var(--component-range-slider-thumb-size,16px);block-size:var(--component-range-slider-thumb-size,16px);margin-block-start:calc((var(--component-range-slider-track-height,4px) - var(--component-range-slider-thumb-size,16px))/2);border:2px solid var(--color-primary);border-radius:50%;background:var(--color-primary)}
+input[type=range][part~=control]::-moz-range-track{block-size:var(--component-range-slider-track-height,4px);border-radius:999px;background:var(--color-track)}
+input[type=range][part~=control]::-moz-range-progress{block-size:var(--component-range-slider-track-height,4px);border-radius:999px;background:var(--color-primary)}
+input[type=range][part~=control]::-moz-range-thumb{inline-size:var(--component-range-slider-thumb-size,16px);block-size:var(--component-range-slider-thumb-size,16px);border:2px solid var(--color-primary);border-radius:50%;background:var(--color-primary)}
+input[type=range][part~=control]:disabled{cursor:not-allowed;opacity:var(--component-disabled-opacity,.5)}
 [part~=choice]{display:inline-flex;align-items:center;gap:var(--spacing-sm,8px);min-block-size:var(--cb-height);cursor:pointer}
 [part~=choice] [part~=control]{inline-size:16px;min-block-size:16px;padding:0;accent-color:var(--color-primary)}
 [part~=list]{display:grid;gap:2px;margin:0;padding:var(--spacing-xs,4px);list-style:none;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);max-block-size:240px;overflow:auto}
@@ -491,10 +500,17 @@ export function createStudioView(host: StudioComponentBase): StudioView {
         control = input
         input.addEventListener('input', event => host.setValue(input.valueAsNumber, event))
         updateBody = (): void => {
-            input.min = String(host.studioNumber('min'))
-            input.max = String(host.studioNumber('max'))
-            input.step = String(host.studioNumber('step'))
-            input.value = host.studioTextValue() || String(host.studioNumber('min'))
+            const range = normalizeRange({
+                min: host.studioNumber('min'),
+                max: host.studioNumber('max'),
+                step: host.studioNumber('step'),
+                value: Number(host.studioTextValue()),
+            })
+            input.min = String(range.min)
+            input.max = String(range.max)
+            input.step = String(range.step)
+            input.value = String(range.value)
+            input.style.setProperty('--cb-range-fill', `${range.percent}%`)
             input.disabled = host.studioDisabled()
             input.setAttribute('aria-label', host.studioAccessibleName())
         }
