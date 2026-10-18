@@ -1,17 +1,19 @@
 import type { Decorator, Preview } from '@storybook/web-components-vite'
 import { html } from 'lit'
 import '../components/theme/theme-provider/index.js'
+import '../stories/events.js'
 
 const withCubeTheme: Decorator = (Story, context) => {
     const requestedAppearance = String(context.globals.appearance)
     const appearance = ['light', 'dark', 'system'].includes(requestedAppearance) ? requestedAppearance : 'light'
-    return html`<cb-theme-provider appearance=${appearance}>${Story()}</cb-theme-provider>`
+    return html`<cb-theme-provider appearance=${appearance}><cube-story-events>${Story()}</cube-story-events></cb-theme-provider>`
 }
 
 const preview: Preview = {
     decorators: [withCubeTheme],
     parameters: {
         controls: { expanded: true },
+        actions: { depth: 8, limit: 100, clearOnStoryChange: true },
         a11y: { test: 'error' },
         layout: 'padded',
         options: { storySort: { order: [

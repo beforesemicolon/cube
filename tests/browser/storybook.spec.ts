@@ -48,6 +48,19 @@ test('built Storybook: Button exposes optional pressed state and variant example
     await expect(destructive).toHaveAttribute('aria-pressed','false')
 })
 
+test('Storybook Actions records Cube events and their detail payloads',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/?path=/story/action--button')
+    const story=page.frameLocator('#storybook-preview-iframe')
+    await story.getByRole('button',{name:'Button'}).click()
+    await page.getByRole('tab',{name:/Actions/}).click()
+    const panel=page.getByRole('tabpanel')
+    await expect(panel).toContainText('cb-before-action')
+    await expect(panel).toContainText('cb-action')
+    await expect(panel).toContainText('cb-button')
+    await panel.getByRole('treeitem',{name:/detail: Object/}).last().click()
+    await expect(panel).toContainText('add-section')
+})
+
 test('built Storybook: layout panel stories expose working controls',async({page})=>{
     await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--collapsible-sidebar&viewMode=story')
     const sidebar=page.locator('cb-collapsible-sidebar')
