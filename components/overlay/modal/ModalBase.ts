@@ -1,8 +1,9 @@
 import { Component, type CommonProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
 
-export type ModalSize = 'sm' | 'md' | 'lg' | 'full'
-export type ModalCloseReason = 'close-button' | 'escape' | 'backdrop' | 'programmatic' | 'confirmed' | 'cancelled'
+export type ModalSize = 'sm' | 'md' | 'lg' | 'full' | 'page'
+export type ModalLayer = 'top' | 'document'
+export type ModalCloseReason = 'close-button' | 'escape' | 'backdrop' | 'programmatic' | 'confirmed' | 'cancelled' | 'action' | 'replaced' | 'invalidated'
 
 export interface ModalProps extends CommonProps {
     open?: boolean
@@ -12,6 +13,8 @@ export interface ModalProps extends CommonProps {
     dismissible?: boolean
     closeOnBackdrop?: boolean
     modalSize?: ModalSize
+    layer?: ModalLayer
+    returnFocus?: boolean
 }
 
 /** Native-dialog state and lifecycle without prescribing the dialog rendering. */
@@ -25,6 +28,8 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
         'dismissible',
         'close-on-backdrop',
         'modal-size',
+        'layer',
+        'return-focus',
     ]
 
     open = false
@@ -34,7 +39,10 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
     dismissible = true
     closeOnBackdrop = true
     modalSize: ModalSize = 'md'
+    layer: ModalLayer = 'top'
+    returnFocus = true
     private reflectingOpen = false
+    private returnTarget?: HTMLElement
 
     protected abstract dialogElement(): HTMLDialogElement | undefined
     protected abstract syncDialog(): void
@@ -45,7 +53,12 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
     show(): boolean {
         if (this.open) return true
         if (!this.dispatchEvent(new CustomEvent('cb-before-open', { bubbles: true, composed: true, cancelable: true }))) return false
+        this.captureReturnTarget()
         this.setOpen(true)
+        if (!this.dialogElement()?.open) {
+            this.setOpen(false)
+            return false
+        }
         this.emit('cb-open', {})
         return true
     }
@@ -56,6 +69,7 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
         if (!this.dispatchEvent(new CustomEvent('cb-before-close', { detail, bubbles: true, composed: true, cancelable: true }))) return false
         this.setOpen(false)
         this.emit('cb-close', detail)
+        this.restoreFocus()
         return true
     }
 
@@ -88,7 +102,25 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
         if (!dialog) return
         const shouldOpen = bool(this.open)
         if (shouldOpen && !dialog.open) {
-            try { dialog.showModal() } catch (error) { this.onError(error) }
+            this.captureReturnTarget()
+            try {
+                if (this.layer === 'document') dialog.show()
+                else dialog.showModal()
+            } catch (error) { this.onError(error) }
         } else if (!shouldOpen && dialog.open) dialog.close()
+    }
+
+    private captureReturnTarget(): void {
+        if (this.returnTarget?.isConnected) return
+        let active: Element | null = this.ownerDocument.activeElement
+        while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement
+        if (active instanceof HTMLElement && active !== this) this.returnTarget = active
+    }
+
+    private restoreFocus(): void {
+        const target = this.returnTarget
+        this.returnTarget = undefined
+        if (!bool(this.returnFocus) || !target?.isConnected) return
+        queueMicrotask(() => target.focus({ preventScroll: true }))
     }
 }

@@ -18,6 +18,9 @@ const examples = [
     ['publish-flow', 'compact'],
     ['feedback-states', 'standard'],
     ['review-workflow', 'compact'],
+    ['editor-workspace', 'wide'],
+    ['global-modal-system', 'compact'],
+    ['global-flashbar-system', 'compact'],
 ] as const
 
 for (const [id, size] of examples) {

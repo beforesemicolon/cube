@@ -5,7 +5,7 @@ import { BoxBase } from './BoxBase.js'
 export class Box extends BoxBase {
     render(): Node {
         return fragment(
-            sheet(':host{display:block;box-sizing:border-box;container-type:inline-size}'),
+            sheet(':host{display:block;box-sizing:border-box;container-type:inline-size}:host([data-inline]){display:inline-block}:host([hidden]){display:none}'),
             slot('', '', 'content'),
         )
     }

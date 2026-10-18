@@ -23,7 +23,12 @@ order: 26
 | Table | `<cb-table>` | `@beforesemicolon/cube/data-display/table` |
 | Tree | `<cb-tree>` | `@beforesemicolon/cube/data-display/tree` |
 | Accordion | `<cb-accordion>` | `@beforesemicolon/cube/data-display/accordion` |
+| Expandable section | `<cb-expandable-section>` | `@beforesemicolon/cube/data-display/expandable-section` |
+| File browser | `<cb-file-browser>` | `@beforesemicolon/cube/data-display/file-browser` |
+| Layer tree | `<cb-layer-tree>` | `@beforesemicolon/cube/data-display/layer-tree` |
 | Code preview | `<cb-code-preview>` | `@beforesemicolon/cube/data-display/code-preview` |
+
+{{t.cube.dataDisplayAdvancedBody}}
 
 ## API
 

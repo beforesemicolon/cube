@@ -47,7 +47,6 @@ export const studioComponentLoaders = {
     'artboard': () => import('../editor/artboard/index.js'),
     'rulers': () => import('../editor/rulers/index.js'),
     'device-frame': () => import('../editor/device-frame/index.js'),
-    'expression': () => import('../editor/expression/index.js'),
     'bezier': () => import('../editor/bezier/index.js'),
     'timeline': () => import('../editor/timeline/index.js'),
     'presence': () => import('../collaboration/presence/index.js'),

@@ -22,6 +22,16 @@ export abstract class Component<P extends CommonProps = CommonProps> extends Web
     emit(name: string, detail: unknown = {}): void {
         this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }))
     }
+    /** Runs consumer-provided work through the component error boundary. */
+    protected async runAction(action: () => void | Promise<void>): Promise<boolean> {
+        try {
+            await action()
+            return true
+        } catch (error) {
+            this.onError(error)
+            return false
+        }
+    }
     onError(error: unknown): void { this.emit('cb-error', { code: 'COMPONENT_ERROR', error, component: this.localName }) }
     protected documentLanguage(): string | undefined { return this.ownerDocument.documentElement.lang || undefined }
 }

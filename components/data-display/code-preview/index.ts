@@ -1,23 +1,10 @@
-import hljs from 'highlight.js/lib/core'
-import bash from 'highlight.js/lib/languages/bash'
-import css from 'highlight.js/lib/languages/css'
-import javascript from 'highlight.js/lib/languages/javascript'
-import json from 'highlight.js/lib/languages/json'
-import typescript from 'highlight.js/lib/languages/typescript'
-import xml from 'highlight.js/lib/languages/xml'
 import { register } from '../../core/Component.js'
+import { highlightCode } from '../../core/highlight.js'
 import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { actionLabel, createButton } from '../../action/create.js'
 import type { Button } from '../../action/button/index.js'
 import { scalarText } from '../../core/value.js'
 import { CodePreviewBase } from './CodePreviewBase.js'
-
-hljs.registerLanguage('bash', bash)
-hljs.registerLanguage('css', css)
-hljs.registerLanguage('html', xml)
-hljs.registerLanguage('javascript', javascript)
-hljs.registerLanguage('json', json)
-hljs.registerLanguage('typescript', typescript)
 
 export class CodePreview extends CodePreviewBase {
     private codeNode?: HTMLElement
@@ -67,8 +54,8 @@ export class CodePreview extends CodePreviewBase {
 
     protected syncView(): void {
         if (!this.codeNode || !this.languageNode || !this.copyButton || !this.statusNode || !this.preNode) return
-        const requested = scalarText(this.codeLanguage, 'plaintext').toLowerCase()
-        const language = hljs.getLanguage(requested) ? requested : 'plaintext'
+        const highlighted = highlightCode(this.source(), scalarText(this.codeLanguage, 'plaintext'))
+        const language = highlighted.language
         const source = this.source()
         this.languageNode.textContent = language
         aria(this.preNode, 'aria-label', this.studioAccessibleName())
@@ -76,7 +63,7 @@ export class CodePreview extends CodePreviewBase {
         this.copyButton.disabled = this.studioDisabled() || !source
         this.codeNode.className = `language-${language}`
         if (language === 'plaintext') this.codeNode.textContent = source
-        else this.codeNode.innerHTML = hljs.highlight(source, { language, ignoreIllegals:true }).value
+        else this.codeNode.innerHTML = highlighted.html
     }
 
     private async copySource(): Promise<void> {

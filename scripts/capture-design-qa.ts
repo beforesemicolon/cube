@@ -119,7 +119,7 @@ function createReferenceCrop(component: string): string | undefined {
 }
 
 async function openForAudit(element: ReturnType<Page['locator']>, component: string): Promise<void> {
-    if (!['context-menu', 'command-palette', 'modal', 'alert-dialog'].includes(component)) return
+    if (!['context-menu', 'command-palette', 'modal', 'alert-dialog', 'drawer', 'bottom-sheet'].includes(component)) return
     await element.evaluate(async (host: AuditableOverlayElement, componentName: string) => {
         await customElements.whenDefined(host.localName)
         if (componentName === 'context-menu') host.showAt?.(48, 48)

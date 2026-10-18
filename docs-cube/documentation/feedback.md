@@ -25,6 +25,8 @@ order: 25
 | Banner | `<cb-banner>` | `@beforesemicolon/cube/feedback/banner` |
 | Flashbar | `<cb-flashbar>` | `@beforesemicolon/cube/feedback/flashbar` |
 
+{{t.cube.flashbarServiceBody}}
+
 ## API
 
 {{t.cube.studioCatalogApi}}

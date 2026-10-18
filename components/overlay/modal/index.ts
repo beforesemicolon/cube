@@ -26,11 +26,13 @@ export class Modal extends ModalBase {
         view.description.hidden = !scalarText(this.description)
         view.close.hidden = !bool(this.dismissible)
         actionLabel(view.close, this.closeText())
-        this.setAttribute('modal-size', ['sm', 'md', 'lg', 'full'].includes(this.modalSize) ? this.modalSize : 'md')
+        this.setAttribute('modal-size', ['sm', 'md', 'lg', 'full', 'page'].includes(this.modalSize) ? this.modalSize : 'md')
+        this.dataset.layer = this.layer === 'document' ? 'document' : 'top'
+        view.dialog.setAttribute('aria-modal', String(this.layer !== 'document'))
     }
 }
 
 register('cb-modal', Modal)
 export { ModalBase }
-export type { ModalProps, ModalSize, ModalCloseReason } from './ModalBase.js'
-export { showModal, hideModal, type ModalRequest, type ModalResult } from './service.js'
+export type { ModalProps, ModalSize, ModalLayer, ModalCloseReason } from './ModalBase.js'
+export { showModal, hideModal, closeAllModals, configureModalHost, getModalHost, type ModalRequest, type ModalResult, type ModalAction, type ModalActionContext, type ModalContent, type ModalHandle, type ModalHostOptions } from './service.js'

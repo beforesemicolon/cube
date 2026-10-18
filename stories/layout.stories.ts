@@ -22,3 +22,12 @@ export const Row: Story = componentStory('cb-row', { gap: '8px', align: 'center'
 export const Col: Story = componentStory('cb-col', { gap: '8px', align: 'stretch', justify: 'start', reverse: false })
 
 export const Grid: Story = componentStory('cb-grid', { columns: 'repeat(3,minmax(0,1fr))', rows: '', gap: '8px', autoFlow: 'row', align: 'stretch', justify: 'stretch' })
+
+export const Workspace: Story = componentStory('cb-workspace', {
+    label: 'Editor workspace', accessibleLabel: 'Site editor workspace', startOpen: true, endOpen: true, bottomOpen: false,
+    startSize: 240, endSize: 300, bottomSize: 180, minStartSize: 180, maxStartSize: 520, minEndSize: 220, maxEndSize: 640,
+    minBottomSize: 140, maxBottomSize: 420, resizeStep: 16, mobileBreakpoint: 700, mobilePanel: '', persistKey: '',
+    startLabel: 'Pages and layers', endLabel: 'Properties', bottomLabel: 'Timeline', openStartLabel: 'Open pages and layers',
+    closeStartLabel: 'Close pages and layers', openEndLabel: 'Open properties', closeEndLabel: 'Close properties',
+    openBottomLabel: 'Open timeline', closeBottomLabel: 'Close timeline', closeMobileLabel: 'Close open panel',
+})

@@ -24,6 +24,9 @@ order: 22
 | Row | `<cb-row>` | `@beforesemicolon/cube/layout/row` |
 | Col | `<cb-col>` | `@beforesemicolon/cube/layout/col` |
 | Grid | `<cb-grid>` | `@beforesemicolon/cube/layout/grid` |
+| Workspace | `<cb-workspace>` | `@beforesemicolon/cube/layout/workspace` |
+
+{{t.cube.workspaceBody}}
 
 ## API
 

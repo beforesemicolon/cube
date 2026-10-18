@@ -1,6 +1,8 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/web-components-vite'
 import type { AccordionItem } from '../components/data-display/accordion/base.js'
 import type { TableColumn, TableRecord } from '../components/data-display/table/base.js'
+import { createFlashbar, configureFlashbarHost } from '../components/feedback/flashbar/service.js'
+import { showModal } from '../components/overlay/modal/service.js'
 import '../components/client.js'
 
 const withTheme: Decorator = (Story, context) => {
@@ -309,5 +311,82 @@ export const ReviewWorkflow: Story = {
     render: () => {
         const actions = component('cb-button-group', { label: 'Review actions', items: [{ id: 'reject', label: 'Reject' }, { id: 'approve', label: 'Approve' }] })
         return compactSurface(component('cb-alert', { label: 'Spacing change', value: '32 px → 24 px', status: 'Suggested by Ana' }), actions)
+    },
+}
+
+export const EditorWorkspace: Story = {
+    name: 'Layout / Complete editor workspace',
+    render: () => {
+        const workspace = document.createElement('cb-workspace') as HTMLElement & { startOpen: boolean; endOpen: boolean; bottomOpen: boolean }
+        Object.assign(workspace, {
+            label: 'Page editor', accessibleLabel: 'Page editor workspace', startOpen: true, endOpen: true, bottomOpen: true,
+            startSize: 230, endSize: 300, bottomSize: 150, startLabel: 'Layers', endLabel: 'Properties', bottomLabel: 'Timeline',
+            openStartLabel: 'Open layers', closeStartLabel: 'Close layers', openEndLabel: 'Open properties', closeEndLabel: 'Close properties',
+            openBottomLabel: 'Open timeline', closeBottomLabel: 'Close timeline', closeMobileLabel: 'Close panel',
+        })
+        workspace.style.cssText = 'inline-size:100%;block-size:640px'
+        const header = component('cb-toolbar', { label: 'Editor tools', items: [{ id: 'select', label: 'Select', icon: 'cursor' }, { id: 'preview', label: 'Preview', icon: 'eye' }] }); header.slot = 'header'
+        const layers = component('cb-layer-tree', {
+            label: 'Layers', accessibleLabel: 'Page layers', expandedIds: ['page', 'hero'], selectedIds: ['title'],
+            expandLabel: 'Expand {item}', collapseLabel: 'Collapse {item}', showLabel: 'Show {item}', hideLabel: 'Hide {item}',
+            lockLabel: 'Lock {item}', unlockLabel: 'Unlock {item}', renameLabel: 'Rename {item}', saveLabel: 'Save name', cancelLabel: 'Cancel', moveLabel: 'Move {item}',
+            items: [{ id: 'page', label: 'Homepage', children: [{ id: 'hero', label: 'Hero', children: [{ id: 'title', label: 'Main heading', icon: 'text' }, { id: 'visual', label: 'Product visual', icon: 'image' }] }, { id: 'features', label: 'Features', icon: 'grid' }] }],
+        }); layers.slot = 'start'
+        const properties = component('cb-property-group', { label: 'Dimensions', expanded: true, dirty: true, resetLabel: 'Reset dimensions', mixedLabel: 'Mixed', expandLabel: 'Expand dimensions', collapseLabel: 'Collapse dimensions' }); properties.slot = 'end'
+        const linked = component('cb-linked-values', { label: 'Dimensions', accessibleLabel: 'Layer dimensions', firstValue: 320, secondValue: 180, firstLabel: 'Width', secondLabel: 'Height', linked: true, linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions' })
+        properties.append(linked)
+        const timeline = component('cb-timeline', { label: 'Timeline', accessibleLabel: 'Animation timeline', duration: 4, currentTime: 1, playLabel: 'Play', pauseLabel: 'Pause', rewindLabel: 'Rewind', addKeyframeLabel: 'Add keyframe', playheadLabel: 'Playhead', keyframeLabel: '{track} at {time}', timeLabel: '{current} / {duration}', tracks: [{ id: 'opacity', label: 'Opacity', keyframes: [{ id: 'one', time: 0 }, { id: 'two', time: 2 }, { id: 'three', time: 4 }] }] }); timeline.slot = 'bottom'
+        const canvas = document.createElement('div')
+        canvas.style.cssText = 'position:relative;min-block-size:100%;background:linear-gradient(90deg,var(--color-separator) 1px,transparent 1px),linear-gradient(var(--color-separator) 1px,transparent 1px);background-size:20px 20px'
+        const artboard = component('cb-artboard', { label: 'Homepage', accessibleLabel: 'Homepage artboard', width: 640, height: 420, selected: true, dimensionsLabel: '{width} × {height}' })
+        canvas.append(artboard)
+        workspace.append(header, layers, canvas, properties, timeline)
+        return wideSurface(workspace)
+    },
+}
+
+export const GlobalModalSystem: Story = {
+    name: 'Overlay / Global modal service',
+    render: () => {
+        const result = document.createElement('p')
+        result.style.cssText = 'margin:0;color:var(--color-muted-foreground)'
+        result.textContent = 'Open the modal and complete an action.'
+        const launcher = component('cb-button', { label: 'Create project', variant: 'primary' })
+        launcher.addEventListener('cb-action', async () => {
+            const body = component('cb-col', { gap: '12px' })
+            body.append(
+                component('cb-text-input', { label: 'Project name', value: 'Cube documentation' }),
+                component('cb-select', { label: 'Visibility', value: 'team', options: [{ value: 'private', label: 'Private' }, { value: 'team', label: 'Project members' }, { value: 'public', label: 'Public' }] }),
+            )
+            const handle = showModal({
+                id: 'storybook-create-project', heading: 'Create project', description: 'Set the initial project details.', body,
+                cancelLabel: 'Cancel', actions: [{ id: 'create', label: 'Create project', value: 'created', variant: 'primary', onAction: async () => Promise.resolve() }],
+            })
+            const modalResult = await handle
+            result.textContent = modalResult.reason === 'action' ? 'Project created.' : `Modal closed: ${modalResult.reason}.`
+        })
+        return compactSurface(launcher, result)
+    },
+}
+
+export const GlobalFlashbarSystem: Story = {
+    name: 'Feedback / Global flashbar service',
+    render: () => {
+        const root = compactSurface()
+        configureFlashbarHost({ parent: root, accessibleLabel: 'Application notifications', position: 'top-end', maxVisible: 3 })
+        const actions = component('cb-row', { gap: '8px', wrap: true })
+        const save = component('cb-button', { label: 'Show success', variant: 'primary' })
+        const retry = component('cb-button', { label: 'Show retry action' })
+        save.addEventListener('cb-action', () => createFlashbar({ id: 'saved-example', type: 'success', heading: 'Changes saved', message: 'The project is up to date.', dismissible: true, dismissLabel: 'Dismiss changes saved' }))
+        retry.addEventListener('cb-action', () => {
+            const handle = createFlashbar({
+                id: 'retry-example', type: 'error', heading: 'Publish failed', message: 'Check the connection and try again.',
+                actionLabel: 'Retry publish', dismissOnAction: false, dismissible: true, dismissLabel: 'Dismiss publish error',
+                action: async () => { handle.update({ type: 'loading', heading: 'Publishing', message: 'Trying again…', actionLabel: '' }) },
+            })
+        })
+        actions.append(save, retry)
+        root.append(actions)
+        return root
     },
 }

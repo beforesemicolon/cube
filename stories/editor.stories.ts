@@ -28,8 +28,6 @@ export const DeviceFrame: Story = componentStory('cb-device-frame', {
     showChrome: true, showOrientationControl: true, orientationLabel: 'Rotate device', screenLabel: 'Application preview',
 })
 
-export const Expression: Story = componentStory('cb-expression', { label: 'Expression', value: '12 px', placeholder: 'Expression' })
-
 export const Bezier: Story = componentStory('cb-bezier', {
     label: 'Cubic bezier', accessibleLabel: 'Cubic bezier editor', value: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
     x1: .25, y1: .1, x2: .25, y2: 1, duration: 1200, playing: false, curveLabel: 'Curve control points',
@@ -45,5 +43,35 @@ export const Timeline: Story = componentStory('cb-timeline', {
         { id:'opacity', label:'Opacity', keyframes:[{id:'opacity-1',time:0},{id:'opacity-2',time:1.2},{id:'opacity-3',time:4}] },
         { id:'position', label:'Position X', keyframes:[{id:'position-1',time:0},{id:'position-2',time:2.4},{id:'position-3',time:4}] },
         { id:'scale', label:'Scale', keyframes:[{id:'scale-1',time:.6},{id:'scale-2',time:3.1}] },
+    ],
+})
+
+export const PropertyGroup: Story = componentStory('cb-property-group', {
+    label: 'Layout', description: 'Dimensions and visibility for the selected layer.', expanded: true, collapsible: true, dirty: true, mixed: false,
+    resetLabel: 'Reset layout', mixedLabel: 'Mixed values', expandLabel: 'Expand layout', collapseLabel: 'Collapse layout',
+})
+
+export const SelectionOverlay: Story = componentStory('cb-selection-overlay', {
+    label: 'Selected layer', accessibleLabel: 'Selected hero card', rect: { x: 96, y: 72, width: 240, height: 148 }, rotation: 0,
+    movable: true, resizable: true, rotatable: true, moveStep: 1, minWidth: 32, minHeight: 24, showSize: true,
+    moveLabel: 'Move selected layer', resizeLabel: 'Resize selected layer', rotateLabel: 'Rotate selected layer', sizeLabel: '{width} × {height}',
+    handleLabels: { nw: 'Resize from top left', n: 'Resize from top', ne: 'Resize from top right', e: 'Resize from right', se: 'Resize from bottom right', s: 'Resize from bottom', sw: 'Resize from bottom left', w: 'Resize from left' },
+})
+
+export const GuideOverlay: Story = componentStory('cb-guide-overlay', {
+    zoom: 1,
+    guides: [
+        { id: 'vertical-center', axis: 'y', position: 380, start: 24, end: 396, label: 'center', type: 'snap' },
+        { id: 'top-spacing', axis: 'x', position: 72, start: 48, end: 336, label: '24 px', type: 'measurement' },
+        { id: 'insertion', axis: 'x', position: 248, start: 96, end: 520, label: 'Insert here', type: 'insertion' },
+    ],
+})
+
+export const MarqueeSelection: Story = componentStory('cb-marquee-selection', {
+    disabled: false, threshold: 3,
+    targets: [
+        { id: 'hero', rect: { x: 64, y: 52, width: 180, height: 110 } },
+        { id: 'copy', rect: { x: 298, y: 96, width: 220, height: 72 } },
+        { id: 'card', rect: { x: 174, y: 238, width: 160, height: 104 } },
     ],
 })

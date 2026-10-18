@@ -4,6 +4,8 @@ import { createIcon } from '../../icons/paths.js'
 import { actionLabel, createButton, createIconButton } from '../../action/create.js'
 import { scalarText } from '../../core/value.js'
 import { FlashbarBase, type NormalizedFlashbarMessage } from './FlashbarBase.js'
+import '../../navigation/link/index.js'
+import type { Link } from '../../navigation/link/index.js'
 
 const typeIcon: Readonly<Record<NormalizedFlashbarMessage['type'], string>> = {
     info: 'info', success: 'check', warning: 'warning', danger: 'warning', loading: 'reset',
@@ -41,16 +43,32 @@ export class Flashbar extends FlashbarBase {
         article.dataset.type = message.type
         article.dataset.id = message.id
         article.setAttribute('role', message.type === 'danger' ? 'alert' : 'status')
+        article.addEventListener('pointerenter', () => this.pause(message.id))
+        article.addEventListener('pointerleave', () => this.resume(message.id))
+        article.addEventListener('focusin', () => this.pause(message.id))
+        article.addEventListener('focusout', event => {
+            if (!article.contains(event.relatedTarget as Node | null)) this.resume(message.id)
+        })
         article.append(createIcon(typeIcon[message.type], 'message-icon icon'))
         const content = el('div', 'content')
         if (message.heading) content.append(el('div', 'heading', message.heading))
         content.append(el('p', 'message-text', message.message))
         const actions = el('div', 'message-actions')
         if (message.actionLabel) {
-            const action = createButton('action', event => this.action(message, event))
-            actionLabel(action, message.actionLabel)
-            action.size = 'xs'
-            actions.append(action)
+            if (message.actionHref) {
+                const action = document.createElement('cb-link') as Link
+                action.setAttribute('part', 'action')
+                action.setAttribute('exportparts', 'control:action-control,label:action-label,icon:action-icon')
+                Object.assign(action, { label: message.actionLabel, accessibleLabel: message.actionLabel, href: message.actionHref, target: message.actionTarget, size: 'xs' })
+                action.addEventListener('cb-navigate', event => { void this.action(message, event) })
+                actions.append(action)
+            } else {
+                const action = createButton('action', event => { void this.action(message, event) })
+                actionLabel(action, message.actionLabel)
+                action.size = 'xs'
+                action.loading = message.actionLoading
+                actions.append(action)
+            }
         }
         if (message.dismissible && message.dismissLabel) {
             const dismiss = createIconButton('dismiss', 'close', () => this.dismiss(message.id, 'dismiss-button'))
@@ -66,5 +84,6 @@ export class Flashbar extends FlashbarBase {
 
 register('cb-flashbar', Flashbar)
 export { FlashbarBase }
-export type { FlashbarProps, FlashbarMessage, NormalizedFlashbarMessage, FlashbarType, FlashbarPosition } from './FlashbarBase.js'
-export { showFlashbar, updateFlashbar, hideFlashbar, clearFlashbars } from './service.js'
+export type { FlashbarProps, FlashbarMessage, NormalizedFlashbarMessage, FlashbarType, NormalizedFlashbarType, FlashbarPosition, FlashbarActionContext, FlashbarActionHandler } from './FlashbarBase.js'
+export { showFlashbar, createFlashbar, updateFlashbar, hideFlashbar, clearFlashbars, configureFlashbarHost, getFlashbarHost } from './service.js'
+export type { FlashbarHandle, FlashbarHostOptions } from './service.js'

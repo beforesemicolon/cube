@@ -158,3 +158,37 @@ export const CodePreview: Story = componentStory('cb-code-preview', {
     copyLabel: 'Copy JavaScript',
     copiedLabel: 'JavaScript copied',
 })
+
+export const FileBrowser: Story = componentStory('cb-file-browser', {
+    label: 'Project files', accessibleLabel: 'Project file browser', currentFolderId: '', query: '', view: 'grid', sortBy: 'name', sortDirection: 'asc',
+    selectionMode: 'multiple', selectedIds: ['logo'], searchable: true, loading: false, searchLabel: 'Filter project files',
+    searchPlaceholder: 'Search this folder', gridViewLabel: 'Grid view', tableViewLabel: 'Table view', breadcrumbLabel: 'Current folder',
+    expandPathLabel: 'Show hidden path items', rootLabel: 'Project', nameLabel: 'Name', typeLabel: 'Type', sizeLabel: 'Size', modifiedLabel: 'Modified',
+    emptyLabel: 'This folder is empty.', noMatchLabel: 'No files match this filter.', loadingLabel: 'Loading files', openEntryLabel: 'Open {entry}',
+    selectEntryLabel: 'Select {entry}', deselectEntryLabel: 'Deselect {entry}', sortAscendingLabel: 'Sort {column} ascending', sortDescendingLabel: 'Sort {column} descending',
+    entries: [
+        { id: 'images', name: 'Images', type: 'folder', modified: 'Oct 18, 2026', description: '12 assets' },
+        { id: 'documents', name: 'Documents', type: 'folder', modified: 'Oct 17, 2026', description: '4 documents' },
+        { id: 'logo', name: 'cube-logo.svg', type: 'file', size: 18420, modified: 'Oct 18, 2026', mime: 'image/svg+xml' },
+        { id: 'tokens', name: 'tokens.json', type: 'file', size: 9634, modified: 'Oct 16, 2026', mime: 'application/json' },
+        { id: 'hero', name: 'hero.webp', type: 'file', parentId: 'images', size: 284332, modified: 'Oct 18, 2026', mime: 'image/webp' },
+        { id: 'portrait', name: 'portrait.webp', type: 'file', parentId: 'images', size: 156201, modified: 'Oct 15, 2026', mime: 'image/webp' },
+    ],
+})
+
+export const LayerTree: Story = componentStory('cb-layer-tree', {
+    label: 'Page layers', accessibleLabel: 'Homepage layers', selectedIds: ['hero-heading'], expandedIds: ['page', 'hero'], multiple: true,
+    editable: true, reorderable: true, showVisibility: true, showLock: true, emptyLabel: 'No layers', expandLabel: 'Expand {item}',
+    collapseLabel: 'Collapse {item}', showLabel: 'Show {item}', hideLabel: 'Hide {item}', lockLabel: 'Lock {item}', unlockLabel: 'Unlock {item}',
+    renameLabel: 'Rename {item}', saveLabel: 'Save name', cancelLabel: 'Cancel rename', moveLabel: 'Move {item}',
+    items: [
+        { id: 'page', label: 'Homepage', icon: 'layers', children: [
+            { id: 'navigation', label: 'Navigation', icon: 'component', locked: true },
+            { id: 'hero', label: 'Hero section', icon: 'layers', children: [
+                { id: 'hero-heading', label: 'Make better products.', description: 'Heading', icon: 'text' },
+                { id: 'hero-image', label: 'Product preview', description: 'Image', icon: 'image' },
+            ] },
+            { id: 'features', label: 'Feature grid', icon: 'grid', hidden: true },
+        ] },
+    ],
+})

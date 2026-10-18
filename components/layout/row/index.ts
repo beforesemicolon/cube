@@ -16,4 +16,4 @@ export class Row extends RowBase {
 
 register('cb-row', Row)
 export { RowBase }
-export type { RowProps, LayoutAlignment, LayoutDistribution, CollapsePoint } from './RowBase.js'
+export type { RowProps, LayoutAlignment, LayoutDistribution, LayoutSpacing, CollapsePoint } from './RowBase.js'

@@ -138,3 +138,61 @@ test('built Storybook: every chart state has visible output',async({page})=>{
     await expect(chart.getByRole('button',{name:'Show all',exact:true})).toBeVisible()
     await expect(chart.getByRole('button',{name:/^View data table/})).toBeVisible()
 })
+
+test('built Storybook: readiness components expose their complete prop surfaces', async ({ page }) => {
+    for (const [id, properties] of [
+        ['data-display--file-browser', ['entries', 'selectedIds', 'view', 'selectionMode', 'searchable', 'sortBy']],
+        ['layout--workspace', ['startOpen', 'endOpen', 'bottomOpen', 'startSize', 'mobilePanel', 'persistKey']],
+        ['editor--selection-overlay', ['rect', 'handleLabels', 'movable', 'resizable', 'rotatable']],
+        ['form--code-editor', ['value', 'language', 'lineNumbers', 'tabSize', 'minLines', 'maxLines']],
+    ] as const) {
+        await page.goto(`http://127.0.0.1:6006/?path=/story/${id}&addonPanel=storybook/controls/panel`)
+        const panel = page.getByRole('tabpanel', { name: /Controls/ })
+        for (const property of properties) await expect(panel.getByText(property, { exact: true }).first()).toBeVisible({ timeout: 20_000 })
+    }
+})
+
+test('built Storybook: readiness component stories remain directly interactive', async ({ page }) => {
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=data-display--file-browser&viewMode=story')
+    const browser = page.locator('cb-file-browser')
+    await browser.getByRole('option', { name: 'Open Images' }).click()
+    await expect(browser.getByText('hero.webp')).toBeVisible()
+    await browser.getByRole('button', { name: 'Project' }).click()
+    await browser.getByRole('radio', { name: 'Table view' }).click()
+    await expect(browser.locator('cb-table')).toBeVisible()
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=form--linked-values&viewMode=story')
+    const linked = page.locator('cb-linked-values')
+    await linked.getByRole('button', { name: 'Unlink dimensions' }).click()
+    await expect(linked).toHaveJSProperty('linked', false)
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=form--json-editor&viewMode=story')
+    const json = page.locator('cb-json-editor')
+    await expect(json.locator('.hljs-attr').first()).toBeVisible()
+    await json.getByRole('button', { name: 'Format JSON' }).click()
+    await expect(json.getByRole('status')).toHaveText('Valid JSON')
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--workspace&viewMode=story')
+    const workspace = page.locator('cb-workspace')
+    await workspace.getByRole('button', { name: 'Close pages and layers' }).click()
+    await expect(workspace).toHaveJSProperty('startOpen', false)
+    await workspace.getByRole('button', { name: 'Open pages and layers' }).click()
+    await workspace.getByRole('separator', { name: 'Pages and layers' }).press('ArrowRight')
+    await expect(workspace).toHaveJSProperty('startSize', 256)
+})
+
+test('built Storybook: global modal and flashbar examples demonstrate application services', async ({ page }) => {
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--global-modal-system&viewMode=story')
+    await page.getByRole('button', { name: 'Create project', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Create project' })
+    await expect(dialog).toBeVisible()
+    await page.locator('cb-modal').getByRole('button', { name: 'Create project', exact: true }).click()
+    await expect(page.getByText('Project created.')).toBeVisible()
+
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--global-flashbar-system&viewMode=story')
+    await page.getByRole('button', { name: 'Show success' }).click()
+    const notification = page.getByRole('status').filter({ hasText: 'Changes saved' })
+    await expect(notification).toBeVisible()
+    await notification.getByRole('button', { name: 'Dismiss changes saved' }).click()
+    await expect(notification).toBeHidden()
+})

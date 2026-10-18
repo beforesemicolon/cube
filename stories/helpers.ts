@@ -85,6 +85,29 @@ function seedPreview(tag: string, node: HTMLElement): void {
     else if (tag === 'cb-docked-panel') node.append(demoSurface('Docked inspector content'))
     else if (tag === 'cb-panel-header') {
         const action = demoButton('Reset', 'ghost'); action.slot = 'actions'; node.append(action)
+    } else if (tag === 'cb-field') {
+        const input = document.createElement('cb-text-input')
+        Object.assign(input, { label: '', accessibleLabel: 'Project name', value: 'Cube design system' })
+        node.append(input)
+    } else if (tag === 'cb-property-group') {
+        const content = document.createElement('cb-col')
+        Object.assign(content, { gap: 'sm' })
+        const width = document.createElement('cb-unit-input')
+        Object.assign(width, { label: 'Width', value: 320, unit: 'px', units: [{ value: 'px', label: 'px' }, { value: '%', label: '%' }], unitLabel: 'Unit' })
+        const visible = document.createElement('cb-switch')
+        Object.assign(visible, { label: 'Visible', checked: true })
+        content.append(width, visible)
+        node.append(content)
+    } else if (tag === 'cb-workspace') {
+        const header = document.createElement('cb-toolbar'); header.slot = 'header'
+        Object.assign(header, { label: 'Editor toolbar', items: [{ id: 'select', label: 'Select', icon: 'cursor' }, { id: 'preview', label: 'Preview', icon: 'eye' }] })
+        const start = demoSurface('Pages and layers'); start.slot = 'start'; start.style.cssText += ';min-height:100%;border:0;border-radius:0'
+        const end = document.createElement('cb-property-group'); end.slot = 'end'
+        Object.assign(end, { label: 'Layout', expanded: true, resetLabel: 'Reset layout', expandLabel: 'Expand layout', collapseLabel: 'Collapse layout' })
+        const width = document.createElement('cb-unit-input'); Object.assign(width, { label: 'Width', value: 320, unit: 'px', unitLabel: 'Unit' }); end.append(width)
+        const bottom = demoSurface('Timeline'); bottom.slot = 'bottom'; bottom.style.cssText += ';min-width:100%;border:0;border-radius:0'
+        const canvas = demoSurface('Responsive editor canvas'); canvas.style.cssText += ';min-height:420px;border:0;border-radius:0;background:linear-gradient(90deg,var(--color-separator) 1px,transparent 1px),linear-gradient(var(--color-separator) 1px,transparent 1px);background-size:20px 20px'
+        node.append(header, start, canvas, end, bottom)
     } else if (tag === 'cb-expandable-section') node.append(demoSurface('Expandable section content'))
     else if (tag === 'cb-flashbar') Object.assign(node, { messages: [
         { id: 'saved', type: 'success', heading: 'Changes saved', message: 'Your project is up to date.', dismissible: true, duration: 0 },
@@ -124,6 +147,25 @@ function launchButton(label: string, action: () => void): HTMLElement {
 }
 
 function wireInteraction(tag: string, node: HTMLElement, wrapper: HTMLElement): void {
+    if (tag === 'cb-selection-overlay' || tag === 'cb-guide-overlay' || tag === 'cb-marquee-selection') {
+        const canvas = document.createElement('div')
+        canvas.style.cssText = 'position:relative;inline-size:min(100%,760px);block-size:420px;overflow:hidden;border:1px solid var(--color-separator);border-radius:var(--radius-md);background:linear-gradient(90deg,var(--color-separator) 1px,transparent 1px),linear-gradient(var(--color-separator) 1px,transparent 1px);background-size:20px 20px'
+        if (tag === 'cb-marquee-selection') {
+            for (const [id, left, top, width, height] of [['hero', 64, 52, 180, 110], ['copy', 298, 96, 220, 72], ['card', 174, 238, 160, 104]] as const) {
+                const target = demoSurface(id)
+                target.dataset.target = id
+                Object.assign(target.style, { position: 'absolute', left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px`, padding: '0' })
+                canvas.append(target)
+            }
+        } else {
+            const target = demoSurface('Selected layer')
+            Object.assign(target.style, { position: 'absolute', left: '96px', top: '72px', width: '240px', height: '148px', padding: '0', background: 'var(--color-surface)' })
+            canvas.append(target)
+        }
+        canvas.append(node)
+        wrapper.append(canvas)
+        return
+    }
     if (tag === 'cb-modal' || tag === 'cb-alert-dialog' || tag === 'cb-drawer' || tag === 'cb-bottom-sheet') {
         const labels: Record<string, string> = { 'cb-modal': 'Open modal', 'cb-alert-dialog': 'Open alert dialog', 'cb-drawer': 'Open drawer', 'cb-bottom-sheet': 'Open bottom sheet' }
         wrapper.append(launchButton(labels[tag] ?? 'Open', () => (node as HTMLElement & { show(): boolean }).show()), node)

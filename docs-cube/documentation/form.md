@@ -36,10 +36,17 @@ order: 21
 | Select | `<cb-select>` | `@beforesemicolon/cube/form/select` |
 | Slider | `<cb-slider>` | `@beforesemicolon/cube/form/slider` |
 | Calendar | `<cb-calendar>` | `@beforesemicolon/cube/form/calendar` |
+| Field | `<cb-field>` | `@beforesemicolon/cube/form/field` |
+| Editable list | `<cb-editable-list>` | `@beforesemicolon/cube/form/editable-list` |
+| Code editor | `<cb-code-editor>` | `@beforesemicolon/cube/form/code-editor` |
+| JSON editor | `<cb-json-editor>` | `@beforesemicolon/cube/form/json-editor` |
+| Linked values | `<cb-linked-values>` | `@beforesemicolon/cube/form/linked-values` |
 
 {{t.cube.unitInputBody}}
 
 {{t.cube.selectBody}}
+
+{{t.cube.formCompositionBody}}
 
 ## API
 

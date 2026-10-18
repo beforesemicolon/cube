@@ -99,7 +99,7 @@ const publicStudioComponentNames = new Set([
     'badge','avatar','card','list','description-row','table','tree','accordion','code-preview',
     'status','empty-state','skeleton','progress','spinner','toast','alert','banner',
     'popover','drawer','hover-card','bottom-sheet',
-    'viewport','artboard','rulers','device-frame','expression','bezier','timeline',
+    'viewport','artboard','rulers','device-frame','bezier','timeline',
     'presence','remote-cursor','comment-pin','comment-thread',
 ])
 const publicDefinitions = definitions.filter(definition => publicStudioComponentNames.has(definition.name))

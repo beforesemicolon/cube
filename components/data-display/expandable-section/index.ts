@@ -41,12 +41,13 @@ function expandableSectionView(host: ExpandableSectionBase) {
     const icon = document.createElement('cb-icon') as IconElement
     icon.name = 'right'; icon.decorative = true; icon.setAttribute('part', 'icon')
     const heading = el('span', 'heading'), labelRow = el('span', 'label-row'), label = el('span', 'label'), counter = el('span', 'counter')
+    const accessibleAction = el('span', 'accessible-action sr-only')
     const description = el('span', 'description'), extras = el('div', 'header-extras'), panel = el('div', 'panel'), content = slot()
     const info = slot('header-info', '', 'header-info'), actions = slot('header-actions', '', 'header-actions')
     const triggerId = uid('cb-expandable-trigger'), panelId = uid('cb-expandable-panel')
     trigger.id = triggerId; panel.id = panelId; panel.setAttribute('role', 'region')
     heading.setAttribute('role', 'heading'); labelRow.append(label, counter); heading.append(labelRow, description)
-    trigger.append(icon, heading); extras.append(info, actions); panel.append(content); root.append(trigger, extras, panel)
+    trigger.append(icon, heading, accessibleAction); extras.append(info, actions); panel.append(content); root.append(trigger, extras, panel)
 
     const syncExtras = (): void => { extras.hidden = info.assignedElements().length + actions.assignedElements().length === 0 }
     info.addEventListener('slotchange', syncExtras); actions.addEventListener('slotchange', syncExtras)
@@ -59,6 +60,7 @@ function expandableSectionView(host: ExpandableSectionBase) {
         host.toggleAttribute('data-expanded', expanded); host.toggleAttribute('data-disable-content-padding', bool(host.disableContentPadding))
         trigger.tabIndex = disabled ? -1 : 0; aria(trigger, 'aria-disabled', disabled || null)
         aria(trigger, 'aria-label', visibleLabel ? null : extraName || null)
+        accessibleAction.textContent = visibleLabel && extraName !== visibleLabel ? extraName : ''
         aria(trigger, 'aria-controls', panelId); aria(trigger, 'aria-expanded', expanded); aria(panel, 'aria-labelledby', triggerId)
         panel.hidden = !expanded; panel.inert = !expanded
         heading.setAttribute('aria-level', String(host.resolvedHeadingLevel()))

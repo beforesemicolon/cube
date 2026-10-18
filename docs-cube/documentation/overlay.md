@@ -26,6 +26,8 @@ order: 24
 | Modal | `<cb-modal>` | `@beforesemicolon/cube/overlay/modal` |
 | Alert dialog | `<cb-alert-dialog>` | `@beforesemicolon/cube/overlay/alert-dialog` |
 
+{{t.cube.modalServiceBody}}
+
 ## API
 
 {{t.cube.studioCatalogApi}}

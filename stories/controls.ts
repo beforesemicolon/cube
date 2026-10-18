@@ -32,37 +32,37 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 }
 
 const booleanProperties = new Set([
-    'allowAlpha', 'allowSampler', 'animated', 'autoplay', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'disabled', 'dismissible',
+    'allowAlpha', 'allowReorder', 'allowSampler', 'animated', 'autoplay', 'bottomOpen', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'dirty', 'disabled', 'dismissible',
     'controls', 'disableContentPadding', 'expanded', 'formNoValidate', 'grid', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
-    'open', 'patterns', 'popupExpanded', 'pressed', 'readOnly', 'required', 'resizable', 'reverse', 'rowActivation',
-    'pannable', 'playing', 'selectable', 'selected', 'showChrome', 'showCursor', 'showDimensions', 'showOrientationControl', 'stickyHeader', 'striped', 'wrap', 'zoomable',
+    'editable', 'editing', 'endOpen', 'guide', 'inline', 'lineNumbers', 'linked', 'mixed', 'movable', 'open', 'patterns', 'pinned', 'popupExpanded', 'pressed', 'readOnly', 'reorderable', 'required', 'resizable', 'returnFocus', 'reverse', 'rotatable', 'rowActivation',
+    'pannable', 'playing', 'searchable', 'selectable', 'selected', 'selectOnEdit', 'showChrome', 'showCursor', 'showDimensions', 'showLock', 'showOrientationControl', 'showSize', 'showVisibility', 'startOpen', 'stickyHeader', 'striped', 'submitOnBlur', 'unmask', 'wrap', 'zoomable',
 ])
 
 const numberProperties = new Set([
-    'angle', 'currentTime', 'cursorX', 'cursorY', 'delay', 'duration', 'firstDayOfWeek', 'headingLevel', 'height', 'lines', 'majorStep', 'max', 'maxItems', 'maxRecent', 'maxVisible', 'maxZoom', 'min', 'minorDivisions', 'minZoom', 'originX', 'originY', 'page', 'playbackRate',
+    'angle', 'bottomSize', 'currentTime', 'cursorX', 'cursorY', 'delay', 'duration', 'endSize', 'firstDayOfWeek', 'firstValue', 'headingLevel', 'height', 'indent', 'lines', 'majorStep', 'max', 'maxBottomSize', 'maxEndSize', 'maxItems', 'maxLines', 'maxRecent', 'maxStartSize', 'maxVisible', 'maxZoom', 'min', 'minBottomSize', 'minEndSize', 'minHeight', 'minItems', 'minLines', 'minStartSize', 'minWidth', 'minorDivisions', 'minZoom', 'mobileBreakpoint', 'moveStep', 'originX', 'originY', 'page', 'playbackRate',
     'loadingRows', 'progress', 'searchThreshold', 'seekStep', 'selectionCount', 'siblings', 'step', 'stickyColumns',
-    'snap', 'totalPages', 'width', 'x', 'x1', 'x2', 'y', 'y1', 'y2', 'zoom', 'zoomStep',
+    'resizeStep', 'rotation', 'secondValue', 'snap', 'startSize', 'tabSize', 'threshold', 'totalPages', 'width', 'x', 'x1', 'x2', 'y', 'y1', 'y2', 'zoom', 'zoomStep',
 ])
 
 const objectProperties = new Set([
-    'collapsedGroupKeys', 'expandedIds', 'expandedKeys', 'items', 'messages', 'options', 'recentColors', 'selectedKeys', 'series', 'swatches', 'theme', 'tracks',
+    'collapsedGroupKeys', 'entries', 'expandedIds', 'expandedKeys', 'guides', 'handleLabels', 'items', 'messages', 'options', 'recentColors', 'rect', 'selectedIds', 'selectedKeys', 'series', 'swatches', 'targets', 'theme', 'tracks',
     'units', 'visibleSegments', 'visibleSeries',
     'stops', 'xAxis', 'yAxis',
 ])
 
 const stateProperties = new Set([
     'busy', 'checked', 'disabled', 'expanded', 'invalid', 'loading', 'multi', 'multiple', 'native', 'open', 'pressed',
-    'readOnly', 'required', 'status',
+    'readOnly', 'required', 'status', 'startOpen', 'endOpen', 'bottomOpen', 'mobilePanel',
 ])
 
 const layoutProperties = new Set([
-    'align', 'autoFlow', 'background', 'blockSize', 'border', 'collapseAt', 'columns', 'gap', 'inlineSize',
-    'justify', 'margin', 'maxBlockSize', 'maxInlineSize', 'minBlockSize', 'minInlineSize', 'orientation',
-    'overflow', 'padding', 'radius', 'reverse', 'rows', 'size', 'wrap',
+    'align', 'alignContent', 'alignItems', 'alignSelf', 'area', 'autoColumns', 'autoCols', 'autoFlow', 'autoRows', 'background', 'bg', 'blockSize', 'border', 'collapseAt', 'columnGap', 'columns', 'gap', 'height', 'inline', 'inlineSize',
+    'justify', 'justifyContent', 'margin', 'maxBlockSize', 'maxHeight', 'maxInlineSize', 'maxWidth', 'minBlockSize', 'minHeight', 'minInlineSize', 'minWidth', 'orientation',
+    'overflow', 'padding', 'radius', 'reverse', 'rowGap', 'rows', 'shadow', 'size', 'template', 'templateAreas', 'templateColumns', 'templateCols', 'templateRows', 'variant', 'width', 'wrap',
 ])
 
 const dataProperties = new Set([
-    'collapsedGroupKeys', 'expandedIds', 'expandedKeys', 'items', 'messages', 'options', 'recentColors', 'selectedKeys', 'series', 'swatches', 'theme', 'tracks', 'units', 'value', 'visibleSegments',
+    'collapsedGroupKeys', 'entries', 'expandedIds', 'expandedKeys', 'guides', 'handleLabels', 'items', 'messages', 'options', 'recentColors', 'rect', 'selectedIds', 'selectedKeys', 'series', 'swatches', 'targets', 'theme', 'tracks', 'units', 'value', 'visibleSegments',
     'stops', 'visibleSeries', 'xAxis', 'yAxis',
 ])
 
@@ -75,7 +75,7 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
     collapseAt: ['', 'sm', 'md', 'lg'],
     crossOrigin: ['', 'anonymous', 'use-credentials'],
     justify: ['start', 'center', 'end', 'space-between', 'space-around', 'space-evenly', 'stretch'],
-    modalSize: ['sm', 'md', 'lg', 'full'],
+    modalSize: ['sm', 'md', 'lg', 'full', 'page'],
     orientation: ['horizontal', 'vertical'],
     placement: ['bottom-start', 'bottom-end', 'top-start', 'top-end'],
     popupType: ['', 'menu', 'listbox', 'tree', 'grid', 'dialog'],
@@ -113,6 +113,13 @@ const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly Contr
         position: ['left top', 'center top', 'right top', 'left center', 'center', 'right center', 'left bottom', 'center bottom', 'right bottom'],
     },
     'cb-device-frame': { device: ['desktop', 'tablet', 'mobile', 'custom'], orientation: ['portrait', 'landscape'] },
+    'cb-code-editor': { language: ['plaintext', 'html', 'css', 'javascript', 'typescript', 'json', 'shell'] },
+    'cb-json-editor': { language: ['json'] },
+    'cb-file-browser': { view: ['grid', 'table'], sortBy: ['name', 'type', 'size', 'modified'], sortDirection: ['asc', 'desc'], selectionMode: ['none', 'single', 'multiple'], searchable: [true, false] },
+    'cb-grid': { variant: ['', 'cards', 'masonry', 'holy-grail', 'sidebar', 'header-main-footer'] },
+    'cb-modal': { layer: ['top', 'document'] },
+    'cb-masked-input': { autocomplete: ['off', 'on', 'tel', 'postal-code', 'cc-number'], inputMode: ['text', 'numeric', 'tel', 'decimal'] },
+    'cb-workspace': { mobilePanel: ['', 'start', 'end', 'bottom'] },
 }
 
 const numberControls: Readonly<Record<string, NumberControl>> = {
@@ -138,6 +145,16 @@ const numberControls: Readonly<Record<string, NumberControl>> = {
     lines: { type: 'number', min: 1, max: 12, step: 1 },
     loadingRows: { type: 'number', min: 1, max: 20, step: 1 },
     maxItems: { type: 'number', min: 1, step: 1 },
+    minItems: { type: 'number', min: 0, step: 1 },
+    minLines: { type: 'number', min: 1, max: 80, step: 1 },
+    maxLines: { type: 'number', min: 1, max: 200, step: 1 },
+    tabSize: { type: 'number', min: 1, max: 8, step: 1 },
+    indent: { type: 'number', min: 0, max: 8, step: 1 },
+    threshold: { type: 'number', min: 0, max: 32, step: 1 },
+    rotation: { type: 'number', min: -360, max: 360, step: 1 },
+    moveStep: { type: 'number', min: .1, max: 100, step: .1 },
+    mobileBreakpoint: { type: 'number', min: 320, max: 1600, step: 10 },
+    resizeStep: { type: 'number', min: 1, max: 100, step: 1 },
     maxRecent: { type: 'number', min: 0, max: 24, step: 1 },
     maxVisible: { type: 'number', min: 1, max: 20, step: 1 },
     page: { type: 'number', min: 1, step: 1 },
@@ -261,6 +278,31 @@ const descriptions: Readonly<Record<string, string>> = {
     expansionAnnouncement: 'Localized live-region template. Supports {row} and {state}.',
     counter: 'Optional count or short status displayed beside the section label.',
     disableContentPadding: 'Removes the built-in content padding for full-bleed tables and other surfaces.',
+    entries: 'Editable file and folder records, including hierarchy, metadata, and disabled state.',
+    selectedIds: 'Controlled IDs for selected files, folders, or editor layers.',
+    guides: 'Editable snapping, measurement, or insertion guides rendered over an editor surface.',
+    targets: 'Selectable editor target rectangles used for marquee hit testing.',
+    rect: 'Controlled x, y, width, and height of the selected editor object.',
+    handleLabels: 'Localized accessible labels keyed by resize-handle direction.',
+    allowReorder: 'Allows list items to move earlier or later using accessible controls.',
+    lineNumbers: 'Displays a line-number gutter beside the editable source.',
+    tabSize: 'Number of spaces inserted or removed by Tab and Shift+Tab.',
+    minLines: 'Minimum visible height of the code editing surface, measured in lines.',
+    maxLines: 'Maximum visible height before the code editing surface scrolls.',
+    linked: 'Keeps the two numeric values proportional while either value changes.',
+    mobilePanel: 'Controlled panel displayed as a mobile workspace overlay.',
+    startOpen: 'Controls the workspace start panel on larger containers.',
+    endOpen: 'Controls the workspace end panel on larger containers.',
+    bottomOpen: 'Controls the workspace bottom panel on larger containers.',
+    persistKey: 'Optional storage key used to restore workspace panel state and dimensions.',
+    editable: 'Allows inline layer renaming.',
+    reorderable: 'Allows layers to be repositioned with drag and drop.',
+    showVisibility: 'Displays per-layer visibility actions.',
+    showLock: 'Displays per-layer locking actions.',
+    movable: 'Allows the selection overlay to move by pointer or keyboard.',
+    rotatable: 'Displays and enables the rotation handle.',
+    showSize: 'Displays the current selection dimensions.',
+    layer: 'Chooses a top-layer dialog or an in-document modal surface.',
 }
 
 const defaultSummaries: Readonly<Record<string, string>> = {
@@ -278,6 +320,10 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     selectable: 'true', selected: 'false', showChrome: 'true', showCursor: 'true', showDimensions: 'true', showOrientationControl: 'true', snap: '0.1', zoom: '100', zoomStep: '10',
     headingLevel: '2', lines: '3', loadingRows: '5', resizable: 'true', rowActivation: 'false', selectionMode: 'none',
     sortDirection: 'asc', stickyColumns: '0', stickyHeader: 'false', striped: 'false', density: 'comfortable',
+    allowReorder: 'true', bottomOpen: 'false', editable: 'true', endOpen: 'true', entries: '[]', guides: '[]', handleLabels: '{}',
+    lineNumbers: 'true', linked: 'false', maxLines: '32', minItems: '0', minLines: '8', mobilePanel: "''", movable: 'true',
+    rect: '{ x: 0, y: 0, width: 120, height: 80 }', reorderable: 'true', returnFocus: 'true', rotatable: 'false',
+    selectedIds: '[]', showLock: 'true', showSize: 'true', showVisibility: 'true', startOpen: 'true', tabSize: '2', targets: '[]',
 }
 
 const primitiveDefaults: Readonly<Record<string, string | number | boolean | null>> = {
@@ -297,7 +343,11 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     seekStep: 10, selectionCount: 0, shape: 'circle', siblings: 1, size: 'sm', src: '', status: '', statusLabel: '', step: 1, summary: '', target: '_self',
     selectable: true, selected: false, showChrome: true, showCursor: true, showDimensions: true, showOrientationControl: true, snap: .1,
     totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', width: 640, wrap: false, x: 0, x1: .25, x2: .25, y: 0, y1: .1, y2: 1, zoom: 100, zoomStep: 10, zoomable: false,
-    animated: true, headingLevel: 2, lines: 3, loadingRows: 5, resizable: true, rowActivation: false, selectionMode: 'none',
+    animated: true, allowReorder: true, bottomOpen: false, dirty: false, editable: true, editing: false, endOpen: true, guide: true, headingLevel: 2, inline: false,
+    lineNumbers: true, linked: false, lines: 3, loadingRows: 5, maxLines: 32, minItems: 0, minLines: 8, mixed: false,
+    mobileBreakpoint: 860, mobilePanel: '', movable: true, moveStep: 1, pinned: false, reorderable: true, resizeStep: 16,
+    resizable: true, returnFocus: true, rotatable: false, rowActivation: false, selectionMode: 'none',
+    selectOnEdit: true, showLock: true, showSize: true, showVisibility: true, startOpen: true, submitOnBlur: true, tabSize: 2, threshold: 3, unmask: false,
     sortDirection: 'asc', stickyColumns: 0, stickyHeader: false, striped: false, density: 'comfortable',
 }
 
@@ -315,7 +365,21 @@ const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue
     'cb-cartesian-chart': { status: 'finished', stacking: false, inverted: false },
     'cb-pie-chart': { status: 'finished', variant: 'pie' },
     'cb-skeleton': { variant: 'text', rows: 3, columns: 3 },
-    'cb-grid': { columns: 'minmax(0, 1fr)', autoFlow: 'row' },
+    'cb-grid': { columns: 'minmax(0, 1fr)', autoFlow: 'row', variant: '' },
+    'cb-select': { searchable: 'auto' },
+    'cb-code-editor': { language: 'plaintext', lineNumbers: true, wrap: false, tabSize: 2, minLines: 8, maxLines: 32 },
+    'cb-json-editor': { indent: 2, lineNumbers: true, wrap: false },
+    'cb-editable-list': { minItems: 0, maxItems: 8, allowReorder: true },
+    'cb-linked-values': { firstValue: 320, secondValue: 180, linked: true, min: 0, max: 4096, step: 1 },
+    'cb-file-browser': { view: 'grid', sortBy: 'name', sortDirection: 'asc', selectionMode: 'single', searchable: true },
+    'cb-guide-overlay': { zoom: 1 },
+    'cb-layer-tree': { multiple: true, editable: true, reorderable: true, showVisibility: true, showLock: true },
+    'cb-modal': { modalSize: 'md', layer: 'top', returnFocus: true },
+    'cb-masked-input': { guide: true, unmask: false, inputMode: 'text', autocomplete: 'off' },
+    'cb-editable-label': { editing: false, selectOnEdit: true, submitOnBlur: true },
+    'cb-property-group': { expanded: true, collapsible: true, dirty: false, mixed: false },
+    'cb-selection-overlay': { rotation: 0, movable: true, resizable: true, rotatable: false, moveStep: 1, minWidth: 1, minHeight: 1, showSize: true },
+    'cb-workspace': { startOpen: true, endOpen: true, bottomOpen: false, startSize: 280, endSize: 360, bottomSize: 240, minStartSize: 180, maxStartSize: 560, minEndSize: 220, maxEndSize: 720, minBottomSize: 140, maxBottomSize: 640, resizeStep: 16, mobileBreakpoint: 860, mobilePanel: '' },
 }
 
 const numericValueTags = new Set([
@@ -324,6 +388,7 @@ const numericValueTags = new Set([
 
 const colorValueTags = new Set(['cb-color-picker'])
 const dateBoundTags = new Set(['cb-calendar', 'cb-date-picker', 'cb-time-picker'])
+const cssDimensionTags = new Set(['cb-box', 'cb-row', 'cb-col', 'cb-grid'])
 
 const formatterMapping: Readonly<Record<string, ((value: number) => string) | null>> = {
     Default: null,
@@ -362,6 +427,7 @@ function controlFor(tag: string, property: string): StoryControl['control'] {
     if (property === 'value' && numericValueTags.has(tag)) return numberControl(property)
     if (property === 'value' && colorValueTags.has(tag)) return 'color'
     if (property === 'color') return 'color'
+    if (cssDimensionTags.has(tag) && ['width', 'height', 'minWidth', 'maxWidth', 'minHeight', 'maxHeight'].includes(property)) return 'text'
     if ((property === 'min' || property === 'max') && dateBoundTags.has(tag)) return 'text'
     if (optionsFor(tag, property)) return 'select'
     if (tag === 'cb-skeleton' && (property === 'rows' || property === 'columns')) return { type: 'number', min: 1, max: 12, step: 1 }
@@ -384,6 +450,12 @@ function typeSummary(tag: string, property: string, control: StoryControl['contr
     if (property === 'tracks') return tag === 'cb-timeline' ? 'TimelineTrack[]' : 'CaptionTrack[]'
     if (property === 'messages') return 'FlashbarMessage[]'
     if (property === 'theme') return 'ThemeDefinition | null'
+    if (property === 'entries') return 'FileBrowserEntry[]'
+    if (property === 'selectedIds') return 'string[]'
+    if (property === 'guides') return 'EditorGuide[]'
+    if (property === 'targets') return 'MarqueeTarget[]'
+    if (property === 'rect') return 'EditorRect'
+    if (property === 'handleLabels') return 'Partial<Record<SelectionHandle, string>>'
     if (property === 'xAxis' || property === 'yAxis') return 'Axis | Axis[]'
     if (property === 'visibleSeries' || property === 'visibleSegments') return 'string[] | null'
     if (options) return options.map(option => typeof option === 'string' ? `'${option}'` : String(option)).join(' | ')
@@ -419,6 +491,8 @@ function objectDefault(tag: string, property: string): object | null | undefined
     if (property === 'theme' && tag !== 'cb-theme-provider') return {}
     if (property === 'theme' || property === 'visibleSegments' || property === 'visibleSeries') return null
     if (property === 'series') return tag === 'cb-pie-chart' ? null : []
+    if (property === 'rect') return { x: 0, y: 0, width: 120, height: 80 }
+    if (property === 'handleLabels') return {}
     if (objectProperties.has(property)) return []
     return undefined
 }
@@ -429,6 +503,7 @@ function defaultValueFor(tag: string, property: string): StoryValue | undefined 
     if (property === 'valueFormatter') return null
     if (property === 'value' && numericValueTags.has(tag)) return 0
     if (property === 'value' && colorValueTags.has(tag)) return '#000000'
+    if (cssDimensionTags.has(tag) && ['width', 'height', 'minWidth', 'maxWidth', 'minHeight', 'maxHeight'].includes(property)) return ''
     if ((property === 'min' || property === 'max') && dateBoundTags.has(tag)) return ''
     const structured = objectDefault(tag, property)
     if (structured !== undefined) return structured
