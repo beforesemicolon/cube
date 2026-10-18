@@ -43,6 +43,21 @@ test('video playback, finite seeking, captions and themed composed controls',asy
     const captions=player.locator('cb-select[part=captions]');await captions.getByRole('button',{name:/^Captions:/}).click();await captions.locator('[part~=popup]').getByRole('option',{name:'English'}).click()
     await expect.poll(()=>media.evaluate((n:HTMLVideoElement)=>n.textTracks[0]?.mode)).toBe('showing')
     await player.getByRole('button',{name:'Stop',exact:true}).click();await expect.poll(()=>media.evaluate((n:HTMLVideoElement)=>n.currentTime)).toBe(0)
+    await player.getByRole('button',{name:'Enter fullscreen',exact:true}).click()
+    await expect.poll(()=>player.evaluate(n=>document.fullscreenElement===n)).toBe(true)
+    const fullscreenLayout=await player.evaluate(n=>{
+        const video=n.shadowRoot?.querySelector('video'),surface=n.shadowRoot?.querySelector('[part="player"]')
+        const bounds=(element:Element|null|undefined)=>{const rect=element?.getBoundingClientRect();return rect?{width:rect.width,height:rect.height}:null}
+        return {host:bounds(n),surface:bounds(surface),video:bounds(video),viewport:{width:innerWidth,height:innerHeight}}
+    })
+    expect(fullscreenLayout.host?.width).toBe(fullscreenLayout.viewport.width)
+    expect(fullscreenLayout.host?.height).toBe(fullscreenLayout.viewport.height)
+    expect(fullscreenLayout.surface).toEqual(fullscreenLayout.host)
+    expect(fullscreenLayout.video?.width).toBe(fullscreenLayout.viewport.width)
+    expect(fullscreenLayout.video?.height).toBeGreaterThan(fullscreenLayout.viewport.height*.65)
+    await player.screenshot({path:'test-results/video-fullscreen-light.png'})
+    await player.getByRole('button',{name:'Exit fullscreen',exact:true}).click()
+    await expect.poll(()=>player.evaluate(n=>document.fullscreenElement===n)).toBe(false)
     await player.screenshot({path:'test-results/video-ready-light.png'})
     await page.locator('#theme').evaluate((n:ThemeElement)=>n.appearance='dark');await page.setViewportSize({width:390,height:844})
     await expect(player.locator('[part=player]')).toHaveCSS('background-color','rgb(29, 33, 36)')

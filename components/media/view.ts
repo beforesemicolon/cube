@@ -46,7 +46,13 @@ audio{display:none}
 [part=rate]{inline-size:var(--component-media-rate-width,72px)}
 [part=captions]{max-inline-size:var(--component-media-captions-width,128px)}
 [part=status]{margin-block-start:${v('--spacing-sm')}}
-:host(:fullscreen){background:${v('--color-background')};display:grid;place-items:center}
+:host(:fullscreen){background:${v('--color-background')};display:block;inline-size:100vw;block-size:100vh;overflow:hidden}
+:host(:fullscreen) [part=player]{display:grid;grid-template-rows:max-content minmax(0,1fr) max-content max-content max-content max-content;inline-size:100%;block-size:100%;border:0;border-radius:0;padding:0;overflow:hidden}
+:host(:fullscreen) video{inline-size:100%;block-size:100%;min-block-size:0;aspect-ratio:auto;border-radius:0;background:${v('--component-media-fullscreen-background')};object-fit:var(--component-media-fullscreen-fit,contain)}
+:host(:fullscreen) [part=title]{padding:${v('--spacing-md')} ${v('--spacing-md')} 0;margin:0}
+:host(:fullscreen) [part=timeline]{padding-inline:${v('--spacing-md')}}
+:host(:fullscreen) [part=controls]{padding:0 ${v('--spacing-md')} ${v('--spacing-md')}}
+:host(:fullscreen) [part=status]{padding-inline:${v('--spacing-md')}}
 @container(max-width:360px){[part=timeline]{gap:${v('--spacing-sm')}}[part=settings]{flex:1;justify-content:flex-end}[part=volume]{inline-size:var(--component-media-volume-compact-width,48px)}}
 `),group)
     let captionKey='', rateReady = false
