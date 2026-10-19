@@ -10,8 +10,8 @@ const css = editorCSS + `
 :host{display:block;inline-size:100%;min-inline-size:0}
 [part~=root]{display:grid;grid-template-columns:minmax(0,1fr) auto;inline-size:100%;min-inline-size:0}
 [part~=trigger]{grid-column:1;display:block;min-block-size:var(--component-expandable-section-header-height,40px);padding:0;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;cursor:pointer;text-align:start}
-[part~=trigger]::part(trigger-control){display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:var(--spacing-sm,8px);inline-size:100%;min-block-size:100%;padding:var(--component-expandable-section-header-padding,var(--spacing-sm,8px) 0);text-align:inherit}
-[part~=trigger]::part(trigger-label){display:contents}
+[part~=trigger]::part(control){display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:var(--spacing-sm,8px);inline-size:100%;min-block-size:100%;padding:var(--component-expandable-section-header-padding,var(--spacing-sm,8px) 0);text-align:inherit}
+[part~=trigger]::part(button-label){display:contents}
 button[part~=trigger]:hover:not(:disabled),button[part~=trigger]:active:not(:disabled){background:transparent}
 [part~=trigger]:hover [part~=label],[part~=trigger]:hover [part~=icon],[part~=trigger]:active [part~=label],[part~=trigger]:active [part~=icon]{color:var(--component-expandable-section-hover-color,${v('--color-primary-hover')})}
 [part~=trigger]:focus-within{outline:var(--focus-ring);outline-offset:2px}
@@ -30,7 +30,7 @@ button[part~=trigger]:hover:not(:disabled),button[part~=trigger]:active:not(:dis
 :host([data-variant=default][data-expanded]) [part~=root]{border-block-end:0}
 :host([data-variant=default][data-expanded]) [part~=panel]{border-block-start:1px solid var(--component-expandable-section-border,${v('--color-separator')})}
 :host([data-variant=container]) [part~=root]{border:1px solid ${v('--color-separator')};border-radius:var(--radius-md,10px);background:${v('--color-surface')};overflow:hidden}
-:host([data-variant=container]) [part~=trigger]::part(trigger-control){padding:var(--spacing-md,12px)}
+:host([data-variant=container]) [part~=trigger]::part(control){padding:var(--spacing-md,12px)}
 :host([data-variant=container]) [part~=header-extras]{padding:var(--spacing-sm,8px) var(--spacing-md,12px) var(--spacing-sm,8px) 0}
 :host([data-variant=container][data-expanded]) [part~=panel]{border-block-start:1px solid var(--component-expandable-section-border,${v('--color-separator')})}
 :host([data-variant=container]) [part~=content]{padding:var(--spacing-md,12px)}

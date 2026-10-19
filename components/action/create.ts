@@ -3,6 +3,8 @@ export type ActionControl=Button
 function configure<T extends ActionControl>(control:T,part:string,handler:(event:CustomEvent)=>void,eventName:string):T{
     const parts=part.trim().split(/\s+/).filter(Boolean)
     control.setAttribute('part',parts.join(' '))
+    // These aliases are forwarded through the parent's shadow boundary. Parent
+    // styles still target the child's own ::part(control), not the exported alias.
     control.setAttribute('exportparts',parts.flatMap(name=>[
         `control:${name}-control`,`label:${name}-label`,`button-label:${name}-label`,`icon:${name}-icon`,`description:${name}-description`,
     ]).join(','))

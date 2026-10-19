@@ -39,7 +39,7 @@ const css = editorCSS + `
 :host([data-mobile]) [part~=end-panel]{inset-block:0;inset-inline-end:0;inline-size:min(88%,var(--workspace-end-size));border-inline-start:1px solid var(--color-separator)}
 :host([data-mobile]) [part~=bottom-panel]{inset-inline:0;inset-block-end:0;max-block-size:80%;block-size:var(--workspace-bottom-size);border-block-start:1px solid var(--color-separator)}
 :host([data-mobile][mobile-panel]:not([mobile-panel=''])) [part~=backdrop]{display:block;position:absolute;z-index:6;inset:0;border:0;border-radius:0;background:var(--component-overlay-backdrop,rgba(10,16,22,.48));padding:0}
-:host([data-mobile][mobile-panel]:not([mobile-panel=''])) [part~=backdrop]::part(backdrop-control){inline-size:100%;block-size:100%}
+:host([data-mobile][mobile-panel]:not([mobile-panel=''])) [part~=backdrop]::part(control){inline-size:100%;block-size:100%}
 `;
 export class Workspace extends WorkspaceBase {
     private header?: HTMLElement;

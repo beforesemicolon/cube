@@ -10,7 +10,7 @@ import { createBareButton } from '../../action/create.js';
 import type { Button } from '../../action/button/index.js';
 const css = editorCSS + `
 :host{display:inline-block;inline-size:var(--component-select-width,240px)}[part~=root]{position:relative;display:grid}
-[part~=trigger]{display:block;inline-size:100%;padding:0;text-align:start}[part~=trigger]::part(trigger-control),[part~=trigger]::part(trigger-label){display:flex;align-items:center;justify-content:space-between;gap:8px;inline-size:100%;text-align:inherit}[part~=trigger]::part(trigger-control){padding:var(--spacing-xs,4px) var(--spacing-md,12px)}[part~=value][data-placeholder]{color:var(--color-muted-foreground)}
+[part~=trigger]{display:block;inline-size:100%;padding:0;text-align:start}[part~=trigger]::part(control),[part~=trigger]::part(button-label){display:flex;align-items:center;justify-content:space-between;gap:8px;inline-size:100%;text-align:inherit}[part~=trigger]::part(control){padding:var(--spacing-xs,4px) var(--spacing-md,12px)}[part~=value][data-placeholder]{color:var(--color-muted-foreground)}
 [part~=value]{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 [part~=trigger][data-multi]{align-items:flex-start;block-size:auto}
 [part~=trigger][data-multi] [part~=value]{display:flex;flex:1;flex-wrap:wrap;gap:2px 4px;overflow:visible;text-overflow:clip;white-space:normal}
@@ -21,7 +21,7 @@ const css = editorCSS + `
 [part~=search]{inline-size:100%;min-block-size:var(--cb-height);padding-inline:10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);color:var(--color-foreground);font:inherit}
 [part~=search]:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset)}
     [part~=listbox]{display:grid;gap:2px;min-block-size:0;max-block-size:220px;overflow:auto}
-[part~=option]{display:block;inline-size:100%;min-block-size:var(--cb-height);border-color:transparent;background:transparent;text-align:start}[part~=option]::part(option-control),[part~=option]::part(option-label){display:flex;align-items:center;justify-content:space-between;inline-size:100%;text-align:inherit}[part~=option]::part(option-control){padding:var(--spacing-xs,4px) var(--spacing-md,12px)}[part~=option][aria-selected=true]{background:var(--color-selection);color:var(--color-signal-text)}
+[part~=option]{display:block;inline-size:100%;min-block-size:var(--cb-height);border-color:transparent;background:transparent;text-align:start}[part~=option]::part(control),[part~=option]::part(button-label){display:flex;align-items:center;justify-content:space-between;inline-size:100%;text-align:inherit}[part~=option]::part(control){padding:var(--spacing-xs,4px) var(--spacing-md,12px)}[part~=option][aria-selected=true]{background:var(--color-selection);color:var(--color-signal-text)}
 [part~=empty]{padding:10px;color:var(--color-muted-foreground);text-align:center}
 [part~=native]{inline-size:100%;appearance:auto;color-scheme:inherit}
 `;

@@ -29,7 +29,7 @@ const css = editorCSS + `
 [part~=track]{position:relative;block-size:38px;margin:0 10px 32px;border:1px solid ${v('--color-border')};border-radius:var(--radius-md);box-shadow:inset 0 0 0 1px color-mix(in srgb,#fff 35%,transparent);cursor:crosshair;touch-action:none;user-select:none}
 [part~=track-color]{position:absolute;inset:0;border-radius:calc(var(--radius-md) - 1px);background:var(--cb-track-gradient);pointer-events:none}
 [part~=stop]{position:absolute;inset-block-start:100%;display:block;inline-size:22px;min-inline-size:22px;block-size:28px;min-block-size:28px;padding:8px 3px 2px;border:0;border-radius:0;background:transparent!important;transform:translate(-50%,3px);color:${v('--color-muted-foreground')};cursor:ew-resize;touch-action:none}
-[part~=stop]::part(stop-control),[part~=stop]::part(stop-label){display:block;inline-size:100%;block-size:100%;overflow:visible;cursor:inherit;touch-action:inherit}
+[part~=stop]::part(control),[part~=stop]::part(button-label){display:block;inline-size:100%;block-size:100%;overflow:visible;cursor:inherit;touch-action:inherit}
 [part~=stop]::before{content:'';position:absolute;inset-block-start:0;inset-inline-start:7px;border-inline:4px solid transparent;border-block-end:7px solid currentColor}
 [part~=stop-swatch]{display:block;inline-size:16px;block-size:16px;border:2px solid ${v('--color-surface-raised')};border-radius:3px;background:var(--cb-stop-color);box-shadow:0 0 0 1px currentColor}
 [part~=stop][data-selected]{z-index:1;color:${v('--color-primary')}}

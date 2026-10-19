@@ -18,8 +18,8 @@ export abstract class SidebarBase<P extends SidebarProps = SidebarProps> extends
     expandLabel = ''
     collapseLabel = ''
 
-    protected isCollapsible(): boolean { return this.getAttribute('collapsible') === '' || bool(this.collapsible) }
-    protected isExpanded(): boolean { return !this.isCollapsible() || this.getAttribute('expanded') === '' || bool(this.expanded) }
+    protected isCollapsible(): boolean { return bool(this.collapsible) }
+    protected isExpanded(): boolean { return !this.isCollapsible() || bool(this.expanded) }
 
     toggle(originalEvent?: Event): boolean {
         if (!this.isCollapsible() || this.unavailable) return false

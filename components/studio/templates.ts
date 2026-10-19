@@ -21,7 +21,7 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
     const invalid = () => bool(source.invalid) || source.hasAttribute('data-field-invalid')
     const selected = (item: StudioItem) => Array.isArray(source.value)
         ? source.value.includes(String(item.value ?? item.id))
-        : String(source.value) === String(item.value ?? item.id)
+        : String(source.value) === String(item.value ?? item.id) || item.selected === true
     const setValue = (next: NonNullable<StudioViewSource['value']>, event: Event) => {
         event.stopPropagation()
         source.setControlValue?.(next, event)
@@ -95,7 +95,7 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
     </label>`
 
     const tokens = (): Template => html`<div part="token-list">${repeat(items, item => html`
-        <cb-button part="token item" exportparts="control:token-control" variant="ghost" label="${item.label}" accessible-label="${item.label}"
+        <cb-button part="token" exportparts="control:token-control" variant="secondary" label="${item.label}" accessible-label="${item.label}"
             pressed="${() => selected(item)}" disabled="${() => disabled() || readOnly() || item.disabled === true}"
             onchange="${(event: Event) => {
                 const entry = String(item.value ?? item.id)
@@ -130,20 +130,29 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
             : html`<div part="editor-field"><span part="editor-field-label">${label}</span><span part="editor-field-value">${value}</span></div>`}</div>
     </div>`
 
+    const statusTitle = () => name === 'status' || name === 'spinner' ? value() || label() : label() || value()
+    const statusCopy = () => [...new Set([
+        !['status', 'spinner', 'progress'].includes(name) && value() !== statusTitle() ? value() : '',
+        scalarText(source.status) !== statusTitle() ? scalarText(source.status) : '',
+    ].filter(Boolean))].join(' · ')
     const status = (): Template => html`<div part="display status-display" data-component="${name}"><div part="status-card">
         ${name === 'spinner' ? html`<span part="spinner-ring"></span>` : html`<span part="${name === 'empty-state' ? 'empty-illustration' : 'status-icon'}">${glyph(name === 'empty-state' ? 'folder' : name === 'alert' ? 'warning' : name === 'toast' || name === 'banner' ? 'info' : 'bolt')}</span>`}
-        <div part="status-content"><output part="value status-title">${() => value() || label()}</output>
-            <div part="status-copy" hidden="${() => !scalarText(source.status)}">${() => scalarText(source.status)}</div></div>
+        <div part="status-content"><output part="value status-title">${statusTitle}</output>
+            <div part="status-copy" hidden="${() => !statusCopy()}">${statusCopy}</div></div>
         </div>${kind === 'progress' && name !== 'spinner' ? html`<progress part="meter" max="${() => number('max')}" value="${() => number('progress')}"></progress>` : ''}
     </div>`
 
     const panel = (): Template => html`<section ref="control" part="${kind} panel" data-component="${name}" aria-label="${accessibleName}">
         <header part="panel-header"><span part="panel-title">${label}</span>
             <cb-button part="action" variant="ghost" label="${() => scalarText(source.actionLabel)}" hidden="${() => !scalarText(source.actionLabel)}" disabled="${disabled}" onaction="${(event: Event) => activate(event)}"></cb-button></header>
-        <div part="content composed-content"><div part="generated-content"><div part="panel-content">
-            ${name === 'card' ? html`<div part="preview-block card-media">${value}</div>` : ''}
+        <div part="content composed-content"><div ref="generated" part="generated-content"><div part="panel-content">
+            ${name === 'card' ? html`<div part="preview-block card-media">${() => value() || label()}</div>` : ''}
             ${repeat(items, field, { key: item => item.id, empty: () => name === 'card' ? '' : html`<div part="preview-block">${() => value() || description()}</div>` })}
-        </div></div><slot part="content"></slot></div>
+        </div></div><slot part="content" onslotchange="${(event: Event) => {
+            const slot = event.currentTarget
+            const generated = root.refs.generated?.[0]
+            if (slot instanceof HTMLSlotElement && generated instanceof HTMLElement) generated.hidden = slot.assignedNodes().some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim()))
+        }}"></slot></div>
     </section>`
 
     const file = (): Template => html`<label part="dropzone control">${glyph('upload', 'dropzone-icon icon')}
@@ -162,9 +171,10 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
         : kind === 'collection' || kind === 'collaboration' ? collection() : kind === 'display' ? display()
         : kind === 'status' || kind === 'progress' ? status() : kind === 'canvas' ? canvas() : panel()
     const fieldControl = ['text', 'textarea', 'number', 'range', 'tokens', 'file'].includes(kind)
-    return html`<style>${styles}</style><div part="root" data-component="${name}">
-        ${fieldControl ? '' : html`<div part="label-row row"><label part="label" hidden="${() => ['choice', 'display', 'panel', 'editor', 'shell'].includes(kind) || !label()}">${label}</label><span part="status" role="status" hidden="${() => !scalarText(source.status)}">${() => scalarText(source.status)}</span></div>`}
+    const root = html`<style>${styles}</style><div part="root" data-component="${name}">
+        ${fieldControl || ['choice', 'display', 'panel', 'editor', 'shell', 'status', 'progress'].includes(kind) ? '' : html`<div part="label-row row"><label part="label" hidden="${() => !label()}">${label}</label></div>`}
         <div part="body">${body}</div>
         ${fieldControl ? '' : html`<p part="description" hidden="${() => !description()}">${description}</p><p part="error" role="alert" hidden="${() => !scalarText(source.error)}">${() => scalarText(source.error)}</p>`}
     </div>`
+    return root
 }

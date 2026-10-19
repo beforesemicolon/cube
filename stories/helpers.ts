@@ -141,7 +141,8 @@ function seedPreview(tag: string, node: HTMLElement): void {
         node.append(content)
     } else if (tag === 'cb-workspace') {
         const header = document.createElement('cb-toolbar'); header.slot = 'header'
-        Object.assign(header, { label: 'Editor toolbar', items: [{ id: 'select', label: 'Select', icon: 'cursor' }, { id: 'preview', label: 'Preview', icon: 'eye' }] })
+        Object.assign(header, { label: 'Editor toolbar' })
+        header.append(demoButton('Select', 'ghost'), demoButton('Preview', 'ghost'))
         const start = demoSurface('Pages and layers'); start.slot = 'start'; start.style.cssText += ';min-height:100%;border:0;border-radius:0'
         const end = document.createElement('cb-property-group'); end.slot = 'end'
         Object.assign(end, { label: 'Layout', expanded: true, resetLabel: 'Reset layout', expandLabel: 'Expand layout', collapseLabel: 'Collapse layout' })

@@ -75,6 +75,7 @@
     "build:storybook": "storybook build",
     "test:catalog": "tsx scripts/check-catalog.ts",
     "test:visual-audit": "tsx scripts/capture-design-qa.ts",
+    "test:storybook-visuals": "tsx scripts/capture-storybook-visuals.ts",
     "test:browser": "playwright test",
     "dev": "vite --host 127.0.0.1",
     "test:exports": "tsx scripts/check-exports.ts",

@@ -27,8 +27,8 @@ const css = editorCSS + `
 [part~=content]{min-inline-size:0;min-block-size:0;overflow:auto;padding:var(--spacing-sm,8px)}
 [part~=grid]{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(160px,100%),1fr));gap:var(--spacing-sm,8px)}
 [part~=entry]{display:block;min-inline-size:0;min-block-size:132px;padding:0;text-align:start;background:var(--color-surface);border:1px solid var(--color-separator);border-radius:var(--radius-sm)}
-[part~=entry]::part(entry-control){display:grid;grid-template-rows:minmax(80px,1fr) auto;gap:var(--spacing-sm,8px);inline-size:100%;min-block-size:130px;padding:var(--spacing-sm,8px);text-align:inherit}
-[part~=entry]::part(entry-label){display:contents}
+[part~=entry]::part(control){display:grid;grid-template-rows:minmax(80px,1fr) auto;gap:var(--spacing-sm,8px);inline-size:100%;min-block-size:130px;padding:var(--spacing-sm,8px);text-align:inherit}
+[part~=entry]::part(button-label){display:contents}
 [part~=entry][aria-selected=true]{border-color:var(--color-primary);background:var(--color-selection)}[part~=entry-preview]{display:grid;place-items:center;overflow:hidden;border-radius:var(--radius-sm);background:var(--color-surface-muted)}
 [part~=entry-preview] img{inline-size:100%;block-size:100%;object-fit:cover}[part~=entry-icon]{inline-size:32px;block-size:32px;color:var(--color-primary)}
 [part~=entry-copy]{display:grid;min-inline-size:0}[part~=entry-name]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}[part~=entry-meta]{color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px)}

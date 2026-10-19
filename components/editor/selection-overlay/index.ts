@@ -10,7 +10,7 @@ const css = editorCSS + `
 [part~=outline]{position:absolute;inset:0;border:var(--component-selection-width,1px) solid var(--color-primary);background:color-mix(in srgb,var(--color-selection) 16%,transparent);pointer-events:auto;cursor:move}
 [part~=outline]:focus-visible{outline:var(--focus-ring);outline-offset:2px}
 [part~=handle]{position:absolute;display:block;inline-size:var(--component-selection-handle-size,9px);min-inline-size:0;block-size:var(--component-selection-handle-size,9px);min-block-size:0;padding:0;border:1px solid var(--color-primary);border-radius:2px;background:var(--color-surface);pointer-events:auto;translate:-50% -50%}
-[part~=handle]::part(handle-control),[part~=rotate]::part(rotate-control){inline-size:100%;block-size:100%;cursor:inherit}
+[part~=handle]::part(control),[part~=rotate]::part(control){inline-size:100%;block-size:100%;cursor:inherit}
 [part~=handle][data-handle=nw]{inset:0 auto auto 0;cursor:nwse-resize}[part~=handle][data-handle=n]{inset:0 auto auto 50%;cursor:ns-resize}[part~=handle][data-handle=ne]{inset:0 0 auto auto;translate:50% -50%;cursor:nesw-resize}
 [part~=handle][data-handle=e]{inset:50% 0 auto auto;translate:50% -50%;cursor:ew-resize}[part~=handle][data-handle=se]{inset:auto 0 0 auto;translate:50% 50%;cursor:nwse-resize}[part~=handle][data-handle=s]{inset:auto auto 0 50%;translate:-50% 50%;cursor:ns-resize}
 [part~=handle][data-handle=sw]{inset:auto auto 0 0;translate:-50% 50%;cursor:nesw-resize}[part~=handle][data-handle=w]{inset:50% auto auto 0;cursor:ew-resize}

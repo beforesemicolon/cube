@@ -31,6 +31,7 @@ function sizedSurface(size: SurfaceSize, ...children: HTMLElement[]): HTMLElemen
     const widths: Readonly<Record<SurfaceSize, string>> = { compact: '440px', standard: '720px', wide: '1120px' }
     node.dataset.exampleSurface = size
     node.style.cssText = `position:relative;display:grid;align-content:start;justify-items:start;gap:16px;inline-size:min(100%,${widths[size]});max-inline-size:100%;box-sizing:border-box;padding:clamp(16px,4vw,24px);border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-sm,0 1px 2px color-mix(in srgb,var(--color-foreground) 8%,transparent));overflow:visible`
+    node.style.font = '400 var(--component-font-size,12px)/var(--component-line-height,1.4) var(--typography-body-font-family,system-ui,sans-serif)'
     for (const child of children) child.style.maxInlineSize = '100%'
     node.append(...children)
     return node
@@ -426,10 +427,16 @@ export const SettingsAccordion: Story = {
 
 export const CanvasSelection: Story = {
     name: 'Editor / Canvas selection',
-    render: () => wideSurface(
-        component('cb-artboard', { label: 'Homepage artboard', accessibleLabel: 'Homepage artboard' }),
-        fill(component('cb-action-bar')),
-    ),
+    render: () => {
+        const artboard = component('cb-artboard', { label: 'Homepage artboard', accessibleLabel: 'Homepage artboard', selected: true, showDimensions: true, dimensionsLabel: '{width} × {height}' })
+        const heading = component('cb-heading', { label: 'Build something great.', description: 'A selected homepage section', level: 2 })
+        heading.style.cssText = 'display:block;padding:48px'
+        artboard.append(heading)
+        const actions = fill(component('cb-action-bar', { accessibleLabel: 'Selection actions' }))
+        const selection = component('cb-badge', { value: '1 layer selected' }); selection.slot = 'start'
+        actions.append(selection, component('cb-button', { label: 'Duplicate', icon: 'copy' }), component('cb-button', { label: 'Delete', icon: 'close', variant: 'destructive' }))
+        return wideSurface(artboard, actions)
+    },
 }
 
 export const PublishFlow: Story = {
@@ -483,7 +490,8 @@ export const EditorWorkspace: Story = {
             openBottomLabel: 'Open timeline', closeBottomLabel: 'Close timeline', closeMobileLabel: 'Close panel',
         })
         workspace.style.cssText = 'inline-size:100%;block-size:640px'
-        const header = component('cb-toolbar', { label: 'Editor tools', items: [{ id: 'select', label: 'Select', icon: 'cursor' }, { id: 'preview', label: 'Preview', icon: 'eye' }] }); header.slot = 'header'
+        const header = component('cb-toolbar', { label: 'Editor tools' }); header.slot = 'header'
+        header.append(component('cb-button', { label: 'Select', icon: 'cursor', variant: 'ghost' }), component('cb-button', { label: 'Preview', icon: 'eye', variant: 'ghost' }))
         const layers = component('cb-layer-tree', {
             label: 'Layers', accessibleLabel: 'Page layers', expandedIds: ['page', 'hero'], selectedIds: ['title'],
             expandLabel: 'Expand {item}', collapseLabel: 'Collapse {item}', showLabel: 'Show {item}', hideLabel: 'Hide {item}',
@@ -497,6 +505,9 @@ export const EditorWorkspace: Story = {
         const canvas = document.createElement('div')
         canvas.style.cssText = 'position:relative;min-block-size:100%;background:linear-gradient(90deg,var(--color-separator) 1px,transparent 1px),linear-gradient(var(--color-separator) 1px,transparent 1px);background-size:20px 20px'
         const artboard = component('cb-artboard', { label: 'Homepage', accessibleLabel: 'Homepage artboard', width: 640, height: 420, selected: true, dimensionsLabel: '{width} × {height}' })
+        const heading = component('cb-heading', { label: 'Make better products.', description: 'Compose accessible interfaces with Cube.', level: 2 })
+        heading.style.cssText = 'display:block;padding:32px'
+        artboard.append(heading)
         canvas.append(artboard)
         workspace.append(header, layers, canvas, properties, timeline)
         return wideSurface(workspace)
