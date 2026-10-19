@@ -13,13 +13,13 @@ order: 29
 :::cube studio-styling
 :::
 
-| Component | Custom element | Package entry |
+| Component | Custom element | Category entry |
 | --- | --- | --- |
-| Color picker | `<cb-color-picker>` | `@beforesemicolon/cube/styling/color-picker` |
-| Color swatch | `<cb-color-swatch>` | `@beforesemicolon/cube/styling/color-swatch` |
-| Eyedropper | `<cb-eyedropper>` | `@beforesemicolon/cube/styling/eyedropper` |
-| Gradient editor | `<cb-gradient-editor>` | `@beforesemicolon/cube/styling/gradient-editor` |
-| Gradient stops | `<cb-gradient-stops>` | `@beforesemicolon/cube/styling/gradient-stops` |
+| Color picker | `<cb-color-picker>` | `@beforesemicolon/cube/styling` |
+| Color swatch | `<cb-color-swatch>` | `@beforesemicolon/cube/styling` |
+| Eyedropper | `<cb-eyedropper>` | `@beforesemicolon/cube/styling` |
+| Gradient editor | `<cb-gradient-editor>` | `@beforesemicolon/cube/styling` |
+| Gradient stops | `<cb-gradient-stops>` | `@beforesemicolon/cube/styling` |
 
 ## API
 

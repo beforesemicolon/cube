@@ -1,9 +1,9 @@
-import { register } from '../../core/Component.js'
-import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
-import { actionLabel, createIconButton } from '../../action/create.js'
-import type { Button } from '../../action/button/index.js'
-import { CalendarBase } from './CalendarBase.js'
-
+import { type Template, element, html } from '../../core/runtime.js'
+import { editorCSS } from '../../theme/styles.js'
+import { aria } from '../../core/accessibility.js'
+import { actionLabel, createBareButton, createIconButton } from '../../action/create.js';
+import type { Button } from '../../action/button/index.js';
+import { CalendarBase } from './CalendarBase.js';
 const calendarCSS = editorCSS + `
 :host{display:block;inline-size:var(--component-calendar-width,288px);max-inline-size:100%;min-inline-size:min(100%,var(--component-calendar-min-width,240px))}
 [part~=calendar]{display:grid;gap:var(--spacing-sm,8px);padding:var(--spacing-md,12px);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
@@ -15,92 +15,96 @@ const calendarCSS = editorCSS + `
 [part~=day][data-outside]{color:var(--color-muted-foreground)}
 [part~=day][aria-pressed=true]{background:var(--color-primary);color:var(--color-primary-foreground)}
 [part~=day][data-today]:not([aria-pressed=true]){border-color:var(--color-primary);color:var(--color-primary)}
-`
-
+`;
 export class Calendar extends CalendarBase {
-    private calendarNode?: HTMLElement
-    private monthNode?: HTMLElement
-    private weekdaysNode?: HTMLElement
-    private daysNode?: HTMLElement
-    private previousButton?: Button
-    private nextButton?: Button
-
-    render(): Node {
-        const root = el('div', 'calendar')
-        this.calendarNode = root
-        root.setAttribute('role', 'group')
-        const header = el('div', 'header')
-        this.previousButton = createIconButton('previous', 'left', () => this.moveMonth(-1))
-        this.monthNode = el('div', 'month')
-        this.monthNode.setAttribute('aria-live', 'polite')
-        this.nextButton = createIconButton('next', 'right', () => this.moveMonth(1))
-        header.append(this.previousButton, this.monthNode, this.nextButton)
-        this.weekdaysNode = el('div', 'weekdays')
-        this.daysNode = el('div', 'days')
-        this.daysNode.setAttribute('role', 'group')
-        root.append(header, this.weekdaysNode, this.daysNode)
-        return fragment(sheet(calendarCSS), root)
+    private calendarNode?: HTMLElement;
+    private monthNode?: HTMLElement;
+    private weekdaysNode?: HTMLElement;
+    private daysNode?: HTMLElement;
+    private previousButton?: Button;
+    private nextButton?: Button;
+    render(): Template {
+        const root = element('div', { attributes: { part: 'calendar' } }) as HTMLDivElement;
+        this.calendarNode = root;
+        root.setAttribute('role', 'group');
+        const header = element('div', { attributes: { part: 'header' } }) as HTMLDivElement;
+        this.previousButton = createIconButton('previous', 'left', () => this.moveMonth(-1));
+        this.monthNode = element('div', { attributes: { part: 'month' } }) as HTMLDivElement;
+        this.monthNode.setAttribute('aria-live', 'polite');
+        this.nextButton = createIconButton('next', 'right', () => this.moveMonth(1));
+        header.append(this.previousButton, this.monthNode, this.nextButton);
+        this.weekdaysNode = element('div', { attributes: { part: 'weekdays' } }) as HTMLDivElement;
+        this.daysNode = element('div', { attributes: { part: 'days' } }) as HTMLDivElement;
+        this.daysNode.setAttribute('role', 'group');
+        root.append(header, this.weekdaysNode, this.daysNode);
+        return html`<style part="styles">${calendarCSS}</style>${root}`;
     }
-
     protected syncView(): void {
-        if (!this.calendarNode || !this.monthNode || !this.weekdaysNode || !this.daysNode || !this.previousButton || !this.nextButton) return
-        const locale = this.documentLanguage()
-        this.calendarNode.setAttribute('aria-label', this.accessibleName())
-        actionLabel(this.previousButton, this.previousLabel)
-        actionLabel(this.nextButton, this.nextLabel)
-        this.previousButton.disabled = this.unavailable
-        this.nextButton.disabled = this.unavailable
-        this.monthNode.textContent = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(this.visibleMonth)
-        this.weekdaysNode.replaceChildren()
-        const weekStart = this.weekStart()
+        if (!this.calendarNode || !this.monthNode || !this.weekdaysNode || !this.daysNode || !this.previousButton || !this.nextButton)
+            return;
+        const locale = this.documentLanguage();
+        this.calendarNode.setAttribute('aria-label', this.accessibleName());
+        actionLabel(this.previousButton, this.previousLabel);
+        actionLabel(this.nextButton, this.nextLabel);
+        this.previousButton.disabled = this.unavailable;
+        this.nextButton.disabled = this.unavailable;
+        this.monthNode.textContent = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(this.visibleMonth);
+        this.weekdaysNode.replaceChildren();
+        const weekStart = this.weekStart();
         for (let index = 0; index < 7; index += 1) {
-            const date = new Date(2024, 0, 7 + ((weekStart + index) % 7))
-            this.weekdaysNode.append(el('span', 'weekday', new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date)))
+            const date = new Date(2024, 0, 7 + ((weekStart + index) % 7));
+            this.weekdaysNode.append(element('span', { attributes: { part: 'weekday' }, textContent: new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date) }) as HTMLSpanElement);
         }
-        this.daysNode.replaceChildren()
-        const first = new Date(this.visibleMonth.getFullYear(), this.visibleMonth.getMonth(), 1)
-        const offset = (first.getDay() - weekStart + 7) % 7
-        const start = new Date(first.getFullYear(), first.getMonth(), 1 - offset)
-        const selected = this.selectedDate()
-        const selectedValue = selected ? this.dateValue(selected) : ''
-        const todayValue = this.dateValue(new Date())
+        this.daysNode.replaceChildren();
+        const first = new Date(this.visibleMonth.getFullYear(), this.visibleMonth.getMonth(), 1);
+        const offset = (first.getDay() - weekStart + 7) % 7;
+        const start = new Date(first.getFullYear(), first.getMonth(), 1 - offset);
+        const selected = this.selectedDate();
+        const selectedValue = selected ? this.dateValue(selected) : '';
+        const todayValue = this.dateValue(new Date());
         for (let index = 0; index < 42; index += 1) {
-            const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + index)
-            const value = this.dateValue(date)
-            const day = el('button', 'day', String(date.getDate()))
-            day.type = 'button'
-            day.dataset.value = value
-            day.disabled = this.isUnavailable(date)
-            day.toggleAttribute('data-outside', date.getMonth() !== this.visibleMonth.getMonth())
-            day.toggleAttribute('data-today', value === todayValue)
-            aria(day, 'aria-pressed', value === selectedValue)
-            day.tabIndex = value === selectedValue ? 0 : -1
-            day.setAttribute('aria-label', new Intl.DateTimeFormat(locale, { dateStyle: 'full' }).format(date))
-            day.addEventListener('click', event => this.chooseDate(date, event))
-            day.addEventListener('keydown', event => this.handleDayKey(event, date))
-            this.daysNode.append(day)
+            const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + index);
+            const value = this.dateValue(date);
+            const day = createBareButton('day', event => this.chooseDate(date, event));
+            actionLabel(day, String(date.getDate()));
+            day.dataset.value = value;
+            day.disabled = this.isUnavailable(date);
+            day.toggleAttribute('data-outside', date.getMonth() !== this.visibleMonth.getMonth());
+            day.toggleAttribute('data-today', value === todayValue);
+            aria(day, 'aria-pressed', value === selectedValue);
+            this.setDayTabIndex(day, value === selectedValue ? 0 : -1);
+            day.accessibleLabel = new Intl.DateTimeFormat(locale, { dateStyle: 'full' }).format(date);
+            day.addEventListener('keydown', event => this.handleDayKey(event, date));
+            this.daysNode.append(day);
         }
-        if (!this.daysNode.querySelector('[tabindex="0"]')) {
-            const today = this.daysNode.querySelector<HTMLButtonElement>(`[data-value="${todayValue}"]`)
-            const first = this.daysNode.querySelector<HTMLButtonElement>('button:not([data-outside]):not(:disabled)')
-            const focusTarget = today ?? first
-            if (focusTarget) focusTarget.tabIndex = 0
+        const hasFocusableDay = [...this.daysNode.querySelectorAll<Button>('cb-button')]
+            .some(day => day.shadowRoot?.querySelector<HTMLElement>('[part~=control]')?.tabIndex === 0);
+        if (!hasFocusableDay) {
+            const today = this.daysNode.querySelector<Button>(`cb-button[data-value="${todayValue}"]`);
+            const first = this.daysNode.querySelector<Button>('cb-button:not([data-outside]):not([disabled])');
+            const focusTarget = today ?? first;
+            if (focusTarget)
+                this.setDayTabIndex(focusTarget, 0);
         }
     }
-
     private handleDayKey(event: KeyboardEvent, date: Date): void {
-        const weekdayIndex = (date.getDay() - this.weekStart() + 7) % 7
-        const offsets: Readonly<Record<string, number>> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7, Home: -weekdayIndex, End: 6 - weekdayIndex }
-        const offset = offsets[event.key]
-        if (offset === undefined) return
-        event.preventDefault()
-        const next = new Date(date.getFullYear(), date.getMonth(), date.getDate() + offset)
-        if (next.getMonth() !== this.visibleMonth.getMonth()) this.visibleMonth = new Date(next.getFullYear(), next.getMonth(), 1)
-        this.syncView()
-        this.daysNode?.querySelector<HTMLButtonElement>(`[data-value="${this.dateValue(next)}"]`)?.focus()
+        const weekdayIndex = (date.getDay() - this.weekStart() + 7) % 7;
+        const offsets: Readonly<Record<string, number>> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7, Home: -weekdayIndex, End: 6 - weekdayIndex };
+        const offset = offsets[event.key];
+        if (offset === undefined)
+            return;
+        event.preventDefault();
+        const next = new Date(date.getFullYear(), date.getMonth(), date.getDate() + offset);
+        if (next.getMonth() !== this.visibleMonth.getMonth())
+            this.visibleMonth = new Date(next.getFullYear(), next.getMonth(), 1);
+        this.syncView();
+        this.daysNode?.querySelector<Button>(`cb-button[data-value="${this.dateValue(next)}"]`)?.focus();
+    }
+    private setDayTabIndex(day: Button, value: number): void {
+        const control = day.shadowRoot?.querySelector<HTMLElement>('[part~=control]');
+        if (control)
+            control.tabIndex = value;
     }
 }
-
-register('cb-calendar', Calendar)
-export { CalendarBase }
-export type { CalendarProps } from './CalendarBase.js'
+export { CalendarBase };
+export type { CalendarProps } from './CalendarBase.js';

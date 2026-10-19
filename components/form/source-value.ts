@@ -1,3 +1,5 @@
+import { state } from '../core/runtime.js'
+
 type SourceValueHost = HTMLElement & { readonly mounted: boolean }
 
 /**
@@ -5,7 +7,7 @@ type SourceValueHost = HTMLElement & { readonly mounted: boolean }
  * attribute bridge to JSON-parse them as component data.
  */
 export class SourceValueController<T> {
-    private current: T
+    private readonly current: ReturnType<typeof state<T>>
     private explicitlySet = false
     private reflecting = false
 
@@ -16,32 +18,32 @@ export class SourceValueController<T> {
         private readonly toAttribute: (value: T) => string | null,
         private readonly onChange: () => void,
     ) {
-        this.current = initialValue
+        this.current = state(initialValue)
         Object.defineProperty(this.host, 'value', {
             configurable: false,
             enumerable: true,
-            get: (): T => this.current,
+            get: (): T => this.current[0](),
             set: (value: T): void => { this.set(value) },
         })
     }
 
-    get value(): T { return this.current }
+    get value(): T { return this.current[0]() }
     get isReflecting(): boolean { return this.reflecting }
 
     mount(): void {
         if (!this.explicitlySet && this.host.hasAttribute('value')) {
-            this.current = this.fromAttribute(this.host.getAttribute('value'))
+            this.current[1](this.fromAttribute(this.host.getAttribute('value')))
         }
     }
 
     readAttribute(): void {
-        this.current = this.fromAttribute(this.host.getAttribute('value'))
+        this.current[1](this.fromAttribute(this.host.getAttribute('value')))
     }
 
     set(value: T, notify = true): boolean {
         this.explicitlySet = true
-        const changed = !Object.is(this.current, value)
-        this.current = value
+        const changed = !Object.is(this.current[0](), value)
+        this.current[1](value)
         this.reflect(value)
         if (changed && notify && this.host.mounted) this.onChange()
         return changed

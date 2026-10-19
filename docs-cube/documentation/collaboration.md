@@ -13,12 +13,12 @@ order: 31
 :::cube studio-collaboration
 :::
 
-| Component | Custom element | Package entry |
+| Component | Custom element | Category entry |
 | --- | --- | --- |
-| Presence | `<cb-presence>` | `@beforesemicolon/cube/collaboration/presence` |
-| Remote cursor | `<cb-remote-cursor>` | `@beforesemicolon/cube/collaboration/remote-cursor` |
-| Comment pin | `<cb-comment-pin>` | `@beforesemicolon/cube/collaboration/comment-pin` |
-| Comment thread | `<cb-comment-thread>` | `@beforesemicolon/cube/collaboration/comment-thread` |
+| Presence | `<cb-presence>` | `@beforesemicolon/cube/collaboration` |
+| Remote cursor | `<cb-remote-cursor>` | `@beforesemicolon/cube/collaboration` |
+| Comment pin | `<cb-comment-pin>` | `@beforesemicolon/cube/collaboration` |
+| Comment thread | `<cb-comment-thread>` | `@beforesemicolon/cube/collaboration` |
 
 ## API
 

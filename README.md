@@ -2,7 +2,7 @@
 
 A TypeScript, headless-first web-component library for visual editors. This is the **0.3.0 alpha implementation branch**, not a published release.
 
-The eleven Studio boards contain 217 visual references. An explicit audit separates those references into 91 independently loadable component entries and application-level composition examples; a Figma card is no longer treated as a component merely because it has a name. Preview and theme switching are usage contexts for `Switch`; autocomplete is a `Combobox` mode; multi-selection and searchable option lists are modes of `Select`; dimensions, aspect ratio and z-index are examples assembled from form and layout primitives. Each concrete component registers its `cb-*` element when imported, has a headless base, exposes styling parts, and consumes site-builder-compatible theme variables.
+The eleven Studio boards contain 217 visual references. The audited component catalog is organized into 15 categories, alongside application-level composition examples. Preview and theme switching are usage contexts for `Switch`; autocomplete is a `Combobox` mode; multi-selection and searchable option lists are modes of `Select`; dimensions, aspect ratio and z-index are examples assembled from form and layout primitives. Categories register their `cb-*` elements explicitly. Components use WebComponent and Markup templates, have headless bases, expose styling parts, and consume site-builder-compatible theme variables.
 
 ## Develop
 
@@ -21,12 +21,10 @@ npm run test:browser
 ## Module usage
 
 ```ts
-import '@beforesemicolon/cube/theme/theme-provider'
-import '@beforesemicolon/cube/media/audio-player'
-import { loadComponent } from '@beforesemicolon/cube'
+import * as runtime from '@beforesemicolon/web-component'
+import initializeCube from '@beforesemicolon/cube'
 
-// Load only when needed. Concrete imports register themselves.
-await loadComponent('cartesian-chart')
+await initializeCube(runtime)
 const chart = document.createElement('cb-cartesian-chart')
 Object.assign(chart, {
     heading: 'Weekly activity',
@@ -39,32 +37,42 @@ Object.assign(chart, {
 document.body.append(chart)
 ```
 
-Import a whole category when an application uses most of it, or import a single component to keep registration lazy and explicit:
+To initialize selected categories, pass the same runtime to their initializers:
 
 ```ts
-import '@beforesemicolon/cube/form'
-import '@beforesemicolon/cube/navigation/menu'
-import { MenuBase } from '@beforesemicolon/cube/navigation/menu/base'
+import * as runtime from '@beforesemicolon/web-component'
+import initializeAction from '@beforesemicolon/cube/action'
+import initializeForm from '@beforesemicolon/cube/form'
+
+await initializeAction(runtime)
+const { TextInputBase } = await initializeForm(runtime)
 ```
 
-The package root is DOM-independent and exports pure models, controllers, tokens and a lazy loader. Node and Deno can import those utilities without `HTMLElement`. Concrete classes and their headless WebComponent bases still require a DOM: Node compatibility does **not** imply server-side HTML rendering. ESM and CJS builds are provided. Deno can use its npm compatibility layer; no separate Deno runtime test is claimed yet.
+The package root and category entrypoints can be imported without a DOM. They export initialization functions and types; the root also exports pure models, controllers and tokens. Initializing components requires a DOM. `loadCategory('form')` is available when module consumers want Cube to load the installed WebComponent package. ESM and CJS builds are provided.
 
 ## Browser scripts
 
 Build the package first. These are distribution paths, not a claim that this alpha has been published to a CDN:
 
 ```html
-<script src="/vendor/web-component/dist/client.js"></script>
-<script src="/vendor/cube/dist/theme/theme-provider/client.js"></script>
-<script src="/vendor/cube/dist/media/audio-player/client.js"></script>
+<script src="https://unpkg.com/@beforesemicolon/web-component/dist/client.js"></script>
+<script src="https://unpkg.com/@beforesemicolon/cube/dist/client.js"></script>
 <cb-theme-provider appearance="dark">
   <cb-audio-player src="/media/recording.mp3" media-title="Recording"></cb-audio-player>
 </cb-theme-provider>
 ```
 
-Use `dist/client.js` for the complete implemented catalog, a category path such as `dist/form/client.js`, or an independent path such as `dist/navigation/menu/client.js`. The public categories are `action`, `form`, `layout`, `navigation`, `overlay`, `feedback`, `data-display`, `media`, `charts`, `styling`, `editor`, `collaboration`, `icons`, and `theme`. Every component receives its own browser bundle. Browser exports live in `BFS.CUBE`. Repeated same-version scripts do not register tags twice. Do not mix different Cube versions in one custom-element registry.
+Use `dist/client.js` for the complete catalog or flat category clients:
 
-`Select`, `DatePicker` and `TimePicker` use consistent Cube-rendered controls by default. Set `native` only when the browser-provided selector is desired. `Calendar` can also be imported independently, while `Combobox` supports list and autocomplete behavior through its `autocomplete` property.
+```html
+<script src="https://unpkg.com/@beforesemicolon/web-component/dist/client.js"></script>
+<script src="https://unpkg.com/@beforesemicolon/cube/dist/action-client.js"></script>
+<script src="https://unpkg.com/@beforesemicolon/cube/dist/form-client.js"></script>
+```
+
+The public categories are `action`, `text`, `form`, `layout`, `navigation`, `overlay`, `feedback`, `data-display`, `media`, `charts`, `styling`, `editor`, `collaboration`, `icons`, and `theme`. Individual component browser bundles are no longer emitted. Each category registers only its own components. Load the categories used by composed controls at the application level; for example, form steppers use buttons from `action`, and media players use controls from `action` and `form`. Components do not import or register the components they render. Browser exports live in `BFS.CUBE`, including a `ready` promise. Repeated same-version scripts register tags idempotently.
+
+`Select`, `DatePicker` and `TimePicker` use consistent Cube-rendered controls by default. Set `native` only when the browser-provided selector is desired. `Calendar` belongs to the form category, while `Combobox` supports list and autocomplete behavior through its `autocomplete` property.
 
 Anchored menus and pickers size themselves to their content and stay within the viewport. Use `popupMaxWidth` and `popupMaxHeight` with a CSS length or a numeric pixel value to override a component’s defaults; constrained content scrolls inside the popup.
 
@@ -117,7 +125,7 @@ The chart graphic is decorative to assistive technology; Cube owns the textual e
 
 ## Styling and extension
 
-Import bases through a component's `/base` export, for example `@beforesemicolon/cube/navigation/menu/base`, `.../layout/grid/base`, `.../overlay/modal/base`, or `.../charts/cartesian-chart/base`. A custom renderer extends the base and registers a different `cb-*` tag. Base imports do not register elements.
+Category initializers return concrete classes and their headless bases, for example `const { MenuBase } = await initializeNavigation(runtime)`. The core initializer returns the shared `Component` base. A custom renderer extends the base, returns an `HtmlTemplate`, and registers its own custom-element tag. Individual class and `/base` module paths require the runtime to have been initialized first and do not register elements.
 
 Action parts include semantic surfaces such as `control`, `trigger`, `popup`, `menu`, `item`, `tab`, `navigation`, `page`, `tooltip`, `shortcut` and `key`. Layout primitives expose `content` or `line`; overlay parts include `dialog`, `header`, `heading`, `description`, `body`, `footer`, `message` and `message-actions`. Media and chart parts retain their documented control and data surfaces. Use `::part` for structural overrides and theme variables for appearance. Third-party engine descendants are not stable Cube parts.
 

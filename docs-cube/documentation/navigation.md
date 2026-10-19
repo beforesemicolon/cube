@@ -13,14 +13,14 @@ order: 24
 :::cube studio-navigation
 :::
 
-| Component | Custom element | Package entry |
+| Component | Custom element | Category entry |
 | --- | --- | --- |
-| Segmented control | `<cb-segmented-control>` | `@beforesemicolon/cube/navigation/segmented-control` |
-| Tabs | `<cb-tabs>` | `@beforesemicolon/cube/navigation/tabs` |
-| Breadcrumb | `<cb-breadcrumb>` | `@beforesemicolon/cube/navigation/breadcrumb` |
-| Menu | `<cb-menu>` | `@beforesemicolon/cube/navigation/menu` |
-| Link | `<cb-link>` | `@beforesemicolon/cube/navigation/link` |
-| Pagination | `<cb-pagination>` | `@beforesemicolon/cube/navigation/pagination` |
+| Segmented control | `<cb-segmented-control>` | `@beforesemicolon/cube/navigation` |
+| Tabs | `<cb-tabs>` | `@beforesemicolon/cube/navigation` |
+| Breadcrumb | `<cb-breadcrumb>` | `@beforesemicolon/cube/navigation` |
+| Menu | `<cb-menu>` | `@beforesemicolon/cube/navigation` |
+| Link | `<cb-link>` | `@beforesemicolon/cube/navigation` |
+| Pagination | `<cb-pagination>` | `@beforesemicolon/cube/navigation` |
 
 ## API
 

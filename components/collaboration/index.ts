@@ -1,4 +1,11 @@
-export * from './presence/index.js'
-export * from './remote-cursor/index.js'
-export * from './comment-pin/index.js'
-export * from './comment-thread/index.js'
+import { initializeRuntime, type CubeRuntime } from '../core/runtime.js'
+export type * from './register.js'
+
+export async function initializeCollaboration(runtime: CubeRuntime): Promise<typeof import('./register.js')> {
+    initializeRuntime(runtime)
+    const category = await import('./register.js')
+    category.registerCollaboration()
+    return category
+}
+
+export default initializeCollaboration

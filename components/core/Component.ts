@@ -1,4 +1,4 @@
-import { WebComponent } from '@beforesemicolon/web-component'
+import { WebComponent } from './runtime.js'
 import { bool, scalarText } from './value.js'
 
 export type ControlSize = 'xs' | 'sm' | 'md' | 'lg'

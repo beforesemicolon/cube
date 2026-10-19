@@ -1,10 +1,11 @@
-export * from './context-menu/index.js'
-export * from './dropdown/index.js'
-export * from './command-palette/index.js'
-export * from './tooltip/index.js'
-export * from './modal/index.js'
-export * from './alert-dialog/index.js'
-export * from './popover/index.js'
-export * from './drawer/index.js'
-export * from './hover-card/index.js'
-export * from './bottom-sheet/index.js'
+import { initializeRuntime, type CubeRuntime } from '../core/runtime.js'
+export type * from './register.js'
+
+export async function initializeOverlay(runtime: CubeRuntime): Promise<typeof import('./register.js')> {
+    initializeRuntime(runtime)
+    const category = await import('./register.js')
+    category.registerOverlay()
+    return category
+}
+
+export default initializeOverlay

@@ -13,20 +13,20 @@ order: 23
 :::cube studio-layout
 :::
 
-| Component | Custom element | Package entry |
+| Component | Custom element | Category entry |
 | --- | --- | --- |
-| Sidebar | `<cb-sidebar>` | `@beforesemicolon/cube/layout/sidebar` |
-| Resizable panel | `<cb-resizable-panel>` | `@beforesemicolon/cube/layout/resizable-panel` |
-| Docked panel | `<cb-docked-panel>` | `@beforesemicolon/cube/layout/docked-panel` |
-| Panel header | `<cb-panel-header>` | `@beforesemicolon/cube/layout/panel-header` |
-| Toolbar | `<cb-toolbar>` | `@beforesemicolon/cube/layout/toolbar` |
-| Action bar | `<cb-action-bar>` | `@beforesemicolon/cube/layout/action-bar` |
-| Divider | `<cb-divider>` | `@beforesemicolon/cube/layout/divider` |
-| Box | `<cb-box>` | `@beforesemicolon/cube/layout/box` |
-| Row | `<cb-row>` | `@beforesemicolon/cube/layout/row` |
-| Col | `<cb-col>` | `@beforesemicolon/cube/layout/col` |
-| Grid | `<cb-grid>` | `@beforesemicolon/cube/layout/grid` |
-| Workspace | `<cb-workspace>` | `@beforesemicolon/cube/layout/workspace` |
+| Sidebar | `<cb-sidebar>` | `@beforesemicolon/cube/layout` |
+| Resizable panel | `<cb-resizable-panel>` | `@beforesemicolon/cube/layout` |
+| Docked panel | `<cb-docked-panel>` | `@beforesemicolon/cube/layout` |
+| Panel header | `<cb-panel-header>` | `@beforesemicolon/cube/layout` |
+| Toolbar | `<cb-toolbar>` | `@beforesemicolon/cube/layout` |
+| Action bar | `<cb-action-bar>` | `@beforesemicolon/cube/layout` |
+| Divider | `<cb-divider>` | `@beforesemicolon/cube/layout` |
+| Box | `<cb-box>` | `@beforesemicolon/cube/layout` |
+| Row | `<cb-row>` | `@beforesemicolon/cube/layout` |
+| Col | `<cb-col>` | `@beforesemicolon/cube/layout` |
+| Grid | `<cb-grid>` | `@beforesemicolon/cube/layout` |
+| Workspace | `<cb-workspace>` | `@beforesemicolon/cube/layout` |
 
 {{t.cube.workspaceBody}}
 

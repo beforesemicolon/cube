@@ -1,4 +1,4 @@
-import '../components/client.js'
+import './setup.js'
 import { studioItemsFor, studioStatusFor, studioValueFor } from '../components/studio/presets.js'
 
 type PreviewValue = string | number | boolean | null | object | undefined

@@ -1,14 +1,10 @@
-import { register } from '../../core/Component.js'
-import { sheet } from '../../core/dom.js'
-import { ThemeProviderBase } from './ThemeProviderBase.js'
+import { type Template, html } from '../../core/runtime.js'
+import { ThemeProviderBase } from './ThemeProviderBase.js';
 export class ThemeProvider extends ThemeProviderBase {
-    render(): Node {
-        const fragment = document.createDocumentFragment()
-        const slot = document.createElement('slot'); slot.setAttribute('part', 'content')
-        fragment.append(sheet(':host{display:contents}'), slot)
-        return fragment
+    stylesheet = ':host{display:contents}'
+    render(): Template {
+        return html`<slot part="content"></slot>`
     }
 }
-register('cb-theme-provider', ThemeProvider)
-export { ThemeProviderBase }
-export type { ThemeProviderProps } from './ThemeProviderBase.js'
+export { ThemeProviderBase };
+export type { ThemeProviderProps } from './ThemeProviderBase.js';

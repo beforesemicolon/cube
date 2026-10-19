@@ -1,5 +1,6 @@
 import { Component, type ComponentProps } from '../core/Component.js'
 import { bool, text, scalarText } from '../core/value.js'
+import { state } from '../core/runtime.js'
 export interface FormControlSharedProps extends ComponentProps {
     name?: string
     disabled?: boolean
@@ -24,7 +25,7 @@ export abstract class FormControlBase<P extends FormControlSharedProps=FormContr
     name='';formNoValidate=false
     private initialized=false
     private initialValue?:{readonly value:S}
-    private disabledByForm=false
+    private readonly disabledByForm=state(false)
     private readonly containValueEvent:EventListener=event=>{
         if(event.target!==this)event.stopPropagation()
     }
@@ -71,7 +72,7 @@ export abstract class FormControlBase<P extends FormControlSharedProps=FormContr
         this.emit('change',changeDetail)
         return true
     }
-    protected get unavailable():boolean{return super.unavailable||this.disabledByForm}
+    protected get unavailable():boolean{return super.unavailable||this.disabledByForm[0]()}
     controlUnavailable():boolean{return this.unavailable}
     get form():HTMLFormElement|null{return this.internals?.form??null}
     get labels():NodeList|undefined{return this.internals?.labels}
@@ -94,7 +95,7 @@ export abstract class FormControlBase<P extends FormControlSharedProps=FormContr
     checkValidity():boolean{return this.internals?.checkValidity()??true}
     reportValidity():boolean{this.validationShown=true;this.syncView();return this.internals?.reportValidity()??true}
     formAssociatedCallback(_form:HTMLFormElement|null):void{if(this.mounted)this.syncValue()}
-    formDisabledCallback(disabled:boolean):void{this.disabledByForm=disabled;if(this.mounted){this.syncCommon();this.syncView();this.syncValue()}}
+    formDisabledCallback(disabled:boolean):void{this.disabledByForm[1](disabled);if(this.mounted){this.syncCommon();this.syncView();this.syncValue()}}
     formResetCallback():void{this.validationShown=false;if(this.initialValue)this.restoreValue(this.initialValue.value);if(this.mounted){this.syncView();this.syncValue()}}
     formStateRestoreCallback(value:FormRestoreValue,_mode:FormRestoreMode):void{this.restoreValue(value);if(this.mounted){this.syncView();this.syncValue()}}
     focus(options?:FocusOptions):void{const control=this.fieldElement();if(control)control.focus(options);else super.focus(options)}

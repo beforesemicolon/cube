@@ -6,9 +6,6 @@ export type { AudioPlayer } from './media/audio-player/index.js'
 export type { VideoPlayer } from './media/video-player/index.js'
 export type { CartesianChart } from './charts/cartesian-chart/index.js'
 export type { PieChart } from './charts/pie-chart/index.js'
-import { componentLoaders as loaders,type ComponentName } from './registry.js'
-export { componentNames } from './registry.js'
-export type { ComponentName } from './registry.js'
 export { studioBoardItems, studioDefinitions, studioDesignReferences, studioGroups } from './studio/catalog.js'
 export type { StudioBoardItem, StudioDefinition, StudioItem, StudioKind, StudioValue } from './studio/types.js'
 export { normalizeRange,normalizeOptions } from './form/model.js'
@@ -35,10 +32,6 @@ export type { Pagination } from './navigation/pagination/index.js'
 export type { Tooltip } from './overlay/tooltip/index.js'
 export type { Heading } from './text/heading/index.js'
 export type { Shortcut } from './text/shortcut/index.js'
-/** SSR-safe to import; mounting/registration requires the browser's DOM. */
-export async function loadComponent(name: ComponentName): Promise<CustomElementConstructor> {
-    if (typeof customElements === 'undefined') throw new Error('Cube element loading requires a DOM; import pure utilities on the server')
-    if (!Object.hasOwn(loaders, name)) throw new TypeError(`Unknown Cube component: ${name}`)
-    await loaders[name]()
-    return customElements.get(`cb-${name}`)!
-}
+export { initializeCube, initializeCube as default, categories } from './initialize.js'
+export type { CubeRuntime, Category } from './initialize.js'
+export { loadCategory } from './modules.js'

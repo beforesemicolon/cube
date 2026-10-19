@@ -13,10 +13,10 @@ order: 28
 :::cube studio-media
 :::
 
-| Component | Custom element | Package entry |
+| Component | Custom element | Category entry |
 | --- | --- | --- |
-| Audio player | `<cb-audio-player>` | `@beforesemicolon/cube/media/audio-player` |
-| Video player | `<cb-video-player>` | `@beforesemicolon/cube/media/video-player` |
+| Audio player | `<cb-audio-player>` | `@beforesemicolon/cube/media` |
+| Video player | `<cb-video-player>` | `@beforesemicolon/cube/media` |
 
 ## API
 

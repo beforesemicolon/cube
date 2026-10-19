@@ -1,15 +1,17 @@
-import { register } from '../../core/Component.js'
-import { SliderBase } from './SliderBase.js'
-import { el,fragment,sheet,editorCSS,aria } from '../../core/editor-dom.js'
-import { bool,text } from '../../core/value.js'
+import { type Template, element, html } from '../../core/runtime.js'
+import { editorCSS } from '../../theme/styles.js'
+import { aria } from '../../core/accessibility.js'
+import { SliderBase } from './SliderBase.js';
+import { bool, text } from '../../core/value.js';
 export class Slider extends SliderBase {
-    private control?:HTMLInputElement
-    render():Node{
-        this.control=el('input','control');this.control.type='range'
-        this.control.addEventListener('input',e=>this.setValue(this.control!.valueAsNumber,e))
-        this.control.addEventListener('pointerdown',()=>this.pointerActive=true)
-        this.control.addEventListener('blur',()=>this.pointerActive=false)
-        return fragment(sheet(editorCSS+`
+    private control?: HTMLInputElement;
+    render(): Template {
+        this.control = element('input', { attributes: { part: 'control' } }) as HTMLInputElement;
+        this.control.type = 'range';
+        this.control.addEventListener('input', e => this.setValue(this.control!.valueAsNumber, e));
+        this.control.addEventListener('pointerdown', () => this.pointerActive = true);
+        this.control.addEventListener('blur', () => this.pointerActive = false);
+        return html`<style part="styles">${editorCSS + `
 :host{display:block;inline-size:var(--component-slider-width,320px);max-inline-size:100%;min-inline-size:min(100%,var(--component-slider-min-width,160px))}
 [part=control]{display:block;appearance:none;inline-size:100%;padding:0;border:0;background:transparent;cursor:pointer}
 [part=control]::-webkit-slider-runnable-track{block-size:var(--component-slider-track-height,4px);border-radius:var(--radius-sm,6px);background:linear-gradient(to right,var(--color-primary,#2563EB) var(--cb-slider-fill,0%),var(--color-track,#D8DCDE) var(--cb-slider-fill,0%))}
@@ -20,22 +22,31 @@ export class Slider extends SliderBase {
 [part=control]:disabled{cursor:not-allowed;opacity:var(--component-disabled-opacity,.5)}
 :host([data-stacked]){min-inline-size:var(--cb-height);inline-size:var(--cb-height)}
 :host([data-stacked]) [part=control]{writing-mode:vertical-lr;direction:rtl;block-size:var(--cb-height);inline-size:160px}
-`),this.control)
+`}</style>${this.control}`;
     }
-    protected fieldElement(){return this.control}
-    protected syncView():void{
-        if(!this.control)return
-        const range=this.range;const stacked=bool(this.stacked);this.toggleAttribute('data-stacked',stacked)
-        this.control.min=String(range.min);this.control.max=String(range.max);this.control.step=String(range.step)
-        this.control.value=String(range.value);this.control.disabled=this.unavailable;this.control.style.setProperty('--cb-slider-fill',range.percent+'%')
-        this.control.setAttribute('aria-label',this.accessibleName());this.control.setAttribute('aria-orientation',stacked?'vertical':'horizontal')
-        aria(this.control,'aria-valuetext',text(this.valueText)||null);aria(this.control,'aria-readonly',bool(this.readOnly)?true:null)
-        this.syncForm(String(range.value));const error=!!this.validationMessage&&(this.validationShown||!!text(this.errorText))
-        aria(this.control,'aria-invalid',error?true:null)
-        aria(this.control,'aria-description',[text(this.description),error?this.validationMessage:''].filter(Boolean).join(' ')||null)
-        this.toggleAttribute('data-invalid',error)
+    protected fieldElement() { return this.control; }
+    protected syncView(): void {
+        if (!this.control)
+            return;
+        const range = this.range;
+        const stacked = bool(this.stacked);
+        this.toggleAttribute('data-stacked', stacked);
+        this.control.min = String(range.min);
+        this.control.max = String(range.max);
+        this.control.step = String(range.step);
+        this.control.value = String(range.value);
+        this.control.disabled = this.unavailable;
+        this.control.style.setProperty('--cb-slider-fill', range.percent + '%');
+        this.control.setAttribute('aria-label', this.accessibleName());
+        this.control.setAttribute('aria-orientation', stacked ? 'vertical' : 'horizontal');
+        aria(this.control, 'aria-valuetext', text(this.valueText) || null);
+        aria(this.control, 'aria-readonly', bool(this.readOnly) ? true : null);
+        this.syncForm(String(range.value));
+        const error = !!this.validationMessage && (this.validationShown || !!text(this.errorText));
+        aria(this.control, 'aria-invalid', error ? true : null);
+        aria(this.control, 'aria-description', [text(this.description), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null);
+        this.toggleAttribute('data-invalid', error);
     }
 }
-register('cb-slider',Slider)
-export { SliderBase }
-export type { SliderProps } from './SliderBase.js'
+export { SliderBase };
+export type { SliderProps } from './SliderBase.js';

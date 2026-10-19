@@ -1,7 +1,5 @@
-import './index.js'
 import type { ButtonVariant } from '../../action/button/ButtonBase.js'
 import { actionLabel, createButton } from '../../action/create.js'
-import '../../navigation/link/index.js'
 import type { Link } from '../../navigation/link/index.js'
 import type { Modal, ModalCloseReason, ModalLayer, ModalSize } from './index.js'
 

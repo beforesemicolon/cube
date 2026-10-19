@@ -1,5 +1,4 @@
 import type { StoryObj } from '@storybook/web-components-vite'
-import { Component } from '../components/core/Component.js'
 import { iconPaths } from '../components/icons/paths.js'
 import { fieldControlTags, preview } from './helpers.js'
 
@@ -520,7 +519,7 @@ function controlLayers(tag: string, constructor: ObservedElementConstructor, wra
             const inherited = new Set(parent?.observedAttributes ?? [])
             const attributes = (current.observedAttributes ?? []).filter(attribute => !inherited.has(attribute))
             if (attributes.length) {
-                const category = current === Component
+                const category = current.name === 'Component'
                     ? 'Component'
                     : wrapper
                         ? 'Field wrapper'
@@ -530,7 +529,7 @@ function controlLayers(tag: string, constructor: ObservedElementConstructor, wra
                 layers.push({ category, attributes })
             }
         }
-        if (current === Component) break
+        if (current.name === 'Component') break
         current = parent
     }
     return layers

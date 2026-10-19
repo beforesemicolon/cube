@@ -1,4 +1,3 @@
-import './index.js'
 import type { Flashbar } from './index.js'
 import type { FlashbarMessage } from './FlashbarBase.js'
 

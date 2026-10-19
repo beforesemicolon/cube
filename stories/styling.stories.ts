@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
 import { componentStory } from './controls.js'
-import '../components/styling/index.js'
+import './setup.js'
 
-const meta: Meta = { title: 'Styling', tags: ['autodocs'], parameters: { docs: { description: { component: 'Styling components with headless bases, themed parts, standalone imports and browser bundles.' } } } }
+const meta: Meta = { title: 'Styling', tags: ['autodocs'], parameters: { docs: { description: { component: 'Styling components with headless bases, themed parts, category initialization and browser clients.' } } } }
 export default meta
 type Story = StoryObj
 

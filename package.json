@@ -11,7 +11,7 @@
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": { "types": "./dist/types/index.d.ts", "import": "./dist/esm/index.js", "require": "./dist/cjs/index.js" },
-    "./core": { "types": "./dist/types/core/Component.d.ts", "import": "./dist/esm/core/Component.js", "require": "./dist/cjs/core/Component.js" },
+    "./core": { "types": "./dist/types/core/index.d.ts", "import": "./dist/esm/core/index.js", "require": "./dist/cjs/core/index.js" },
     "./studio": { "types": "./dist/types/studio/index.d.ts", "import": "./dist/esm/studio/index.js", "require": "./dist/cjs/studio/index.js" },
     "./action": { "types": "./dist/types/action/index.d.ts", "import": "./dist/esm/action/index.js", "require": "./dist/cjs/action/index.js" },
     "./action/*": { "types": "./dist/types/action/*/index.d.ts", "import": "./dist/esm/action/*/index.js", "require": "./dist/cjs/action/*/index.js" },
@@ -64,7 +64,7 @@
     "./package.json": "./package.json"
   },
   "files": ["dist", "README.md", "MIGRATION.md", "THIRD_PARTY.md", "LICENSE"],
-  "sideEffects": ["./components/**/index.ts", "./components/client.ts", "./components/icons/registry.ts", "./dist/client.js", "./dist/**/client.js", "./dist/esm/**/index.js", "./dist/cjs/**/index.js", "./dist/esm/icons/registry.js", "./dist/cjs/icons/registry.js"],
+  "sideEffects": ["./stories/setup.ts", "./components/core/browser.ts", "./components/client.ts", "./components/*-client.ts", "./components/icons/registry.ts", "./dist/client.js", "./dist/*-client.js", "./dist/esm/core/browser.js", "./dist/cjs/core/browser.js", "./dist/esm/client.js", "./dist/cjs/client.js", "./dist/esm/*-client.js", "./dist/cjs/*-client.js", "./dist/esm/icons/registry.js", "./dist/cjs/icons/registry.js"],
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "tsc -p tsconfig.unit.json && node --test .test-output/tests/*.spec.js",

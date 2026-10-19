@@ -13,17 +13,17 @@ order: 26
 :::cube studio-feedback
 :::
 
-| Component | Custom element | Package entry |
+| Component | Custom element | Category entry |
 | --- | --- | --- |
-| Status | `<cb-status>` | `@beforesemicolon/cube/feedback/status` |
-| Empty state | `<cb-empty-state>` | `@beforesemicolon/cube/feedback/empty-state` |
-| Skeleton | `<cb-skeleton>` | `@beforesemicolon/cube/feedback/skeleton` |
-| Progress | `<cb-progress>` | `@beforesemicolon/cube/feedback/progress` |
-| Spinner | `<cb-spinner>` | `@beforesemicolon/cube/feedback/spinner` |
-| Toast | `<cb-toast>` | `@beforesemicolon/cube/feedback/toast` |
-| Alert | `<cb-alert>` | `@beforesemicolon/cube/feedback/alert` |
-| Banner | `<cb-banner>` | `@beforesemicolon/cube/feedback/banner` |
-| Flashbar | `<cb-flashbar>` | `@beforesemicolon/cube/feedback/flashbar` |
+| Status | `<cb-status>` | `@beforesemicolon/cube/feedback` |
+| Empty state | `<cb-empty-state>` | `@beforesemicolon/cube/feedback` |
+| Skeleton | `<cb-skeleton>` | `@beforesemicolon/cube/feedback` |
+| Progress | `<cb-progress>` | `@beforesemicolon/cube/feedback` |
+| Spinner | `<cb-spinner>` | `@beforesemicolon/cube/feedback` |
+| Toast | `<cb-toast>` | `@beforesemicolon/cube/feedback` |
+| Alert | `<cb-alert>` | `@beforesemicolon/cube/feedback` |
+| Banner | `<cb-banner>` | `@beforesemicolon/cube/feedback` |
+| Flashbar | `<cb-flashbar>` | `@beforesemicolon/cube/feedback` |
 
 {{t.cube.flashbarServiceBody}}
 

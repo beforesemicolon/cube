@@ -1,5 +1,6 @@
-import { register } from '../../core/Component.js'
-import { aria, editorCSS, el, fragment, sheet, uid } from '../../core/editor-dom.js'
+import { html, state, unsafeHTML, type Template } from '../../core/runtime.js'
+import { editorCSS } from '../../theme/styles.js'
+import { aria } from '../../core/accessibility.js'
 import { highlightCode } from '../../core/highlight.js'
 import { bool, scalarText } from '../../core/value.js'
 import { CodeEditorBase } from './CodeEditorBase.js'
@@ -10,7 +11,7 @@ const syntaxCSS = `
 .hljs-number,.hljs-symbol,.hljs-bullet,.hljs-variable.constant_{color:var(--component-code-number,var(--color-warning))}
 .hljs-comment,.hljs-quote{color:var(--color-muted-foreground);font-style:italic}.hljs-title,.hljs-section,.hljs-selector-id,.hljs-title.class_,.hljs-title.function_{color:var(--component-code-title,var(--color-signal-text));font-weight:600}
 .hljs-attr,.hljs-property,.hljs-selector-class{color:var(--component-code-property,var(--color-signal-text))}.hljs-regexp,.hljs-meta{color:var(--component-code-special,var(--color-danger))}
-`
+`;
 const css = editorCSS + syntaxCSS + `
 :host{display:block;inline-size:var(--component-code-editor-width,720px);max-inline-size:100%;min-inline-size:min(100%,var(--component-code-editor-min-width,320px))}
 [part~=shell]{overflow:hidden;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)}
@@ -22,94 +23,78 @@ const css = editorCSS + syntaxCSS + `
 [part~=highlight]{position:absolute;inset:0;pointer-events:none;color:var(--color-foreground)}[part~=control]{position:relative;inline-size:100%;resize:none;background:transparent;color:transparent;caret-color:var(--color-foreground);-webkit-text-fill-color:transparent;outline:0}
 [part~=control]::selection{background:var(--component-code-selection-background,var(--color-selection));color:var(--component-code-selection-foreground,var(--color-foreground));-webkit-text-fill-color:var(--component-code-selection-foreground,var(--color-foreground));text-shadow:none}:host([data-wrap]) [part~=highlight],:host([data-wrap]) [part~=control]{white-space:pre-wrap;overflow-wrap:anywhere}
 :host([data-invalid]) [part~=shell]{border-color:var(--color-danger)}
-`
-
+`;
 export class CodeEditor extends CodeEditorBase {
-    private shell?: HTMLElement
-    private languageNode?: HTMLElement
-    private positionNode?: HTMLElement
-    private gutter?: HTMLPreElement
-    private highlight?: HTMLElement
-    private control?: HTMLTextAreaElement
-
-    render(): Node {
-        this.shell = el('div', 'shell')
-        const toolbar = el('div', 'toolbar')
-        this.languageNode = el('span', 'language')
-        this.positionNode = el('span', 'position')
-        toolbar.append(this.languageNode, this.positionNode)
-        const editor = el('div', 'editor')
-        this.gutter = el('pre', 'gutter')
-        const layer = el('div', 'editing-layer')
-        this.highlight = el('pre', 'highlight')
-        this.highlight.setAttribute('aria-hidden', 'true')
-        this.control = el('textarea', 'control')
-        this.control.id = uid('cb-code-editor')
-        this.control.spellcheck = false
-        this.control.autocapitalize = 'off'
-        this.control.autocomplete = 'off'
-        this.control.addEventListener('input', event => this.setValue(this.control?.value ?? '', event))
-        this.control.addEventListener('keydown', event => {
-            if (!this.editJson(event) && !this.indent(event)) this.submit(event)
-        })
-        this.control.addEventListener('scroll', () => this.syncScroll())
-        this.control.addEventListener('select', () => this.syncPosition())
-        this.control.addEventListener('keyup', () => this.syncPosition())
-        this.control.addEventListener('click', () => this.syncPosition())
-        layer.append(this.highlight, this.control)
-        editor.append(this.gutter, layer)
-        this.shell.append(toolbar, editor)
-        return fragment(sheet(css), this.shell)
+    stylesheet = css
+    private readonly cursor = state({ line: 1, column: 1 })
+    private get control(): HTMLTextAreaElement | undefined {
+        const node = this.refs.control?.[0]
+        return node instanceof HTMLTextAreaElement ? node : undefined
     }
-
+    private get gutter(): HTMLElement | undefined {
+        const node = this.refs.gutter?.[0]
+        return node instanceof HTMLElement ? node : undefined
+    }
+    private get highlight(): HTMLElement | undefined {
+        const node = this.refs.highlight?.[0]
+        return node instanceof HTMLElement ? node : undefined
+    }
+    render(): Template {
+        const highlighted = () => highlightCode(this.sourceText(), scalarText(this.language, 'plaintext'))
+        const position = () => {
+            const cursor = this.cursor[0]()
+            return scalarText(this.positionLabel).replaceAll('{line}', String(cursor.line)).replaceAll('{column}', String(cursor.column))
+        }
+        return html`<div part="shell">
+            <div part="toolbar"><span part="language">${() => highlighted().language}</span><span part="position">${position}</span></div>
+            <div part="editor">
+                <pre ref="gutter" part="gutter" hidden="${() => !bool(this.lineNumbers)}">${() => Array.from({ length: Math.max(1, this.sourceText().split('\n').length) }, (_item, index) => String(index + 1)).join('\n')}</pre>
+                <div part="editing-layer">
+                    <pre ref="highlight" part="highlight" aria-hidden="true">${() => highlighted().language === 'plaintext' ? this.sourceText() + '\n' : unsafeHTML(highlighted().html + '\n')}</pre>
+                    <textarea ref="control" part="control" spellcheck="false" autocapitalize="off" autocomplete="off"
+                        value="${() => this.sourceText()}" placeholder="${this.props.placeholder}" disabled="${() => this.unavailable}"
+                        readonly="${() => bool(this.readOnly)}" required="${() => bool(this.required) && !bool(this.readOnly)}"
+                        aria-label="${() => this.accessibleName()}" style="--code-tab-size:${() => this.normalizedTabSize()}"
+                        oninput="${(event: Event) => this.setValue(this.control?.value ?? '', event)}"
+                        onkeydown="${(event: KeyboardEvent) => { if (!this.editJson(event) && !this.indent(event)) this.submit(event) }}"
+                        onscroll="${() => this.syncScroll()}" onselect="${() => this.syncPosition()}"
+                        onkeyup="${() => this.syncPosition()}" onclick="${() => this.syncPosition()}"></textarea>
+                </div>
+            </div>
+        </div>`
+    }
     protected editorElement(): HTMLTextAreaElement | undefined { return this.control }
     protected syncView(): void {
-        if (!this.shell || !this.languageNode || !this.positionNode || !this.gutter || !this.highlight || !this.control) return
+        const control = this.control
+        if (!control) return
         const value = this.sourceText()
-        const selectionStart = this.control.selectionStart
-        const selectionEnd = this.control.selectionEnd
-        if (this.control.value !== value) this.control.value = value
-        const highlighted = highlightCode(value, scalarText(this.language, 'plaintext'))
-        this.languageNode.textContent = highlighted.language
-        if (highlighted.language === 'plaintext') this.highlight.textContent = `${value}\n`
-        else this.highlight.innerHTML = `${highlighted.html}\n`
-        const lineCount = Math.max(1, value.split('\n').length)
-        this.gutter.textContent = Array.from({ length: lineCount }, (_item, index) => String(index + 1)).join('\n')
-        this.gutter.hidden = !bool(this.lineNumbers)
-        this.control.placeholder = scalarText(this.placeholder)
-        this.control.disabled = this.unavailable
-        this.control.readOnly = bool(this.readOnly)
-        this.control.required = bool(this.required) && !bool(this.readOnly)
-        this.control.style.setProperty('--code-tab-size', String(this.normalizedTabSize()))
+        const start = control.selectionStart, end = control.selectionEnd
+        if (control.value !== value) control.value = value
         this.style.setProperty('--code-min-height', `${this.normalizedMinLines() * 1.65}em`)
         this.style.setProperty('--code-max-height', `${this.normalizedMaxLines() * 1.65}em`)
         this.toggleAttribute('data-wrap', bool(this.wrap))
         this.syncForm(value)
         const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(scalarText(this.errorText)))
         this.toggleAttribute('data-invalid', error)
-        aria(this.control, 'aria-label', this.accessibleName())
-        aria(this.control, 'aria-invalid', error ? true : null)
-        aria(this.control, 'aria-description', [scalarText(this.description), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null)
-        this.control.setSelectionRange(Math.min(selectionStart, value.length), Math.min(selectionEnd, value.length))
+        aria(control, 'aria-invalid', error ? true : null)
+        aria(control, 'aria-description', [scalarText(this.description), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null)
+        control.setSelectionRange(Math.min(start, value.length), Math.min(end, value.length))
         this.syncPosition()
         this.syncScroll()
     }
-
     private syncPosition(): void {
-        if (!this.control || !this.positionNode) return
-        const before = this.control.value.slice(0, this.control.selectionStart).split('\n')
-        const line = before.length
-        const column = (before.at(-1)?.length ?? 0) + 1
-        this.positionNode.textContent = scalarText(this.positionLabel).replaceAll('{line}', String(line)).replaceAll('{column}', String(column))
+        const control = this.control
+        if (!control) return
+        const before = control.value.slice(0, control.selectionStart).split('\n')
+        this.cursor[1]({ line: before.length, column: (before.at(-1)?.length ?? 0) + 1 })
     }
     private syncScroll(): void {
-        if (!this.control || !this.highlight || !this.gutter) return
-        this.highlight.scrollTop = this.control.scrollTop
-        this.highlight.scrollLeft = this.control.scrollLeft
-        this.gutter.scrollTop = this.control.scrollTop
+        const control = this.control, highlight = this.highlight, gutter = this.gutter
+        if (!control || !highlight || !gutter) return
+        highlight.scrollTop = control.scrollTop
+        highlight.scrollLeft = control.scrollLeft
+        gutter.scrollTop = control.scrollTop
     }
 }
-
-register('cb-code-editor', CodeEditor)
 export { CodeEditorBase }
 export type { CodeEditorProps, CodeEditorValue } from './CodeEditorBase.js'

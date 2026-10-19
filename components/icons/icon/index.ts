@@ -1,12 +1,18 @@
-import { register } from '../../core/Component.js'
-import { fragment, sheet, editorCSS, aria } from '../../core/editor-dom.js'
-import { createIcon, iconPaths } from '../registry.js'
-import { IconBase } from './IconBase.js'
+import { type Template, html } from '../../core/runtime.js'
+import { editorCSS } from '../../theme/styles.js'
+import { iconPaths } from '../registry.js';
+import { IconBase } from './IconBase.js';
 export class Icon extends IconBase {
-    private svg?: SVGSVGElement
-    render(): Node { this.svg=createIcon(this.name);return fragment(sheet(editorCSS+':host{display:inline-flex;line-height:1;font-size:var(--component-icon-size,16px)}[part=icon]{width:1em;height:1em}'),this.svg) }
-    protected syncView():void { if(!this.svg)return;this.svg.querySelector('path')!.setAttribute('d',Object.hasOwn(iconPaths,this.name)?iconPaths[this.name]:'');const label=this.accessibleLabel||this.label;aria(this.svg,'role',label?'img':null);aria(this.svg,'aria-label',label);aria(this.svg,'aria-hidden',label?null:true) }
+    stylesheet = editorCSS + ':host{display:inline-flex;line-height:1;font-size:var(--component-icon-size,16px)}[part=icon]{width:1em;height:1em}'
+    render(): Template {
+        const label = () => this.props.accessibleLabel?.() || this.props.label?.() || ''
+        return html`<svg part="icon" viewBox="0 0 24 24" focusable="false"
+            role="${() => label() ? 'img' : null}" aria-label="${() => label() || null}"
+            aria-hidden="${() => label() ? null : 'true'}">
+            <path part="path" d="${() => iconPaths[this.props.name?.() ?? ''] ?? ''}" fill="none"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>`
+    }
 }
-register('cb-icon',Icon)
-export { IconBase }
-export type { IconProps } from './IconBase.js'
+export { IconBase };
+export type { IconProps } from './IconBase.js';

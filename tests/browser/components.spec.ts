@@ -81,7 +81,7 @@ test('disconnect during asynchronous engine load cannot initialize detached char
     })
     await page.waitForTimeout(100);expect(await page.evaluate(()=>(window as any).initCount)).toBe(0)
 })
-test('classic per-component CDN bundle uses the external runtime and registers idempotently',async({page})=>{
+test('classic category CDN bundles use the external runtime and register idempotently',async({page})=>{
     const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/tests/browser/cdn.html')
     await expect(page.locator('cb-audio-player').getByRole('button',{name:'Play',exact:true})).toBeVisible()
     expect(await page.evaluate(()=>typeof (window as any).echarts)).toBe('undefined')

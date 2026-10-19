@@ -3,7 +3,7 @@
     "title": "Cube by Before Semicolon",
     "intro": "A headless, themeable web-component library for visual editors. Components are organized into action, form, layout, navigation, overlay, feedback, data display, media, charts, styling, editor, collaboration, icons, and theme categories.",
     "guide": "Installation and architecture",
-    "guideBody": "Import individual component entrypoints to register cb-* tags automatically. Headless base entrypoints do not register elements. The root package exposes DOM-free data utilities and loadComponent for lazy browser loading. Concrete HTMLElement classes require a DOM, including in Node or Deno.",
+    "guideBody": "Initialize the complete catalog or selected categories with the same WebComponent runtime. Category initializers return concrete classes and headless bases. The package root exposes DOM-free utilities and loadCategory. Rendering and registration require a DOM.",
     "runtime": "Browser scripts require the web-component runtime first. Charts also need the ECharts runtime, or a custom configureChartEngine loader. Media-only scripts do not load ECharts. The current npm release has not been replaced by this branch.",
     "theme": "Themes",
     "themeBody": "ThemeProvider accepts a site-builder ThemeDefinitionV1 document through theme or src. appearance accepts light, dark or system. CSS token names match site-builder; nested providers create explicit scopes. JSON theme files and CSS are generated into dist/themes.",
@@ -60,7 +60,7 @@
     "categoryEditor": "Editor",
     "categoryAssets": "Assets",
     "categoryCollaboration": "Collaboration",
-    "studioCatalogBody": "This audited category contains reusable, self-registering cb-* elements. Visual compositions from the Studio boards are documented as examples instead of being promoted to duplicate components. Each real component has an independent browser entry, a typed headless base, theme-driven rendering, stable CSS parts, responsive behavior, and an interaction-ready Storybook story.",
-    "studioCatalogApi": "All properties are optional. Provide label, accessible-label, description, status, action-label, empty-label, and item text in the active application locale. Interactive components emit cancelable beforechange or beforeaction events before change or action. Import a component entry to register it, or import its /base entry to supply a different renderer."
+    "studioCatalogBody": "This category contains reusable cb-* elements registered together by a category initializer or browser client. Components use reactive Markup templates, typed headless bases, theme variables, CSS parts, and interactive Storybook stories. Composed controls expect their required categories to be loaded by the application.",
+    "studioCatalogApi": "Provide visible and accessible text in the active application locale. Interactive controls emit cancelable beforechange or beforeaction events before change or action. Initialize the category with the shared WebComponent runtime to register its tags and obtain its classes and bases."
   }
 }

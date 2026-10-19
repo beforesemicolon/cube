@@ -3,7 +3,7 @@
     "title": "Cube por Before Semicolon",
     "intro": "Biblioteca de componentes web com lógica sem apresentação obrigatória e temas para editores visuais. Os componentes estão organizados em ações, formulários, layout, navegação, sobreposições, feedback, exibição de dados, mídia, gráficos, estilos, editor, colaboração, ícones e temas.",
     "guide": "Instalação e arquitetura",
-    "guideBody": "Importe os pontos de entrada individuais para registar automaticamente as etiquetas cb-*. As classes base não registam elementos. A raiz do pacote oferece utilitários de dados sem DOM e loadComponent para carregamento diferido no navegador. As classes HTMLElement concretas exigem um DOM, também em Node ou Deno.",
+    "guideBody": "Inicialize o catálogo completo ou categorias selecionadas com o mesmo runtime WebComponent. Os inicializadores devolvem classes concretas e bases sem apresentação. A raiz oferece utilitários sem DOM e loadCategory. A renderização e o registo exigem um DOM.",
     "runtime": "Os scripts de navegador exigem primeiro o runtime web-component. Os gráficos também exigem ECharts ou um carregador configureChartEngine. Os scripts apenas de multimédia não carregam ECharts. Esta branch não substituiu a versão publicada no npm.",
     "theme": "Temas",
     "themeBody": "ThemeProvider aceita um documento ThemeDefinitionV1 do site-builder através de theme ou src. appearance aceita light, dark ou system. Os nomes das variáveis CSS são compatíveis com site-builder; fornecedores aninhados criam âmbitos explícitos. Os temas JSON e CSS são gerados em dist/themes.",
@@ -60,7 +60,7 @@
     "categoryEditor": "Editor",
     "categoryAssets": "Recursos",
     "categoryCollaboration": "Colaboração",
-    "studioCatalogBody": "Esta categoria auditada contém elementos cb-* reutilizáveis e autorregistáveis. As composições visuais dos painéis Studio são documentadas como exemplos, em vez de se tornarem componentes duplicados. Cada componente real tem uma entrada de browser independente, uma base headless tipada, renderização baseada no tema, partes CSS estáveis, comportamento responsivo e uma história interativa no Storybook.",
-    "studioCatalogApi": "Todas as propriedades são opcionais. Forneça label, accessible-label, description, status, action-label, empty-label e o texto dos itens no idioma ativo. Os componentes interativos emitem beforechange ou beforeaction canceláveis antes de change ou action. Importe a entrada do componente para o registar, ou a entrada /base para fornecer outro renderer."
+    "studioCatalogBody": "Esta categoria contém elementos cb-* reutilizáveis, registados em conjunto por um inicializador ou script de categoria. Os componentes usam templates Markup reativos, bases tipadas, variáveis de tema, partes CSS e exemplos interativos no Storybook. A aplicação carrega as categorias necessárias aos controlos compostos.",
+    "studioCatalogApi": "Forneça texto visível e acessível no idioma da aplicação. Os controlos emitem beforechange ou beforeaction canceláveis antes de change ou action. Inicialize a categoria com o runtime WebComponent partilhado para registar as etiquetas e obter as classes e bases."
   }
 }

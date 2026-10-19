@@ -1,13 +1,11 @@
-export * from './badge/index.js'
-export * from './CollectionBase.js'
-export * from './avatar/index.js'
-export * from './card/index.js'
-export * from './list/index.js'
-export * from './description-row/index.js'
-export * from './table/index.js'
-export * from './tree/index.js'
-export * from './accordion/index.js'
-export * from './expandable-section/index.js'
-export * from './file-browser/index.js'
-export * from './layer-tree/index.js'
-export * from './code-preview/index.js'
+import { initializeRuntime, type CubeRuntime } from '../core/runtime.js'
+export type * from './register.js'
+
+export async function initializeDataDisplay(runtime: CubeRuntime): Promise<typeof import('./register.js')> {
+    initializeRuntime(runtime)
+    const category = await import('./register.js')
+    category.registerDataDisplay()
+    return category
+}
+
+export default initializeDataDisplay

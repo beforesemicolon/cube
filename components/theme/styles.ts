@@ -1,19 +1,4 @@
-import { token as v } from '../theme/tokens.js'
-import { el, sheet } from './dom.js'
-export { el, sheet }
-let nextId = 0
-export function uid(prefix = 'cb'): string { return `${prefix}-${++nextId}` }
-export function fragment(...nodes: Node[]): DocumentFragment { const f=document.createDocumentFragment(); f.append(...nodes); return f }
-export function slot(name = '', fallback = '', part = 'content'): HTMLSlotElement {
-    const node = el('slot', part); if(name)node.name=name; if(fallback)node.textContent=fallback; return node
-}
-export function aria(node: Element, name: string, value: string | number | boolean | null | undefined): void {
-    if(value === null || value === undefined || value === '')node.removeAttribute(name); else node.setAttribute(name,String(value))
-}
-export function safeHref(value: unknown, base = typeof document === 'undefined' ? 'https://example.invalid/' : document.baseURI): string {
-    if(typeof value !== 'string' || !value.trim())return ''
-    try { const url=new URL(value,base); return ['http:','https:','mailto:','tel:'].includes(url.protocol)?value:'' } catch { return '' }
-}
+import { token as v } from './tokens.js'
 export const editorCSS = `
 :host{display:inline-block;max-inline-size:100%;color:${v('--color-foreground')};font:400 var(--component-font-size,12px)/var(--component-line-height,1.4) ${v('--typography-body-font-family')};--cb-height:var(--component-control-height,28px);vertical-align:middle}
 :host([hidden]){display:none!important}
@@ -42,4 +27,20 @@ button,[part~=control]{transition:background-color ${v('--motion-duration-fast')
 [part~=sr-only]{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media (forced-colors:active){button,[part~=control]{border-color:ButtonText}button:disabled{color:GrayText}[aria-selected=true],[aria-checked=true],[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-2px}}
+`
+
+export const commonCSS = `
+:host{display:block;color:${v('--color-foreground')};font:${v('--typography-body-font-size')}/${v('--typography-body-line-height')} ${v('--typography-body-font-family')};container-type:inline-size}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+button,select,input{font:inherit;color:inherit}
+button,select{min-height:${v('--component-control-height')};border:1px solid ${v('--color-border')};border-radius:${v('--radius-sm')};background:${v('--color-surface-muted')};padding:${v('--spacing-xs')} ${v('--spacing-sm')}}
+button{cursor:pointer;touch-action:manipulation}
+button:hover{background:${v('--color-selection')}}
+button:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:2px solid ${v('--color-focus')};outline-offset:2px}
+input[type=range]{accent-color:${v('--color-primary')};min-height:${v('--component-control-height')};min-width:0}
+[part~=status]{color:${v('--color-muted-foreground')};margin:0}
+[part~=actions]{display:flex;gap:${v('--spacing-sm')};flex-wrap:wrap;align-items:center}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 `

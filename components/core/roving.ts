@@ -2,12 +2,13 @@
 export class RovingFocus {
     private buffer = ''; private typedAt = 0
     constructor(private items:()=>HTMLElement[], private orientation:()=>string=()=> 'horizontal', private selected?:(index:number)=>void) {}
-    reset(preferred=0):void { const list=this.items(); const index=list[preferred]?preferred:0;list.forEach((n,i)=>n.tabIndex=i===index?0:-1) }
-    focus(index:number):void { const list=this.items();if(!list[index])return;this.reset(index);list[index].focus();this.selected?.(index) }
+    private target(node:HTMLElement):HTMLElement{return node.hasAttribute('data-semantic-host')?node:node.shadowRoot?.querySelector<HTMLElement>('[part~=control]')??node}
+    reset(preferred=0):void { const list=this.items(); const index=list[preferred]?preferred:0;list.forEach((n,i)=>this.target(n).tabIndex=i===index?0:-1) }
+    focus(index:number):void { const list=this.items();if(!list[index])return;this.reset(index);this.target(list[index]).focus();this.selected?.(index) }
     keydown(event:KeyboardEvent):void {
         if(event.altKey||event.ctrlKey||event.metaKey)return
         const list=this.items();if(!list.length)return
-        const path=event.composedPath();let current=list.findIndex(n=>path.includes(n));if(current<0)current=list.findIndex(n=>n.tabIndex===0)
+        const path=event.composedPath();let current=list.findIndex(n=>path.includes(n));if(current<0)current=list.findIndex(n=>this.target(n).tabIndex===0)
         let next=-1;const vertical=this.orientation()==='vertical',rtl=getComputedStyle(list[0]).direction==='rtl'
         if(event.key==='Home')next=0
         else if(event.key==='End')next=list.length-1

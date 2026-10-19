@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
 import { componentStory } from './controls.js'
-import '../components/text/index.js'
+import './setup.js'
 
 const meta: Meta = { title: 'Text', tags: ['autodocs'], parameters: { docs: { description: { component: 'Semantic text components and compact textual notation.' } } } }
 export default meta

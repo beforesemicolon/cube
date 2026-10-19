@@ -1,6 +1,6 @@
 import type { Meta,StoryObj } from '@storybook/web-components-vite'
 import { chartExamples } from './fixtures/chart-types.js'
-import '../components/client.js'
+import './setup.js'
 const meta:Meta={title:'Examples/All eight chart types',parameters:{layout:'fullscreen'}}
 export default meta
 export const Gallery:StoryObj={render:()=>{

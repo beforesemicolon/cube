@@ -13,10 +13,10 @@ order: 21
 :::cube studio-text
 :::
 
-| Component | Custom element | Package entry |
+| Component | Custom element | Category entry |
 | --- | --- | --- |
-| Heading | `<cb-heading>` | `@beforesemicolon/cube/text/heading` |
-| Shortcut | `<cb-shortcut>` | `@beforesemicolon/cube/text/shortcut` |
+| Heading | `<cb-heading>` | `@beforesemicolon/cube/text` |
+| Shortcut | `<cb-shortcut>` | `@beforesemicolon/cube/text` |
 
 ## API
 

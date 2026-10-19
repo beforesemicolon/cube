@@ -11,11 +11,23 @@ order: 1
 {{t.cube.guideBody}}
 
 ```ts
-import { loadComponent } from '@beforesemicolon/cube'
-await loadComponent('audio-player')
+import * as runtime from '@beforesemicolon/web-component'
+import initializeCube from '@beforesemicolon/cube'
+await initializeCube(runtime)
 ```
 
 {{t.cube.runtime}}
+
+```html
+<script src="https://unpkg.com/@beforesemicolon/web-component/dist/client.js"></script>
+<script src="https://unpkg.com/@beforesemicolon/cube/dist/client.js"></script>
+```
+
+```html
+<script src="https://unpkg.com/@beforesemicolon/web-component/dist/client.js"></script>
+<script src="https://unpkg.com/@beforesemicolon/cube/dist/action-client.js"></script>
+<script src="https://unpkg.com/@beforesemicolon/cube/dist/form-client.js"></script>
+```
 
 ## {{t.cube.theme}}
 

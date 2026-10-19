@@ -4,7 +4,7 @@ import { relative, resolve, sep } from 'node:path'
 import test from 'node:test'
 
 const sourceRoot = resolve(process.cwd(), 'components')
-const nativeButtonPattern = /(?:el|createElement)\([^\n]*['"]button['"]/g
+const nativeButtonPattern = /(?:element|createElement)\([^\n]*['"]button['"]|<button(?:\s|>)/g
 
 function typeScriptFiles(directory: string): string[] {
     return readdirSync(directory, { withFileTypes: true }).flatMap((entry: Dirent) => {
@@ -23,24 +23,6 @@ test('raw buttons are limited to semantic primitives and native form interop', (
 
     assert.deepEqual(actual, {
         'action/button/ButtonBase.ts': 1,
-        'data-display/accordion/index.ts': 1,
-        'data-display/expandable-section/index.ts': 1,
-        'data-display/file-browser/index.ts': 1,
-        'editor/selection-overlay/index.ts': 2,
-        'form/calendar/index.ts': 1,
-        'form/combobox/index.ts': 1,
-        'form/date-picker/index.ts': 1,
-        'form/editable-label/index.ts': 1,
-        'form/select/index.ts': 2,
-        'form/time-picker/index.ts': 2,
-        'layout/workspace/index.ts': 1,
-        'navigation/breadcrumb/index.ts': 1,
-        'navigation/menu/view.ts': 1,
-        'navigation/pagination/index.ts': 1,
-        'navigation/segmented-control/index.ts': 1,
-        'navigation/tabs/index.ts': 1,
-        'studio/view.ts': 1,
-        'styling/color-picker/index.ts': 3,
-        'styling/gradient-editor/index.ts': 1,
+        'action/button/view.ts': 1,
     })
 })

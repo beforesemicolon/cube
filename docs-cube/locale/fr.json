@@ -3,7 +3,7 @@
     "title": "Cube par Before Semicolon",
     "intro": "Bibliothèque de composants web à logique indépendante du rendu et thèmes pour éditeurs visuels. Les composants sont organisés en actions, formulaires, mise en page, navigation, superpositions, retours, affichage des données, médias, graphiques, styles, éditeur, collaboration, icônes et thèmes.",
     "guide": "Installation et architecture",
-    "guideBody": "Importez les entrées individuelles pour enregistrer automatiquement les balises cb-*. Les classes de base ne les enregistrent pas. La racine fournit des utilitaires sans DOM et loadComponent pour le chargement différé. Les classes HTMLElement concrètes nécessitent un DOM, y compris sous Node ou Deno.",
+    "guideBody": "Initialisez le catalogue complet ou les catégories choisies avec le même runtime WebComponent. Les initialiseurs renvoient les classes concrètes et les bases sans présentation. La racine expose des utilitaires sans DOM et loadCategory. Le rendu et l’enregistrement nécessitent un DOM.",
     "runtime": "Chargez le runtime web-component en premier. Les graphiques nécessitent aussi ECharts ou un chargeur configureChartEngine. Les scripts multimédias ne chargent pas ECharts. Cette branche ne remplace pas la version publiée sur npm.",
     "theme": "Thèmes",
     "themeBody": "ThemeProvider accepte ThemeDefinitionV1 de site-builder via theme ou src. appearance accepte light, dark ou system. Les variables CSS gardent les noms site-builder ; les fournisseurs imbriqués créent des portées explicites. Les fichiers sont générés dans dist/themes.",
@@ -60,7 +60,7 @@
     "categoryEditor": "Éditeur",
     "categoryAssets": "Ressources",
     "categoryCollaboration": "Collaboration",
-    "studioCatalogBody": "Cette catégorie auditée contient des éléments cb-* réutilisables qui s’enregistrent à l’import. Les compositions visuelles des planches Studio sont documentées comme exemples plutôt que transformées en composants en double. Chaque composant réel possède une entrée navigateur indépendante, une base headless typée, un rendu piloté par le thème, des parties CSS stables, un comportement adaptatif et une story Storybook interactive.",
-    "studioCatalogApi": "Toutes les propriétés sont facultatives. Fournissez label, accessible-label, description, status, action-label, empty-label et le texte des éléments dans la langue active. Les composants interactifs émettent les événements annulables beforechange ou beforeaction avant change ou action. Importez l’entrée du composant pour l’enregistrer, ou son entrée /base pour fournir un autre rendu."
+    "studioCatalogBody": "Cette catégorie contient des éléments cb-* réutilisables enregistrés ensemble par un initialiseur ou un script de catégorie. Les composants utilisent des modèles Markup réactifs, des bases typées, des variables de thème, des parties CSS et des exemples Storybook interactifs. L’application charge les catégories nécessaires aux contrôles composés.",
+    "studioCatalogApi": "Fournissez les textes visibles et accessibles dans la langue de l’application. Les contrôles émettent beforechange ou beforeaction annulables avant change ou action. Initialisez la catégorie avec le runtime WebComponent partagé pour enregistrer ses balises et obtenir ses classes et bases."
   }
 }

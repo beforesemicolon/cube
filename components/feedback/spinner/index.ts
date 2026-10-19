@@ -1,13 +1,10 @@
-import { register } from '../../core/Component.js'
-import { createStudioView, type StudioView } from '../../studio/view.js'
-import { SpinnerBase } from './SpinnerBase.js'
-
+import { type Template } from '../../core/runtime.js'
+import { createStudioView, type StudioView } from '../../studio/view.js';
+import { SpinnerBase } from './SpinnerBase.js';
 export class Spinner extends SpinnerBase {
-    private view?: StudioView
-    render(): Node { this.view = createStudioView(this); return this.view.root }
-    protected syncView(): void { this.view?.update() }
+    private view?: StudioView;
+    render(): Template { this.view = createStudioView(this); return this.view.root; }
+    protected syncView(): void { this.view?.update(); }
 }
-
-register('cb-spinner', Spinner)
-export { SpinnerBase }
-export type { SpinnerProps } from './SpinnerBase.js'
+export { SpinnerBase };
+export type { SpinnerProps } from './SpinnerBase.js';

@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
 import { componentStory } from './controls.js'
-import '../components/layout/index.js'
+import './setup.js'
 
-const meta: Meta = { title: 'Layout', tags: ['autodocs'], parameters: { docs: { description: { component: 'Layout components with headless bases, themed parts, standalone imports and browser bundles.' } } } }
+const meta: Meta = { title: 'Layout', tags: ['autodocs'], parameters: { docs: { description: { component: 'Layout components with headless bases, themed parts, category initialization and browser clients.' } } } }
 export default meta
 type Story = StoryObj
 export const Sidebar: Story = componentStory('cb-sidebar', { label: 'Layers', description: 'Project navigation', accessibleLabel: 'Layers sidebar', collapsible: true, expanded: true, placement: 'start', expandLabel: 'Expand sidebar', collapseLabel: 'Collapse sidebar' })

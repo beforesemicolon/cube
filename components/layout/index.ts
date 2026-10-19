@@ -1,12 +1,11 @@
-export * from './box/index.js'
-export * from './row/index.js'
-export * from './col/index.js'
-export * from './grid/index.js'
-export * from './divider/index.js'
-export * from './toolbar/index.js'
-export * from './action-bar/index.js'
-export * from './sidebar/index.js'
-export * from './resizable-panel/index.js'
-export * from './docked-panel/index.js'
-export * from './panel-header/index.js'
-export * from './workspace/index.js'
+import { initializeRuntime, type CubeRuntime } from '../core/runtime.js'
+export type * from './register.js'
+
+export async function initializeLayout(runtime: CubeRuntime): Promise<typeof import('./register.js')> {
+    initializeRuntime(runtime)
+    const category = await import('./register.js')
+    category.registerLayout()
+    return category
+}
+
+export default initializeLayout

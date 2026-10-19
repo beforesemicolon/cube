@@ -3,7 +3,7 @@ import type { AccordionItem } from '../components/data-display/accordion/base.js
 import type { TableColumn, TableRecord } from '../components/data-display/table/base.js'
 import { createFlashbar, configureFlashbarHost } from '../components/feedback/flashbar/service.js'
 import { showModal } from '../components/overlay/modal/service.js'
-import '../components/client.js'
+import './setup.js'
 
 const meta: Meta = {
     title: 'Examples',
