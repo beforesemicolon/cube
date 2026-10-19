@@ -41,6 +41,7 @@ export interface StudioViewSource extends HTMLElement {
     expanded?: boolean
     orientation?: 'horizontal' | 'vertical'
     emit(name: string, detail?: object): void
+    setControlValue?(value:StudioValue,originalEvent?:Event):boolean
     setFiles?(files: readonly File[], originalEvent?: Event): boolean
     controlUnavailable?(): boolean
 }
@@ -85,6 +86,7 @@ class StudioViewAdapter {
         return typeof value === 'string' || typeof value === 'number' ? String(value) : ''
     }
     setValue(value: StudioValue, originalEvent?: Event): boolean {
+        if(this.source.setControlValue)return this.source.setControlValue(value,originalEvent)
         if (this.studioDisabled() || this.studioReadOnly()) return false
         const current = typeof value === 'boolean' && 'checked' in this.source ? this.source.checked : this.source.value
         if (Object.is(current, value)) return false

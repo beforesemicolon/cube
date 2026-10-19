@@ -83,6 +83,7 @@ export abstract class ColorPickerBase extends FieldControlBase<ColorPickerProps>
         const restored = typeof value === 'string' ? value : value instanceof FormData ? value.get(this.name) : ''
         this.value = normalizeColor(typeof restored === 'string' ? restored : '')
     }
+    protected serializedValue():string{return this.normalizedValue()}
 
     normalizedValue(): string { return normalizeColor(this.value) }
     color(): HSVAColor { return parseHexColor(this.normalizedValue()) ?? { hue: 0, saturation: 0, value: 0, alpha: 1 } }
@@ -105,15 +106,10 @@ export abstract class ColorPickerBase extends FieldControlBase<ColorPickerProps>
     }
 
     changeColor(color: HSVAColor, originalEvent?: Event): boolean {
-        if (this.unavailable || bool(this.readOnly)) return false
         const next = colorToHex({ ...color, alpha: bool(this.allowAlpha) ? color.alpha : 1 })
         if (next === this.normalizedValue()) return false
-        const detail: ColorPickerChangeDetail = { value: next, color: parseHexColor(next) ?? color, originalEvent }
-        if (!this.request('beforechange', detail)) return false
-        this.value = next
-        this.syncView()
-        this.emit('change', detail)
-        return true
+        const detail:Omit<ColorPickerChangeDetail,'value'|'originalEvent'>={color:parseHexColor(next)??color}
+        return this.commitValue(next,originalEvent,detail)
     }
 
     choose(value: string, originalEvent?: Event): boolean {

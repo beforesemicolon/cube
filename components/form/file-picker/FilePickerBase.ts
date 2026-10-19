@@ -21,17 +21,9 @@ export abstract class FilePickerBase extends InputBase<FilePickerProps> {
     readonly componentName = 'file-picker'
     readonly componentKind: StudioKind = 'file'
     setFiles(files: readonly File[], originalEvent?: Event): boolean {
-        if (this.unavailable || bool(this.readOnly)) return false
         const next = this.multiple ? [...files] : files.slice(0, 1)
         const value = this.multiple ? next.map(file => file.name) : next[0]?.name ?? ''
-        const detail = { value, files: next, originalEvent }
-        if (!this.request('beforechange', detail)) return false
-        this.files = next
-        this.value = value
-        this.syncView()
-        this.syncFormValue()
-        this.emit('change', detail)
-        return true
+        return this.commitValue(value,originalEvent,{files:next},changed=>{this.files=next;this.value=changed})
     }
     protected restoreValue(value: StudioValue | FormRestoreValue): void {
         const control = this.fieldElement()

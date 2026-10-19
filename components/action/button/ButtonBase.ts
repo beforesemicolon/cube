@@ -21,9 +21,7 @@ export abstract class ButtonBase<P extends ButtonProps = ButtonProps> extends Fo
         if(this.unavailable){event.preventDefault();event.stopImmediatePropagation();return}
         if(this.pressed!==undefined){
             const next=!bool(this.pressed)
-            if(!this.request('beforechange',{value:next,pressed:next,originalEvent:event})){event.preventDefault();return}
-            this.pressed=next
-            this.emit('change',{value:next,pressed:next,originalEvent:event})
+            if(!this.commitState(bool(this.pressed),next,event,{pressed:next},pressed=>this.pressed=pressed)){event.preventDefault();return}
             return
         }
         if(!this.request('beforeaction',{value:this.value,originalEvent:event})){event.preventDefault();return}

@@ -22,16 +22,11 @@ export abstract class RadioGroupBase extends FieldControlBase<RadioGroupProps> {
     protected restoreValue(value: string | File | FormData | null): void {
         this.value = value instanceof FormData ? scalarText(value.get(this.name)) : typeof value === 'string' ? value : ''
     }
+    protected syncFormValue():void{this.syncForm(this.selection)}
 
     choose(value: string, originalEvent?: Event): boolean {
-        if (this.unavailable || bool(this.readOnly)) { this.syncView(); return false }
         const option = this.normalizedOptions.find(candidate => candidate.value === value)
         if (!option || option.disabled) { this.syncView(); return false }
-        const detail = { value: option.value, originalEvent }
-        if (!this.request('beforechange', detail)) { this.syncView(); return false }
-        this.value = option.value
-        this.syncView()
-        this.emit('change', detail)
-        return true
+        return this.handleChange(option.value,originalEvent)
     }
 }

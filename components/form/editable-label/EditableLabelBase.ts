@@ -60,16 +60,9 @@ export abstract class EditableLabelBase<P extends EditableLabelProps = EditableL
     }
 
     changeDraft(value: string, originalEvent?: Event): boolean {
-        if (this.unavailable || bool(this.readOnly) || !bool(this.editing)) return false
+        if (!bool(this.editing)) return false
         const next = scalarText(value)
-        if (next === this.value) return false
-        const detail = { value: next, previousValue: scalarText(this.value), originalEvent }
-        if (!this.request('beforechange', detail)) return false
-        this.value = next
-        this.draft = next
-        this.syncView()
-        this.emit('change', detail)
-        return true
+        return this.commitValue(next,originalEvent,{},changed=>{this.value=changed;this.draft=changed})
     }
 
     cancelEditing(originalEvent?: Event): boolean {

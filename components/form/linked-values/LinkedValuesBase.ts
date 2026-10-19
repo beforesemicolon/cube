@@ -17,7 +17,7 @@ export interface LinkedValuesProps extends FieldControlProps {
 }
 
 /** Coupled numeric-value behavior for dimensions, offsets and other paired properties. */
-export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValuesProps> extends FieldControlBase<P, readonly [number, number]> {
+export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValuesProps> extends FieldControlBase<P, readonly [number, number], string> {
     static observedAttributes = [
         ...FieldControlBase.observedAttributes, 'first-value', 'second-value', 'first-name', 'second-name', 'first-label', 'second-label',
         'linked', 'min', 'max', 'step', 'link-label', 'unlink-label',
@@ -83,9 +83,12 @@ export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValue
             else firstValue = this.normalized(this.ratio ? secondValue / this.ratio : secondValue)
         }
         const detail = { firstValue, secondValue, source, linked: bool(this.linked), originalEvent }
-        if (!this.request('beforechange', detail)) return false
-        this.firstValue = firstValue; this.secondValue = secondValue
-        this.syncView(); this.emit('change', detail); return true
+        const previousValue=this.captureValue()
+        const nextValues:readonly [number,number]=[firstValue,secondValue]
+        return this.commitState(previousValue,nextValues,originalEvent,detail,changed=>{
+            this.firstValue=changed[0]
+            this.secondValue=changed[1]
+        },(previous,changed)=>previous[0]===changed[0]&&previous[1]===changed[1])
     }
     private normalized(value: number): number {
         const minimum = finite(this.min, Number.NEGATIVE_INFINITY), maximum = finite(this.max, Number.POSITIVE_INFINITY)

@@ -38,7 +38,7 @@ function normalizedItems(value: readonly EditableListItem[]): EditableListItem[]
 }
 
 /** Editable collection behavior with form submission, validation and reorder operations. */
-export abstract class EditableListBase<P extends EditableListProps = EditableListProps> extends FieldControlBase<P, readonly EditableListItem[]> {
+export abstract class EditableListBase<P extends EditableListProps = EditableListProps> extends FieldControlBase<P, readonly EditableListItem[], string> {
     static observedAttributes = [
         ...FieldControlBase.observedAttributes, 'items', 'min-items', 'max-items', 'allow-reorder', 'placeholder', 'add-label',
         'edit-label', 'save-label', 'cancel-label', 'remove-label', 'move-up-label', 'move-down-label', 'empty-label',
@@ -123,16 +123,15 @@ export abstract class EditableListBase<P extends EditableListProps = EditableLis
         const message = custom || (tooFew ? scalarText(this.minimumItemsError) : tooMany ? scalarText(this.maximumItemsError) : '')
         this.internals?.setValidity(message ? { customError: true } : {}, message)
     }
+    protected syncFormValue():void{this.syncListForm()}
 
     protected minimumItems(): number { return Math.max(0, Math.trunc(finite(this.minItems, 0))) }
     protected maximumItems(): number { return Math.max(this.minimumItems(), Math.trunc(finite(this.maxItems, Number.POSITIVE_INFINITY))) }
     private commit(items: readonly EditableListItem[], reason: EditableListChangeReason, id: string, originalEvent?: Event): boolean {
-        const detail = { items, reason, id, originalEvent }
-        if (!this.request('beforeitemschange', detail)) return false
-        this.items = items
-        this.validationShown = true
-        this.syncView()
-        this.emit('change', { ...detail, value: items.map(item => item.value) })
-        return true
+        const detail={items,reason,id,value:items.map(item=>item.value)}
+        return this.commitState(this.normalizedItems(),items,originalEvent,detail,changed=>{
+            this.items=changed
+            this.validationShown=true
+        },()=>false)
     }
 }

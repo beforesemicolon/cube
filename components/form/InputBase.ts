@@ -25,6 +25,8 @@ export abstract class InputBase<P extends InputProps = InputProps> extends Field
         }
         this.value = value instanceof File ? value.name : value
     }
+    setValue(value: StudioValue, originalEvent?: Event): boolean { return this.handleChange(value, originalEvent) }
+    setControlValue(value: StudioValue, originalEvent?: Event): boolean { return this.setValue(value, originalEvent) }
     protected syncFormValue(): void {
         if (Array.isArray(this.value)) {
             const data = new FormData()

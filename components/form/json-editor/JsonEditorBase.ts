@@ -27,7 +27,7 @@ function isJsonValue(value: unknown): value is JsonValue {
 }
 
 /** JSON parsing, formatting and schema-adapter validation independent from rendering. */
-export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps> extends FieldControlBase<P> {
+export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps> extends FieldControlBase<P, string, string | JsonValue> {
     static observedAttributes = [
         ...FieldControlBase.observedAttributes, 'value', 'indent', 'format-label', 'valid-label', 'invalid-label', 'placeholder',
         'line-numbers', 'wrap', 'position-label',
@@ -64,6 +64,7 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
         if (typeof this.value === 'string') return this.value
         return isJsonValue(this.value) ? JSON.stringify(this.value, null, this.normalizedIndent()) : ''
     }
+    protected serializedValue(): string { return this.sourceText() }
     protected captureValue(): string { return this.sourceText() }
     protected restoreValue(value: unknown): void {
         this.sourceValue.set(value instanceof FormData ? scalarText(value.get(this.name)) : scalarText(value), false)
@@ -90,14 +91,9 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
     }
 
     setValue(value: string, originalEvent?: Event): boolean {
-        if (this.unavailable || bool(this.readOnly)) return false
         const next = scalarText(value)
-        const detail = { value: next, originalEvent }
-        if (!this.request('beforechange', detail)) { this.syncView(); return false }
-        this.sourceValue.set(next, false)
-        this.syncView()
-        this.emit('change', detail)
-        return true
+        if(next===this.sourceText())return false
+        return this.commitValue(next,originalEvent,{},changed=>this.sourceValue.set(changed,false))
     }
 
     format(originalEvent?: Event): boolean {

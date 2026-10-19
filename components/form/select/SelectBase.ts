@@ -13,6 +13,13 @@ export abstract class SelectBase extends FieldControlBase<SelectProps, string|st
     get searchEnabled():boolean{return this.searchable===true||(this.searchable==='auto'&&this.normalizedOptions.length>Math.max(0,finite(this.searchThreshold,10)))}
     protected captureValue():string|string[]{return Array.isArray(this.value)?[...this.value]:this.value}
     protected restoreValue(value:string|string[]|File|FormData|null):void{this.value=value instanceof FormData?value.getAll(this.name).filter((v):v is string=>typeof v==='string'):Array.isArray(value)?[...value]:scalarText(value)}
+    protected syncFormValue():void{
+        const selection=this.selection
+        if(!bool(this.multi)){this.syncForm(selection[0]??'');return}
+        const data=new FormData()
+        if(this.name)for(const value of selection)data.append(this.name,value)
+        this.syncForm(data)
+    }
     choose(value:string|string[],originalEvent?:Event):boolean{
         if(this.unavailable||bool(this.readOnly)){this.syncView();return false}
         const values=(Array.isArray(value)?value:[value]).filter(v=>v===''||this.normalizedOptions.some(o=>o.value===v&&!o.disabled))
@@ -23,12 +30,7 @@ export abstract class SelectBase extends FieldControlBase<SelectProps, string|st
                     ? this.selection.filter(item => item !== values[0])
                     : [...this.selection, ...values]
             : values[0]??''
-        const unchanged=Array.isArray(next)&&Array.isArray(this.value)
-            ? next.length===this.value.length&&next.every((item,index)=>item===this.value[index])
-            : !Array.isArray(next)&&!Array.isArray(this.value)&&next===this.value
-        if(unchanged)return false
-        if(!this.request('beforechange',{value:next,originalEvent})){this.syncView();return false}
-        this.value=next;this.syncView();this.emit('change',{value:next,originalEvent});return true
+        return this.handleChange(next,originalEvent)
     }
     setOpen(open:boolean,originalEvent?:Event):boolean{
         if(this.unavailable||bool(this.readOnly)||bool(this.native))return false

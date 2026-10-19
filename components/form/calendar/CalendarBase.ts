@@ -64,13 +64,10 @@ export abstract class CalendarBase<P extends CalendarProps = CalendarProps> exte
     protected chooseDate(date: Date, originalEvent?: Event): boolean {
         if (this.isUnavailable(date)) return false
         const value = this.dateValue(date)
-        if (value === this.value) return false
-        if (!this.request('beforechange', { value, date, originalEvent })) return false
-        this.value = value
-        this.visibleMonth = new Date(date.getFullYear(), date.getMonth(), 1)
-        this.syncView()
-        this.emit('change', { value, date, originalEvent })
-        return true
+        return this.commitValue(value,originalEvent,{date},()=>{
+            this.value=value
+            this.visibleMonth=new Date(date.getFullYear(),date.getMonth(),1)
+        })
     }
     protected moveMonth(amount: number): void {
         this.visibleMonth = new Date(this.visibleMonth.getFullYear(), this.visibleMonth.getMonth() + amount, 1)

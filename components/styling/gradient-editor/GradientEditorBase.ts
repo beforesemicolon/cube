@@ -149,6 +149,7 @@ export abstract class GradientEditorBase extends FieldControlBase<GradientEditor
     }
 
     protected captureValue(): string { return this.cssValue() }
+    protected serializedValue():string{return this.cssValue()}
     protected restoreValue(value: string | File | FormData | null): void {
         const restored = value instanceof FormData ? value.get(this.name) : value
         if (typeof restored === 'string') { this.value = restored; this.adoptValue() }
@@ -227,19 +228,17 @@ export abstract class GradientEditorBase extends FieldControlBase<GradientEditor
         const model = normalizeGradientModel(source)
         const value = serializeGradient(model)
         if (value === this.cssValue()) return false
-        const detail: GradientChangeDetail = { ...model, value, selectedStopId: this.selectedId, originalEvent }
-        if (!this.request('beforechange', detail)) return false
-        this.type = model.type
-        this.angle = model.angle
-        this.shape = model.shape
-        this.extent = model.extent
-        this.position = model.position
-        this.stops = model.stops
-        this.value = value
-        this.ensureSelectedStop()
-        this.syncView()
-        this.emit('change', detail)
-        return true
+        const detail:Omit<GradientChangeDetail,'value'|'originalEvent'>={...model,selectedStopId:this.selectedId}
+        return this.commitValue(value,originalEvent,detail,changed=>{
+            this.type=model.type
+            this.angle=model.angle
+            this.shape=model.shape
+            this.extent=model.extent
+            this.position=model.position
+            this.stops=model.stops
+            this.value=changed
+            this.ensureSelectedStop()
+        })
     }
 
     private adoptValue(): void {

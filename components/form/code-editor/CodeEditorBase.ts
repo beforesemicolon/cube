@@ -18,7 +18,7 @@ export interface CodeEditorProps extends FieldControlProps<CodeEditorValue> {
 }
 
 /** Form-associated source editing behavior, including indentation and cursor status. */
-export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps> extends FieldControlBase<P> {
+export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps> extends FieldControlBase<P, string, CodeEditorValue> {
     static observedAttributes = [
         ...FieldControlBase.observedAttributes, 'value', 'language', 'placeholder', 'line-numbers', 'wrap', 'tab-size',
         'min-lines', 'max-lines', 'position-label', 'submit-label',
@@ -55,6 +55,7 @@ export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps
         if (this.value === null || typeof this.value === 'number' || typeof this.value === 'boolean') return scalarText(this.value)
         try { return JSON.stringify(this.value, null, 2) } catch { return '' }
     }
+    protected serializedValue(): string { return this.sourceText() }
     protected captureValue(): string { return this.sourceText() }
     protected restoreValue(value: unknown): void {
         this.sourceValue.set(value instanceof FormData ? scalarText(value.get(this.name)) : scalarText(value), false)
@@ -72,15 +73,9 @@ export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps
     }
 
     setValue(value: string, originalEvent?: Event): boolean {
-        if (this.unavailable || bool(this.readOnly)) return false
         const next = scalarText(value)
-        if (next === this.sourceText()) return false
-        const detail = { value: next, originalEvent }
-        if (!this.request('beforechange', detail)) { this.syncView(); return false }
-        this.sourceValue.set(next, false)
-        this.syncView()
-        this.emit('change', detail)
-        return true
+        if(next===this.sourceText())return false
+        return this.commitValue(next,originalEvent,{},changed=>this.sourceValue.set(changed,false))
     }
 
     protected editJson(event: KeyboardEvent): boolean {

@@ -32,6 +32,7 @@ export abstract class MaskedInputBase<P extends MaskedInputProps = MaskedInputPr
     protected formattedValue(): string { return formatMaskedValue(this.value, this.mask) }
     get rawValue(): string { return unmaskValue(this.value, this.mask) }
     protected submittedValue(): string { return bool(this.unmask) ? unmaskValue(this.value, this.mask) : this.formattedValue() }
+    protected serializedValue():string{return this.submittedValue()}
     protected maskGuide(): string {
         if (!bool(this.guide)) return scalarText(this.placeholder)
         const placeholder = scalarText(this.maskPlaceholder, '_').charAt(0) || '_'
@@ -39,15 +40,8 @@ export abstract class MaskedInputBase<P extends MaskedInputProps = MaskedInputPr
     }
 
     setValue(value: string, originalEvent?: Event): boolean {
-        if (this.unavailable || bool(this.readOnly)) return false
         const next = formatMaskedValue(value, this.mask)
-        const detail = { value: next, rawValue: unmaskValue(next, this.mask), originalEvent }
-        if (next === scalarText(this.value)) return false
-        if (!this.request('beforechange', detail)) return false
-        this.value = next
-        this.syncView()
-        this.emit('change', detail)
-        return true
+        return this.handleChange(next,originalEvent,{rawValue:unmaskValue(next,this.mask)})
     }
 }
 

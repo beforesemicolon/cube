@@ -11,14 +11,12 @@ export abstract class SliderBase extends FieldControlBase<SliderProps, number> {
     get valueAsNumber():number{return this.range.value}
     protected captureValue():number{return this.value}
     protected restoreValue(value:number|string|File|FormData|null):void{const n=typeof value==='string'?Number(value):value;this.value=finite(typeof n==='number'?n:undefined,this.range.min)}
+    protected syncFormValue():void{this.syncForm(String(this.range.value))}
     protected mount():void{super.mount();this.listen(this.ownerDocument,'pointerup',()=>this.pointerActive=false);this.listen(this.ownerDocument,'pointercancel',()=>this.pointerActive=false)}
     protected unmount():void{this.pointerActive=false}
     setValue(value:number,originalEvent?:Event):boolean{
-        if(this.unavailable||bool(this.readOnly)){this.syncView();return false}
         const next=normalizeRange({...this.range,value}).value
-        if(Object.is(this.range.value,next))return false
-        if(!this.request('beforechange',{value:next,originalEvent})){this.syncView();return false}
-        this.value=next;this.syncView();this.emit('change',{value:next,originalEvent});return true
+        return this.handleChange(next,originalEvent)
     }
     stepUp(count=1):void{this.setValue(this.range.value+(this.range.step==='any'?1:this.range.step)*finite(count,1))}
     stepDown(count=1):void{this.stepUp(-finite(count,1))}

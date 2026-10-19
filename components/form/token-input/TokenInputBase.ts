@@ -24,6 +24,8 @@ export abstract class TokenInputBase extends FieldControlBase<TokenInputProps, S
             this.value = value.getAll(this.name).filter((item): item is string => typeof item === 'string')
         } else this.value = value instanceof File ? value.name : value
     }
+    setValue(value: StudioValue, originalEvent?: Event): boolean { return this.handleChange(value, originalEvent) }
+    setControlValue(value: StudioValue, originalEvent?: Event): boolean { return this.setValue(value, originalEvent) }
     protected syncFormValue(): void {
         const values = Array.isArray(this.value) ? this.value : scalarText(this.value) ? [scalarText(this.value)] : []
         const data = new FormData()
