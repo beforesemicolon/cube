@@ -3,8 +3,12 @@ import assert from 'node:assert/strict'
 import {componentEntries} from './component-entries.js'
 import {studioBoardItems,studioDefinitions,studioDesignReferences} from '../components/studio/catalog.js'
 for(const {path,name,className}of componentEntries){
-    await access(`components/${path}/${className}Base.ts`)
-    assert.match(await readFile(`components/${path}/index.ts`,'utf8'),new RegExp(`register\\('cb-${name}'`))
+    const baseSource=await readFile(`components/${path}/${className}Base.ts`,'utf8')
+    const componentSource=await readFile(`components/${path}/index.ts`,'utf8')
+    assert.match(componentSource,new RegExp(`register\\('cb-${name}'`))
+    assert.match(componentSource,new RegExp(`class ${className} extends ${className}Base`),`${className} must inherit its component base`)
+    assert.match(baseSource,new RegExp(`class ${className}Base(?:<[^\\n]+>)? extends (?:[A-Za-z]+Base|Component)(?:<[^\\n]+>)?`),`${className}Base must inherit Component or a named family base`)
+    assert.doesNotMatch(baseSource,/UIComponent|StudioComponentBase|FormFieldBase/,`${className}Base uses a retired hierarchy layer`)
 }
 for(const {category,name,className}of studioDefinitions){
     const source=await readFile(`components/${category}/${name}/${className}Base.ts`,'utf8')

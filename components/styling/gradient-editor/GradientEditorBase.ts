@@ -1,5 +1,5 @@
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
-import { FormFieldBase, type FormFieldProps } from '../../form/FormFieldBase.js'
+import { FormControlBase, type FormControlProps } from '../../form/FormControlBase.js'
 import { normalizeColor, parseHexColor } from '../color-picker/color.js'
 import {
     defaultGradientStops, normalizeGradientModel, normalizeGradientStops, parseGradient, serializeGradient,
@@ -7,7 +7,7 @@ import {
     type GradientStopInput, type GradientType,
 } from './gradient.js'
 
-export interface GradientEditorProps extends FormFieldProps {
+export interface GradientEditorProps extends FormControlProps {
     value?: string
     type?: GradientType
     angle?: number
@@ -69,9 +69,9 @@ export interface GradientChangeDetail extends GradientModel {
 }
 
 /** Renderer-independent CSS gradient model and stop editing behavior. */
-export abstract class GradientEditorBase extends FormFieldBase<GradientEditorProps> {
+export abstract class GradientEditorBase extends FormControlBase<GradientEditorProps> {
     static observedAttributes = [
-        ...FormFieldBase.observedAttributes, 'value', 'type', 'angle', 'shape', 'extent', 'position', 'stops', 'allow-alpha', 'allow-sampler', 'swatches',
+        ...FormControlBase.observedAttributes, 'value', 'type', 'angle', 'shape', 'extent', 'position', 'stops', 'allow-alpha', 'allow-sampler', 'swatches',
         'type-label', 'linear-label', 'radial-label', 'angle-label', 'shape-label', 'circle-label', 'ellipse-label', 'extent-label',
         'closest-side-label', 'closest-corner-label', 'farthest-side-label', 'farthest-corner-label', 'position-label',
         'top-left-label', 'top-label', 'top-right-label', 'left-label', 'center-label', 'right-label', 'bottom-left-label', 'bottom-label', 'bottom-right-label',

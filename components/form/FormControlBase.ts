@@ -1,8 +1,8 @@
 import { Component, type ComponentProps } from '../core/Component.js'
 import { bool, text, scalarText } from '../core/value.js'
-export interface FormFieldProps extends ComponentProps { name?:string; required?:boolean; readOnly?:boolean; errorText?:string }
-/** Form association, validation, reset and fieldset disabling shared by all input renderers. */
-export abstract class FormFieldBase<P extends FormFieldProps=FormFieldProps> extends Component<P> {
+export interface FormControlProps extends ComponentProps { name?:string; required?:boolean; readOnly?:boolean; errorText?:string }
+/** Form association, validation, reset, and fieldset disabling shared by form controls. */
+export abstract class FormControlBase<P extends FormControlProps=FormControlProps> extends Component<P> {
     static formAssociated=true
     static observedAttributes=[...Component.observedAttributes,'name','required','read-only','error-text']
     name='';required=false;readOnly=false;errorText=''

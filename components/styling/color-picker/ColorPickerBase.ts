@@ -1,9 +1,9 @@
 import { bool, finite } from '../../core/value.js'
-import { FormFieldBase, type FormFieldProps } from '../../form/FormFieldBase.js'
+import { FormControlBase, type FormControlProps } from '../../form/FormControlBase.js'
 import { colorToHex, normalizeColor, parseHexColor, type HSVAColor } from './color.js'
 import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength } from '../../core/popup.js'
 
-export interface ColorPickerProps extends FormFieldProps, PopupConstraintProps {
+export interface ColorPickerProps extends FormControlProps, PopupConstraintProps {
     value?: string
     native?: boolean
     open?: boolean
@@ -43,9 +43,9 @@ export interface ColorPickerSwatchDetail {
 }
 
 /** Renderer-independent color state, form behavior and cancelable interactions. */
-export abstract class ColorPickerBase extends FormFieldBase<ColorPickerProps> {
+export abstract class ColorPickerBase extends FormControlBase<ColorPickerProps> {
     static observedAttributes = [
-        ...FormFieldBase.observedAttributes, 'value', 'native', 'open', 'allow-alpha', 'allow-sampler', 'swatches',
+        ...FormControlBase.observedAttributes, 'value', 'native', 'open', 'allow-alpha', 'allow-sampler', 'swatches',
         'recent-colors', 'max-recent', 'hue-label', 'saturation-label', 'value-label', 'alpha-label', 'red-label',
         'green-label', 'blue-label', 'hex-label', 'plane-label', 'sampler-label', 'close-label', 'swatches-label',
         'add-swatch-label', 'remove-swatch-label', 'transparent-label',

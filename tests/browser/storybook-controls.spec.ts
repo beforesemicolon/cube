@@ -31,6 +31,7 @@ test('every public component exposes controls and initialized args for every rea
         const maskedArgs = storyArgsFor('cb-masked-input', {})
         const cardControls = controlsFor('cb-card')
         const badgeControls = controlsFor('cb-badge')
+        const comboboxControls = controlsFor('cb-combobox')
         const fieldProperties = ['helpText', 'details', 'detailsLabel', 'optionalLabel', 'invalid', 'success', 'successText']
         return {
             missingControls,
@@ -42,6 +43,8 @@ test('every public component exposes controls and initialized args for every rea
             cardProperties: Object.keys(cardControls),
             cardCategories: Object.fromEntries(Object.entries(cardControls).map(([property, definition]) => [property, definition.table.category])),
             badgeHasStatus: 'status' in badgeControls,
+            comboboxProperties: Object.keys(comboboxControls),
+            comboboxCategories: Object.fromEntries(Object.entries(comboboxControls).map(([property, definition]) => [property, definition.table.category])),
         }
     })
     expect(audit.missingControls).toEqual([])
@@ -62,4 +65,10 @@ test('every public component exposes controls and initialized args for every rea
         size: 'Component',
     })
     expect(audit.badgeHasStatus).toBe(false)
+    expect(audit.comboboxCategories.name).toBe('Form Control family')
+    expect(audit.comboboxCategories.helpText).toBe('Field wrapper')
+    expect(audit.comboboxCategories.label).toBe('Component')
+    expect(audit.comboboxProperties.indexOf('options')).toBeLessThan(audit.comboboxProperties.indexOf('name'))
+    expect(audit.comboboxProperties.indexOf('name')).toBeLessThan(audit.comboboxProperties.indexOf('helpText'))
+    expect(audit.comboboxProperties.indexOf('helpText')).toBeLessThan(audit.comboboxProperties.indexOf('label'))
 })

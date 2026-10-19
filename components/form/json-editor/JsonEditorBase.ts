@@ -1,11 +1,11 @@
-import { FormFieldBase, type FormFieldProps } from '../FormFieldBase.js'
+import { FormControlBase, type FormControlProps } from '../FormControlBase.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 import { SourceValueController } from '../source-value.js'
 
 export type JsonPrimitive = string | number | boolean | null
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
 export type JsonValidator = (value: JsonValue) => string
-export interface JsonEditorProps extends FormFieldProps {
+export interface JsonEditorProps extends FormControlProps {
     value?: string | JsonValue
     indent?: number
     validator?: JsonValidator
@@ -27,9 +27,9 @@ function isJsonValue(value: unknown): value is JsonValue {
 }
 
 /** JSON parsing, formatting and schema-adapter validation independent from rendering. */
-export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps> extends FormFieldBase<P> {
+export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps> extends FormControlBase<P> {
     static observedAttributes = [
-        ...FormFieldBase.observedAttributes, 'value', 'indent', 'format-label', 'valid-label', 'invalid-label', 'placeholder',
+        ...FormControlBase.observedAttributes, 'value', 'indent', 'format-label', 'valid-label', 'invalid-label', 'placeholder',
         'line-numbers', 'wrap', 'position-label',
     ]
     declare value: string | JsonValue

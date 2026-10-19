@@ -1,9 +1,9 @@
-import { FormFieldBase, type FormFieldProps } from '../FormFieldBase.js'
+import { FormControlBase, type FormControlProps } from '../FormControlBase.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 
 export interface EditableListItem { id: string; label: string; value: string; description?: string; disabled?: boolean }
 export type EditableListChangeReason = 'add' | 'edit' | 'remove' | 'reorder'
-export interface EditableListProps extends FormFieldProps {
+export interface EditableListProps extends FormControlProps {
     items?: readonly EditableListItem[]
     minItems?: number
     maxItems?: number
@@ -38,9 +38,9 @@ function normalizedItems(value: readonly EditableListItem[]): EditableListItem[]
 }
 
 /** Editable collection behavior with form submission, validation and reorder operations. */
-export abstract class EditableListBase<P extends EditableListProps = EditableListProps> extends FormFieldBase<P> {
+export abstract class EditableListBase<P extends EditableListProps = EditableListProps> extends FormControlBase<P> {
     static observedAttributes = [
-        ...FormFieldBase.observedAttributes, 'items', 'min-items', 'max-items', 'allow-reorder', 'placeholder', 'add-label',
+        ...FormControlBase.observedAttributes, 'items', 'min-items', 'max-items', 'allow-reorder', 'placeholder', 'add-label',
         'edit-label', 'save-label', 'cancel-label', 'remove-label', 'move-up-label', 'move-down-label', 'empty-label',
         'input-label', 'minimum-items-error', 'maximum-items-error',
     ]

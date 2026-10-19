@@ -1,10 +1,10 @@
-import { FormFieldBase, type FormFieldProps } from '../FormFieldBase.js'
+import { FormControlBase, type FormControlProps } from '../FormControlBase.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 import { SourceValueController } from '../source-value.js'
 
 export type CodeEditorValue = string | number | boolean | null | readonly CodeEditorValue[] | { readonly [key: string]: CodeEditorValue }
 
-export interface CodeEditorProps extends FormFieldProps {
+export interface CodeEditorProps extends FormControlProps {
     value?: CodeEditorValue
     language?: string
     placeholder?: string
@@ -18,9 +18,9 @@ export interface CodeEditorProps extends FormFieldProps {
 }
 
 /** Form-associated source editing behavior, including indentation and cursor status. */
-export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps> extends FormFieldBase<P> {
+export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps> extends FormControlBase<P> {
     static observedAttributes = [
-        ...FormFieldBase.observedAttributes, 'value', 'language', 'placeholder', 'line-numbers', 'wrap', 'tab-size',
+        ...FormControlBase.observedAttributes, 'value', 'language', 'placeholder', 'line-numbers', 'wrap', 'tab-size',
         'min-lines', 'max-lines', 'position-label', 'submit-label',
     ]
     declare value: CodeEditorValue

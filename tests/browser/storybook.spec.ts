@@ -220,6 +220,21 @@ test('built Storybook: controls follow component, family, and global ownership',
     for (const property of ['value', 'items', 'actionLabel', 'label', 'accessibleLabel', 'description', 'disabled', 'size']) {
         await expect(panel.getByText(property, { exact: true }).first()).toBeVisible()
     }
+
+    await page.goto('http://127.0.0.1:6006/?path=/story/form--combobox&addonPanel=storybook/controls/panel')
+    const formPanel = page.getByRole('tabpanel', { name: /Controls/ })
+    const comboboxGroup = formPanel.getByText('Combobox', { exact: true }).first()
+    const familyGroup = formPanel.getByText('Form Control family', { exact: true }).first()
+    const wrapperGroup = formPanel.getByText('Field wrapper', { exact: true }).first()
+    const globalGroup = formPanel.getByText('Component', { exact: true }).first()
+    await expect(comboboxGroup).toBeVisible({ timeout: 20_000 })
+    await expect(familyGroup).toBeVisible()
+    await expect(wrapperGroup).toBeVisible()
+    await expect(globalGroup).toBeVisible()
+    const boxes = await Promise.all([comboboxGroup, familyGroup, wrapperGroup, globalGroup].map(group => group.boundingBox()))
+    expect(boxes[0]?.y).toBeLessThan(boxes[1]?.y ?? 0)
+    expect(boxes[1]?.y).toBeLessThan(boxes[2]?.y ?? 0)
+    expect(boxes[2]?.y).toBeLessThan(boxes[3]?.y ?? 0)
 })
 
 test('built Storybook: every component category inherits the global appearance', async ({ page }) => {

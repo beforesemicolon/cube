@@ -1,4 +1,5 @@
 export * from './slider/index.js'
+export * from './FormControlBase.js'
 export * from './InputBase.js'
 export * from './NumericInputBase.js'
 export * from './ChoiceControlBase.js'
