@@ -1,4 +1,4 @@
-import { html, type Template } from '../../core/runtime.js'
+import { css as componentStyles, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { PopupController, type PopupPlacement } from '../../core/popup.js'
 import { PopoverBase } from './PopoverBase.js'
@@ -7,12 +7,14 @@ const css = editorCSS + `
 [part~=popover]{z-index:var(--z-index-popover,50);inline-size:var(--component-popover-width,max-content);box-sizing:border-box;overflow:auto;padding:var(--spacing-md,12px);border:1px solid var(--color-separator);border-radius:var(--radius-md);background:var(--color-surface-raised,var(--color-surface));color:var(--color-foreground);box-shadow:var(--component-popover-shadow,0 12px 32px color-mix(in srgb,var(--color-foreground) 18%,transparent))}
 `;
 export class Popover extends PopoverBase {
+    stylesheet = componentStyles`${css}`
+
     private popup?: PopupController
     render(): Template {
-        return html`<style part="styles">${css}</style>
-            <span ref="anchor" part="anchor"
+        return html`
+            <span ref="anchor" part="anchor" onslotchange="${this.syncTrigger}"
                 onclick="${this.toggle}">
-                <slot ref="trigger" name="trigger" part="trigger" onslotchange="${this.syncTrigger}"></slot>
+                <slot ref="trigger" name="trigger" part="trigger"></slot>
             </span>
             <section ref="panel" part="popover panel" hidden role="dialog" aria-label="${this.accessibleName}">
                 <slot part="content"></slot>

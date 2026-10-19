@@ -2,7 +2,7 @@
 export class RovingFocus {
     private buffer = ''; private typedAt = 0
     constructor(private items:()=>HTMLElement[], private orientation:()=>string=()=> 'horizontal', private selected?:(index:number)=>void) {}
-    private target(node:HTMLElement):HTMLElement{return node.hasAttribute('data-semantic-host')?node:node.shadowRoot?.querySelector<HTMLElement>('[part~=control]')??node}
+    private target(node:HTMLElement):HTMLElement{return node}
     reset(preferred=0):void { const list=this.items(); const index=list[preferred]?preferred:0;list.forEach((n,i)=>this.target(n).tabIndex=i===index?0:-1) }
     focus(index:number):void { const list=this.items();if(!list[index])return;this.reset(index);this.target(list[index]).focus();this.selected?.(index) }
     keydown(event:KeyboardEvent):void {

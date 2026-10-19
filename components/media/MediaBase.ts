@@ -1,5 +1,5 @@
 import { Component, type CommonProps } from '../core/Component.js'
-import { bool, finite, mediaURL, text } from '../core/value.js'
+import { finite, mediaURL } from '../core/value.js'
 import { MediaController, type PlaybackState } from './controller.js'
 export interface CaptionTrack { src?: string; language?: string; label?: string; default?: boolean }
 export interface MediaProps extends CommonProps {

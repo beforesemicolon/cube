@@ -1,7 +1,8 @@
-import { type Template, html, repeat, state } from '../../core/runtime.js';
+import { elementRefs } from '../../core/refs.js'
+import { when, is, isNot, and, or, pick, css as componentStyles, type Template, html, repeat, state } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { uid } from '../../core/id.js';
-import type { Button } from '../../action/button/index.js';
+
 import { PopupController } from '../../core/popup.js';
 import { bool, clamp, finite, text } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
@@ -72,6 +73,8 @@ const channels: readonly ChannelDefinition[] = [
     { name: 'blue', min: 0, max: 255, step: 1 },
 ];
 export class ColorPicker extends ColorPickerBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly pickerId=uid('cb-color-picker');
     private readonly hexDraft=state<string|null>(null);
     private node(name: string): HTMLElement | undefined { const node=this.refs[name]?.[0]; return node instanceof HTMLElement ? node : undefined; }
@@ -97,25 +100,25 @@ export class ColorPicker extends ColorPickerBase {
     private paletteColors = (): readonly string[] => { return [...(bool(this.allowAlpha) ? ['#00000000'] : []),...this.palette()].filter((color,index,colors) => colors.indexOf(color)===index); }
     private removable(color: string): boolean { return color !== '#00000000' && this.palette().includes(color); }
     render(): Template {
-        const blocked=(): boolean => this.unavailable || bool(this.readOnly);
+        const blocked = or(() => this.unavailable, this.props.readOnly);
         const channelFields=(rgb: boolean): Template => html`${repeat(() => channels.filter(channel => ['red','green','blue'].includes(channel.name) === rgb), definition => html`
-            <label part=${`channel-field ${definition.name}-field`} hidden=${() => definition.name === 'alpha' && !bool(this.allowAlpha)}>
+            <label part=${`channel-field ${definition.name}-field`} hidden=${and(is(definition.name, 'alpha'), isNot(this.props.allowAlpha))}>
                 <span part="channel-label">${() => this.channelLabel(definition.name)}</span>
                 <input part=${`channel-input ${definition.name}-input control`} type="number" min=${definition.min} max=${definition.max} step=${definition.step} inputmode="decimal"
                     aria-label=${() => this.channelLabel(definition.name)} value=${() => this.channelValue(definition.name)} disabled=${blocked}
                     oninput=${(event: Event) => { if(event.currentTarget instanceof HTMLInputElement) this.updateFromChannel(definition.name,event.currentTarget.valueAsNumber,false,event); }}>
             </label>`,{key:definition=>definition.name})}`;
-        return html`<style part="styles">${css}</style><div part="root">
+        return html`<div part="root">
             <cb-button part="trigger control" exportparts="control:trigger-control,label:trigger-label,button-label:trigger-label,icon:trigger-icon,description:trigger-description,control:control-control,label:control-label,button-label:control-label,icon:control-icon,description:control-description" ref="trigger" data-bare data-semantic-host id=${this.pickerId}
-                disabled=${blocked} hidden=${() => bool(this.native)} accessible-label=${this.accessibleName}
-                aria-haspopup="dialog" aria-controls=${`${this.pickerId}-popup`} aria-expanded=${() => bool(this.open) && !bool(this.native)}
+                disabled=${blocked} hidden=${this.props.native} accessible-label=${this.accessibleName}
+                aria-haspopup="dialog" aria-controls=${`${this.pickerId}-popup`} aria-expanded=${when(and(this.props.open, isNot(this.props.native)), 'true', 'false')}
                 aria-description=${this.descriptionText} aria-invalid=${() => this.validationError() || null}
                 onaction=${(event: Event) => { event.stopPropagation(); this.setOpen(!bool(this.open),event); }}>
                 <span part="trigger-swatch" style=${() => `--cb-selected-color:${colorToHex(this.color())}`}></span>
             </cb-button>
             <input part="native control" ref="native" type="color" id=${`${this.pickerId}-native`}
-                value=${() => colorToHex(this.color(),false)} disabled=${blocked} required=${() => bool(this.required) && !bool(this.readOnly)}
-                hidden=${() => !bool(this.native)} aria-label=${this.accessibleName} aria-description=${this.descriptionText} aria-invalid=${() => this.validationError() || null}
+                value=${() => colorToHex(this.color(),false)} disabled=${blocked} required=${and(this.props.required, isNot(this.props.readOnly))}
+                hidden=${isNot(this.props.native)} aria-label=${this.accessibleName} aria-description=${this.descriptionText} aria-invalid=${() => this.validationError() || null}
                 oninput=${(event: Event) => { const color=parseHexColor(this.nativeControl?.value ?? ''); if(color) this.changeColor(color,event); }}
                 onblur=${() => { this.validationShown=true; }}>
             <section part="popup" ref="popup" id=${`${this.pickerId}-popup`} role="dialog" tabindex="-1" hidden aria-label=${this.accessibleName}
@@ -128,7 +131,7 @@ export class ColorPicker extends ColorPickerBase {
                 <div part="slider-field hue-slider-field"><input part="slider hue-slider control" ref="hue" type="range" min="0" max="360" step="1"
                     value=${() => Math.round(this.color().hue)} aria-label=${this.props.hueLabel} disabled=${blocked}
                     oninput=${(event: Event) => this.updateHue(false,event)}></div>
-                <div part="slider-field alpha-slider-field" hidden=${() => !bool(this.allowAlpha)}>
+                <div part="slider-field alpha-slider-field" hidden=${isNot(this.props.allowAlpha)}>
                     <input part="slider alpha-slider control" ref="alpha" type="range" min="0" max="100" step="1"
                         value=${() => Math.round(this.color().alpha*100)} aria-label=${this.props.alphaLabel} disabled=${blocked}
                         oninput=${(event: Event) => this.updateAlpha(false,event)}></div>
@@ -138,16 +141,16 @@ export class ColorPicker extends ColorPickerBase {
                         oninput=${(event: Event) => { this.hexDraft[1](this.hexInput?.value ?? ''); this.updateFromHex(false,event); }}
                         onblur=${() => this.hexDraft[1](null)}></label>
                     <cb-button part="sampler" exportparts="control:sampler-control,label:sampler-label,button-label:sampler-label,icon:sampler-icon,description:sampler-description" icon-only icon="eye" variant="ghost" size="sm" accessible-label=${this.props.samplerLabel}
-                        hidden=${() => !bool(this.allowSampler) || !this.samplerLabel || !this.samplerAvailable()} disabled=${blocked}
+                        hidden=${or(isNot(this.props.allowSampler), isNot(this.props.samplerLabel), isNot(this.samplerAvailable))} disabled=${blocked}
                         onaction=${(event: Event) => { event.stopPropagation(); void this.sample(event); }}></cb-button>
-                    <cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" icon-only icon="close" variant="ghost" size="sm" accessible-label=${this.props.closeLabel} hidden=${() => !this.closeLabel}
+                    <cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" icon-only icon="close" variant="ghost" size="sm" accessible-label=${this.props.closeLabel} hidden=${isNot(this.props.closeLabel)}
                         onaction=${(event: Event) => { event.stopPropagation(); if(this.setOpen(false,event)) this.trigger?.focus(); }}></cb-button>
                 </div><div part="channels hsv-channels">${channelFields(false)}</div><div part="channels rgb-channels">${channelFields(true)}</div>
-                <div part="palette-group" hidden=${() => !this.paletteColors().length && !this.addSwatchLabel}>
-                    <span part="palette-label label" hidden=${() => !this.swatchesLabel}>${this.props.swatchesLabel}</span>
+                <div part="palette-group" hidden=${and(isNot(pick(this.paletteColors, "length")), isNot(this.props.addSwatchLabel))}>
+                    <span part="palette-label label" hidden=${isNot(this.props.swatchesLabel)}>${this.props.swatchesLabel}</span>
                     <div part="palette" ref="palette" role="group" aria-label=${() => this.swatchesLabel || null}>
-                        ${repeat(this.paletteColors, color => html`<cb-button part="swatch" exportparts="control:swatch-control,label:swatch-label,button-label:swatch-label,icon:swatch-icon,description:swatch-description" data-bare data-semantic-host data-color=${color}
-                            aria-pressed=${() => color === this.normalizedValue()} disabled=${blocked} data-removable=${() => this.removable(color) ? '' : null}
+                        ${repeat(this.paletteColors, color => html`<cb-button ref="swatches" part="swatch" exportparts="control:swatch-control,label:swatch-label,button-label:swatch-label,icon:swatch-icon,description:swatch-description" data-bare data-semantic-host data-color=${color}
+                            aria-pressed=${when(() => color === this.normalizedValue(), 'true', 'false')} disabled=${blocked} data-removable=${() => this.removable(color) ? '' : null}
                             accessible-label=${() => { const label=color === '#00000000' ? this.transparentLabel || color : color; return this.swatchesLabel ? `${this.swatchesLabel}: ${label}` : label; }}
                             title=${() => color === '#00000000' ? this.transparentLabel || color : color}
                             aria-keyshortcuts=${() => this.removable(color) ? 'Delete Backspace' : null}
@@ -159,7 +162,7 @@ export class ColorPicker extends ColorPickerBase {
                                 if(this.removeSwatch(color,event)) { event.preventDefault(); queueMicrotask(() => this.focusPaletteItem(Math.max(0,index))); }
                             }}><span part="swatch-preview"><span part="swatch-color" style=${`--cb-swatch-color:${color}`}></span></span></cb-button>`,{key:color=>color})}
                         <cb-button part="add-swatch" exportparts="control:add-swatch-control,label:add-swatch-label,button-label:add-swatch-label,icon:add-swatch-icon,description:add-swatch-description" ref="addSwatch" icon-only icon="plus" variant="outline" size="sm"
-                            accessible-label=${this.props.addSwatchLabel} hidden=${() => !this.addSwatchLabel} disabled=${blocked}
+                            accessible-label=${this.props.addSwatchLabel} hidden=${isNot(this.props.addSwatchLabel)} disabled=${blocked}
                             onpointerdown=${(event: PointerEvent) => event.preventDefault()}
                             onaction=${(event: Event) => { event.stopPropagation(); const value=this.normalizedValue(); if(this.addSwatch(value,event)) queueMicrotask(() => this.focusSwatch(value)); }}></cb-button>
                     </div></div>
@@ -254,18 +257,18 @@ export class ColorPicker extends ColorPickerBase {
     }
     private focusSwatch(color: string): void {
         const normalized = colorToHex(parseHexColor(color) ?? this.color());
-        Array.from(this.paletteNode?.querySelectorAll<Button>('cb-button[part~=swatch]') ?? [])
+        elementRefs(this.refs.swatches)
             .find(button => button.dataset.color === normalized)?.focus();
     }
     private focusPaletteItem(index: number): void {
-        const buttons = Array.from(this.paletteNode?.querySelectorAll<Button>('cb-button[part~=swatch]') ?? []);
+        const buttons = elementRefs(this.refs.swatches);
         const button = buttons[Math.min(index, Math.max(0, buttons.length - 1))];
         if (button)
             button.focus();
         else if (!this.addSwatchButton?.hidden)
             this.addSwatchButton?.focus();
     }
-    private samplerAvailable(): boolean { return typeof (this.ownerDocument.defaultView as ColorSamplerWindow | null)?.EyeDropper === 'function'; }
+    private samplerAvailable = (): boolean => { return typeof (this.ownerDocument.defaultView as ColorSamplerWindow | null)?.EyeDropper === 'function'; }
     private async sample(originalEvent: Event): Promise<void> {
         const Sampler = (this.ownerDocument.defaultView as ColorSamplerWindow | null)?.EyeDropper;
         if (!Sampler || !bool(this.allowSampler))

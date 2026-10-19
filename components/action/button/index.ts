@@ -1,7 +1,9 @@
-import { type Template } from '../../core/runtime.js'
+import { css as componentStyles, type Template } from '../../core/runtime.js'
 import { ButtonBase } from './ButtonBase.js';
-import { buttonView } from './view.js';
+import {  buttonView , buttonCSS } from './view.js';
 export class Button extends ButtonBase {
+    stylesheet = componentStyles`${buttonCSS}`
+
     protected view?: ReturnType<typeof buttonView>;
     render(): Template { this.view = buttonView(this, e => this.activate(e)); return this.view.root; }
     protected mount(): void {

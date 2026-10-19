@@ -19,7 +19,7 @@ export abstract class FilePickerBase extends FieldControlBase<FilePickerProps, F
     files: readonly File[] = []
     readonly componentName = 'file-picker'
     readonly componentKind: StudioKind = 'file'
-    protected fieldElement(): HTMLInputElement | undefined { return this.contentRoot.querySelector<HTMLInputElement>('input[type="file"][part~="control"]') ?? undefined }
+    protected fieldElement(): HTMLInputElement | undefined { return this.refs.control?.[0] instanceof HTMLInputElement ? this.refs.control[0] : undefined }
     protected captureValue(): FilePickerValue { return Array.isArray(this.value) ? [...this.value] : this.value }
     setFiles(files: readonly File[], originalEvent?: Event): boolean {
         const next = this.multiple ? [...files] : files.slice(0, 1)

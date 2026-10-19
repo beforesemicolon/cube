@@ -1,4 +1,4 @@
-import { html, type Template } from '../../core/runtime.js'
+import { css as componentStyles, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { scalarText } from '../../core/value.js'
 import { SidebarBase } from './SidebarBase.js'
@@ -14,9 +14,11 @@ const css = editorCSS + `
 :host([data-placement=start]) [part~=sidebar]{border-start-start-radius:0;border-end-start-radius:0}
 `;
 export class Sidebar extends SidebarBase {
+    stylesheet = componentStyles`${css}`
+
     private collapsed = (): boolean => { return this.isCollapsible() && !this.isExpanded() }
     render(): Template {
-        return html`<style part="styles">${css}</style>
+        return html`
             <aside part="sidebar panel" aria-label="${this.accessibleName}">
                 <cb-panel-header part="header" exportparts="header:header,heading:heading,actions:actions,toggle:toggle,toggle-control:toggle-control"
                     label="${() => this.collapsed() ? '' : scalarText(this.label)}"

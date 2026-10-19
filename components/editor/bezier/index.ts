@@ -1,8 +1,8 @@
-import { type Template, html, repeat } from '../../core/runtime.js';
+import { isNot, css as componentStyles, type Template, html, repeat } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { finite } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
-import { BezierBase, type BezierValue } from './BezierBase.js';
+import { BezierBase } from './BezierBase.js';
 const css = editorCSS + `
 :host{display:block;inline-size:min(100%,var(--component-bezier-width,560px));container-type:inline-size}
 [part~=root]{display:grid;gap:var(--spacing-md,12px);padding:var(--spacing-md,12px);border:1px solid ${v('--color-separator')};border-radius:var(--radius-lg,12px);background:${v('--color-surface')}}
@@ -33,13 +33,15 @@ interface DragState {
     readonly handle: SVGCircleElement;
 }
 export class Bezier extends BezierBase {
+    stylesheet = componentStyles`${css}`
+
     private get graph(): SVGSVGElement | undefined { const node=this.refs.graph?.[0]; return node instanceof SVGSVGElement ? node : undefined; }
     private drag?: DragState;
     render(): Template {
         const coordinate = (point: 1 | 2,axis: 'x' | 'y'): number => { const value=this.curve(); return point === 1 ? axis === 'x' ? value.x1 : value.y1 : axis === 'x' ? value.x2 : value.y2; };
         const position = (point: 1 | 2): {x:number;y:number} => this.point(coordinate(point,'x'),coordinate(point,'y'));
-        return html`<style part="styles">${css}</style><section part="root editor"><header part="header">
-            <span part="label" hidden=${() => !this.displayLabel()}>${this.displayLabel}</span><div part="actions">
+        return html`<section part="root editor"><header part="header">
+            <span part="label" hidden=${isNot(this.displayLabel)}>${this.displayLabel}</span><div part="actions">
                 <cb-button part="play" exportparts="control:play-control,label:play-label,button-label:play-label,icon:play-icon,description:play-description" icon-only icon=${() => this.playing ? 'pause' : 'play'} variant="ghost" size="sm"
                     accessible-label=${() => this.text(this.playing ? 'pauseLabel' : 'playLabel')} disabled=${() => this.unavailable}
                     onaction=${(event: Event) => { event.stopPropagation(); this.setPlaying(!this.playing,event); }}></cb-button>
@@ -77,7 +79,7 @@ export class Bezier extends BezierBase {
                     }} onkeydown=${(event: KeyboardEvent) => this.keyHandle(2,event)}></circle>
             </svg><div part="fields">
                 ${repeat(() => [{point:1,axis:'x',key:'x1Label'},{point:1,axis:'y',key:'y1Label'},{point:2,axis:'x',key:'x2Label'},{point:2,axis:'y',key:'y2Label'}] as const, field => html`
-                    <label part=${`field point-${field.point}-${field.axis}`}><span part="field-label" hidden=${() => !this.text(field.key)}>${() => this.text(field.key)}</span>
+                    <label part=${`field point-${field.point}-${field.axis}`}><span part="field-label" hidden=${isNot(() => this.text(field.key))}>${() => this.text(field.key)}</span>
                         <cb-number-input part=${`field-control point-${field.point}-${field.axis}-control`} accessible-label=${() => this.text(field.key)}
                             min=${field.axis === 'x' ? 0 : -1} max=${field.axis === 'x' ? 1 : 2} step="0.01" value=${() => coordinate(field.point,field.axis)} disabled=${() => this.unavailable}
                             onchange=${(event: CustomEvent<{value:string|number}>) => {

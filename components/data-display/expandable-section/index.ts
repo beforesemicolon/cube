@@ -1,4 +1,4 @@
-import { html, state, type Template } from '../../core/runtime.js';
+import { when, isNot, css as componentStyles, html, state, type Template } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { uid } from '../../core/id.js';
 import { bool, scalarText } from '../../core/value.js';
@@ -38,33 +38,35 @@ button[part~=trigger]:hover:not(:disabled),button[part~=trigger]:active:not(:dis
 @container(max-width:480px){[part~=root]{grid-template-columns:minmax(0,1fr)}[part~=header-extras]{grid-column:1;padding:0 0 var(--spacing-sm,8px) calc(var(--component-icon-size,16px) + var(--spacing-sm,8px))}}
 `;
 export class ExpandableSection extends ExpandableSectionBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly triggerId = uid('cb-expandable-trigger');
     private readonly panelId = uid('cb-expandable-panel');
     private readonly extrasVisible = state(false);
     render(): Template {
-        return html`<style part="styles">${css}</style>
+        return html`
             <section part="root" data-expanded=${() => bool(this.expanded) ? '' : null} data-variant=${this.resolvedVariant}>
                 <cb-button part="header trigger" data-bare data-semantic-host variant="ghost" id=${this.triggerId}
                     exportparts="control:trigger-control,button-label:trigger-label"
-                    disabled=${() => bool(this.disabled)} aria-disabled=${() => bool(this.disabled) || null}
+                    disabled=${this.props.disabled} aria-disabled=${() => bool(this.disabled) || null}
                     accessible-label=${() => [this.label,this.counter,this.description,this.accessibleLabel].map(value => scalarText(value)).filter(Boolean).join(' ')}
-                    aria-controls=${this.panelId} aria-expanded=${() => bool(this.expanded)}
+                    aria-controls=${this.panelId} aria-expanded=${when(this.props.expanded, 'true', 'false')}
                     onaction=${(event: Event) => { event.stopPropagation(); event.preventDefault(); this.toggle(event); }}>
                     <cb-icon part="icon" name=${() => bool(this.expanded) ? 'down' : 'right'} decorative></cb-icon>
                     <span part="heading" role="heading" aria-level=${this.resolvedHeadingLevel}
                         aria-label=${() => scalarText(this.label) || scalarText(this.accessibleLabel) || null}>
                         <span part="label-row"><span part="label">${this.props.label}</span>
-                            <span part="counter" hidden=${() => !scalarText(this.counter)}>${this.props.counter}</span></span>
-                        <span part="description" hidden=${() => !scalarText(this.description)}>${this.props.description}</span>
+                            <span part="counter" hidden=${isNot(this.props.counter)}>${this.props.counter}</span></span>
+                        <span part="description" hidden=${isNot(this.props.description)}>${this.props.description}</span>
                     </span>
                     <span part="accessible-action sr-only">${() => this.label && this.accessibleLabel !== this.label ? this.accessibleLabel : ''}</span>
                 </cb-button>
-                <div part="header-extras" hidden=${() => !this.extrasVisible[0]()}>
-                    <slot name="header-info" part="header-info" ref="extras" onslotchange=${this.syncExtras}></slot>
-                    <slot name="header-actions" part="header-actions" ref="extras" onslotchange=${this.syncExtras}></slot>
+                <div part="header-extras" hidden=${isNot(this.extrasVisible[0])} onslotchange=${this.syncExtras}>
+                    <slot name="header-info" part="header-info" ref="extras"></slot>
+                    <slot name="header-actions" part="header-actions" ref="extras"></slot>
                 </div>
                 <div part="panel" id=${this.panelId} role="region" aria-labelledby=${this.triggerId}
-                    hidden=${() => !bool(this.expanded)} inert=${() => !bool(this.expanded) ? '' : null}>
+                    hidden=${isNot(this.props.expanded)} inert=${() => !bool(this.expanded) ? '' : null}>
                     <slot part="content"></slot>
                 </div>
             </section>`;

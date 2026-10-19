@@ -1,4 +1,4 @@
-import { type Template, html } from '../../core/runtime.js';
+import { isNot, or, css as componentStyles, type Template, html } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { finite } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
@@ -24,10 +24,12 @@ interface PanState {
     moved: boolean;
 }
 export class Viewport extends ViewportBase {
+    stylesheet = componentStyles`${css}`
+
     private get surface(): HTMLElement | undefined { const node=this.refs.surface?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private pan?: PanState;
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="viewport canvas control" ref="surface" role="region"
+        return html`<div part="viewport canvas control" ref="surface" role="region"
             tabindex=${() => this.unavailable ? -1 : 0} aria-label=${this.accessibleName}
             aria-disabled=${() => this.unavailable || null} data-grid=${() => this.gridVisible() ? '' : null}
             onwheel=${(event: WheelEvent) => {
@@ -42,17 +44,17 @@ export class Viewport extends ViewportBase {
             onpointercancel=${this.endPan}
             onkeydown=${this.onKeydown}>
             <div part="world" style=${() => { const value=this.viewportState(); return `--cb-zoom:${value.zoom/100};--cb-pan-x:${value.x}px;--cb-pan-y:${value.y}px`; }}><slot part="content"></slot></div>
-            <div part="controls" hidden=${() => !this.controlsVisible()}>
+            <div part="controls" hidden=${isNot(this.controlsVisible)}>
                 <cb-button part="zoom-out" exportparts="control:zoom-out-control,label:zoom-out-label,button-label:zoom-out-label,icon:zoom-out-icon,description:zoom-out-description" icon-only icon="minus" variant="ghost" accessible-label=${() => this.text('zoomOutLabel')}
-                    disabled=${() => this.unavailable || this.viewportState().zoom <= this.normalizedZoom(this.minZoom)}
+                    disabled=${or(() => this.unavailable, () => this.viewportState().zoom <= this.normalizedZoom(this.minZoom))}
                     onaction=${(event: Event) => { event.stopPropagation(); this.zoomBy(-Math.abs(finite(this.zoomStep,10)),event); }}></cb-button>
                 <cb-button part="reset" exportparts="control:reset-control,label:reset-label,button-label:reset-label,icon:reset-icon,description:reset-description" icon-only icon="reset" variant="ghost" accessible-label=${() => this.text('resetLabel')} disabled=${() => this.unavailable}
                     onaction=${(event: Event) => { event.stopPropagation(); this.reset(event); }}></cb-button>
                 <output part="status">${() => `${Math.round(this.viewportState().zoom)}%`}</output>
                 <cb-button part="zoom-in" exportparts="control:zoom-in-control,label:zoom-in-label,button-label:zoom-in-label,icon:zoom-in-icon,description:zoom-in-description" icon-only icon="plus" variant="ghost" accessible-label=${() => this.text('zoomInLabel')}
-                    disabled=${() => this.unavailable || this.viewportState().zoom >= this.normalizedZoom(this.maxZoom)}
+                    disabled=${or(() => this.unavailable, () => this.viewportState().zoom >= this.normalizedZoom(this.maxZoom))}
                     onaction=${(event: Event) => { event.stopPropagation(); this.zoomBy(Math.abs(finite(this.zoomStep,10)),event); }}></cb-button>
-            </div><output part="position" hidden=${() => !this.positionText()}>${this.positionText}</output>
+            </div><output part="position" hidden=${isNot(this.positionText)}>${this.positionText}</output>
         </div>`;
     }
     private positionText = (): string => {

@@ -1,6 +1,6 @@
 import { FieldControlBase, type FieldControlProps } from '../FormControlBase.js'
 import { normalizeRange, type RangeOptions } from '../model.js'
-import { bool, finite } from '../../core/value.js'
+import { finite } from '../../core/value.js'
 export interface SliderProps extends FieldControlProps<number>,RangeOptions { valueText?:string; stacked?:boolean }
 export abstract class SliderBase extends FieldControlBase<SliderProps, number> {
     static observedAttributes=[...FieldControlBase.observedAttributes,'min','max','step','value','value-text','stacked']

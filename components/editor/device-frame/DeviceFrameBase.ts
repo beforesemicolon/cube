@@ -45,7 +45,7 @@ export abstract class DeviceFrameBase extends Component<DeviceFrameProps> {
         return [width, height]
     }
     protected chromeVisible(): boolean { return bool(this.showChrome, true) }
-    protected orientationControlVisible(): boolean { return bool(this.showOrientationControl, true) }
+    protected orientationControlVisible = (): boolean => { return bool(this.showOrientationControl, true) }
     protected text(name: 'orientationLabel' | 'screenLabel'): string { return scalarText(this[name]) }
 
     toggleOrientation(originalEvent?: Event): boolean {

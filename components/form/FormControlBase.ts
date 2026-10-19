@@ -75,7 +75,7 @@ export abstract class FormControlBase<P extends FormControlSharedProps=FormContr
         return true
     }
     protected get unavailable():boolean{return super.unavailable||this.disabledByForm[0]()}
-    controlUnavailable():boolean{return this.unavailable}
+    controlUnavailable = ():boolean=> {return this.unavailable}
     get form():HTMLFormElement|null{return this.internals?.form??null}
     get labels():NodeList|undefined{return this.internals?.labels}
     get willValidate():boolean{return this.internals?.willValidate??false}

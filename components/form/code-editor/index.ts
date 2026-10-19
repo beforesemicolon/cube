@@ -1,4 +1,4 @@
-import { html, state, unsafeHTML, type Template } from '../../core/runtime.js'
+import { css as componentStyles, pick, isNot, and, html, state, unsafeHTML, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { highlightCode } from '../../core/highlight.js'
 import { bool, scalarText } from '../../core/value.js'
@@ -24,7 +24,7 @@ const css = editorCSS + syntaxCSS + `
 :host([data-invalid]) [part~=shell]{border-color:var(--color-danger)}
 `;
 export class CodeEditor extends CodeEditorBase {
-    stylesheet = css
+    stylesheet = componentStyles`${css}`
     private readonly cursor = state({ line: 1, column: 1 })
     private get control(): HTMLTextAreaElement | undefined {
         const node = this.refs.control?.[0]
@@ -46,14 +46,14 @@ export class CodeEditor extends CodeEditorBase {
             return scalarText(this.positionLabel).replaceAll('{line}', String(cursor.line)).replaceAll('{column}', String(cursor.column))
         }
         return html`<div part="shell">
-            <div part="toolbar"><span part="language">${() => highlighted().language}</span><span part="position">${position}</span></div>
+            <div part="toolbar"><span part="language">${pick(highlighted, "language")}</span><span part="position">${position}</span></div>
             <div part="editor">
-                <pre ref="gutter" part="gutter" hidden="${() => !bool(this.lineNumbers)}">${() => Array.from({ length: Math.max(1, this.sourceText().split('\n').length) }, (_item, index) => String(index + 1)).join('\n')}</pre>
+                <pre ref="gutter" part="gutter" hidden="${isNot(this.props.lineNumbers)}">${() => Array.from({ length: Math.max(1, this.sourceText().split('\n').length) }, (_item, index) => String(index + 1)).join('\n')}</pre>
                 <div part="editing-layer">
                     <pre ref="highlight" part="highlight" aria-hidden="true">${() => highlighted().language === 'plaintext' ? this.sourceText() + '\n' : unsafeHTML(highlighted().html + '\n')}</pre>
                     <textarea ref="control" part="control" spellcheck="false" autocapitalize="off" autocomplete="off"
                         value="${this.sourceText}" placeholder="${this.props.placeholder}" disabled="${() => this.unavailable}"
-                        readonly="${() => bool(this.readOnly)}" required="${() => bool(this.required) && !bool(this.readOnly)}"
+                        readonly="${this.props.readOnly}" required="${and(this.props.required, isNot(this.props.readOnly))}"
                         aria-label="${this.accessibleName}" aria-invalid="${() => error() ? 'true' : null}"
                         aria-description="${() => [scalarText(this.description), error() ? this.validationMessage : ''].filter(Boolean).join(' ') || null}" style="--code-tab-size:${this.normalizedTabSize}"
                         oninput="${(event: Event) => { if (!this.setValue(this.control?.value ?? '', event) && this.control) this.control.value = this.sourceText() }}"

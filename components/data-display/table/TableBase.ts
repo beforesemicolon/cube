@@ -198,7 +198,7 @@ export abstract class TableBase extends Component<TableProps> {
 
     protected announcement = ''
 
-    protected itemList(): readonly TableRecord[] {
+    protected itemList = (): readonly TableRecord[] => {
         return Array.isArray(this.items) ? this.items.filter(item => dataRecord(item) !== null) : []
     }
 
@@ -237,7 +237,7 @@ export abstract class TableBase extends Component<TableProps> {
         return new Set(Array.isArray(this.collapsedGroupKeys) ? this.collapsedGroupKeys.map(String) : [])
     }
 
-    protected normalizedSelectionMode(): TableSelectionMode {
+    protected normalizedSelectionMode = (): TableSelectionMode => {
         return this.selectionMode === 'single' || this.selectionMode === 'multiple' ? this.selectionMode : 'none'
     }
 
@@ -380,7 +380,7 @@ export abstract class TableBase extends Component<TableProps> {
         return rows
     }
 
-    protected selectableRows(): readonly TableRowModel[] { return this.visibleRows().filter(row => this.isSelectable(row.item)) }
+    protected selectableRows = (): readonly TableRowModel[] => { return this.visibleRows().filter(row => this.isSelectable(row.item)) }
 
     protected allVisibleSelected = (): boolean => {
         const rows = this.selectableRows()

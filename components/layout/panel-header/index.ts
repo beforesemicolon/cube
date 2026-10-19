@@ -1,6 +1,6 @@
-import { html, type Template } from '../../core/runtime.js'
+import { when, is, isNot, css as componentStyles, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
-import { scalarText } from '../../core/value.js'
+
 import { PanelHeaderBase } from './PanelHeaderBase.js'
 const css = editorCSS + `
 :host{display:block;min-inline-size:0}
@@ -10,15 +10,17 @@ const css = editorCSS + `
 :host([collapsible]:not([expanded])) [part~=toggle]{rotate:-90deg}
 `;
 export class PanelHeader extends PanelHeaderBase {
+    stylesheet = componentStyles`${css}`
+
     render(): Template {
-        return html`<style part="styles">${css}</style>
+        return html`
             <header part="header">
-                <div part="copy"><slot name="heading" part="heading">${() => scalarText(this.label)}</slot>
-                    <p part="description" hidden="${() => !scalarText(this.description)}">${() => scalarText(this.description)}</p></div>
+                <div part="copy"><slot name="heading" part="heading">${this.props.label}</slot>
+                    <p part="description" hidden="${isNot(this.props.description)}">${this.props.description}</p></div>
                 <div part="actions"><slot name="actions" part="action-content"></slot>
                     <cb-button part="toggle" exportparts="control:toggle-control" variant="ghost" icon="down" icon-only="true"
-                        hidden="${() => !this.isCollapsible()}" disabled="${() => this.unavailable}"
-                        aria-expanded="${() => String(this.isExpanded())}" accessible-label="${this.toggleText}"
+                        hidden="${isNot(this.isCollapsible)}" disabled="${() => this.unavailable}"
+                        aria-expanded="${when(is(() => this.isExpanded()), 'true', 'false')}" accessible-label="${this.toggleText}"
                         onaction="${this.toggleExpanded}"></cb-button>
                 </div>
             </header>`

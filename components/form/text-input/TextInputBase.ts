@@ -13,7 +13,7 @@ export abstract class TextInputBase extends FieldControlBase<TextInputProps> {
     placeholder = ''
     readonly componentName = 'text-input'
     readonly componentKind: StudioKind = 'text'
-    protected fieldElement(): HTMLInputElement | undefined { return this.contentRoot.querySelector<HTMLInputElement>('input[part~="control"]') ?? undefined }
+    protected fieldElement(): HTMLInputElement | undefined { return this.refs.control?.[0] instanceof HTMLInputElement ? this.refs.control[0] : undefined }
     protected captureValue(): string { return this.value }
     protected restoreValue(value: string | FormRestoreValue): void {
         this.value = value instanceof FormData ? scalarText(value.get(this.name)) : value instanceof File ? value.name : scalarText(value)

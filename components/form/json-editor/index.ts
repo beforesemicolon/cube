@@ -1,7 +1,7 @@
-import { html, type Template } from '../../core/runtime.js'
+import { css as componentStyles, or, isNot, is, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import type { CodeEditor } from '../code-editor/index.js'
-import { bool, scalarText } from '../../core/value.js'
+import { scalarText } from '../../core/value.js'
 import { JsonEditorBase } from './JsonEditorBase.js'
 
 const css = editorCSS + `
@@ -10,7 +10,7 @@ const css = editorCSS + `
 [part~=status][data-invalid]{color:var(--color-danger)}[part~=editor]{display:block;inline-size:100%}
 `;
 export class JsonEditor extends JsonEditorBase {
-    stylesheet = css
+    stylesheet = componentStyles`${css}`
     private get editor(): CodeEditor | undefined {
         const node = this.refs.editor?.[0]
         return node?.localName === 'cb-code-editor' ? node as CodeEditor : undefined
@@ -24,7 +24,7 @@ export class JsonEditor extends JsonEditorBase {
         return html`<div part="root"><div part="toolbar">
             <span part="status" role="status" data-invalid="${() => error() ? '' : null}">${status}</span>
             <cb-button part="format" exportparts="control:format-control,label:format-label,button-label:format-label,icon:format-icon,description:format-description" variant="ghost" label="${this.props.formatLabel}" accessible-label="${this.props.formatLabel}"
-                disabled="${() => this.unavailable || bool(this.readOnly) || !this.sourceText() || Boolean(error())}"
+                disabled="${or(() => this.unavailable, this.props.readOnly, isNot(this.sourceText), is(error))}"
                 onaction="${(event: Event) => { event.stopPropagation(); this.format(event) }}"></cb-button>
         </div>
         <cb-code-editor ref="editor" part="editor" language="json" label="${this.props.label}"

@@ -1,4 +1,5 @@
-import { html, repeat, type Template } from '../../core/runtime.js'
+import { elementRefs } from '../../core/refs.js'
+import { when, or, html, repeat, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { safeHref } from '../../core/url.js'
 import { RovingFocus } from '../../core/roving.js'
@@ -20,9 +21,9 @@ cb-link[part=item]::part(label){display:contents}
 `;
 
 export function createMenuView(host: MenuBase, onActivate: (item: MenuBase['normalizedItems'][number], event: Event) => void): MenuView {
-    const controls = () => [...(root.refs.menu?.[0]?.querySelectorAll<HTMLElement>('[data-menu-role]:not([data-disabled])') ?? [])]
+    const controls = () => elementRefs(root.refs.items).filter(node => !node.hasAttribute('data-disabled'))
     const roving = new RovingFocus(controls, () => 'vertical')
-    const root = html`<style part="styles">${menuCSS}</style>
+    const root = html`
         <div ref="menu" part="menu" role="menu" aria-label="${host.resolvedMenuLabel}"
             onkeydown="${(event: KeyboardEvent) => roving.keydown(event)}">
             ${repeat(() => host.normalizedItems, item => {
@@ -30,23 +31,22 @@ export function createMenuView(host: MenuBase, onActivate: (item: MenuBase['norm
                 const href = safeHref(item.href)
                 const role = item.type === 'checkbox' ? 'menuitemcheckbox' : item.type === 'radio' ? 'menuitemradio' : 'menuitem'
                 const content = html`<cb-icon part="icon" name="${item.icon ?? ''}" decorative="true" hidden="${!item.icon}"></cb-icon>
-                    ${!item.icon ? html`<span part="icon-spacer"></span>` : ''}
+                    ${when(!item.icon, () => html`<span part="icon-spacer"></span>`, () => '')}
                     <span part="item-copy"><span part="item-label">${item.label}</span>
-                        ${item.description ? html`<span part="description">${item.description}</span>` : ''}</span>
-                    ${item.shortcut ? html`<span part="shortcut">${item.shortcut}</span>` : item.children?.length ? html`<cb-icon name="right" decorative="true"></cb-icon>` : ''}`
+                        ${when(item.description, () => html`<span part="description">${item.description}</span>`, () => '')}</span>
+                    ${when(item.shortcut, () => html`<span part="shortcut">${item.shortcut}</span>`, () => when(item.children?.length, () => html`<cb-icon name="right" decorative="true"></cb-icon>`, () => ''))}`
                 const checked = () => role === 'menuitem' ? null : String(Boolean(item.checked))
-                return href ? html`<cb-link part="item" exportparts="control:item-control,label:item-label" data-bare
-                    data-menu-role="${role}" data-label="${item.label}" role="${role}" href="${href}"
-                    accessible-label="${item.label}" disabled="${() => bool(host.disabled) || item.disabled}"
+                return html`${when(href, () => html`<cb-link part="item" exportparts="control:item-control,label:item-label" data-bare
+                    ref="items" data-menu-role="${role}" data-label="${item.label}" role="${role}" href="${href}"
+                    accessible-label="${item.label}" disabled="${or(() => bool(host.disabled), item.disabled)}"
                     aria-checked="${checked}" aria-haspopup="${item.children?.length ? 'menu' : null}"
                     data-checked="${item.checked ? '' : null}"
-                    onnavigate="${(event: CustomEvent<{ originalEvent: Event }>) => { event.stopPropagation(); onActivate(item, event.detail.originalEvent) }}">${content}</cb-link>`
-                    : html`<cb-button part="item" exportparts="control:item-control,button-label:item-label" data-bare data-semantic-host
-                        data-menu-role="${role}" data-label="${item.label}" role="${role}"
-                        accessible-label="${item.label}" disabled="${() => bool(host.disabled) || item.disabled}"
+                    onnavigate="${(event: CustomEvent<{ originalEvent: Event }>) => { event.stopPropagation(); onActivate(item, event.detail.originalEvent) }}">${content}</cb-link>`, () => html`<cb-button part="item" exportparts="control:item-control,button-label:item-label" data-bare data-semantic-host
+                        ref="items" data-menu-role="${role}" data-label="${item.label}" role="${role}"
+                        accessible-label="${item.label}" disabled="${or(() => bool(host.disabled), item.disabled)}"
                         aria-checked="${checked}" aria-haspopup="${item.children?.length ? 'menu' : null}"
                         data-checked="${item.checked ? '' : null}"
-                        onaction="${(event: Event) => { event.stopPropagation(); onActivate(item, event) }}">${content}</cb-button>`
+                        onaction="${(event: Event) => { event.stopPropagation(); onActivate(item, event) }}">${content}</cb-button>`)}`
             }, { key: item => item.id })}
         </div>`
     root.onMount(() => roving.reset()).onUpdate(() => roving.reset())

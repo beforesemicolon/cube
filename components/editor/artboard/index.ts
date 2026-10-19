@@ -1,4 +1,4 @@
-import { html, type Template } from '../../core/runtime.js'
+import { isNot, or, css as componentStyles, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { bool, scalarText } from '../../core/value.js'
 import { token as v } from '../../theme/tokens.js'
@@ -12,15 +12,17 @@ const css = editorCSS + `
 :host([data-disabled]) [part~=frame]{opacity:var(--component-disabled-opacity,.5)}
 `;
 export class Artboard extends ArtboardBase {
+    stylesheet = componentStyles`${css}`
+
     render(): Template {
-        return html`<style part="styles">${css}</style>
+        return html`
             <div part="frame canvas canvas-marker control" role="region" tabindex="${() => this.canSelect() ? 0 : -1}"
                 aria-label="${this.accessibleName}" aria-disabled="${() => this.unavailable ? 'true' : null}"
                 aria-current="${() => this.canSelect() && bool(this.selected) ? 'true' : null}"
                 onclick="${(event: Event) => this.select(true, event)}"
                 onkeydown="${(event: KeyboardEvent) => { if ((event.key === 'Enter' || event.key === ' ') && this.canSelect()) { event.preventDefault(); this.select(true, event) } }}">
                 <slot part="content"></slot>
-                <output part="dimensions" hidden="${() => !bool(this.showDimensions, true) || !this.dimensionsText()}">${this.dimensionsText}</output>
+                <output part="dimensions" hidden="${or(isNot(() => bool(this.showDimensions, true)), isNot(this.dimensionsText))}">${this.dimensionsText}</output>
             </div>`
     }
     protected syncView(): void {

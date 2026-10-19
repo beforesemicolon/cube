@@ -1,4 +1,4 @@
-import { bool, scalarText } from '../../core/value.js'
+import { scalarText } from '../../core/value.js'
 import { FieldControlBase, type FieldControlProps } from '../FormControlBase.js'
 import { normalizeOptions, type SelectOption } from '../model.js'
 

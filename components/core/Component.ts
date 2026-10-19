@@ -72,8 +72,8 @@ export abstract class Component<P extends CommonProps = CommonProps> extends Web
     }
     protected activeNode(): Element | null { return this.contentRoot instanceof ShadowRoot ? this.contentRoot.activeElement : this.ownerDocument.activeElement }
     focus(options?: FocusOptions): void {
-        const control = this.contentRoot.querySelector<HTMLElement>('[part~="control"]')
-        if (control) control.focus(options)
+        const control = this.refs.control?.[0]
+        if (control instanceof HTMLElement) control.focus(options)
         else super.focus(options)
     }
     onError(error: unknown): void { this.emit('error', { code: 'COMPONENT_ERROR', error, component: this.localName }) }

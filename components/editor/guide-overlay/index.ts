@@ -1,4 +1,4 @@
-import { type Template, html, repeat, when } from '../../core/runtime.js';
+import { is, css as componentStyles, type Template, html, repeat, when } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { finite } from '../../core/value.js';
 import { GuideOverlayBase, type EditorGuide } from './GuideOverlayBase.js';
@@ -9,13 +9,15 @@ const css = editorCSS + `
 [part~=label]{position:absolute;translate:-50% -50%;padding:2px 5px;border-radius:3px;background:var(--component-guide-label-background,var(--color-primary));color:var(--color-primary-foreground);font:600 10px/1.3 var(--typography-mono-font-family);white-space:nowrap}
 `;
 export class GuideOverlay extends GuideOverlayBase {
+    stylesheet = componentStyles`${css}`
+
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="guides">
+        return html`<div part="guides">
             ${repeat(this.normalizedGuides, guide => html`
                 <span part=${() => `line ${guide.type}-guide`} data-axis=${() => guide.axis}
                     data-type=${() => guide.type ?? 'snap'} data-id=${() => guide.id}
                     style=${() => this.guideStyle(guide)}></span>
-                ${when(() => Boolean(guide.label), () => html`<span part="label"
+                ${when(is(guide.label), () => html`<span part="label"
                     style=${() => this.guideStyle(guide, true)}>${() => guide.label}</span>`)}
             `, { key: guide => guide.id })}
         </div>`;

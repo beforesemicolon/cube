@@ -1,4 +1,4 @@
-import { type Template, html } from '../../core/runtime.js';
+import { is, isNot, css as componentStyles, type Template, html } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { token as v } from '../../theme/tokens.js';
 import { DeviceFrameBase } from './DeviceFrameBase.js';
@@ -21,10 +21,12 @@ const css = editorCSS + `
 @container(max-width:520px){[part~=root]{min-block-size:340px;padding:var(--spacing-md,12px)}}
 `;
 export class DeviceFrame extends DeviceFrameBase {
+    stylesheet = componentStyles`${css}`
+
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="root canvas">
+        return html`<div part="root canvas">
             <div part="device frame" data-device=${this.preset}
-                data-chrome=${() => String(this.chromeVisible())} style=${this.deviceStyle}>
+                data-chrome=${is(() => this.chromeVisible())} style=${this.deviceStyle}>
                 <div part="bezel"><div part="screen control" role="region"
                     tabindex=${() => this.unavailable ? -1 : 0}
                     aria-label=${() => this.text('screenLabel') || this.accessibleName()}
@@ -32,7 +34,7 @@ export class DeviceFrame extends DeviceFrameBase {
                     <slot part="content"></slot></div><span part="camera"></span><span part="notch"></span>
                 </div><span part="stand"></span>
             </div><cb-button part="orientation" exportparts="control:orientation-control,label:orientation-label,button-label:orientation-label,icon:orientation-icon,description:orientation-description" icon-only variant="ghost" icon="reset"
-                hidden=${() => !this.orientationControlVisible()} disabled=${() => this.unavailable}
+                hidden=${isNot(this.orientationControlVisible)} disabled=${() => this.unavailable}
                 accessible-label=${() => this.text('orientationLabel')}
                 onaction=${(event: Event) => { event.stopPropagation(); this.toggleOrientation(event); }}></cb-button>
         </div>`;

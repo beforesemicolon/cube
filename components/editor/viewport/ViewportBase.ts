@@ -56,7 +56,7 @@ export abstract class ViewportBase extends Component<ViewportProps> {
     }
 
     protected canPan(): boolean { return !this.unavailable && bool(this.pannable, true) }
-    protected controlsVisible(): boolean { return bool(this.controls, true) }
+    protected controlsVisible = (): boolean => { return bool(this.controls, true) }
     protected gridVisible(): boolean { return bool(this.grid, true) }
     protected text(name: 'zoomInLabel' | 'zoomOutLabel' | 'resetLabel' | 'positionLabel'): string { return scalarText(this[name]) }
 

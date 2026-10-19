@@ -1,4 +1,5 @@
-import { html, repeat, state, when, type Template } from '../../core/runtime.js'
+import { elementRefs } from '../../core/refs.js'
+import { is, or, and, isNot, css as componentStyles, html, repeat, state, when, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { uid } from '../../core/id.js'
 import { bool, text } from '../../core/value.js'
@@ -24,6 +25,8 @@ const css = editorCSS + `
 `;
 
 export class Select extends SelectBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly controlId = uid('cb-select')
     private popupController?: PopupController
     private get trigger(): HTMLElement | undefined { const node = this.refs.trigger?.[0]; return node instanceof HTMLElement ? node : undefined }
@@ -41,45 +44,45 @@ export class Select extends SelectBase {
     private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))) }
     private descriptionText = (): string | null => { return [text(this.description), this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null }
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="root">
+        return html`<div part="root">
             <cb-button ref="trigger" part="trigger control" exportparts="control:trigger-control,button-label:trigger-label" data-bare data-semantic-host
-                hidden="${() => bool(this.native)}" disabled="${() => this.unavailable || bool(this.readOnly)}" data-multi="${() => bool(this.multi) ? '' : null}"
+                hidden="${this.props.native}" disabled="${or(() => this.unavailable, this.props.readOnly)}" data-multi="${() => bool(this.multi) ? '' : null}"
                 accessible-label="${() => this.displayValue() && this.displayValue() !== this.accessibleName() ? this.accessibleName() + ': ' + this.displayValue() : this.accessibleName()}"
-                aria-haspopup="listbox" aria-controls="${this.controlId}-listbox" aria-expanded="${() => String(bool(this.open))}"
+                aria-haspopup="listbox" aria-controls="${this.controlId}-listbox" aria-expanded="${when(this.props.open, 'true', 'false')}"
                 aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
                 onkeydown="${this.handleKey}"
                 onaction="${(event: Event) => { event.stopPropagation(); const opening = !bool(this.open); if (this.setOpen(opening, event) && opening && this.searchEnabled) this.searchInput?.focus() }}">
                 <span part="value" data-placeholder="${() => this.selection.length ? null : ''}">
-                    ${when(() => bool(this.multi) && this.selectedLabels().length > 0,
+                    ${when(and(this.props.multi, () => this.selectedLabels().length > 0),
                         repeat(this.selectedLabels, (label, index) => html`<span part="value-item">${label}${() => index < this.selectedLabels().length - 1 ? ',' : ''}</span>`, { key: label => label }),
                         this.displayValue)}
                 </span><cb-icon part="icon indicator" name="down" decorative="true"></cb-icon>
             </cb-button>
             <div ref="popup" part="popup" hidden
                 onkeydown="${this.handleKey}">
-                <div part="search-wrap" hidden="${() => !this.searchEnabled || bool(this.native)}">
+                <div part="search-wrap" hidden="${or(isNot(() => this.searchEnabled), this.props.native)}">
                     <input ref="search" part="search" type="search" id="${this.controlId}-search" value="${this.query[0]}"
-                        placeholder="${() => text(this.searchPlaceholder)}" aria-label="${() => text(this.searchLabel) || text(this.searchPlaceholder) || this.accessibleName()}"
-                        role="combobox" aria-autocomplete="list" aria-controls="${this.controlId}-listbox" aria-expanded="${() => String(bool(this.open))}"
+                        placeholder="${this.props.searchPlaceholder}" aria-label="${() => text(this.searchLabel) || text(this.searchPlaceholder) || this.accessibleName()}"
+                        role="combobox" aria-autocomplete="list" aria-controls="${this.controlId}-listbox" aria-expanded="${when(this.props.open, 'true', 'false')}"
                         oninput="${(event: Event) => { const input = event.currentTarget; if (input instanceof HTMLInputElement) this.query[1](input.value) }}">
                 </div><div ref="listbox" part="listbox" id="${this.controlId}-listbox" role="listbox" aria-label="${this.accessibleName}"
                     aria-multiselectable="${() => bool(this.multi) ? 'true' : null}">
-                ${repeat(this.visibleOptions, option => html`<cb-button part="option" exportparts="control:option-control,button-label:option-label" data-bare data-semantic-host
-                    data-value="${option.value}" role="option" accessible-label="${option.label}" disabled="${() => option.disabled || this.unavailable}"
-                    aria-selected="${() => String(this.selection.includes(option.value))}"
+                ${repeat(this.visibleOptions, option => html`<cb-button ref="options" part="option" exportparts="control:option-control,button-label:option-label" data-bare data-semantic-host
+                    data-value="${option.value}" role="option" accessible-label="${option.label}" disabled="${or(option.disabled, () => this.unavailable)}"
+                    aria-selected="${when(is(() => this.selection.includes(option.value)), 'true', 'false')}"
                     onaction="${(event: Event) => { event.stopPropagation(); this.choose(option.value, event); if (!bool(this.multi)) this.setOpen(false, event); else queueMicrotask(() => this.optionNodes().find(node => node.dataset.value === option.value)?.focus()) }}">
-                    <span part="option-label">${option.label}</span>${when(() => this.selection.includes(option.value), html`<cb-icon part="icon check" name="check" decorative="true"></cb-icon>`)}
+                    <span part="option-label">${option.label}</span>${when(is(() => this.selection, values => values.includes(option.value)), html`<cb-icon part="icon check" name="check" decorative="true"></cb-icon>`)}
                 </cb-button>`, { key: option => option.value })}
                 </div>
-                <span part="empty" role="status" hidden="${() => this.visibleOptions().length > 0 || !text(this.emptyLabel)}">${() => text(this.emptyLabel)}</span>
+                <span part="empty" role="status" hidden="${or(() => this.visibleOptions().length > 0, isNot(this.props.emptyLabel))}">${this.props.emptyLabel}</span>
             </div>
-            <select ref="native" part="native control" id="${this.controlId}-native" hidden="${() => !bool(this.native)}"
-                multiple="${() => bool(this.multi)}" disabled="${() => this.unavailable || bool(this.readOnly)}" required="${() => bool(this.required) && !bool(this.readOnly)}"
+            <select ref="native" part="native control" id="${this.controlId}-native" hidden="${isNot(this.props.native)}"
+                multiple="${this.props.multi}" disabled="${or(() => this.unavailable, this.props.readOnly)}" required="${and(this.props.required, isNot(this.props.readOnly))}"
                 aria-label="${this.accessibleName}" aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
                 onchange="${(event: Event) => { const select = event.currentTarget; if (select instanceof HTMLSelectElement) this.choose(bool(this.multi) ? [...select.selectedOptions].map(option => option.value) : select.value, event) }}"
                 onblur="${() => { this.validationShown = true }}">
-                ${when(() => !bool(this.multi) && !this.normalizedOptions.some(option => option.value === ''), html`<option part="option" value="" selected="${() => !this.selection.length}">${() => text(this.placeholder)}</option>`)}
-                ${repeat(() => this.normalizedOptions, option => html`<option part="option" value="${option.value}" disabled="${option.disabled}" selected="${() => this.selection.includes(option.value)}">${option.label}</option>`, { key: option => option.value })}
+                ${when(and(isNot(this.props.multi), isNot(() => this.normalizedOptions.some(option => option.value === ''))), html`<option part="option" value="" selected="${isNot(() => this.selection.length)}">${this.props.placeholder}</option>`)}
+                ${repeat(() => this.normalizedOptions, option => html`<option part="option" value="${option.value}" disabled="${option.disabled}" selected="${is(() => this.selection, values => values.includes(option.value))}">${option.label}</option>`, { key: option => option.value })}
             </select>
         </div>`
     }
@@ -102,7 +105,7 @@ export class Select extends SelectBase {
         if (!this.popupController) this.popup.hidden = bool(this.native) || !bool(this.open)
     }
     focus(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.trigger)?.focus(options) }
-    private optionNodes(): Button[] { return [...(this.listbox?.querySelectorAll<Button>('cb-button:not([disabled])') ?? [])] }
+    private optionNodes(): HTMLElement[] { return elementRefs(this.refs.options).filter(node => !node.hasAttribute('disabled')) }
     private handleKey = (event: KeyboardEvent): void => {
         if (event.key === 'Escape') {
             event.preventDefault();

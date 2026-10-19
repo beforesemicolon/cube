@@ -1,4 +1,4 @@
-import { html, state, type Template } from '../../core/runtime.js'
+import { isNot, is, css as componentStyles, html, state, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { AvatarBase } from './AvatarBase.js'
 const css = editorCSS + `
@@ -26,21 +26,23 @@ const css = editorCSS + `
 @media (forced-colors:active){[part~=surface]{border-color:CanvasText}[part~=status]{border-color:Canvas;background:CanvasText}}
 `;
 export class Avatar extends AvatarBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly failedSource = state('')
     render(): Template {
         const showsImage = () => Boolean(this.avatarSource) && this.failedSource[0]() !== this.avatarSource
-        return html`<style part="styles">${css}</style>
+        return html`
             <span part="avatar root" role="${() => this.avatarDecorative ? 'presentation' : this.avatarLabel ? 'img' : null}"
                 aria-hidden="${() => this.avatarDecorative ? 'true' : null}"
                 aria-label="${() => this.avatarDecorative ? null : this.avatarLabel || null}"
                 style="${() => this.avatarColor ? '--cb-avatar-color:' + this.avatarColor : null}">
                 <span part="surface">
-                    <img part="image" alt="" decoding="async" loading="lazy" src="${() => this.avatarSource || null}" hidden="${() => !showsImage()}"
+                    <img part="image" alt="" decoding="async" loading="lazy" src="${() => this.avatarSource || null}" hidden="${isNot(showsImage)}"
                         onload="${() => this.failedSource[1]('')}" onerror="${() => this.failedSource[1](this.avatarSource)}">
                     <span part="initials" hidden="${showsImage}" data-initials="${() => this.avatarInitials}"></span>
                 </span>
                 <span part="status" aria-hidden="true" data-status="${() => this.avatarStatus}"
-                    hidden="${() => this.avatarStatus === 'none'}" title="${() => this.avatarStatusLabel}"></span>
+                    hidden="${is(() => this.avatarStatus, 'none')}" title="${() => this.avatarStatusLabel}"></span>
             </span>`
     }
     protected syncView(): void { this.toggleAttribute('aria-hidden', this.avatarDecorative) }

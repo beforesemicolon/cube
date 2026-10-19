@@ -1,4 +1,4 @@
-import { type Template, html, state } from '../../core/runtime.js'
+import { isNot, or, and, pick, css as componentStyles, type Template, html, state } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { aria } from '../../core/accessibility.js'
 import { uid } from '../../core/id.js'
@@ -28,6 +28,8 @@ interface FieldControlElement extends HTMLElement {
     errorText?: string;
 }
 export class Field extends FieldBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly fieldId = uid('cb-field');
     private readonly labelId = uid('cb-field-label');
     private readonly assigned = state({actions:false, details:false});
@@ -39,7 +41,7 @@ export class Field extends FieldBase {
         this.assigned[1]({actions:has('actions'),details:has('details')});
     }
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="field" role="group"
+        return html`<div part="field" role="group" onslotchange=${this.slotsChanged}
             aria-labelledby=${() => this.fieldLabel() ? this.labelId : null}
             aria-describedby=${() => [
                 this.description ? `${this.fieldId}-description` : '',
@@ -48,20 +50,20 @@ export class Field extends FieldBase {
                 this.isSuccess() && this.fieldSuccess() ? `${this.fieldId}-success` : ''
             ].filter(Boolean).join(' ') || null}
             aria-invalid=${() => this.isInvalid() || null} aria-disabled=${() => this.unavailable || null}>
-            <div part="header" hidden=${() => !this.fieldLabel() && (bool(this.required) || !this.optionalLabel) && !this.assigned[0]().actions}>
+            <div part="header" hidden=${and(isNot(this.fieldLabel), or(this.props.required, isNot(this.props.optionalLabel)), isNot(pick(() => this.assigned[0](), "actions")))}>
                 <div part="label-wrap" onclick=${this.focusControl}>
-                    <span part="label" id=${this.labelId} hidden=${() => !this.fieldLabel()}>${this.fieldLabel}</span>
-                    <span part="requirement" hidden=${() => bool(this.required) || !this.optionalLabel}>${this.props.optionalLabel}</span>
-                </div><slot part="actions" name="actions" ref="actions" onslotchange=${this.syncSlots}></slot>
-            </div><div part="control-container"><slot part="control-slot" ref="control" onslotchange=${this.syncControl}></slot></div>
-            <p part="description" id=${`${this.fieldId}-description`} hidden=${() => !this.description}>${this.props.description}</p>
-            <p part="help" id=${`${this.fieldId}-help`} hidden=${() => !this.fieldHelp()}>${this.fieldHelp}</p>
-            <details part="details" hidden=${() => !this.detailsLabel && !this.fieldDetails() && !this.assigned[0]().details}>
-                <summary part="details-summary">${this.props.detailsLabel}</summary><p part="details-copy" hidden=${() => !this.fieldDetails()}>${this.fieldDetails}</p>
-                <slot part="details-content" name="details" ref="details" onslotchange=${this.syncSlots}></slot>
+                    <span part="label" id=${this.labelId} hidden=${isNot(this.fieldLabel)}>${this.fieldLabel}</span>
+                    <span part="requirement" hidden=${or(this.props.required, isNot(this.props.optionalLabel))}>${this.props.optionalLabel}</span>
+                </div><slot part="actions" name="actions" ref="actions"></slot>
+            </div><div part="control-container"><slot part="control-slot" ref="control"></slot></div>
+            <p part="description" id=${`${this.fieldId}-description`} hidden=${isNot(this.props.description)}>${this.props.description}</p>
+            <p part="help" id=${`${this.fieldId}-help`} hidden=${isNot(this.fieldHelp)}>${this.fieldHelp}</p>
+            <details part="details" hidden=${and(isNot(this.props.detailsLabel), isNot(this.fieldDetails), isNot(pick(() => this.assigned[0](), "details")))}>
+                <summary part="details-summary">${this.props.detailsLabel}</summary><p part="details-copy" hidden=${isNot(this.fieldDetails)}>${this.fieldDetails}</p>
+                <slot part="details-content" name="details" ref="details"></slot>
             </details>
-            <p part="error" role="alert" id=${`${this.fieldId}-error`} hidden=${() => !this.fieldError()}>${this.fieldError}</p>
-            <p part="success" role="status" id=${`${this.fieldId}-success`} hidden=${() => !this.fieldSuccess() || this.isInvalid()}>${this.fieldSuccess}</p>
+            <p part="error" role="alert" id=${`${this.fieldId}-error`} hidden=${isNot(this.fieldError)}>${this.fieldError}</p>
+            <p part="success" role="status" id=${`${this.fieldId}-success`} hidden=${or(isNot(this.fieldSuccess), this.isInvalid)}>${this.fieldSuccess}</p>
         </div>`;
     }
     protected syncView(): void {
@@ -69,6 +71,7 @@ export class Field extends FieldBase {
         this.toggleAttribute('data-success',this.isSuccess());
         this.syncControl();
     }
+    private slotsChanged = (): void => { this.syncSlots(); this.syncControl(); }
     private syncControl = (): void => {
         const control = this.controlSlot?.assignedElements({ flatten: true })[0];
         if (!(control instanceof HTMLElement))

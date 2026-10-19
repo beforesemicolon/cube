@@ -1,14 +1,19 @@
-import { type Template, html } from '../../core/runtime.js'
+import { css as componentStyles, type Template } from '../../core/runtime.js'
 import { bool, finite } from '../../core/value.js';
 import { ContextMenuBase } from './ContextMenuBase.js';
-import { createMenuView, type MenuView } from '../../navigation/menu/view.js';
+import {  createMenuView, type MenuView , menuCSS } from '../../navigation/menu/view.js';
 export class ContextMenu extends ContextMenuBase {
+    stylesheet = componentStyles`${menuCSS}`
+
     private view?: MenuView;
     render(): Template {
         this.view = createMenuView(this, (item, event) => { this.activate(item, event); this.close(); });
+        return this.view.root;
+    }
+    protected mount(): void {
         this.listen(this.ownerDocument, 'pointerdown', event => { if (this.open && !event.composedPath().includes(this))
             this.close(); });
-        return html`${this.view.root}`;
+        super.mount();
     }
     protected syncView(): void {
         this.view?.update();

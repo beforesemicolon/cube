@@ -1,5 +1,5 @@
 import type { ButtonVariant } from '../../action/button/ButtonBase.js'
-import { html, repeat, state, type Template } from '../../core/runtime.js'
+import { when, html, repeat, state, type Template } from '../../core/runtime.js'
 import type { Modal, ModalCloseReason, ModalLayer, ModalSize } from './index.js'
 
 export interface ModalContent { node: Node; dispose?: () => void }
@@ -176,12 +176,11 @@ function applyRequest(record: ModalRecord): void {
                     } catch(cause) { report(record,cause instanceof Error?cause:new Error(String(cause))) }
                     finally { loading[1](false) }
                 }
-                return action.href ? html`<cb-link part="action" label=${action.label} accessible-label=${action.label}
+                return html`${when(action.href, () => html`<cb-link part="action" label=${action.label} accessible-label=${action.label}
                     href=${action.href} target=${action.target ?? ''} icon=${action.icon ?? ''} variant=${action.variant ?? 'ghost'} disabled=${action.disabled ?? false}
-                    onnavigate=${(event:Event)=>{event.stopPropagation();if(action.dismiss ?? false)closeFromAction({...action,id:actionId});}}></cb-link>`
-                    : html`<cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" label=${action.label} accessible-label=${action.label} icon=${action.icon ?? ''}
+                    onnavigate=${(event:Event)=>{event.stopPropagation();if(action.dismiss ?? false)closeFromAction({...action,id:actionId});}}></cb-link>`, () => html`<cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" label=${action.label} accessible-label=${action.label} icon=${action.icon ?? ''}
                         variant=${action.variant ?? (index === actionList.length-1?'primary':'secondary')} value=${action.value ?? ''}
-                        disabled=${action.disabled ?? false} loading=${loading[0]} onaction=${run}></cb-button>`
+                        disabled=${action.disabled ?? false} loading=${loading[0]} onaction=${run}></cb-button>`)}`
             })}
         </div>`
         record.footerTemplate.render(modal)

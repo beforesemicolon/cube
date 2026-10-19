@@ -1,4 +1,4 @@
-import { html, repeat, type Template } from '../../core/runtime.js';
+import { when, isNot, is, or, css as componentStyles, html, repeat, type Template } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { uid } from '../../core/id.js';
 import { bool, scalarText } from '../../core/value.js';
@@ -38,6 +38,8 @@ const css = editorCSS + `
 @media (prefers-reduced-motion:reduce){[part~=panel],[part~=indicator]{transition:none}}
 `;
 export class Accordion extends AccordionBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly instanceId = uid('cb-accordion');
     private rendered(item: AccordionItem, index: number, actions = false): AccordionContent {
         try { return (actions ? item.renderActions?.({ accordion: this, item, index }) : item.renderContent ? item.renderContent({ accordion: this, item, index }) : item.content) ?? ''; }
@@ -45,42 +47,42 @@ export class Accordion extends AccordionBase {
     }
     render(): Template {
         const id = (item: AccordionItem, suffix: string): string => `${this.instanceId}-${item.id}-${suffix}`;
-        return html`<style part="styles">${css}</style><div part="root" data-variant=${this.resolvedVariant}
+        return html`<div part="root" data-variant=${this.resolvedVariant}
             role=${() => this.accessibleLabel || this.label ? 'group' : null}
             aria-label=${() => this.accessibleLabel || this.label || null}
             aria-describedby=${() => this.description ? `${this.instanceId}-description` : null}>
-            <p part="group-description description" id=${`${this.instanceId}-description`} hidden=${() => !this.description}>${this.props.description}</p>
+            <p part="group-description description" id=${`${this.instanceId}-description`} hidden=${isNot(this.props.description)}>${this.props.description}</p>
             ${repeat(this.itemList, (item, index) => html`<section part="item"
                 data-expanded=${() => this.itemExpanded(item.id) ? '' : null} data-disabled=${() => this.itemDisabled(item) ? '' : null}>
                 <div part="header"><div part="heading" role="heading" aria-level=${this.resolvedHeadingLevel} aria-label=${() => item.label || item.id}>
-                    <cb-button part="trigger" exportparts="control:trigger-control,label:trigger-label,button-label:trigger-label,icon:trigger-icon,description:trigger-description" data-bare data-semantic-host id=${id(item,'trigger')} data-accordion-id=${item.id}
+                    <cb-button ref="triggers" part="trigger" exportparts="control:trigger-control,label:trigger-label,button-label:trigger-label,icon:trigger-icon,description:trigger-description" data-bare data-semantic-host id=${id(item,'trigger')} data-accordion-id=${item.id}
                         disabled=${() => this.itemDisabled(item)} accessible-label=${() => [item.label || item.id,item.description].filter(Boolean).join(' ')}
-                        aria-controls=${id(item,'panel')} aria-expanded=${() => this.itemExpanded(item.id)}
+                        aria-controls=${id(item,'panel')} aria-expanded=${when(() => this.itemExpanded(item.id), 'true', 'false')}
                         aria-disabled=${() => this.itemDisabled(item) || null}
                         aria-describedby=${() => this.itemDisabled(item) && item.disabledReason ? id(item,'reason') : null}
                         onaction=${(event: Event) => { event.stopPropagation(); this.toggle(item.id,event); }}
                         onkeydown=${(event: KeyboardEvent) => this.handleKey(item.id,event)}>
                         <span part="trigger-content"><span part="label">${() => item.label || item.id}</span>
-                            <span part="description" hidden=${() => !item.description}>${() => item.description}</span></span>
+                            <span part="description" hidden=${isNot(item.description)}>${() => item.description}</span></span>
                         <cb-icon name="right" part="indicator icon" decorative></cb-icon>
                     </cb-button>
                 </div><div part="actions">
                     ${repeat(() => (item.actions ?? []).filter(action => action.id?.trim() && action.label?.trim()), action => html`
-                        <cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" icon-only=${() => Boolean(action.icon)} icon=${() => action.icon ?? ''}
+                        <cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" icon-only=${is(action.icon)} icon=${() => action.icon ?? ''}
                             label=${() => action.label} accessible-label=${() => action.label}
-                            disabled=${() => bool(action.disabled) || this.itemDisabled(item)} variant=${() => action.variant ?? 'ghost'}
+                            disabled=${or(() => bool(action.disabled), () => this.itemDisabled(item))} variant=${() => action.variant ?? 'ghost'}
                             onaction=${(event: Event) => { event.stopPropagation(); this.emit('itemaction',{item,id:item.id,action,actionId:action.id,originalEvent:event}); }}></cb-button>
                     `, {key: action => action.id})}
                     ${() => this.rendered(item,index,true)}<slot name=${`actions-${item.id}`} part="actions-slot"></slot>
                 </div></div>
                 <div part="panel" id=${id(item,'panel')} role="region" aria-labelledby=${id(item,'trigger')}
-                    aria-hidden=${() => !this.itemExpanded(item.id)} inert=${() => !this.itemExpanded(item.id) ? '' : null}>
+                    aria-hidden=${isNot(() => this.itemExpanded(item.id))} inert=${() => !this.itemExpanded(item.id) ? '' : null}>
                     <div part="panel-content"><div part="panel-inner"><slot part="content" name=${() => scalarText(item.slot).trim() || `item-${item.id}`}>
                         ${() => this.rendered(item,index)}</slot></div></div>
                 </div>
-                <div part="disabled-reason" id=${id(item,'reason')} hidden=${() => !this.itemDisabled(item) || !item.disabledReason}>${() => this.itemDisabled(item) ? item.disabledReason : ''}</div>
+                <div part="disabled-reason" id=${id(item,'reason')} hidden=${or(isNot(() => this.itemDisabled(item)), isNot(item.disabledReason))}>${() => this.itemDisabled(item) ? item.disabledReason : ''}</div>
             </section>`, {key: item => item.id})}
-            <div part="empty" role="status" hidden=${() => this.itemList().length > 0 || !this.emptyLabel}>${this.props.emptyLabel}</div>
+            <div part="empty" role="status" hidden=${or(() => this.itemList().length > 0, isNot(this.props.emptyLabel))}>${this.props.emptyLabel}</div>
         </div>`;
     }
     private handleKey(id: string, event: KeyboardEvent): void {

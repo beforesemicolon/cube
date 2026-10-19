@@ -26,6 +26,6 @@ export abstract class SkeletonBase<P extends SkeletonProps = SkeletonProps> exte
     protected mount(): void { this.syncView() }
     protected update(): void { this.syncView() }
     protected count(value: number, fallback: number): number { return Math.round(clamp(finite(value, fallback), 1, 12)) }
-    protected normalizedVariant(): SkeletonVariant { return ['text', 'card', 'table'].includes(this.variant) ? this.variant : 'text' }
+    protected normalizedVariant = (): SkeletonVariant => { return ['text', 'card', 'table'].includes(this.variant) ? this.variant : 'text' }
     protected loadingLabel(): string { return scalarText(this.accessibleLabel) }
 }

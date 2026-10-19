@@ -1,4 +1,4 @@
-import { type Template, html, state } from '../../core/runtime.js'
+import { isNot, css as componentStyles, type Template, html, state } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import type { EditorRect } from '../selection-overlay/SelectionOverlayBase.js';
 import { MarqueeSelectionBase } from './MarqueeSelectionBase.js';
@@ -7,10 +7,12 @@ const css = editorCSS + `
 [part~=marquee]{position:absolute;border:1px solid var(--color-primary);background:color-mix(in srgb,var(--color-selection) 42%,transparent);pointer-events:none}
 `;
 export class MarqueeSelection extends MarqueeSelectionBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly rectangle = state<EditorRect | null>(null);
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="marquee"
-            hidden=${() => !this.rectangle[0]()} style=${() => {
+        return html`<div part="marquee"
+            hidden=${isNot(this.rectangle[0])} style=${() => {
                 const rect = this.rectangle[0]();
                 return rect ? `left:${rect.x}px;top:${rect.y}px;width:${rect.width}px;height:${rect.height}px` : '';
             }}></div>`;

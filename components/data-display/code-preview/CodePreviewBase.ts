@@ -21,7 +21,7 @@ export abstract class CodePreviewBase extends Component<CodePreviewProps> {
     copiedLabel = ''
     value: StudioValue = ''
 
-    source(): string {
+    source = (): string => {
         const value = Array.isArray(this.value) ? this.value.join(', ') : scalarText(this.value)
         return scalarText(this.code) || value
     }

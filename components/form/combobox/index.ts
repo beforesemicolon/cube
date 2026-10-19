@@ -1,4 +1,5 @@
-import { html, repeat, state, when, type Template } from '../../core/runtime.js'
+import { elementRefs } from '../../core/refs.js'
+import { when, is, or, isNot, css as componentStyles, html, repeat, state, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { uid } from '../../core/id.js'
 import { bool, text } from '../../core/value.js'
@@ -13,6 +14,8 @@ const css = editorCSS + `
 `;
 
 export class Combobox extends ComboboxBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly controlId = uid('cb-combobox')
     private popupController?: PopupController
     private get trigger(): HTMLElement | undefined { const node = this.refs.trigger?.[0]; return node instanceof HTMLElement ? node : undefined }
@@ -26,30 +29,30 @@ export class Combobox extends ComboboxBase {
     private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))) }
     private descriptionText = (): string | null => { return [text(this.description), this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null }
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="root">
+        return html`<div part="root">
             <div ref="trigger" part="input-shell control"><cb-icon part="icon prefix" name="search" decorative="true"></cb-icon>
-                <input ref="input" part="input" type="text" id="${this.controlId}" value="${this.displayValue}" placeholder="${() => text(this.placeholder)}"
-                    disabled="${() => this.unavailable}" readonly="${() => bool(this.readOnly)}" required="${() => bool(this.required)}"
+                <input ref="input" part="input" type="text" id="${this.controlId}" value="${this.displayValue}" placeholder="${this.props.placeholder}"
+                    disabled="${() => this.unavailable}" readonly="${this.props.readOnly}" required="${this.props.required}"
                     aria-label="${this.accessibleName}" role="combobox" aria-autocomplete="${() => this.autocomplete ?? 'list'}"
-                    aria-controls="${this.controlId}-listbox" aria-expanded="${() => String(bool(this.open))}"
+                    aria-controls="${this.controlId}-listbox" aria-expanded="${when(this.props.open, 'true', 'false')}"
                     aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
                     oninput="${this.handleInput}" onfocus="${(event: Event) => this.setOpen(true, event)}"
                     onkeydown="${this.handleKey}">
                 <cb-button part="toggle" exportparts="control:toggle-control,label:toggle-label,button-label:toggle-label,icon:toggle-icon,description:toggle-description" variant="ghost" icon="down" icon-only="true" accessible-label="${() => text(this.toggleLabel) || this.accessibleName()}"
-                    disabled="${() => this.unavailable || bool(this.readOnly)}" aria-haspopup="listbox" aria-controls="${this.controlId}-listbox" aria-expanded="${() => String(bool(this.open))}"
+                    disabled="${or(() => this.unavailable, this.props.readOnly)}" aria-haspopup="listbox" aria-controls="${this.controlId}-listbox" aria-expanded="${when(this.props.open, 'true', 'false')}"
                     onaction="${(event: Event) => { event.stopPropagation(); this.setOpen(!this.open, event); this.input?.focus() }}"></cb-button>
             </div>
             <div ref="popup" part="popup listbox" hidden role="listbox" id="${this.controlId}-listbox" aria-label="${this.accessibleName}"
                 onkeydown="${this.handleKey}">
 
-                ${repeat(this.filteredOptions, option => html`<cb-button part="option" exportparts="control:option-control,button-label:option-label" data-bare data-semantic-host
-                    data-value="${option.value}" role="option" accessible-label="${option.label}" disabled="${() => option.disabled || this.unavailable}"
-                    aria-selected="${() => String(option.value === this.value)}"
+                ${repeat(this.filteredOptions, option => html`<cb-button ref="options" part="option" exportparts="control:option-control,button-label:option-label" data-bare data-semantic-host
+                    data-value="${option.value}" role="option" accessible-label="${option.label}" disabled="${or(option.disabled, () => this.unavailable)}"
+                    aria-selected="${when(is(() => option.value === this.value), 'true', 'false')}"
                     onaction="${(event: Event) => { event.stopPropagation(); this.setValue(option.value, event); this.setOpen(false, event); this.input?.focus() }}">
                     ${option.label}
                 </cb-button>`, { key: option => option.value })}
 
-                <span part="empty" role="status" hidden="${() => this.filteredOptions().length > 0 || !text(this.emptyLabel)}">${() => text(this.emptyLabel)}</span>
+                <span part="empty" role="status" hidden="${or(() => this.filteredOptions().length > 0, isNot(this.props.emptyLabel))}">${this.props.emptyLabel}</span>
             </div>
 
         </div>`
@@ -93,7 +96,7 @@ export class Combobox extends ComboboxBase {
             event.preventDefault();
             if (!this.open)
                 this.setOpen(true, event);
-            const options = [...(this.popup?.querySelectorAll<Button>('cb-button:not([disabled])') ?? [])];
+            const options = elementRefs(this.refs.options).filter(node => !node.hasAttribute('disabled'));
             const active = this.activeNode();
             const current = active?.localName === 'cb-button' ? options.indexOf(active as Button) : -1;
             const direction = event.key === 'ArrowDown' ? 1 : -1;

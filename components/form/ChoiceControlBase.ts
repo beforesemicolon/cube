@@ -12,7 +12,7 @@ export abstract class ChoiceControlBase<P extends ChoiceControlProps = ChoiceCon
     static observedAttributes = [...FieldControlBase.observedAttributes, 'checked', 'value']
     checked = false
     value = 'on'
-    protected fieldElement(): HTMLInputElement | undefined { return this.contentRoot.querySelector<HTMLInputElement>('[part~="control"]') ?? undefined }
+    protected fieldElement(): HTMLInputElement | undefined { return this.refs.control?.[0] instanceof HTMLInputElement ? this.refs.control[0] : undefined }
     protected captureValue(): boolean { return this.checked }
     protected restoreValue(value: boolean | FormRestoreValue): void {
         if (typeof value === 'boolean') this.checked = value

@@ -85,3 +85,79 @@ test('Storybook color picker opens and edits with its complete control args', as
     await picker.getByRole('button', { name: 'Add current color' }).click()
     await expect(picker.locator('[part~=swatch]')).toHaveCount(count + 1)
 })
+
+test('helper conditions keep live dependencies when selections and collections change', async ({ page }) => {
+    await page.evaluate(() => {
+        const options = [{ value: 'a', label: 'Alpha' }, { value: 'b', label: 'Beta' }]
+        for (const tag of ['cb-select', 'cb-radio-group']) {
+            const control = document.createElement(tag)
+            Object.assign(control, { options, label: tag, value: tag === 'cb-select' ? ['a'] : 'a', native: true, multi: true })
+            document.querySelector('#fixture')?.append(control)
+            Object.defineProperty(control, 'syncView', { value: () => undefined })
+        }
+    })
+    const select = page.locator('cb-select select')
+    const radio = page.locator('cb-radio-group')
+    await expect(select).toHaveValues(['a'])
+    await expect(radio.getByRole('radio', { name: 'Alpha' })).toBeChecked()
+    await page.locator('cb-select').evaluate(element => Object.assign(element, { value: ['b'] }))
+    await radio.evaluate(element => Object.assign(element, { value: 'b' }))
+    await expect(select).toHaveValues(['b'])
+    await expect(radio.getByRole('radio', { name: 'Beta' })).toBeChecked()
+    await expect(radio.getByRole('radio', { name: 'Alpha' })).not.toBeChecked()
+    await page.locator('cb-select').evaluate(element => Object.assign(element, {
+        options: [{ value: 'b', label: 'Updated beta' }, { value: 'c', label: 'Gamma' }], value: ['c'],
+    }))
+    await expect(select).toHaveValues(['c'])
+    await expect(select.locator('option')).toHaveText(['Updated beta', 'Gamma'])
+})
+
+test('component stylesheets and delegated slot changes survive content replacement', async ({ page }) => {
+    await page.evaluate(() => {
+        const card = document.createElement('cb-card')
+        Object.assign(card, { label: 'Card', value: 'Generated preview' })
+        document.querySelector('#fixture')?.append(card)
+    })
+    const card = page.locator('cb-card')
+    await expect(card.locator('[part~=generated-content]')).toBeVisible()
+    await card.evaluate(element => {
+        const paragraph = document.createElement('p')
+        paragraph.textContent = 'Custom content'
+        element.append(paragraph)
+    })
+    await expect(card.locator('[part~=generated-content]')).toBeHidden()
+    await card.evaluate(element => element.replaceChildren())
+    await expect(card.locator('[part~=generated-content]')).toBeVisible()
+    await expect(card.locator('[part~=panel]')).toHaveCSS('border-top-width', '1px')
+})
+
+test('ref-based menu navigation has one Tab stop and activates links once', async ({ page }) => {
+    await page.evaluate(() => {
+        const menu = document.createElement('cb-menu')
+        Object.assign(menu, { label: 'Menu', items: [{ id: 'first', label: 'First', href: '#first' }, { id: 'second', label: 'Second' }] })
+        menu.addEventListener('action', event => {
+            const action = event as CustomEvent<{ id: string; originalEvent: Event }>
+            action.detail.originalEvent.preventDefault()
+            menu.dataset.action = action.detail.id
+            menu.dataset.count = String(Number(menu.dataset.count ?? 0) + 1)
+        })
+        const before = document.createElement('button'), after = document.createElement('button')
+        before.textContent = 'Before menu'; after.textContent = 'After menu'
+        document.querySelector('#fixture')?.append(before, menu, after)
+        before.focus()
+    })
+    const menu = page.locator('cb-menu')
+    await page.keyboard.press('Tab')
+    await expect(menu.locator('cb-link a')).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(menu).toHaveAttribute('data-action', 'first')
+    await expect(menu).toHaveAttribute('data-count', '1')
+    await page.keyboard.press('Tab')
+    await expect(page.getByRole('button', { name: 'After menu' })).toBeFocused()
+    await page.keyboard.press('Shift+Tab')
+    await page.keyboard.press('ArrowDown')
+    await expect(menu.getByRole('menuitem', { name: 'Second' })).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(menu).toHaveAttribute('data-action', 'second')
+    await expect(menu).toHaveAttribute('data-count', '2')
+})

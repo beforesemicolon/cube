@@ -1,4 +1,5 @@
-import { html, repeat, type Template } from '../../core/runtime.js'
+import { elementRefs } from '../../core/refs.js'
+import { when, is, or, isNot, css as componentStyles, html, repeat, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { uid } from '../../core/id.js'
 import { bool, text } from '../../core/value.js'
@@ -16,6 +17,8 @@ const css = editorCSS + `
 `;
 
 export class TimePicker extends TimePickerBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly controlId = uid('cb-time-picker')
     private popupController?: PopupController
     private get trigger(): HTMLElement | undefined { const node = this.refs.trigger?.[0]; return node instanceof HTMLElement ? node : undefined }
@@ -28,23 +31,23 @@ export class TimePicker extends TimePickerBase {
     private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))) }
     private descriptionText = (): string | null => { return [text(this.description), this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null }
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="root">
+        return html`<div part="root">
             <cb-button ref="trigger" part="trigger control" exportparts="control:trigger-control,button-label:trigger-label" data-bare data-semantic-host
-                id="${this.controlId}" hidden="${() => bool(this.native)}" disabled="${() => this.unavailable || bool(this.readOnly)}"
+                id="${this.controlId}" hidden="${this.props.native}" disabled="${or(() => this.unavailable, this.props.readOnly)}"
                 accessible-label="${() => [this.accessibleName(), this.displayValue()].filter(Boolean).join(': ')}"
-                aria-haspopup="listbox" aria-controls="${this.controlId}-popup" aria-expanded="${() => String(bool(this.open))}"
+                aria-haspopup="listbox" aria-controls="${this.controlId}-popup" aria-expanded="${when(this.props.open, 'true', 'false')}"
                 aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
                 onaction="${(event: Event) => { event.stopPropagation(); this.setOpen(!this.open, event) }}" onkeydown="${this.handleKey}">
                 <span part="value">${this.displayValue}</span><cb-icon part="icon" name="clock" decorative="true"></cb-icon>
             </cb-button>
             <div ref="popup" part="popup listbox" role="listbox" id="${this.controlId}-popup" aria-label="${this.accessibleName}" hidden onkeydown="${this.handleKey}">
-                ${repeat(this.timeOptions, option => html`<cb-button part="option" exportparts="control:option-control,label:option-label,button-label:option-label,icon:option-icon,description:option-description" data-bare data-semantic-host role="option"
-                    label="${option.label}" accessible-label="${option.label}" aria-selected="${() => String(option.value === this.value)}"
+                ${repeat(this.timeOptions, option => html`<cb-button ref="options" part="option" exportparts="control:option-control,label:option-label,button-label:option-label,icon:option-icon,description:option-description" data-bare data-semantic-host role="option"
+                    label="${option.label}" accessible-label="${option.label}" aria-selected="${when(is(() => option.value === this.value), 'true', 'false')}"
                     onaction="${(event: Event) => { event.stopPropagation(); this.setValue(option.value, event); this.trigger?.focus() }}"></cb-button>`, { key: option => option.value })}
             </div>
-            <input ref="native" part="native control" type="time" id="${this.controlId}-native" hidden="${() => !bool(this.native)}"
+            <input ref="native" part="native control" type="time" id="${this.controlId}-native" hidden="${isNot(this.props.native)}"
                 value="${this.props.value}" min="${this.props.min}" max="${this.props.max}" step="${this.interval}"
-                disabled="${() => this.unavailable}" readonly="${() => bool(this.readOnly)}" required="${() => bool(this.required)}"
+                disabled="${() => this.unavailable}" readonly="${this.props.readOnly}" required="${this.props.required}"
                 aria-label="${this.accessibleName}" aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
                 oninput="${(event: Event) => { const input = event.currentTarget; if (input instanceof HTMLInputElement && !this.setValue(input.value, event)) input.value = this.value }}"
                 onblur="${() => { this.validationShown = true }}">
@@ -68,7 +71,7 @@ export class TimePicker extends TimePickerBase {
         if (bool(this.native) || !bool(this.open)) this.popupController?.hide()
         else {
             this.popupController?.show()
-            queueMicrotask(() => this.popup?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({ block: 'center' }))
+            queueMicrotask(() => elementRefs(this.refs.options).find(node => node.getAttribute('aria-selected') === 'true')?.scrollIntoView({ block: 'center' }))
         }
         if (!this.popupController) this.popup.hidden = bool(this.native) || !bool(this.open)
     }
@@ -84,7 +87,7 @@ export class TimePicker extends TimePickerBase {
         return result
     }
     private formatTime(hours: number, minutes: number): string { return new Intl.DateTimeFormat(this.documentLanguage(), { hour: 'numeric', minute: '2-digit' }).format(new Date(2024, 0, 1, hours, minutes)); }
-    private optionNodes(): Button[] { return [...(this.popup?.querySelectorAll<Button>('cb-button:not([disabled])') ?? [])]; }
+    private optionNodes(): HTMLElement[] { return elementRefs(this.refs.options).filter(node => !node.hasAttribute('disabled')); }
     private handleKey = (event: KeyboardEvent): void => {
         if (event.key === 'Escape') {
             event.preventDefault();

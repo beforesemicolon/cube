@@ -33,6 +33,6 @@ export abstract class FieldBase<P extends FieldProps = FieldProps> extends Compo
     protected fieldDetails = (): string => { return scalarText(this.details) }
     protected fieldError = (): string => { return scalarText(this.errorText) }
     protected fieldSuccess = (): string => { return scalarText(this.successText) }
-    protected isInvalid(): boolean { return bool(this.invalid) || Boolean(this.fieldError()) }
+    protected isInvalid = (): boolean => { return bool(this.invalid) || Boolean(this.fieldError()) }
     protected isSuccess(): boolean { return !this.isInvalid() && (bool(this.success) || Boolean(this.fieldSuccess())) }
 }

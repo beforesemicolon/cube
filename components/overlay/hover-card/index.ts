@@ -1,4 +1,4 @@
-import { html, type Template } from '../../core/runtime.js'
+import { css as componentStyles, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { PopupController, type PopupPlacement } from '../../core/popup.js'
 import { HoverCardBase } from './HoverCardBase.js'
@@ -7,9 +7,11 @@ const css = editorCSS + `
 [part~=card]{z-index:var(--z-index-popover,50);inline-size:var(--component-hover-card-width,300px);box-sizing:border-box;overflow:auto;padding:var(--spacing-md,12px);border:1px solid var(--color-separator);border-radius:var(--radius-md);background:var(--color-surface-raised,var(--color-surface));color:var(--color-foreground);box-shadow:0 12px 32px color-mix(in srgb,var(--color-foreground) 18%,transparent)}
 `;
 export class HoverCard extends HoverCardBase {
+    stylesheet = componentStyles`${css}`
+
     private popup?: PopupController
     render(): Template {
-        return html`<style part="styles">${css}</style>
+        return html`
             <span ref="anchor" part="anchor"
                 onpointerenter="${() => this.schedule(true)}" onpointerleave="${() => this.schedule(false)}" onfocus="${[() => this.schedule(true), true]}" onblur="${[() => this.schedule(false), true]}">
                 <slot ref="trigger" name="trigger" part="trigger"></slot>

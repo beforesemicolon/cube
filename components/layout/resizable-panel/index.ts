@@ -1,6 +1,6 @@
-import { type Template, html } from '../../core/runtime.js';
+import { css as componentStyles, type Template, html } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
-import { finite, scalarText } from '../../core/value.js';
+import { finite } from '../../core/value.js';
 import { ResizablePanelBase } from './ResizablePanelBase.js';
 const css = editorCSS + `
 :host{position:relative;display:block;inline-size:var(--component-resizable-panel-size,320px);min-inline-size:0}
@@ -13,15 +13,17 @@ const css = editorCSS + `
 [part~=resize-handle]:hover::before,[part~=resize-handle]:focus-visible::before,[part~=resize-handle][data-resizing]::before{background:var(--color-primary)}
 `;
 export class ResizablePanel extends ResizablePanelBase {
+    stylesheet = componentStyles`${css}`
+
     private get handle(): HTMLElement | undefined { const node = this.refs.handle?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private startX = 0;
     private startSize = 0;
     render(): Template {
-        return html`<style part="styles">${css}</style><section part="panel" aria-label=${this.accessibleName}>
+        return html`<section part="panel" aria-label=${this.accessibleName}>
             <header part="header"><slot name="heading" part="heading">${this.props.label}</slot></header>
             <slot part="content"></slot>
         </section><div part="resize-handle" ref="handle" role="separator" aria-orientation="vertical"
-            tabindex=${() => this.unavailable ? -1 : 0} aria-label=${() => scalarText(this.resizeLabel)}
+            tabindex=${() => this.unavailable ? -1 : 0} aria-label=${this.props.resizeLabel}
             aria-valuemin=${() => finite(this.min,180)} aria-valuemax=${() => finite(this.max,640)}
             aria-valuenow=${this.currentSize}
             onpointerdown=${this.beginResize}

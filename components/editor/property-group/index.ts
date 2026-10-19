@@ -1,4 +1,4 @@
-import { html, type Template } from '../../core/runtime.js'
+import { isNot, or, css as componentStyles, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { bool, scalarText } from '../../core/value.js'
 import { PropertyGroupBase } from './PropertyGroupBase.js'
@@ -7,16 +7,18 @@ const css = editorCSS + `
 [part~=reset]{flex:none}:host([data-dirty]) [part~=section]{--component-property-group-accent:var(--color-primary)}
 `;
 export class PropertyGroup extends PropertyGroupBase {
+    stylesheet = componentStyles`${css}`
+
     render(): Template {
-        return html`<style part="styles">${css}</style>
+        return html`
             <cb-expandable-section part="section" exportparts="root:root,trigger:trigger,heading:heading,label:label,description:description,panel:panel,content:content,header-extras:header-extras"
-                label="${() => scalarText(this.label)}" accessible-label="${() => scalarText(this.accessibleLabel) || this.toggleLabel()}"
-                description="${() => scalarText(this.description)}" expanded="${() => bool(this.expanded)}"
-                disabled="${() => this.unavailable || !bool(this.collapsible)}" heading-level="3"
+                label="${this.props.label}" accessible-label="${() => scalarText(this.accessibleLabel) || this.toggleLabel()}"
+                description="${this.props.description}" expanded="${this.props.expanded}"
+                disabled="${or(() => this.unavailable, isNot(this.props.collapsible))}" heading-level="3"
                 onexpansionchange="${(event: Event) => { event.stopPropagation(); this.toggle(event) }}">
-                <span slot="header-info" part="mixed" hidden="${() => !bool(this.mixed) || !scalarText(this.mixedLabel)}">${() => scalarText(this.mixedLabel)}</span>
+                <span slot="header-info" part="mixed" hidden="${or(isNot(this.props.mixed), isNot(this.props.mixedLabel))}">${this.props.mixedLabel}</span>
                 <cb-button slot="header-actions" part="reset" variant="ghost" icon="reset" icon-only="true"
-                    accessible-label="${() => scalarText(this.resetLabel)}" hidden="${() => !bool(this.dirty)}"
+                    accessible-label="${this.props.resetLabel}" hidden="${isNot(this.props.dirty)}"
                     disabled="${() => this.unavailable}" onaction="${(event: Event) => { event.stopPropagation(); this.reset(event) }}"></cb-button>
                 <slot part="property-content"></slot>
             </cb-expandable-section>`

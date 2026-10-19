@@ -1,4 +1,4 @@
-import { type Template, html, repeat } from '../../core/runtime.js';
+import { pick, isNot, or, and, css as componentStyles, type Template, html, repeat } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import type { Button } from '../../action/button/index.js';
 import { bool, clamp, scalarText } from '../../core/value.js';
@@ -50,6 +50,8 @@ interface ChoiceOption {
     readonly label: string;
 }
 export class GradientEditor extends GradientEditorBase {
+    stylesheet = componentStyles`${css}`
+
     private node(name:string): HTMLElement | undefined { const node=this.refs[name]?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private get track(): HTMLElement | undefined { return this.node('track'); }
     private get angleInput(): HTMLInputElement | undefined { const node=this.node('angle'); return node instanceof HTMLInputElement ? node : undefined; }
@@ -57,27 +59,27 @@ export class GradientEditor extends GradientEditorBase {
     private get formControl(): HTMLInputElement | undefined { const node=this.node('form'); return node instanceof HTMLInputElement ? node : undefined; }
     private get handles(): Map<string,Button> { return new Map((this.refs.handles ?? []).flatMap(node => node instanceof HTMLElement && node.dataset.stopId ? [[node.dataset.stopId,node as Button] as const] : [])); }
     private drag?: DragState;
-    private blocked = (): boolean => { return this.unavailable || bool(this.readOnly); }
+    private blocked = or(() => this.unavailable, () => this.readOnly);
     private stop(id:string): GradientStop { return this.model().stops.find(stop=>stop.id === id) ?? this.selectedStop(); }
     private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(scalarText(this.errorText))); }
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="root"><div part="geometry">
+        return html`<div part="root"><div part="geometry">
             <cb-segmented-control part="mode" exportparts="group:mode-group,item:mode-item,item-label:mode-label"
-                value=${() => this.model().type} accessible-label=${() => this.typeLabel || this.accessibleName()} disabled=${this.blocked} size=${this.props.size}
+                value=${pick(this.model, "type")} accessible-label=${() => this.typeLabel || this.accessibleName()} disabled=${this.blocked} size=${this.props.size}
                 items=${() => [{id:'linear',label:this.linearLabel || 'linear'},{id:'radial',label:this.radialLabel || 'radial'}]}
                 onchange=${(event: CustomEvent<{value:string}>) => { event.stopPropagation(); if(event.detail.value === 'linear' || event.detail.value === 'radial') this.changeType(event.detail.value,event); }}></cb-segmented-control>
-            <label part="angle-field" hidden=${() => this.model().type !== 'linear'}><span part="control-label">${this.props.angleLabel}</span>
-                <input part="angle control" ref="angle" type="number" step="1" inputmode="decimal" value=${() => this.model().angle} disabled=${this.blocked}
+            <label part="angle-field" hidden=${isNot(() => this.model().type, 'linear')}><span part="control-label">${this.props.angleLabel}</span>
+                <input part="angle control" ref="angle" type="number" step="1" inputmode="decimal" value=${pick(this.model, "angle")} disabled=${this.blocked}
                     aria-label=${this.props.angleLabel} oninput=${(event: Event) => this.changeAngle(this.angleInput?.valueAsNumber ?? this.angle,event,false)}></label>
-            <div part="radial-controls" hidden=${() => this.model().type !== 'radial'}>
-                ${this.selectField('shape',this.props.shapeLabel,() => this.model().shape,() => [
+            <div part="radial-controls" hidden=${isNot(() => this.model().type, 'radial')}>
+                ${this.selectField('shape',this.props.shapeLabel,pick(this.model, "shape"),() => [
                     {value:'circle',label:this.circleLabel || 'circle'},{value:'ellipse',label:this.ellipseLabel || 'ellipse'}
                 ],event => { const value=event.detail.value; if(value === 'circle' || value === 'ellipse') this.changeShape(value,event); })}
-                ${this.selectField('extent',this.props.extentLabel,() => this.model().extent,() => [
+                ${this.selectField('extent',this.props.extentLabel,pick(this.model, "extent"),() => [
                     {value:'closest-side',label:this.closestSideLabel || 'closest-side'},{value:'closest-corner',label:this.closestCornerLabel || 'closest-corner'},
                     {value:'farthest-side',label:this.farthestSideLabel || 'farthest-side'},{value:'farthest-corner',label:this.farthestCornerLabel || 'farthest-corner'}
                 ],event => { const value=event.detail.value; if(value === 'closest-side' || value === 'closest-corner' || value === 'farthest-side' || value === 'farthest-corner') this.changeExtent(value,event); })}
-                ${this.selectField('position',this.props.positionLabel,() => this.model().position,() => [
+                ${this.selectField('position',this.props.positionLabel,pick(this.model, "position"),() => [
                     {value:'left top',label:this.topLeftLabel || 'left top'},{value:'center top',label:this.topLabel || 'center top'},
                     {value:'right top',label:this.topRightLabel || 'right top'},{value:'left center',label:this.leftLabel || 'left center'},
                     {value:'center',label:this.centerLabel || 'center'},{value:'right center',label:this.rightLabel || 'right center'},
@@ -88,7 +90,7 @@ export class GradientEditor extends GradientEditorBase {
                 <cb-button part="add-stop" exportparts="control:add-stop-control,label:add-stop-label,button-label:add-stop-label,icon:add-stop-icon,description:add-stop-description" icon-only icon="plus" variant="ghost" size="sm" accessible-label=${this.props.addStopLabel} disabled=${this.blocked}
                     onaction=${(event: Event) => { event.stopPropagation(); this.addStop(this.largestGapPosition(),event); }}></cb-button>
                 <cb-button part="remove-stop" exportparts="control:remove-stop-control,label:remove-stop-label,button-label:remove-stop-label,icon:remove-stop-icon,description:remove-stop-description" icon-only icon="close" variant="ghost" size="sm" accessible-label=${this.props.removeStopLabel}
-                    disabled=${() => this.blocked() || this.model().stops.length <= 2}
+                    disabled=${or(this.blocked, () => this.model().stops.length <= 2)}
                     onaction=${(event: Event) => { event.stopPropagation(); if(this.removeStop(this.selectedStopId(),event)) queueMicrotask(()=>this.handles.get(this.selectedStopId())?.focus()); }}></cb-button>
             </div></div><div part="track" ref="track" role="group" aria-label=${this.props.stopsLabel}
                 onclick=${(event: MouseEvent) => {
@@ -109,9 +111,9 @@ export class GradientEditor extends GradientEditorBase {
                     onpointercancel=${this.finishDrag} onkeydown=${(event: KeyboardEvent) => this.handleStopKey(event,id)}>
                     <span part="stop-swatch"></span></cb-button>`,{key:id=>id})}
                 <cb-color-picker part="stop-color" ref="picker" exportparts="root:stop-color-root,trigger:stop-color-trigger,trigger-swatch:stop-color-swatch,popup:stop-color-popup"
-                    style=${() => `--cb-selected-stop-position:${this.selectedStop().position}%`} value=${() => this.selectedStop().color}
+                    style=${() => `--cb-selected-stop-position:${this.selectedStop().position}%`} value=${pick(this.selectedStop, "color")}
                     accessible-label=${() => this.stopName(this.model().stops.findIndex(stop=>stop.id === this.selectedStopId()),this.selectedStop().position)}
-                    disabled=${() => this.unavailable} read-only=${() => bool(this.readOnly)} allow-alpha=${() => bool(this.allowAlpha)} allow-sampler=${() => bool(this.allowSampler)}
+                    disabled=${() => this.unavailable} read-only=${this.props.readOnly} allow-alpha=${this.props.allowAlpha} allow-sampler=${this.props.allowSampler}
                     swatches=${() => Array.isArray(this.swatches) ? this.swatches : []}
                     hue-label=${this.props.hueLabel} saturation-label=${this.props.saturationLabel} value-label=${this.props.brightnessLabel}
                     alpha-label=${this.props.alphaLabel} red-label=${this.props.redLabel} green-label=${this.props.greenLabel} blue-label=${this.props.blueLabel}
@@ -124,13 +126,13 @@ export class GradientEditor extends GradientEditorBase {
                     }}></cb-color-picker>
             </div></section>
             <input part="hidden-control" ref="form" type="text" tabindex="-1" value=${this.cssValue}
-                disabled=${() => this.unavailable} readonly=${() => bool(this.readOnly)} required=${() => bool(this.required) && !bool(this.readOnly)}
+                disabled=${() => this.unavailable} readonly=${this.props.readOnly} required=${and(this.props.required, isNot(this.props.readOnly))}
                 aria-label=${this.accessibleName} aria-invalid=${() => this.validationError() || null}
                 aria-description=${() => [this.description,this.helpText,this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null}>
         </div>`;
     }
     private selectField(part:string,label:(()=>string|undefined)|undefined,value:()=>string,options:()=>readonly ChoiceOption[],handler:(event:CustomEvent<{value:string}>)=>void): Template {
-        return html`<label part=${`select-field ${part}-field`}><span part=${`control-label ${part}-label`} hidden=${() => !label?.()}>${label}</span>
+        return html`<label part=${`select-field ${part}-field`}><span part=${`control-label ${part}-label`} hidden=${isNot(() => label?.())}>${label}</span>
             <cb-select part=${part} ref=${part} accessible-label=${label} value=${value} options=${options}
                 disabled=${this.blocked} searchable="false" size=${this.props.size}
                 onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();handler(event);}}></cb-select></label>`;

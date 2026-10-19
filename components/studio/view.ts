@@ -40,7 +40,7 @@ export interface StudioViewSource extends HTMLElement {
     controlUnavailable?(): boolean;
 }
 
-const studioCSS = editorCSS + `
+export const studioCSS = editorCSS + `
 :host{inline-size:var(--component-studio-inline-size,auto);min-inline-size:0;container-type:inline-size}
 :host([data-kind=text]),:host([data-kind=textarea]),:host([data-kind=number]),:host([data-kind=search]),:host([data-kind=select]),:host([data-kind=range]),:host([data-kind=file]),:host([data-kind=color]),:host([data-kind=tokens]){inline-size:var(--component-studio-control-width,320px);max-inline-size:100%;min-inline-size:min(100%,var(--component-studio-control-min-width,240px))}
 :host([data-kind=range]){inline-size:var(--component-range-slider-width,var(--component-studio-control-width,320px));max-inline-size:100%;min-inline-size:min(100%,var(--component-range-slider-min-width,240px))}
@@ -158,7 +158,7 @@ cb-button[part~=token]{inline-size:auto;border:0;padding:0;background:transparen
 
 /** Markup owns the control DOM; this hook only reflects host-level presentation. */
 export function createStudioView(source: StudioViewSource): StudioView {
-    const root = studioTemplates(source, studioCSS)
+    const root = studioTemplates(source)
     const update = (): void => {
         source.dataset.kind = source.componentKind
         const invalid = bool(source.invalid) || source.hasAttribute('data-field-invalid')

@@ -1,8 +1,8 @@
-import { type Template, html, repeat, when } from '../../core/runtime.js';
+import { isNot, pick, is, or, css as componentStyles, type Template, html, repeat, when } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { safeHref } from '../../core/url.js';
 import type { TableColumn, TableRecord } from '../table/TableBase.js';
-import { bool, scalarText } from '../../core/value.js';
+import { scalarText } from '../../core/value.js';
 import { FileBrowserBase, type FileBrowserEntry, type FileBrowserSort, type FileBrowserSortDirection, type FileBrowserView } from './FileBrowserBase.js';
 interface FileRecord extends TableRecord {
     id: string;
@@ -29,11 +29,13 @@ const css = editorCSS + `
 @container(max-width:520px){[part~=toolbar]{align-items:stretch;flex-direction:column}[part~=toolbar-main]{inline-size:100%}[part~=search]{inline-size:100%}}
 `;
 export class FileBrowser extends FileBrowserBase {
+    stylesheet = componentStyles`${css}`
+
     render(): Template {
-        return html`<style part="styles">${css}</style><section part="browser" aria-label=${this.accessibleName}>
+        return html`<section part="browser" aria-label=${this.accessibleName}>
             <div part="toolbar"><div part="toolbar-main">
-                <cb-text-input part="search" hidden=${()=>!bool(this.searchable)} accessible-label=${this.props.searchLabel} placeholder=${this.props.searchPlaceholder}
-                    value=${()=>scalarText(this.query)} disabled=${()=>this.unavailable}
+                <cb-text-input part="search" hidden=${isNot(this.props.searchable)} accessible-label=${this.props.searchLabel} placeholder=${this.props.searchPlaceholder}
+                    value=${this.props.query} disabled=${()=>this.unavailable}
                     onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();this.setQuery(event.detail.value,event);}}></cb-text-input>
                 <slot name="toolbar" part="toolbar-content"></slot></div>
                 <cb-segmented-control part="view-toggle" accessible-label=${this.accessibleName} value=${this.props.view} disabled=${()=>this.unavailable}
@@ -42,20 +44,20 @@ export class FileBrowser extends FileBrowserBase {
             </div><cb-breadcrumb part="path" accessible-label=${this.props.breadcrumbLabel} expand-label=${this.props.expandPathLabel}
                 items=${()=>this.pathItems().map(item=>({id:item.id?`folder:${item.id}`:'root:',label:item.label}))}
                 onnavigate=${(event:CustomEvent<{id:string}>)=>{event.stopPropagation();const id=event.detail.id;this.navigate(id.startsWith('folder:')?id.slice(7):'',event);}}></cb-breadcrumb>
-            <div part="content">${when(()=>bool(this.loading),()=>html`<div part="state"><cb-skeleton variant=${()=>this.view==='table'?'table':'card'} rows="4" columns="3" accessible-label=${this.props.loadingLabel}></cb-skeleton></div>`,
-                ()=>when(()=>!this.visibleEntries().length,()=>html`<div part="state" role="status">${()=>scalarText(this.query).trim()?this.noMatchLabel:this.emptyLabel}</div>`,
-                ()=>when(()=>this.view==='table',this.tableTemplate,this.gridTemplate)))}</div>
+            <div part="content">${when(this.props.loading,()=>html`<div part="state"><cb-skeleton variant=${()=>this.view==='table'?'table':'card'} rows="4" columns="3" accessible-label=${this.props.loadingLabel}></cb-skeleton></div>`,
+                ()=>when(isNot(pick(this.visibleEntries, "length")),()=>html`<div part="state" role="status">${()=>scalarText(this.query).trim()?this.noMatchLabel:this.emptyLabel}</div>`,
+                ()=>when(is(this.props.view, 'table'),this.tableTemplate,this.gridTemplate)))}</div>
         </section>`;
     }
     private gridTemplate = (): Template => {
         return html`<div part="grid" role=${()=>this.selectionMode==='none'?'list':'listbox'} aria-multiselectable=${()=>this.selectionMode==='multiple'?true:null}>
             ${repeat(this.visibleEntries,entry=>html`<cb-button part="entry" exportparts="control:entry-control,label:entry-label,button-label:entry-label,icon:entry-icon,description:entry-description" data-bare data-semantic-host data-id=${entry.id}
-                disabled=${()=>this.unavailable||entry.disabled===true} role=${()=>this.selectionMode==='none'?'listitem':'option'}
+                disabled=${or(() => this.unavailable, is(entry.disabled, true))} role=${()=>this.selectionMode==='none'?'listitem':'option'}
                 aria-selected=${()=>this.selectionMode==='none'?null:this.selectedIds.includes(entry.id)}
                 accessible-label=${()=>this.entryActionLabel(entry,this.selectedIds.includes(entry.id))}
                 onaction=${(event:Event)=>{event.stopPropagation();entry.type==='folder'?this.activate(entry,event):this.select(entry,event);}}
                 ondblclick=${(event:MouseEvent)=>this.activate(entry,event)}>
-                <span part="entry-preview">${when(()=>Boolean(safeHref(entry.thumbnail,this.baseURI)),()=>html`<img src=${()=>safeHref(entry.thumbnail,this.baseURI)} alt="">`,
+                <span part="entry-preview">${when(is(() => safeHref(entry.thumbnail,this.baseURI)),()=>html`<img src=${()=>safeHref(entry.thumbnail,this.baseURI)} alt="">`,
                     ()=>html`<cb-icon name=${entry.type==='folder'?'folder':'file'} part="entry-icon icon" decorative></cb-icon>`)}</span>
                 <span part="entry-copy"><span part="entry-name">${entry.name}</span><span part="entry-meta">${entry.description||entry.mime||entry.type}</span></span>
             </cb-button>`,{key:entry=>entry.id})}</div>`;

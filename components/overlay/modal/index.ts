@@ -1,13 +1,14 @@
-import { html, type Template } from '../../core/runtime.js'
+import { css, isNot, or, html, type Template } from '../../core/runtime.js'
 import { bool, scalarText } from '../../core/value.js'
 import { ModalBase } from './ModalBase.js'
-import { createModalView, type ModalView } from './view.js'
+import { createModalView, modalCSS, type ModalView } from './view.js'
 export class Modal extends ModalBase {
+    stylesheet = css`${modalCSS}`
     static observedAttributes = [...ModalBase.observedAttributes, 'cancel-label', 'show-cancel']
     private view?: ModalView
     render(): Template {
         const actions = html`<cb-button part="cancel" exportparts="control:cancel-control,label:cancel-label,button-label:cancel-label,icon:cancel-icon,description:cancel-description" variant="secondary" label="${this.cancelText}"
-            hidden="${() => !bool(this.dismissible) || !bool(this.showCancel) || !this.cancelText()}"
+            hidden="${or(isNot(this.props.dismissible), isNot(this.props.showCancel), isNot(this.cancelText))}"
             onaction="${(event: Event) => { event.stopPropagation(); this.cancel(event) }}"></cb-button>
             `
         this.view = createModalView({

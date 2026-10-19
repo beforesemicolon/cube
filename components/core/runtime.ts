@@ -3,7 +3,7 @@ import type * as Runtime from '@beforesemicolon/web-component'
 /** The rendering engine is supplied by the application, shared by every Cube category. */
 export type CubeRuntime = Pick<typeof Runtime,
     'WebComponent' | 'HtmlTemplate' | 'html' | 'css' | 'state' | 'effect' | 'element' |
-    'repeat' | 'when' | 'is' | 'isNot' | 'and' | 'or' | 'val' | 'pick' | 'unsafeHTML'>
+    'repeat' | 'when' | 'is' | 'isNot' | 'and' | 'or' | 'oneOf' | 'val' | 'pick' | 'unsafeHTML'>
 
 export let WebComponent: CubeRuntime['WebComponent']
 export let html: CubeRuntime['html']
@@ -17,6 +17,7 @@ export let is: CubeRuntime['is']
 export let isNot: CubeRuntime['isNot']
 export let and: CubeRuntime['and']
 export let or: CubeRuntime['or']
+export let oneOf: CubeRuntime['oneOf']
 export let val: CubeRuntime['val']
 export let pick: CubeRuntime['pick']
 export let unsafeHTML: CubeRuntime['unsafeHTML']
@@ -36,7 +37,7 @@ export function initializeRuntime(runtime: CubeRuntime): void {
     }
     initialized = runtime
     ;({ WebComponent, HtmlTemplate, html, css, state, effect, element, repeat, when,
-        is, isNot, and, or, val, pick, unsafeHTML } = runtime)
+        is, isNot, and, or, oneOf, val, pick, unsafeHTML } = runtime)
 }
 
 interface BrowserRuntime {

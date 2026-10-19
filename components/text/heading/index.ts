@@ -1,10 +1,10 @@
-import { html, type Template } from '../../core/runtime.js'
+import { css as componentStyles, isNot, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
-import { scalarText } from '../../core/value.js'
+
 import { HeadingBase } from './HeadingBase.js'
 
 export class Heading extends HeadingBase {
-    stylesheet = editorCSS + `
+    stylesheet = componentStyles`${editorCSS + `
 :host{display:block}[part~=root]{display:contents}[part~=heading],[part~=description]{margin:0}
 :host([data-size=xs]) [part~=heading]{font-size:var(--component-heading-font-size-xs,.875rem)}
 :host([data-size=sm]) [part~=heading]{font-size:var(--component-heading-font-size-sm,1rem)}
@@ -12,7 +12,7 @@ export class Heading extends HeadingBase {
 :host([data-size=lg]) [part~=heading]{font-size:var(--component-heading-font-size-lg,1.5rem)}
 [part~=heading]{font-family:var(--typography-heading-font-family,inherit);font-weight:var(--typography-heading-font-weight,700);line-height:var(--typography-heading-line-height,1.2)}
 [part~=description]{color:var(--color-muted-foreground);font-size:var(--component-heading-description-font-size,.875rem)}
-`
+`}`
     render(): Template {
         return html`<div part="root">
             ${() => {
@@ -24,7 +24,7 @@ export class Heading extends HeadingBase {
                     default: return html`<h2 part="heading"><slot part="content">${this.props.label}</slot></h2>`
                 }
             }}
-            <p part="description" hidden="${() => !scalarText(this.props.description?.())}">${this.props.description}</p>
+            <p part="description" hidden="${isNot(this.props.description)}">${this.props.description}</p>
         </div>`
     }
 }

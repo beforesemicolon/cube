@@ -1,4 +1,4 @@
-import { html, type Template } from '../../core/runtime.js'
+import { css as componentStyles, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { SliderBase } from './SliderBase.js'
 import { bool, text } from '../../core/value.js'
@@ -15,9 +15,11 @@ const css = editorCSS + `
 :host([data-stacked]) [part=control]{writing-mode:vertical-lr;direction:rtl;block-size:var(--cb-height);inline-size:160px}
 `;
 export class Slider extends SliderBase {
+    stylesheet = componentStyles`${css}`
+
     render(): Template {
         const error = () => Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText)))
-        return html`<style part="styles">${css}</style>
+        return html`
             <input ref="control" part="control" type="range"
                 min="${() => this.range.min}" max="${() => this.range.max}" step="${() => this.range.step}"
                 value="${() => this.range.value}" disabled="${() => this.unavailable}" style="${() => '--cb-slider-fill:' + this.range.percent + '%'}"

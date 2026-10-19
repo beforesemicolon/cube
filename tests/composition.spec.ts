@@ -49,3 +49,30 @@ test('templates bind shared derived values directly instead of wrapping function
     }
     assert.deepEqual(offenders, [], 'Pass bound template getters directly; Markup evaluates and subscribes to them')
 })
+
+test('WebComponent owns stylesheets and slot events bind to concrete containers', () => {
+    const offenders: string[] = []
+    for (const path of typeScriptFiles(sourceRoot)) {
+        const source = readFileSync(path, 'utf8')
+        if (/<style\b|<slot\b[^>]*\bon\w+\s*=/.test(source)) offenders.push(relative(sourceRoot, path).split(sep).join('/'))
+    }
+    assert.deepEqual(offenders, [], 'Use css/stylesheet for styles and handle bubbling slotchange on a concrete container')
+})
+
+test('component-owned elements use refs rather than selector queries', () => {
+    const exceptions = new Set(['charts/view.ts', 'feedback/flashbar/service.ts', 'overlay/modal/service.ts'])
+    const offenders: string[] = []
+    for (const path of typeScriptFiles(sourceRoot)) {
+        const name = relative(sourceRoot, path).split(sep).join('/')
+        if (!exceptions.has(name) && /\.querySelector(?:All)?\s*[<(]/.test(readFileSync(path, 'utf8'))) offenders.push(name)
+    }
+    assert.deepEqual(offenders, [], 'Only external engine DOM and document-level service discovery need selector queries')
+})
+
+test('repeated template branches do not return raw helper functions as array values', () => {
+    const offenders: string[] = []
+    for (const path of typeScriptFiles(sourceRoot)) {
+        if (/return\s+(?:when|repeat)\s*\(/.test(readFileSync(path, 'utf8'))) offenders.push(relative(sourceRoot, path).split(sep).join('/'))
+    }
+    assert.deepEqual(offenders, [], 'Interpolate helpers inside html templates so repeated items remain renderable templates')
+})

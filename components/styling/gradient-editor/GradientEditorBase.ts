@@ -155,12 +155,12 @@ export abstract class GradientEditorBase extends FieldControlBase<GradientEditor
         if (typeof restored === 'string') { this.value = restored; this.adoptValue() }
     }
 
-    protected model(): GradientModel {
+    protected model = (): GradientModel => {
         return normalizeGradientModel({ type: this.type, angle: this.angle, shape: this.shape, extent: this.extent, position: this.position, stops: this.stops })
     }
 
     protected cssValue = (): string => { return serializeGradient(this.model()) }
-    protected selectedStop(): GradientStop { return this.model().stops.find(stop => stop.id === this.selectedId) ?? this.model().stops[0] ?? defaultGradientStops[0]! }
+    protected selectedStop = (): GradientStop => { return this.model().stops.find(stop => stop.id === this.selectedId) ?? this.model().stops[0] ?? defaultGradientStops[0]! }
     protected selectedStopId(): string { return this.selectedStop().id }
 
     protected selectStop(id: string, originalEvent?: Event): boolean {

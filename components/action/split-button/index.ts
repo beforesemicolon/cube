@@ -1,6 +1,6 @@
-import { html, type Template } from '../../core/runtime.js'
+import { when, css as componentStyles, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
-import { bool } from '../../core/value.js'
+
 import type { NormalizedItem } from '../../core/items.js'
 import { SplitButtonBase } from './SplitButtonBase.js'
 const css = editorCSS + `
@@ -14,19 +14,21 @@ const css = editorCSS + `
 [part=popup]{z-index:var(--z-index-dropdown,40);inline-size:max-content;box-sizing:border-box;max-inline-size:100%;padding:0;border:0;background:transparent;overflow:auto}
 `;
 export class SplitButton extends SplitButtonBase {
+    stylesheet = componentStyles`${css}`
+
     protected triggerElement(): HTMLElement | undefined { const node = this.refs.trigger?.[0]; return node instanceof HTMLElement ? node : undefined }
     protected popupElement(): HTMLElement | undefined { const node = this.refs.popup?.[0]; return node instanceof HTMLElement ? node : undefined }
     render(): Template {
-        return html`<style part="styles">${css}</style>
+        return html`
             <div part="group" role="group" aria-label="${this.accessibleName}">
                 <cb-button part="primary" exportparts="control:primary-control,label:primary-label,icon:primary-icon,spinner:primary-spinner"
-                    label="${this.props.label}" accessible-label="${this.accessibleName}" disabled="${() => this.unavailable}" loading="${() => bool(this.loading)}" variant="primary"
+                    label="${this.props.label}" accessible-label="${this.accessibleName}" disabled="${() => this.unavailable}" loading="${this.props.loading}" variant="primary"
                     onbeforeaction="${(event: Event) => event.stopPropagation()}"
                     onaction="${(event: Event) => { event.stopPropagation(); this.activatePrimary(event) }}"></cb-button>
             <cb-button ref="trigger" part="trigger" exportparts="control:trigger-control,label:trigger-label,icon:trigger-icon,spinner:trigger-spinner"
                 icon="down" icon-only="true" variant="primary"
                 accessible-label="${this.accessibleName}" disabled="${() => this.unavailable}"
-                aria-haspopup="menu" aria-expanded="${() => String(bool(this.open))}"
+                aria-haspopup="menu" aria-expanded="${when(this.props.open, 'true', 'false')}"
                 onbeforeaction="${(event: Event) => event.stopPropagation()}"
                 onaction="${(event: Event) => { event.stopPropagation(); this.toggle() }}"></cb-button></div>
             <div ref="popup" part="popup" hidden>

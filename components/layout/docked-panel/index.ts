@@ -1,4 +1,4 @@
-import { html, type Template } from '../../core/runtime.js'
+import { isNot, css as componentStyles, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { DockedPanelBase } from './DockedPanelBase.js'
 const css = editorCSS + `
@@ -8,15 +8,17 @@ const css = editorCSS + `
 [part~=content]{padding:var(--spacing-md,12px);min-block-size:120px}:host(:not([expanded])) [part~=content]{display:none}
 `;
 export class DockedPanel extends DockedPanelBase {
+    stylesheet = componentStyles`${css}`
+
     render(): Template {
-        return html`<style part="styles">${css}</style>
+        return html`
             <section part="panel docked-panel" aria-label="${this.accessibleName}">
                 <cb-panel-header part="header" exportparts="header:header,heading:heading,actions:actions,toggle:toggle,toggle-control:toggle-control"
                     label="${this.props.label}" description="${this.props.description}"
                     collapsible="${this.isCollapsible}" expanded="${this.isExpanded}"
                     expand-label="${this.props.expandLabel}" collapse-label="${this.props.collapseLabel}" disabled="${() => this.unavailable}"
                     ontoggle="${(event: Event) => { event.stopPropagation(); this.togglePanel(event) }}"></cb-panel-header>
-                <div part="content" hidden="${() => !this.isExpanded()}"><slot part="content-slot"></slot></div>
+                <div part="content" hidden="${isNot(this.isExpanded)}"><slot part="content-slot"></slot></div>
             </section>`
     }
     protected syncView(): void {

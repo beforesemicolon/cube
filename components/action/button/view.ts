@@ -1,4 +1,4 @@
-import { html, type Template } from '../../core/runtime.js'
+import { when, is, isNot, or, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { aria } from '../../core/accessibility.js'
 import { uid } from '../../core/id.js'
@@ -31,14 +31,14 @@ export const buttonCSS = editorCSS + `
 export function buttonView<P extends ButtonProps>(host: ButtonBase<P>, activate: (event: Event) => void, tag: 'button' | 'a' = 'button', link?: {href:()=>string|null;target:()=>string;download:()=>string}) {
     const semanticHost = host.hasAttribute('data-semantic-host')
     const descriptionId = uid('cb-button-help')
-    const busy = () => bool(host.loading)
+    const busy = is(host.props.loading)
     const glyph = () => iconPaths[host.icon] ?? ''
     const content = html`<slot part="prefix" name="prefix"></slot>
-        <svg part="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden="${() => busy() || !glyph()}">
+        <svg part="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden="${or(busy, isNot(glyph))}">
             <path part="path" d="${glyph}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
         </svg>
-        <span part="spinner" hidden="${() => !busy()}"></span>
-        <span part="${() => (semanticHost ? 'button-label' : 'label') + (bool(host.iconOnly) ? ' sr-only' : '')}"><slot part="content">${() => scalarText(host.label)}</slot></span>
+        <span part="spinner" hidden="${isNot(busy)}"></span>
+        <span part="${() => (semanticHost ? 'button-label' : 'label') + (bool(host.iconOnly) ? ' sr-only' : '')}"><slot part="content">${host.props.label}</slot></span>
         <slot part="suffix" name="suffix"></slot>`
     const onClick = (event: Event): void => { if (!semanticHost) activate(event) }
     const attributes = {
@@ -63,10 +63,10 @@ export function buttonView<P extends ButtonProps>(host: ButtonBase<P>, activate:
         'aria-pressed': () => host.pressed === undefined ? null : bool(host.pressed),
     }
     const surface = tag === 'a'
-        ? html`<a ref="control" part="control" ${attributes} href="${() => host.controlUnavailable() ? null : link?.href()}" target="${() => link?.target()}" rel="${() => link?.target() === '_blank' ? 'noopener noreferrer' : null}" download="${() => link?.download() || null}" tabindex="${() => host.controlUnavailable() ? -1 : 0}" onclick="${onClick}" style="padding:0;min-height:var(--cb-height);border:0;background:transparent;color:var(--color-signal-text,#1D50B3);text-decoration:underline;text-underline-offset:3px">${content}</a>`
-        : html`<button ref="control" part="control" type="button" ${attributes} disabled="${() => semanticHost || host.controlUnavailable()}" tabindex="${semanticHost ? -1 : null}" onclick="${onClick}">${content}</button>`
-    const root: Template = html`<style>${buttonCSS}</style>${surface}
-        <span part="description" id="${descriptionId}" hidden="${() => !scalarText(host.description)}">${() => scalarText(host.description)}</span>`
+        ? html`<a ref="control" part="control" ${attributes} href="${() => host.controlUnavailable() ? null : link?.href()}" target="${() => link?.target()}" rel="${() => link?.target() === '_blank' ? 'noopener noreferrer' : null}" download="${() => link?.download() || null}" tabindex="${when(or(semanticHost, host.controlUnavailable), -1, 0)}" onclick="${onClick}" style="padding:0;min-height:var(--cb-height);border:0;background:transparent;color:var(--color-signal-text,#1D50B3);text-decoration:underline;text-underline-offset:3px">${content}</a>`
+        : html`<button ref="control" part="control" type="button" ${attributes} disabled="${or(semanticHost, host.controlUnavailable)}" tabindex="${semanticHost ? -1 : null}" onclick="${onClick}">${content}</button>`
+    const root: Template = html`${surface}
+        <span part="description" id="${descriptionId}" hidden="${isNot(host.props.description)}">${host.props.description}</span>`
     const control = (): HTMLButtonElement | HTMLAnchorElement | undefined => {
         const node = root.refs.control?.[0]
         return node instanceof HTMLButtonElement || node instanceof HTMLAnchorElement ? node : undefined

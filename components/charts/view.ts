@@ -1,12 +1,12 @@
-import { html, repeat, state, type Template } from '../core/runtime.js';
+import { when, is, or, isNot, and, pick, html, repeat, state, type Template } from '../core/runtime.js';
 import { commonCSS } from '../theme/styles.js';
-import { bool, clamp, finite, record, text } from '../core/value.js';
+import { bool, clamp, record, text } from '../core/value.js';
 import { lightTokens, token as v } from '../theme/tokens.js';
 import type { TableColumn, TableRecord } from '../data-display/table/index.js';
 import { chartEngine, type ChartInstance } from './engine.js';
 import type { ChartBase } from './ChartBase.js';
 import type { ChartModel, ChartSkin } from './model.js';
-const css=commonCSS+`
+export const chartCSS=commonCSS+`
 [part=chart]{padding:${v('--spacing-lg')};border:1px solid ${v('--color-separator')};border-radius:${v('--radius-md')};background:${v('--color-surface')}}
 [part=title]{font-weight:600;font-size:var(--component-title-font-size,14px)}[part=description],[part=instructions]{color:${v('--color-muted-foreground')}}
 [part=legend]{display:flex;flex-wrap:wrap;gap:${v('--spacing-sm')};margin-block:${v('--spacing-sm')}}
@@ -55,7 +55,7 @@ export class ChartView {
         return this.owner.status==='error'||this.failure?this.owner.errorText:this.owner.status==='loading'||this.loadingEngine?this.owner.loadingText:model?.empty?this.owner.emptyText:model?.noMatch?this.owner.noMatchText:'';
     }
     private unavailable():boolean{return Boolean(this.statusText())||!this.model?.points.some(point=>point.y!==null);}
-    private zoomVisible():boolean{return !this.model?.pie&&bool(this.owner.zoomable)&&!this.statusText();}
+    private zoomVisible = ():boolean=> {return !this.model?.pie&&bool(this.owner.zoomable)&&!this.statusText();}
     private detailsText = ():string => {
         const point=this.model?this.owner.selected(this.model):undefined;
         return point?`${this.owner.pinned&&this.owner.pinnedText?this.owner.pinnedText+': ':''}${this.owner.pointText(point)}`:'';
@@ -65,20 +65,20 @@ export class ChartView {
         const button=(part:string,label:()=>string,action:()=>void,hidden=()=>false,icon?:string):Template=>html`
             <cb-button part=${part} label=${label} accessible-label=${label} icon-only=${Boolean(icon)} icon=${icon??''} variant="ghost" size="sm" hidden=${hidden}
                 onaction=${(event:Event)=>{event.stopPropagation();action();}}></cb-button>`;
-        this.root=html`<style part="styles">${css}</style><section part="chart" ref="group" role="group"
+        this.root=html`<section part="chart" ref="group" role="group"
             aria-label=${()=>text(owner.heading)||owner.accessibleLabel} aria-describedby=${`${id}-description`}
-            aria-busy=${()=>owner.status==='loading'||this.loadingEngine}>
-            <div part="title" id=${`${id}-title`} hidden=${()=>!text(owner.heading)}>${()=>text(owner.heading)}</div>
-            <p part="description" id=${`${id}-description`} hidden=${()=>!text(owner.description)}>${()=>text(owner.description)}</p>
+            aria-busy=${when(or(is(() => owner.status, 'loading'), () => this.loadingEngine), 'true', 'false')}>
+            <div part="title" id=${`${id}-title`} hidden=${isNot(() => text(owner.heading))}>${()=>text(owner.heading)}</div>
+            <p part="description" id=${`${id}-description`} hidden=${isNot(() => text(owner.description))}>${()=>text(owner.description)}</p>
             <div part="legend" role="group" aria-label=${()=>owner.legendLabel}>
                 ${repeat(()=>this.model?.legend??[],item=>html`<cb-button part="legend-item" exportparts="control:legend-item-control,label:legend-item-label,button-label:legend-item-label,icon:legend-item-icon,description:legend-item-description" variant="ghost" size="sm" pressed=${item.visible}
                     label=${item.name} accessible-label=${item.name} onchange=${(event:Event)=>{event.stopPropagation();owner.setItemVisible(item.id,!item.visible,this.model?.legend.map(item=>item.id)??[]);}}>
                     <span part="legend-swatch" slot="prefix" aria-hidden="true" style=${`background-color:${item.color}`}></span>
                     <span part="legend-label">${item.name}</span>
                 </cb-button>`,{key:item=>item.id})}
-            </div><div part="plot" ref="plot" aria-hidden="true" hidden=${()=>Boolean(this.statusText())}
+            </div><div part="plot" ref="plot" aria-hidden="true" hidden=${is(this.statusText)}
                 style=${()=>typeof owner.height==='number'&&Number.isFinite(owner.height)?`height:${clamp(owner.height,160,1200)}px`:null}></div>
-            <p part="status" role="status" hidden=${()=>!this.statusText()}>${this.statusText}</p>
+            <p part="status" role="status" hidden=${isNot(this.statusText)}>${this.statusText}</p>
             <div part="actions">
                 <cb-button part="navigator" exportparts="control:navigator-control,label:navigator-label,button-label:navigator-label,icon:navigator-icon,description:navigator-description" variant="ghost" size="sm" pressed=${()=>owner.pinned} label=${()=>owner.navigateLabel}
                     accessible-label=${()=>{const selected=this.model?owner.selected(this.model):undefined;return selected?`${owner.navigateLabel}: ${owner.pointText(selected)}`:owner.navigateLabel;}}
@@ -91,20 +91,20 @@ export class ChartView {
                         if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)){event.preventDefault();event.stopPropagation();owner.navigate(this.model,event.key);this.showDetails(true);}
                         else if(event.key==='Escape'){event.preventDefault();event.stopPropagation();owner.pinned=false;this.showDetails();}
                     }}></cb-button>
-                ${button('unpin',()=>owner.unpinLabel,()=>{owner.pinned=false;this.showDetails();},()=>!owner.pinned)}
-                ${button('show-all',()=>owner.showAllLabel,()=>owner.showAll(this.model?.legend.map(item=>item.id)??[]),()=>!this.model?.legend.some(item=>!item.visible))}
-                ${button('retry',()=>owner.retryLabel,()=>{this.failure=false;owner.emit('retry');this.refresh();},()=>!this.failure&&owner.status!=='error')}
-                ${button('zoom-in',()=>owner.zoomInLabel,()=>this.zoom(.75),()=>!this.zoomVisible(),'plus')}
-                ${button('zoom-out',()=>owner.zoomOutLabel,()=>this.zoom(1.25),()=>!this.zoomVisible(),'minus')}
-                ${button('reset-zoom',()=>owner.resetZoomLabel,()=>this.zoom(0),()=>!this.zoomVisible(),'reset')}
-            </div><p part="instructions" id=${`${id}-keys`} hidden=${()=>this.unavailable()||!this.keyboardActive}>${()=>owner.instructionsText}</p>
-            <p part="details" role="status" hidden=${()=>Boolean(this.statusText())||!(owner.pinned||this.keyboardActive||this.hoverActive)}>${this.detailsText}</p>
+                ${button('unpin',()=>owner.unpinLabel,()=>{owner.pinned=false;this.showDetails();},isNot(() => owner.pinned))}
+                ${button('show-all',()=>owner.showAllLabel,()=>owner.showAll(this.model?.legend.map(item=>item.id)??[]),isNot(() => this.model?.legend.some(item=>!item.visible)))}
+                ${button('retry',()=>owner.retryLabel,()=>{this.failure=false;owner.emit('retry');this.refresh();},and(isNot(() => this.failure), isNot(() => owner.status, 'error')))}
+                ${button('zoom-in',()=>owner.zoomInLabel,()=>this.zoom(.75),isNot(this.zoomVisible),'plus')}
+                ${button('zoom-out',()=>owner.zoomOutLabel,()=>this.zoom(1.25),isNot(this.zoomVisible),'minus')}
+                ${button('reset-zoom',()=>owner.resetZoomLabel,()=>this.zoom(0),isNot(this.zoomVisible),'reset')}
+            </div><p part="instructions" id=${`${id}-keys`} hidden=${or(() => this.unavailable(), isNot(() => this.keyboardActive))}>${()=>owner.instructionsText}</p>
+            <p part="details" role="status" hidden=${or(is(this.statusText), isNot(or(() => owner.pinned, () => this.keyboardActive, () => this.hoverActive)))}>${this.detailsText}</p>
             <cb-expandable-section part="data" exportparts="trigger:data-trigger,label:data-label,counter:data-counter,panel:data-panel,content:data-content"
                 variant="default" heading-level="2" disable-content-padding label=${()=>owner.tableLabel}
-                counter=${()=>this.model?.points.length?String(this.model.points.length):''} hidden=${()=>!this.model?.points.length}>
+                counter=${()=>this.model?.points.length?String(this.model.points.length):''} hidden=${isNot(() => this.model?.points.length)}>
                 <cb-table part="data-table" exportparts="root:data-table-root,table:data-table-grid,head:data-table-head,row:data-table-row,cell:data-table-cell"
                     density="compact" resizable="false" wrap label=${()=>owner.tableLabel} empty-label=${()=>owner.emptyText} loading-label=${()=>owner.loadingText}
-                    items=${()=>this.tableData().rows} columns=${()=>this.tableData().columns} item-key="id"></cb-table>
+                    items=${pick(this.tableData, "rows")} columns=${pick(this.tableData, "columns")} item-key="id"></cb-table>
             </cb-expandable-section><span ref="probe" part="color-probe" hidden></span>
         </section>`;
     }
@@ -246,7 +246,7 @@ export class ChartView {
             this.instance.dispatchAction({ type: 'downplay' });
 
     }
-    private tableData(): {rows:readonly TableRecord[];columns:readonly TableColumn[]} {
+    private tableData = (): {rows:readonly TableRecord[];columns:readonly TableColumn[]} => {
         if (!this.model) return {rows:[],columns:[]};
         const points = this.model.points;
 

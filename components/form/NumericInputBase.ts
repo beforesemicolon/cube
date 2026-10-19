@@ -16,7 +16,7 @@ export abstract class NumericInputBase<P extends NumericInputProps = NumericInpu
     min = 0
     max = 100
     step = 1
-    protected fieldElement(): HTMLInputElement | undefined { return this.contentRoot.querySelector<HTMLInputElement>('input[part~="control"]') ?? undefined }
+    protected fieldElement(): HTMLInputElement | undefined { return this.refs.control?.[0] instanceof HTMLInputElement ? this.refs.control[0] : undefined }
     protected captureValue(): NumericInputValue { return this.value }
     protected restoreValue(value: NumericInputValue | FormRestoreValue): void { this.value = this.numericValue(value) }
     setValue(value: NumericInputValue, originalEvent?: Event): boolean { return this.handleChange(this.numericValue(value), originalEvent) }

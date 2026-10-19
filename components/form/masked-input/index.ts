@@ -1,6 +1,6 @@
-import { html, type Template } from '../../core/runtime.js'
+import { css as componentStyles, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
-import { bool, scalarText } from '../../core/value.js'
+import { scalarText } from '../../core/value.js'
 import { MaskedInputBase, formatMaskedValue, unmaskValue } from './MaskedInputBase.js'
 const css = editorCSS + `
 :host{display:block;inline-size:var(--component-masked-input-width,360px);max-inline-size:100%;min-inline-size:min(100%,var(--component-masked-input-min-width,240px))}
@@ -8,10 +8,12 @@ const css = editorCSS + `
 [part~=input]:focus{outline:var(--focus-ring);outline-offset:1px}[part~=input][aria-invalid=true]{border-color:var(--color-danger)}
 `;
 export class MaskedInput extends MaskedInputBase {
+    stylesheet = componentStyles`${css}`
+
     render(): Template {
-        return html`<style part="styles">${css}</style>
+        return html`
             <input ref="input" part="control input" type="text" value="${this.formattedValue}" placeholder="${this.maskGuide}"
-                disabled="${() => this.unavailable}" readonly="${() => bool(this.readOnly)}" required="${() => bool(this.required)}"
+                disabled="${() => this.unavailable}" readonly="${this.props.readOnly}" required="${this.props.required}"
                 inputmode="${() => scalarText(this.inputMode, 'text')}" autocomplete="${() => scalarText(this.autocomplete, 'off')}"
                 aria-label="${this.accessibleName}" aria-description="${() => scalarText(this.description) || null}"
                 aria-invalid="${() => (this.validationShown ? this.validationMessage : scalarText(this.errorText)) ? 'true' : null}"

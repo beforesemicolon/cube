@@ -1,7 +1,8 @@
-import { type Template, html, repeat, when, state } from '../../core/runtime.js';
+import { elementRefs } from '../../core/refs.js'
+import { pick, isNot, and, is, css as componentStyles, type Template, html, repeat, when, state } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { iconPaths } from '../../icons/paths.js';
-import { bool, scalarText } from '../../core/value.js';
+import { bool } from '../../core/value.js';
 import { LayerTreeBase, type LayerDropPosition, type LayerTreeItem } from './LayerTreeBase.js';
 const css = editorCSS + `
 :host{display:block;inline-size:100%;min-inline-size:0}[part~=tree],[part~=group]{display:grid;gap:1px;margin:0;padding:0;list-style:none}[part~=group]{padding-inline-start:var(--component-tree-indent,20px)}
@@ -14,6 +15,8 @@ const css = editorCSS + `
 [part~=row][data-drop=before]{box-shadow:inset 0 2px var(--color-primary)}[part~=row][data-drop=after]{box-shadow:inset 0 -2px var(--color-primary)}[part~=row][data-drop=inside]{background:var(--color-selection);outline:1px solid var(--color-primary)}
 `;
 export class LayerTree extends LayerTreeBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly editing=state('');
     private readonly draft=state('');
     private get editingId(): string {return this.editing[0]();}
@@ -21,9 +24,9 @@ export class LayerTree extends LayerTreeBase {
     private draggingId='';
     private get tree(): HTMLElement | undefined {const node=this.refs.tree?.[0];return node instanceof HTMLElement?node:undefined;}
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="tree" ref="tree" role="tree" aria-label=${this.accessibleName}
+        return html`<div part="tree" ref="tree" role="tree" aria-label=${this.accessibleName}
             aria-multiselectable=${()=>bool(this.multiple)?true:null} onkeydown=${this.handleKey}>
-            ${when(()=>!this.normalizedItems().length,()=>html`<div part="empty" role="status">${this.props.emptyLabel}</div>`)}
+            ${when(isNot(pick(this.normalizedItems, "length")),()=>html`<div part="empty" role="status">${this.props.emptyLabel}</div>`)}
             ${this.itemsTemplate(this.normalizedItems,1)}</div>`;
     }
     private beginEdit(item:LayerTreeItem): void {
@@ -31,11 +34,11 @@ export class LayerTree extends LayerTreeBase {
         queueMicrotask(()=>{const node=this.refs.edit?.[0];if(node instanceof HTMLElement)node.focus();});
     }
     private itemsTemplate(items:()=>readonly LayerTreeItem[],level:number): Template {
-        return html`${repeat(items,item=>html`<div part="item"><div part="row" data-id=${item.id} role="treeitem"
+        return html`${repeat(items,item=>html`<div part="item"><div part="row" data-id=${item.id} ref="rows" role="treeitem"
             tabindex=${()=>this.selectedIds.includes(item.id)||!this.selectedIds.length&&this.normalizedItems()[0]?.id===item.id?0:-1}
-            aria-level=${level} aria-selected=${()=>this.selectedIds.includes(item.id)} aria-expanded=${()=>item.children?.length?this.expandedIds.includes(item.id):null}
+            aria-level=${level} aria-selected=${when(is(() => this.selectedIds, values => values.includes(item.id)), 'true', 'false')} aria-expanded=${()=>item.children?.length?this.expandedIds.includes(item.id):null}
             data-hidden=${()=>bool(item.hidden)?'':null} data-locked=${()=>bool(item.locked)?'':null}
-            draggable=${()=>bool(this.reorderable)&&item.draggable!==false&&!item.disabled&&!this.unavailable}
+            draggable=${and(this.props.reorderable, isNot(item.draggable, false), isNot(item.disabled), isNot(() => this.unavailable))}
             onclick=${(event:MouseEvent)=>{
                 if(event.composedPath().some(node=>node!==event.currentTarget&&node instanceof Element&&(node.matches('button,input')||node.localName.startsWith('cb-'))))return;
                 this.select(item.id,event.metaKey||event.ctrlKey,event);
@@ -44,22 +47,21 @@ export class LayerTree extends LayerTreeBase {
             ondragover=${(event:DragEvent)=>{if(event.currentTarget instanceof HTMLElement)this.dragOver(event.currentTarget,event);}}
             ondragleave=${(event:DragEvent)=>{if(event.currentTarget instanceof HTMLElement)event.currentTarget.removeAttribute('data-drop');}}
             ondrop=${(event:DragEvent)=>{if(event.currentTarget instanceof HTMLElement)this.drop(item.id,event.currentTarget,event);}}>
-            ${item.children?.length?this.actionTemplate('disclosure',()=>this.expandedIds.includes(item.id)?'down':'right',
-                ()=>this.itemLabel(this.expandedIds.includes(item.id)?this.collapseLabel:this.expandLabel,item),event=>this.toggleExpanded(item.id,event))
-                :html`<span part="spacer"></span>`}
+            ${when(item.children?.length, () => this.actionTemplate('disclosure',()=>this.expandedIds.includes(item.id)?'down':'right',
+                ()=>this.itemLabel(this.expandedIds.includes(item.id)?this.collapseLabel:this.expandLabel,item),event=>this.toggleExpanded(item.id,event)), () => html`<span part="spacer"></span>`)}
             <cb-icon name=${item.icon&&Object.hasOwn(iconPaths,item.icon)?item.icon:item.children?.length?'layers':'component'} part="type-icon icon" decorative></cb-icon>
-            ${when(()=>this.editingId===item.id,()=>html`<span part="edit-row"><cb-text-input part="edit-input" ref="edit"
+            ${when(is(() => this.editingId, item.id),()=>html`<span part="edit-row"><cb-text-input part="edit-input" ref="edit"
                 value=${this.draft[0]} accessible-label=${()=>this.itemLabel(this.renameLabel,item)}
                 onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();this.draft[1](event.detail.value);}}
                 onkeydown=${(event:KeyboardEvent)=>{if(event.key==='Enter'){event.preventDefault();this.commitRename(item,event);}else if(event.key==='Escape'){event.preventDefault();this.editingId='';}}}></cb-text-input>
                 <cb-button part="save" exportparts="control:save-control,label:save-label,button-label:save-label,icon:save-icon,description:save-description" variant="ghost" size="sm" label=${this.props.saveLabel} onaction=${(event:Event)=>{event.stopPropagation();this.commitRename(item,event);}}></cb-button>
                 <cb-button part="cancel" exportparts="control:cancel-control,label:cancel-label,button-label:cancel-label,icon:cancel-icon,description:cancel-description" variant="ghost" size="sm" label=${this.props.cancelLabel} onaction=${(event:Event)=>{event.stopPropagation();this.editingId='';}}></cb-button></span>`,
                 ()=>html`<span part="copy"><span part="label">${item.label}</span><span part="description" hidden=${!item.description}>${item.description??''}</span></span><span part="actions">
-                    ${when(()=>bool(this.showVisibility),()=>this.actionTemplate('action visibility',()=>bool(item.hidden)?'eyeOff':'eye',()=>this.itemLabel(bool(item.hidden)?this.showLabel:this.hideLabel,item),event=>this.toggleVisibility(item.id,event)))}
-                    ${when(()=>bool(this.showLock),()=>this.actionTemplate('action lock',()=>bool(item.locked)?'lock':'unlock',()=>this.itemLabel(bool(item.locked)?this.unlockLabel:this.lockLabel,item),event=>this.toggleLock(item.id,event)))}
-                    ${when(()=>bool(this.editable)&&item.renamable!==false,()=>this.actionTemplate('action rename',()=> 'text',()=>this.itemLabel(this.renameLabel,item),()=>this.beginEdit(item)))}
+                    ${when(this.props.showVisibility,()=>this.actionTemplate('action visibility',()=>bool(item.hidden)?'eyeOff':'eye',()=>this.itemLabel(bool(item.hidden)?this.showLabel:this.hideLabel,item),event=>this.toggleVisibility(item.id,event)))}
+                    ${when(this.props.showLock,()=>this.actionTemplate('action lock',()=>bool(item.locked)?'lock':'unlock',()=>this.itemLabel(bool(item.locked)?this.unlockLabel:this.lockLabel,item),event=>this.toggleLock(item.id,event)))}
+                    ${when(and(this.props.editable, isNot(item.renamable, false)),()=>this.actionTemplate('action rename',()=> 'text',()=>this.itemLabel(this.renameLabel,item),()=>this.beginEdit(item)))}
                 </span>`)}
-            </div>${when(()=>Boolean(item.children?.length)&&this.expandedIds.includes(item.id),()=>html`<div part="group" role="group">${this.itemsTemplate(()=>item.children??[],level+1)}</div>`)}</div>`,{key:item=>item.id})}`;
+            </div>${when(and(is(() => item.children?.length), is(() => this.expandedIds, values => values.includes(item.id))),()=>html`<div part="group" role="group">${this.itemsTemplate(()=>item.children??[],level+1)}</div>`)}</div>`,{key:item=>item.id})}`;
     }
     private actionTemplate(part:string,icon:()=>string,label:()=>string,handler:(event:Event)=>void): Template {
         return html`<cb-button part=${part} icon-only icon=${icon} variant="ghost" size="xs" accessible-label=${label} disabled=${()=>this.unavailable}
@@ -69,7 +71,7 @@ export class LayerTree extends LayerTreeBase {
     private findItem(items:readonly LayerTreeItem[],id:string): LayerTreeItem | undefined {
         for(const item of items){if(item.id===id)return item;const child=this.findItem(item.children??[],id);if(child)return child;}return undefined;
     }
-    private rowNodes(): HTMLElement[] { return [...(this.tree?.querySelectorAll<HTMLElement>('[role=treeitem]') ?? [])]; }
+    private rowNodes(): HTMLElement[] { return elementRefs(this.refs.rows); }
     private handleKey = (event: KeyboardEvent): void => {
         const rows = this.rowNodes();
         const current = event.composedPath().find(node => node instanceof HTMLElement && node.getAttribute('role') === 'treeitem') as HTMLElement | undefined;

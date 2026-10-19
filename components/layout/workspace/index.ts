@@ -1,4 +1,4 @@
-import { type Template, html, state } from '../../core/runtime.js';
+import { isNot, or, css as componentStyles, type Template, html, state } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { finite } from '../../core/value.js';
 import { WorkspaceBase, type WorkspacePanel } from './WorkspaceBase.js';
@@ -32,6 +32,8 @@ const css = editorCSS + `
 :host([data-mobile][mobile-panel]:not([mobile-panel=''])) [part~=backdrop]::part(control){inline-size:100%;block-size:100%}
 `;
 export class Workspace extends WorkspaceBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly headerVisible = state(false);
     private get panels(): Map<WorkspacePanel,{handle:HTMLElement}> {
         const result=new Map<WorkspacePanel,{handle:HTMLElement}>();
@@ -40,14 +42,16 @@ export class Workspace extends WorkspaceBase {
         } return result;
     }
     render(): Template {
-        return html`<style part="styles">${css}</style><header part="header" hidden=${() => !this.headerVisible[0]()}>
-            <slot name="header" part="header-content" onslotchange=${(event: Event) => {
-                if(event.currentTarget instanceof HTMLSlotElement) this.headerVisible[1](event.currentTarget.assignedNodes({flatten:true}).length>0);
-            }}></slot></header>
+        return html`<header part="header" hidden=${isNot(this.headerVisible[0])} onslotchange=${this.headerChanged}>
+            <slot ref="header" name="header" part="header-content"></slot></header>
             ${this.panelTemplate('start')}<main part="main" aria-label=${this.accessibleName}><slot part="main-content"></slot></main>
             ${this.panelTemplate('end')}${this.panelTemplate('bottom')}
             <cb-button part="backdrop" exportparts="control:backdrop-control,label:backdrop-label,button-label:backdrop-label,icon:backdrop-icon,description:backdrop-description" data-bare data-semantic-host accessible-label=${this.props.closeMobileLabel}
                 onaction=${(event: Event) => { event.stopPropagation(); if(this.mobilePanel) this.togglePanel(this.mobilePanel,false,event); }}></cb-button>`;
+    }
+    private headerChanged = (): void => {
+        const slot = this.refs.header?.[0]
+        if (slot instanceof HTMLSlotElement) this.headerVisible[1](slot.assignedNodes({ flatten: true }).length > 0)
     }
     private panelTemplate(panel: WorkspacePanel): Template {
         const closed=(): boolean => this.mobile ? this.mobilePanel !== panel : !this.isPanelOpen(panel);
@@ -65,7 +69,7 @@ export class Workspace extends WorkspaceBase {
                 onpointerdown=${(event: PointerEvent) => this.beginResize(panel,event)} onkeydown=${(event: KeyboardEvent) => this.resizeKey(panel,event)}></div>`;
         const region=panel === 'bottom' ? html`<section part="panel bottom-panel" hidden=${closed} inert=${() => closed() ? '' : null} aria-label=${() => this.panelLabel(panel)}>${body}</section>`
             : html`<aside part=${`panel ${panel}-panel`} hidden=${closed} inert=${() => closed() ? '' : null} aria-label=${() => this.panelLabel(panel)}>${body}</aside>`;
-        return html`${region}<div part=${`rail ${panel}-rail`} hidden=${() => this.mobile || this.isPanelOpen(panel)}>
+        return html`${region}<div part=${`rail ${panel}-rail`} hidden=${or(() => this.mobile, () => this.isPanelOpen(panel))}>
             <cb-button part="panel-toggle open-panel" exportparts="control:panel-toggle-control,label:panel-toggle-label,button-label:panel-toggle-label,icon:panel-toggle-icon,description:panel-toggle-description,control:open-panel-control,label:open-panel-label,button-label:open-panel-label,icon:open-panel-icon,description:open-panel-description" icon-only variant="ghost" size="sm" icon=${panel === 'start' ? 'right' : panel === 'end' ? 'left' : 'up'}
                 accessible-label=${() => this.panelToggleLabel(panel,false)} disabled=${() => this.unavailable}
                 onaction=${(event: Event) => { event.stopPropagation(); this.togglePanel(panel,true,event); }}></cb-button></div>`;

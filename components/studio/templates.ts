@@ -1,13 +1,14 @@
-import { html, repeat, state, type Template } from '../core/runtime.js'
+import { oneOf, when, or, isNot, is, html, repeat, state, type Template } from '../core/runtime.js'
 import { bool, scalarText } from '../core/value.js'
 import { iconPaths } from '../icons/paths.js'
 import type { StudioItem } from './types.js'
 import type { StudioViewSource } from './view.js'
 import type { UnitInputBase } from '../form/unit-input/UnitInputBase.js'
 import { normalizeRange } from '../form/model.js'
+import { elementRefs } from '../core/refs.js'
 
 /** Shared templates for the small form and display families, powered by Markup signals. */
-export function studioTemplates(source: StudioViewSource, styles: string): Template {
+export function studioTemplates(source: StudioViewSource): Template {
     const kind = source.componentKind
     const name = source.componentName
     const label = () => scalarText(source.label)
@@ -74,11 +75,11 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
     const primitive = (): Template => {
         if (name === 'stepper') return html`<div part="field-shell stepper">
             <cb-button part="stepper-button decrement-button" exportparts="control:decrement-button-control" icon="minus" icon-only="true" variant="secondary"
-                accessible-label="${() => text('decrementLabel')}" disabled="${() => disabled() || readOnly() || Number(source.value) <= number('min')}"
+                accessible-label="${() => text('decrementLabel')}" disabled="${or(disabled, readOnly, () => Number(source.value) <= number('min'))}"
                 onaction="${(event: Event) => setValue(Math.max(number('min'), Number(source.value) - number('step')), event)}"></cb-button>
             ${input()}
             <cb-button part="stepper-button increment-button" exportparts="control:increment-button-control" icon="plus" icon-only="true" variant="secondary"
-                accessible-label="${() => text('incrementLabel')}" disabled="${() => disabled() || readOnly() || Number(source.value) >= number('max')}"
+                accessible-label="${() => text('incrementLabel')}" disabled="${or(disabled, readOnly, () => Number(source.value) >= number('max'))}"
                 onaction="${(event: Event) => setValue(Math.min(number('max'), Number(source.value) + number('step')), event)}"></cb-button>
         </div>`
         if (name === 'unit-input') {
@@ -86,7 +87,7 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
             const units = () => [...unit.normalizedUnits]
             const unitText = () => units().find(option => option.value === unit.selectedUnit)?.label ?? unit.selectedUnit
             return html`<div part="field-shell">${input()}
-                <span part="field-affix unit unit-static" aria-hidden="true" hidden="${() => units().length > 1 || !unitText()}">${unitText}</span>
+                <span part="field-affix unit unit-static" aria-hidden="true" hidden="${or(() => units().length > 1, isNot(unitText))}">${unitText}</span>
                 <cb-select part="unit unit-select" hidden="${() => units().length <= 1}" options="${units}" value="${() => unit.selectedUnit}"
                     accessible-label="${() => text('unitLabel')}" disabled="${disabled}" read-only="${readOnly}"
                     popup-max-width="${() => unit.popupMaxWidth}" popup-max-height="${() => unit.popupMaxHeight}"
@@ -101,16 +102,16 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
 
     const choice = (): Template => html`<label part="choice">
         <input ref="control" part="control choice-control" ${controlAttributes} type="checkbox" class="${name === 'switch' ? 'visual-control' : ''}"
-            role="${name === 'switch' ? 'switch' : null}" checked="${() => bool(source.checked) || source.value === true}"
+            role="${name === 'switch' ? 'switch' : null}" checked="${or(() => bool(source.checked), is(() => source.value, true))}"
             disabled="${disabled}" required="${required}" aria-label="${accessibleName}"
             onchange="${(event: Event) => { const target = event.currentTarget; if (target instanceof HTMLInputElement) setValue(target.checked, event) }}">
-        ${name === 'switch' ? html`<span part="switch-track"><span part="switch-thumb"></span></span>` : ''}
+        ${when(name === 'switch', () => html`<span part="switch-track"><span part="switch-thumb"></span></span>`, () => '')}
         <span part="choice-label">${label}</span>
     </label>`
 
     const tokens = (): Template => html`<div part="token-list">${repeat(items, item => html`
         <cb-button part="token" exportparts="control:token-control" variant="secondary" label="${item.label}" accessible-label="${item.label}"
-            pressed="${() => selected(item)}" disabled="${() => disabled() || readOnly() || item.disabled === true}"
+            pressed="${() => selected(item)}" disabled="${or(disabled, readOnly, is(item.disabled, true))}"
             onchange="${(event: Event) => {
                 const entry = String(item.value ?? item.id)
                 const current = Array.isArray(source.value) ? source.value : scalarText(source.value) ? [scalarText(source.value)] : []
@@ -125,23 +126,21 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
                 if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
                 const container = event.currentTarget
                 if (!(container instanceof HTMLElement)) return
-                const controls = [...container.querySelectorAll<HTMLElement>('cb-button:not([disabled])')]
+                const controls = elementRefs(root.refs.items).filter(node => !node.hasAttribute('disabled'))
                 const index = controls.findIndex(control => event.composedPath().includes(control))
                 const next = event.key === 'Home' ? 0 : event.key === 'End' ? controls.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + controls.length) % controls.length
                 event.preventDefault(); controls[next]?.focus()
-            }}">${repeat(items, item => html`<cb-button part="item row" exportparts="control:item-control" data-bare data-semantic-host
-                data-item-id="${item.id}" role="${tree ? 'treeitem' : 'option'}" aria-selected="${() => String(selected(item))}"
-                accessible-label="${[item.label, item.description].filter(Boolean).join(' ')}" disabled="${() => disabled() || item.disabled === true}"
+            }}">${repeat(items, item => html`<cb-button ref="items" part="item row" exportparts="control:item-control" data-bare data-semantic-host
+                data-item-id="${item.id}" role="${tree ? 'treeitem' : 'option'}" aria-selected="${when(is(() => selected(item)), 'true', 'false')}"
+                accessible-label="${[item.label, item.description].filter(Boolean).join(' ')}" disabled="${or(disabled, is(item.disabled, true))}"
                 onaction="${(event: Event) => activate(event, item)}">
                 <span part="item-main">${tree ? glyph('file', 'item-icon icon') : ''}<span part="item-copy"><span part="item-label">${item.label}</span></span></span>
-                ${item.description ? html` <span part="item-description description">${item.description}</span>` : ''}
+                ${when(item.description, () => html` <span part="item-description description">${item.description}</span>`, () => '')}
             </cb-button>`, { key: item => item.id, empty: () => html`<span part="empty" role="status">${() => scalarText(source.emptyLabel)}</span>` })}</div>`
     }
 
     const display = (): Template => html`<div ref="control" part="display" data-component="${name}" role="group" aria-label="${accessibleName}">
-        <div part="display-content">${name === 'badge'
-            ? html`<span part="token badge" role="status">${() => value() || label()}</span>`
-            : html`<div part="editor-field"><span part="editor-field-label">${label}</span><span part="editor-field-value">${value}</span></div>`}</div>
+        <div part="display-content">${when(name === 'badge', () => html`<span part="token badge" role="status">${() => value() || label()}</span>`, () => html`<div part="editor-field"><span part="editor-field-label">${label}</span><span part="editor-field-value">${value}</span></div>`)}</div>
     </div>`
 
     const statusTitle = () => name === 'status' || name === 'spinner' ? value() || label() : label() || value()
@@ -150,34 +149,34 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
         scalarText(source.status) !== statusTitle() ? scalarText(source.status) : '',
     ].filter(Boolean))].join(' · ')
     const status = (): Template => html`<div part="display status-display" data-component="${name}"><div part="status-card">
-        ${name === 'spinner' ? html`<span part="spinner-ring"></span>` : html`<span part="${name === 'empty-state' ? 'empty-illustration' : 'status-icon'}">${glyph(name === 'empty-state' ? 'folder' : name === 'alert' ? 'warning' : name === 'toast' || name === 'banner' ? 'info' : 'bolt')}</span>`}
+        ${when(name === 'spinner', () => html`<span part="spinner-ring"></span>`, () => html`<span part="${name === 'empty-state' ? 'empty-illustration' : 'status-icon'}">${glyph(name === 'empty-state' ? 'folder' : name === 'alert' ? 'warning' : name === 'toast' || name === 'banner' ? 'info' : 'bolt')}</span>`)}
         <div part="status-content"><output part="value status-title">${statusTitle}</output>
-            <div part="status-copy" hidden="${() => !statusCopy()}">${statusCopy}</div></div>
-        </div>${kind === 'progress' && name !== 'spinner' ? html`<progress part="meter" max="${() => number('max')}" value="${() => number('progress')}"></progress>` : ''}
+            <div part="status-copy" hidden="${isNot(statusCopy)}">${statusCopy}</div></div>
+        </div>${when(kind === 'progress' && name !== 'spinner', () => html`<progress part="meter" max="${() => number('max')}" value="${() => number('progress')}"></progress>`, () => '')}
     </div>`
 
     const slottedContent = state(false)
     const panel = (): Template => html`<section ref="control" part="${kind} panel" data-component="${name}" aria-label="${accessibleName}">
         <header part="panel-header"><span part="panel-title">${label}</span>
-            <cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" variant="ghost" label="${() => scalarText(source.actionLabel)}" hidden="${() => !scalarText(source.actionLabel)}" disabled="${disabled}" onaction="${(event: Event) => activate(event)}"></cb-button></header>
-        <div part="content composed-content"><div ref="generated" part="generated-content" hidden="${slottedContent[0]}"><div part="panel-content">
-            ${name === 'card' ? html`<div part="preview-block card-media">${() => value() || label()}</div>` : ''}
-            ${repeat(items, field, { key: item => item.id, empty: () => name === 'card' ? '' : html`<div part="preview-block">${() => value() || description()}</div>` })}
-        </div></div><slot part="content" onslotchange="${(event: Event) => {
-            const slot = event.currentTarget
+            <cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" variant="ghost" label="${() => scalarText(source.actionLabel)}" hidden="${isNot(() => scalarText(source.actionLabel))}" disabled="${disabled}" onaction="${(event: Event) => activate(event)}"></cb-button></header>
+        <div part="content composed-content" onslotchange="${(event: Event) => {
+            const slot = event.target
             if (slot instanceof HTMLSlotElement) slottedContent[1](slot.assignedNodes().some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim())))
-        }}"></slot></div>
+        }}"><div ref="generated" part="generated-content" hidden="${slottedContent[0]}"><div part="panel-content">
+            ${when(name === 'card', () => html`<div part="preview-block card-media">${() => value() || label()}</div>`, () => '')}
+            ${repeat(items, field, { key: item => item.id, empty: when(name === 'card', () => '', () => html`<div part="preview-block">${() => value() || description()}</div>`) })}
+        </div></div><slot part="content"></slot></div>
     </section>`
 
     const file = (): Template => html`<label part="dropzone control">${glyph('upload', 'dropzone-icon icon')}
         <strong part="dropzone-title">${() => text('fileLabel')}</strong><span part="description">${() => text('fileRequirements')}</span>
-        <input ref="control" part="control file" ${controlAttributes} type="file" hidden disabled="${() => disabled() || readOnly()}" required="${required}" multiple="${() => bool(source.multiple)}" aria-label="${accessibleName}"
+        <input ref="control" part="control file" ${controlAttributes} type="file" hidden disabled="${or(disabled, readOnly)}" required="${required}" multiple="${() => bool(source.multiple)}" aria-label="${accessibleName}"
             onchange="${(event: Event) => { const target = event.currentTarget; event.stopPropagation(); if (target instanceof HTMLInputElement) source.setFiles?.([...(target.files ?? [])], event) }}">
     </label>`
 
     const canvas = (): Template => html`<div ref="control" part="canvas control" data-component="${name}" role="region" tabindex="${() => disabled() ? -1 : 0}" aria-label="${accessibleName}"
         onclick="${(event: Event) => activate(event)}" onkeydown="${(event: KeyboardEvent) => { if (event.key.startsWith('Arrow')) { event.preventDefault(); source.emit('nudge', { direction: event.key, originalEvent: event }) } }}">
-        <div part="canvas-stage">${name === 'remote-cursor' ? html`${glyph('cursor', 'cursor-icon icon')}<span part="cursor-label">${() => value() || label()}</span>` : html`<span part="cursor-label">1 ${glyph('comment')}</span>`}</div>
+        <div part="canvas-stage">${when(name === 'remote-cursor', () => html`${glyph('cursor', 'cursor-icon icon')}<span part="cursor-label">${() => value() || label()}</span>`, () => html`<span part="cursor-label">1 ${glyph('comment')}</span>`)}</div>
     </div>`
 
     const body = kind === 'text' || kind === 'textarea' || kind === 'number' || kind === 'range' ? primitive()
@@ -185,10 +184,10 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
         : kind === 'collection' || kind === 'collaboration' ? collection() : kind === 'display' ? display()
         : kind === 'status' || kind === 'progress' ? status() : kind === 'canvas' ? canvas() : panel()
     const fieldControl = ['text', 'textarea', 'number', 'range', 'tokens', 'file'].includes(kind)
-    const root = html`<style>${styles}</style><div part="root" data-component="${name}">
-        ${fieldControl || ['choice', 'display', 'panel', 'editor', 'shell', 'status', 'progress'].includes(kind) ? '' : html`<div part="label-row row"><label part="label" hidden="${() => !label()}">${label}</label></div>`}
+    const root = html`<div part="root" data-component="${name}">
+        ${when(isNot(or(fieldControl, oneOf(kind, ['choice', 'display', 'panel', 'editor', 'shell', 'status', 'progress']))), html`<div part="label-row row"><label part="label" hidden="${isNot(label)}">${label}</label></div>`)}
         <div part="body">${body}</div>
-        ${fieldControl ? '' : html`<p part="description" hidden="${() => !description()}">${description}</p><p part="error" role="alert" hidden="${() => !scalarText(source.error)}">${() => scalarText(source.error)}</p>`}
+        ${when(fieldControl, () => '', () => html`<p part="description" hidden="${isNot(description)}">${description}</p><p part="error" role="alert" hidden="${isNot(() => scalarText(source.error))}">${() => scalarText(source.error)}</p>`)}
     </div>`
     return root
 }

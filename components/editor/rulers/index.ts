@@ -1,4 +1,4 @@
-import { type Template, html, repeat, when, state } from '../../core/runtime.js';
+import { isNot, or, css as componentStyles, type Template, html, repeat, when, state } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { finite, scalarText } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
@@ -28,22 +28,24 @@ const css = editorCSS + `
 :host([data-disabled]) [part~=root]{opacity:var(--component-disabled-opacity,.5)}
 `;
 export class Rulers extends RulersBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly dimensions = state({width:960,height:480});
     private get surface(): HTMLElement | undefined { const node=this.refs.surface?.[0]; return node instanceof HTMLElement ? node : undefined; }
     render(): Template {
         const ticks = (axis: 'x' | 'y'): Template => html`${repeat(() => this.ticks(axis), tick => html`
             <span part="tick" data-major=${tick.major ? '' : null} style=${`${axis === 'x' ? 'inset-inline-start' : 'inset-block-start'}:${tick.pixel}px`}></span>
-            ${when(() => tick.major, () => html`<span part="tick-label" style=${`${axis === 'x' ? 'inset-inline-start' : 'inset-block-start'}:${Math.max(14,tick.pixel)}px`}>${() => `${Math.round(tick.value*100)/100}${scalarText(this.unit)}`}</span>`)}
+            ${when(tick.major, () => html`<span part="tick-label" style=${`${axis === 'x' ? 'inset-inline-start' : 'inset-block-start'}:${Math.max(14,tick.pixel)}px`}>${() => `${Math.round(tick.value*100)/100}${scalarText(this.unit)}`}</span>`)}
         `, {key: tick => tick.value})}`;
-        return html`<style part="styles">${css}</style><div part="root rulers">
+        return html`<div part="root rulers">
             <span part="corner"></span><div part="horizontal ruler" ref="horizontal">${ticks('x')}</div><div part="vertical ruler" ref="vertical">${ticks('y')}</div>
             <div part="surface canvas control" ref="surface" role="region" tabindex=${() => this.unavailable ? -1 : 0}
                 aria-label=${this.accessibleName} aria-disabled=${() => this.unavailable || null}
                 style=${() => `--cb-cursor-x:${(finite(this.cursorX)-finite(this.originX))*this.scale()}px;--cb-cursor-y:${(finite(this.cursorY)-finite(this.originY))*this.scale()}px`}
                 onpointermove=${(event: PointerEvent) => this.trackPointer(event,false)}
                 onpointerdown=${(event: PointerEvent) => this.trackPointer(event,true)} onkeydown=${this.onKeydown}>
-                <slot part="content"></slot><span part="guide-x" hidden=${() => !this.cursorVisible()}></span><span part="guide-y" hidden=${() => !this.cursorVisible()}></span>
-                <output part="cursor" hidden=${() => !this.cursorVisible() || !this.coordinateText()}>${this.coordinateText}</output>
+                <slot part="content"></slot><span part="guide-x" hidden=${isNot(this.cursorVisible)}></span><span part="guide-y" hidden=${isNot(this.cursorVisible)}></span>
+                <output part="cursor" hidden=${or(isNot(this.cursorVisible), isNot(this.coordinateText))}>${this.coordinateText}</output>
             </div></div>`;
     }
     protected mount(): void {

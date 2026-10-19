@@ -1,4 +1,5 @@
-import { html, repeat, type Template } from '../../core/runtime.js'
+import { elementRefs } from '../../core/refs.js'
+import { when, is, css as componentStyles, html, repeat, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { CalendarBase } from './CalendarBase.js'
 const calendarCSS = editorCSS + `
@@ -14,8 +15,10 @@ const calendarCSS = editorCSS + `
 [part~=day][data-today]:not([aria-pressed=true]){border-color:var(--color-primary);color:var(--color-primary)}
 `;
 export class Calendar extends CalendarBase {
+    stylesheet = componentStyles`${calendarCSS}`
+
     render(): Template {
-        return html`<style part="styles">${calendarCSS}</style>
+        return html`
             <div part="calendar" role="group" aria-label="${this.accessibleName}">
                 <div part="header">
                     <cb-button part="previous" exportparts="control:previous-control,label:previous-label,button-label:previous-label,icon:previous-icon,description:previous-description" variant="ghost" icon="left" icon-only="true"
@@ -29,13 +32,13 @@ export class Calendar extends CalendarBase {
                 <div part="weekdays">${repeat([0, 1, 2, 3, 4, 5, 6], index => html`<span part="weekday">${() => new Intl.DateTimeFormat(this.documentLanguage(), { weekday: 'short' }).format(new Date(2024, 0, 7 + ((this.weekStart() + index) % 7)))}</span>`)}</div>
                 <div ref="days" part="days" role="group">${repeat(this.visibleDates, date => {
                     const value = this.dateValue(date)
-                    return html`<cb-button part="day" exportparts="control:day-control,label:day-label,button-label:day-label,icon:day-icon,description:day-description" data-bare data-semantic-host
+                    return html`<cb-button ref="dates" part="day" exportparts="control:day-control,label:day-label,button-label:day-label,icon:day-icon,description:day-description" data-bare data-semantic-host
                         data-value="${value}" label="${date.getDate()}"
                         accessible-label="${() => new Intl.DateTimeFormat(this.documentLanguage(), { dateStyle: 'full' }).format(date)}"
                         disabled="${() => this.isUnavailable(date)}"
                         data-outside="${() => date.getMonth() !== this.visibleMonth.getMonth() ? '' : null}"
                         data-today="${value === this.dateValue(new Date()) ? '' : null}"
-                        aria-pressed="${() => String(value === this.value)}"
+                        aria-pressed="${when(is(() => value === this.value), 'true', 'false')}"
                         tabindex="${() => value === this.focusableDate() ? 0 : -1}"
                         onaction="${(event: Event) => { event.stopPropagation(); this.chooseDate(date, event); }}"
                         onkeydown="${(event: KeyboardEvent) => this.handleDayKey(event, date)}"></cb-button>`
@@ -63,7 +66,7 @@ export class Calendar extends CalendarBase {
         event.preventDefault()
         const next = new Date(date.getFullYear(), date.getMonth(), date.getDate() + offset)
         if (next.getMonth() !== this.visibleMonth.getMonth()) this.visibleMonth = new Date(next.getFullYear(), next.getMonth(), 1)
-        queueMicrotask(() => this.refs.days?.[0]?.querySelector<HTMLElement>(`cb-button[data-value="${this.dateValue(next)}"]`)?.focus())
+        queueMicrotask(() => elementRefs(this.refs.dates).find(node => node.dataset.value === this.dateValue(next))?.focus())
     }
 }
 export { CalendarBase };

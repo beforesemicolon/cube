@@ -1,4 +1,4 @@
-import { html, type Template } from '../../core/runtime.js'
+import { is, isNot, html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { uid } from '../../core/id.js'
 export interface ModalView { root: Template; readonly dialog?: HTMLDialogElement }
@@ -31,13 +31,13 @@ export const modalCSS = editorCSS + `
 export function createModalView(bindings: ModalBindings, onClose: (event: Event) => void, onCancel: (event: Event) => void, onClick: (event: MouseEvent) => void, actions: Template, role = 'dialog'): ModalView {
     const titleId = uid('cb-modal-title')
     const descriptionId = uid('cb-modal-description')
-    const root = html`<style part="styles">${modalCSS}</style>
+    const root = html`
         <dialog ref="dialog" part="dialog surface" role="${role}" aria-labelledby="${titleId}" aria-describedby="${descriptionId}"
-            aria-modal="${() => String(bindings.modal())}" oncancel="${onCancel}" onclick="${onClick}">
+            aria-modal="${is(() => bindings.modal())}" oncancel="${onCancel}" onclick="${onClick}">
             <header part="header"><div part="header-copy">
                 <div part="heading" id="${titleId}"><slot name="heading">${bindings.heading}</slot></div>
-                <div part="description" id="${descriptionId}" hidden="${() => !bindings.description()}"><slot name="description">${bindings.description}</slot></div>
-            </div><cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" variant="ghost" icon="close" icon-only="true" hidden="${() => !bindings.dismissible()}"
+                <div part="description" id="${descriptionId}" hidden="${isNot(() => bindings.description())}"><slot name="description">${bindings.description}</slot></div>
+            </div><cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" variant="ghost" icon="close" icon-only="true" hidden="${isNot(() => bindings.dismissible())}"
                 accessible-label="${bindings.closeLabel}" onaction="${(event: Event) => { event.stopPropagation(); onClose(event) }}"></cb-button></header>
             <section part="body"><slot part="content"></slot></section>
             <footer part="footer actions">${actions}<slot name="footer" part="footer-content"></slot></footer>

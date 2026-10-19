@@ -1,4 +1,4 @@
-import { html, state, unsafeHTML, type Template } from '../../core/runtime.js'
+import { pick, isNot, or, css as componentStyles, html, state, unsafeHTML, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { highlightCode } from '../../core/highlight.js'
 import { scalarText } from '../../core/value.js'
@@ -26,13 +26,15 @@ const css = editorCSS + `
 @container (max-width:360px){[part~=toolbar]{align-items:stretch;flex-direction:column}[part~=copy]{inline-size:100%}}
 `;
 export class CodePreview extends CodePreviewBase {
+    stylesheet = componentStyles`${css}`
+
     private readonly copyStatus = state('')
     render(): Template {
         const highlighted = () => highlightCode(this.source(), scalarText(this.codeLanguage, 'plaintext'))
-        return html`<style part="styles">${css}</style>
+        return html`
             <figure part="root code-preview"><figcaption part="toolbar row">
-                <span part="language">${() => highlighted().language}</span>
-                <cb-button part="copy" exportparts="control:copy-control,label:copy-label,button-label:copy-label,icon:copy-icon,description:copy-description" variant="ghost" label="${this.copyText}" disabled="${() => this.unavailable || !this.source()}"
+                <span part="language">${pick(highlighted, "language")}</span>
+                <cb-button part="copy" exportparts="control:copy-control,label:copy-label,button-label:copy-label,icon:copy-icon,description:copy-description" variant="ghost" label="${this.copyText}" disabled="${or(() => this.unavailable, isNot(this.source))}"
                     onaction="${(event: Event) => { event.stopPropagation(); void this.copySource() }}"></cb-button>
             </figcaption>
             <pre part="pre" tabindex="0" role="region" aria-label="${this.accessibleName}"><code part="code" class="${() => 'language-' + highlighted().language}">${() => highlighted().language === 'plaintext' ? this.source() : unsafeHTML(highlighted().html)}</code></pre>

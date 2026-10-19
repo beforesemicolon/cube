@@ -1,4 +1,4 @@
-import { type Template, html, repeat } from '../../core/runtime.js';
+import { isNot, css as componentStyles, type Template, html, repeat } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { bool, finite, scalarText } from '../../core/value.js';
 import { SelectionOverlayBase, type SelectionHandle } from './SelectionOverlayBase.js';
@@ -17,6 +17,8 @@ const css = editorCSS + `
 :host([data-disabled]) [part~=outline]{cursor:default}:host([data-disabled]) [part~=handle],:host([data-disabled]) [part~=rotate]{display:none}
 `;
 export class SelectionOverlay extends SelectionOverlayBase {
+    stylesheet = componentStyles`${css}`
+
     private get outline(): HTMLElement | undefined { const node=this.refs.outline?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private get rotateHandle(): HTMLElement | undefined { const node=this.refs.rotate?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private get handles(): Map<SelectionHandle, HTMLElement> {
@@ -26,22 +28,22 @@ export class SelectionOverlay extends SelectionOverlayBase {
         }));
     }
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="outline" ref="outline" role="group"
+        return html`<div part="outline" ref="outline" role="group"
             tabindex=${() => this.unavailable || !bool(this.movable) ? -1 : 0}
             aria-label=${() => scalarText(this.moveLabel) || this.accessibleName()}
             onpointerdown=${this.beginMove} onkeydown=${this.moveKey}></div>
             ${repeat(this.allHandles, handle => html`<cb-button part=${`handle handle-${handle}`} ref="handles" data-handle=${handle} data-bare data-semantic-host
-                hidden=${() => !bool(this.resizable)} disabled=${() => this.unavailable} accessible-label=${() => this.handleLabel(handle)}
+                hidden=${isNot(this.props.resizable)} disabled=${() => this.unavailable} accessible-label=${() => this.handleLabel(handle)}
                 onpointerdown=${(event: PointerEvent) => { event.stopPropagation(); this.beginResize(handle,event); }}
                 onkeydown=${(event: KeyboardEvent) => this.resizeKey(handle,event)}></cb-button>`, {key: handle => handle})}
-            <cb-button part="rotate" exportparts="control:rotate-control,label:rotate-label,button-label:rotate-label,icon:rotate-icon,description:rotate-description" ref="rotate" data-bare data-semantic-host hidden=${() => !bool(this.rotatable)} disabled=${() => this.unavailable}
-                accessible-label=${() => scalarText(this.rotateLabel)}
+            <cb-button part="rotate" exportparts="control:rotate-control,label:rotate-label,button-label:rotate-label,icon:rotate-icon,description:rotate-description" ref="rotate" data-bare data-semantic-host hidden=${isNot(this.props.rotatable)} disabled=${() => this.unavailable}
+                accessible-label=${this.props.rotateLabel}
                 onpointerdown=${(event: PointerEvent) => { event.stopPropagation(); this.beginRotate(event); }}
                 onkeydown=${(event: KeyboardEvent) => {
                     if (!['ArrowLeft','ArrowRight'].includes(event.key)) return;
                     event.preventDefault(); this.setRotation(finite(this.rotation)+(event.key === 'ArrowRight' ? 1 : -1)*this.normalizedStep(event.shiftKey ? 10 : 1),event);
                 }}></cb-button>
-            <span part="size" hidden=${() => !bool(this.showSize)}>${() => {
+            <span part="size" hidden=${isNot(this.props.showSize)}>${() => {
                 const rect = this.currentRect();
                 return scalarText(this.sizeLabel).replaceAll('{width}',String(Math.round(rect.width))).replaceAll('{height}',String(Math.round(rect.height)));
             }}</span>`;

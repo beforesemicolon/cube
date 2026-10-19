@@ -1,5 +1,5 @@
 import { Component, type ComponentProps } from '../../core/Component.js'
-import { bool, clamp, finite, scalarText } from '../../core/value.js'
+import { bool, finite, scalarText } from '../../core/value.js'
 
 export interface EditorRect { x: number; y: number; width: number; height: number }
 export type SelectionHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'

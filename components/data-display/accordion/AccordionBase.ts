@@ -1,3 +1,4 @@
+import { elementRefs } from '../../core/refs.js'
 import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 import type { ButtonVariant } from '../../action/button/ButtonBase.js'
@@ -130,9 +131,9 @@ export abstract class AccordionBase extends Component<AccordionProps> {
     }
 
     focusItem(id: string): boolean {
-        const trigger = [...this.contentRoot.querySelectorAll<HTMLButtonElement>('[part~="trigger"]')]
+        const trigger = elementRefs(this.refs.triggers)
             .find(candidate => candidate.dataset.accordionId === id)
-        if (!trigger || trigger.disabled) return false
+        if (!trigger || trigger.hasAttribute('disabled')) return false
         trigger.focus()
         return true
     }

@@ -13,7 +13,7 @@ export abstract class TextareaBase extends FieldControlBase<TextareaProps> {
     placeholder = ''
     readonly componentName = 'textarea'
     readonly componentKind: StudioKind = 'textarea'
-    protected fieldElement(): HTMLTextAreaElement | undefined { return this.contentRoot.querySelector<HTMLTextAreaElement>('textarea[part~="control"]') ?? undefined }
+    protected fieldElement(): HTMLTextAreaElement | undefined { return this.refs.control?.[0] instanceof HTMLTextAreaElement ? this.refs.control[0] : undefined }
     protected captureValue(): string { return this.value }
     protected restoreValue(value: string | FormRestoreValue): void {
         this.value = value instanceof FormData ? scalarText(value.get(this.name)) : value instanceof File ? value.name : scalarText(value)

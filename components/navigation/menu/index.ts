@@ -1,9 +1,11 @@
-import { type Template, html } from '../../core/runtime.js'
+import { css as componentStyles, type Template } from '../../core/runtime.js'
 import { MenuBase } from './MenuBase.js';
-import { createMenuView, type MenuView } from './view.js';
+import {  createMenuView, type MenuView , menuCSS } from './view.js';
 export class Menu extends MenuBase {
+    stylesheet = componentStyles`${menuCSS}`
+
     private view?: MenuView;
-    render(): Template { this.view = createMenuView(this, (item, event) => this.activate(item, event)); return html`${this.view.root}`; }
+    render(): Template { this.view = createMenuView(this, (item, event) => this.activate(item, event)); return this.view.root; }
     protected syncView(): void { this.view?.update(); }
     focus(options?: FocusOptions): void { const menu = this.view?.menu; if (menu) {
         this.view?.focusFirst();

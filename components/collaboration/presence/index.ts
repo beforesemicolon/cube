@@ -1,4 +1,4 @@
-import { type Template, html, repeat, when } from '../../core/runtime.js';
+import { isNot, is, or, css as componentStyles, type Template, html, repeat, when } from '../../core/runtime.js';
 import { editorCSS } from '../../theme/styles.js';
 import { PresenceBase } from './PresenceBase.js';
 const css = editorCSS + `
@@ -23,11 +23,13 @@ const css = editorCSS + `
 @media (forced-colors:active){[part~=participant] cb-avatar{box-shadow:0 0 0 1px Canvas}[part~=participant]:hover cb-avatar{box-shadow:0 0 0 2px Highlight}}
 `;
 export class Presence extends PresenceBase {
+    stylesheet = componentStyles`${css}`
+
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="presence root" role="group" aria-label=${() => this.presenceLabel || null}>
-            <ul part="list participants" hidden=${() => !this.presenceItems.length}>
+        return html`<div part="presence root" role="group" aria-label=${() => this.presenceLabel || null}>
+            <ul part="list participants" hidden=${isNot(() => this.presenceItems.length)}>
                 ${repeat(() => this.visibleItems, item => html`<li part="member">
-                    <cb-button part="participant" exportparts="control:participant-control,label:participant-label,button-label:participant-label,icon:participant-icon,description:participant-description" disabled=${() => this.unavailable || item.disabled === true}
+                    <cb-button part="participant" exportparts="control:participant-control,label:participant-label,button-label:participant-label,icon:participant-icon,description:participant-description" disabled=${or(() => this.unavailable, is(item.disabled, true))}
                         value=${item.id} accessible-label=${() => item.accessibleLabel?.trim() || item.label}
                         onaction=${(event: Event) => { event.stopPropagation(); this.activate(item,event); }}>
                         <cb-avatar part="avatar" name=${() => item.label} src=${() => item.src ?? ''}
@@ -41,8 +43,8 @@ export class Presence extends PresenceBase {
                         <cb-avatar part="avatar overflow-avatar" initials=${() => `+${this.hiddenItems.length}`} size="sm" decorative></cb-avatar>
                     </cb-button></li>`)}
             </ul>
-            <span part="summary" hidden=${() => !this.summaryText}>${() => this.summaryText}</span>
-            <span part="empty" role="status" hidden=${() => Boolean(this.presenceItems.length) || !this.emptyText}>${() => this.emptyText}</span>
+            <span part="summary" hidden=${isNot(() => this.summaryText)}>${() => this.summaryText}</span>
+            <span part="empty" role="status" hidden=${or(is(() => this.presenceItems.length), isNot(() => this.emptyText))}>${() => this.emptyText}</span>
         </div>`;
     }
 }
