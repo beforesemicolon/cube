@@ -7,6 +7,7 @@ import { bool } from '../../core/value.js'
 export type UnitOption = string | SelectOption
 
 export interface UnitInputProps extends NumericInputProps, PopupConstraintProps {
+    placeholder?: string
     unit?: string
     units?: readonly UnitOption[]
     unitLabel?: string
@@ -14,7 +15,8 @@ export interface UnitInputProps extends NumericInputProps, PopupConstraintProps 
 
 /** Headless behavior for the Unit input component. */
 export abstract class UnitInputBase extends NumericInputBase<UnitInputProps> {
-    static observedAttributes = [...NumericInputBase.observedAttributes, 'unit', 'units', 'unit-label', ...popupConstraintAttributes]
+    static observedAttributes = [...NumericInputBase.observedAttributes, 'placeholder', 'unit', 'units', 'unit-label', ...popupConstraintAttributes]
+    placeholder = ''
     unit = ''
     units: readonly UnitOption[] = []
     unitLabel = ''

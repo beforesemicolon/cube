@@ -10,6 +10,8 @@ Event names are unprefixed and follow the lowercase DOM convention. For example,
 
 Icon-only buttons now use the boolean `icon-only` attribute (or `iconOnly` property) alongside a normal visual `variant`. Replace `variant="icon"` with `icon-only variant="ghost"` to preserve the former transparent appearance, or combine `icon-only` with any other button variant.
 
+The broad `InputBase` and `InputProps` exports were removed. Text, textarea, and file-picker bases now extend `FieldControlBase` directly, while numeric controls share `NumericInputBase`, whose value is typed as `number | null`.
+
 Do not migrate an existing consumer by simply changing a version range. Inventory old imports and custom tags, adopt the new theme JSON and label contract, and verify behavior and accessibility in that application. Components now live in consumer-facing categories: `action`, `form`, `layout`, `navigation`, `overlay`, `feedback`, `data-display`, `media`, `charts`, `styling`, `editor`, `collaboration`, `icons`, and `theme`. Import an entire category (`@beforesemicolon/cube/form`) or one self-registering component (`@beforesemicolon/cube/form/text-input`); append `/base` for its non-registering headless base. Former visual-only tags such as autocomplete, dimension, aspect-ratio, z-index, preview-switch and theme-switch are compositions or modes of the retained primitives and no longer have public entrypoints. A stable-version release review is still required before publication.
 
 Browser consumers load the standalone WebComponent runtime first. Chart consumers additionally provide ECharts or a configured asynchronous engine loader. Neither engine is embedded into Cube's classic browser bundles. Pin published versions when a release is approved.

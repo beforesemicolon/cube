@@ -139,7 +139,7 @@ const studioBoardItems = [
 const existingCategoryExports = {
     action: ["export * from './button/index.js'", "export * from './split-button/index.js'", "export * from './button-group/index.js'", "export * from './toolbar/index.js'", "export * from './action-bar/index.js'"],
     text: ["export * from './heading/index.js'", "export * from './shortcut/index.js'"],
-    form: ["export * from './InputBase.js'", "export * from './NumericInputBase.js'", "export * from './ChoiceControlBase.js'", "export * from './slider/index.js'", "export * from './select/index.js'", "export * from './radio-group/index.js'", "export * from './calendar/index.js'", "export { normalizeRange, normalizeOptions } from './model.js'"],
+    form: ["export * from './NumericInputBase.js'", "export * from './ChoiceControlBase.js'", "export * from './slider/index.js'", "export * from './select/index.js'", "export * from './radio-group/index.js'", "export * from './calendar/index.js'", "export { normalizeRange, normalizeOptions } from './model.js'"],
     layout: ["export * from './box/index.js'", "export * from './row/index.js'", "export * from './col/index.js'", "export * from './grid/index.js'", "export * from './divider/index.js'"],
     navigation: ["export * from './link/index.js'", "export * from './segmented-control/index.js'", "export * from './tabs/index.js'", "export * from './breadcrumb/index.js'", "export * from './menu/index.js'", "export * from './pagination/index.js'"],
     overlay: ["export * from './context-menu/index.js'", "export * from './dropdown/index.js'", "export * from './command-palette/index.js'", "export * from './tooltip/index.js'", "export * from './modal/index.js'", "export * from './alert-dialog/index.js'"],
