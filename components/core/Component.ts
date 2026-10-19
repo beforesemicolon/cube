@@ -35,10 +35,6 @@ export abstract class Component<P extends CommonProps = CommonProps> extends Web
         }
         this.dataset.size = ['xs', 'sm', 'md', 'lg'].includes(this.size) ? this.size : 'sm'
         this.toggleAttribute('data-disabled', this.unavailable)
-        this.contentRoot.querySelectorAll<HTMLElement>('[data-cb-description]').forEach(node => {
-            node.textContent = scalarText(this.description)
-            node.hidden = !scalarText(this.description)
-        })
     }
     protected cleanup(fn: () => void): void { this.disposers.push(fn) }
     protected listen(target: EventTarget, name: string, listener: EventListener): void {

@@ -1,17 +1,7 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { actionLabel, createBareButton, createIconButton } from '../../action/create.js';
-import type { Button } from '../../action/button/index.js';
-import { finite, scalarText } from '../../core/value.js';
+import { type Template, html, state } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
+import { finite } from '../../core/value.js';
 import { WorkspaceBase, type WorkspacePanel } from './WorkspaceBase.js';
-interface PanelView {
-    panel: HTMLElement;
-    rail: HTMLElement;
-    close: Button;
-    open: Button;
-    handle: HTMLElement;
-}
 const css = editorCSS + `
 :host{display:grid;position:relative;isolation:isolate;overflow:hidden;min-inline-size:0;min-block-size:360px;block-size:var(--component-workspace-height,100%);grid-template-columns:var(--workspace-start-track,40px) minmax(0,1fr) var(--workspace-end-track,40px);grid-template-rows:auto minmax(0,1fr) var(--workspace-bottom-track,40px);grid-template-areas:'header header header' 'start main end' 'start bottom end';background:var(--color-background);border:1px solid var(--color-separator);border-radius:var(--radius-md)}
 [part~=header]{grid-area:header;z-index:4;min-inline-size:0;border-block-end:1px solid var(--color-separator);background:var(--color-surface)}
@@ -42,82 +32,50 @@ const css = editorCSS + `
 :host([data-mobile][mobile-panel]:not([mobile-panel=''])) [part~=backdrop]::part(control){inline-size:100%;block-size:100%}
 `;
 export class Workspace extends WorkspaceBase {
-    private header?: HTMLElement;
-    private main?: HTMLElement;
-    private backdrop?: Button;
-    private panels = new Map<WorkspacePanel, PanelView>();
+    private readonly headerVisible = state(false);
+    private get panels(): Map<WorkspacePanel,{handle:HTMLElement}> {
+        const result=new Map<WorkspacePanel,{handle:HTMLElement}>();
+        for(const panel of ['start','end','bottom'] as const) {
+            const node=this.refs[`${panel}Handle`]?.[0]; if(node instanceof HTMLElement) result.set(panel,{handle:node});
+        } return result;
+    }
     render(): Template {
-        this.header = element('header', { attributes: { part: 'header' } }) as HTMLElement;
-        const headerSlot = element("slot", { attributes: { name: 'header', part: 'header-content' }, textContent: '' }) as HTMLSlotElement;
-        headerSlot.addEventListener('slotchange', () => { if (this.header)
-            this.header.hidden = headerSlot.assignedNodes({ flatten: true }).length === 0; });
-        this.header.append(headerSlot);
-        this.main = element('main', { attributes: { part: 'main' } }) as HTMLElement;
-        this.main.append(element("slot", { attributes: { name: '', part: 'main-content' }, textContent: '' }) as HTMLSlotElement);
-        const start = this.createPanel('start');
-        const end = this.createPanel('end');
-        const bottom = this.createPanel('bottom');
-        this.backdrop = createBareButton('backdrop', event => {
-            if (this.mobilePanel)
-                this.togglePanel(this.mobilePanel, false, event);
-        });
-        return html`<style part="styles">${css}</style>${this.header}${start.panel}${start.rail}${this.main}${end.panel}${end.rail}${bottom.panel}${bottom.rail}${this.backdrop}`;
+        return html`<style part="styles">${css}</style><header part="header" hidden=${() => !this.headerVisible[0]()}>
+            <slot name="header" part="header-content" onslotchange=${(event: Event) => {
+                if(event.currentTarget instanceof HTMLSlotElement) this.headerVisible[1](event.currentTarget.assignedNodes({flatten:true}).length>0);
+            }}></slot></header>
+            ${this.panelTemplate('start')}<main part="main" aria-label=${() => this.accessibleName()}><slot part="main-content"></slot></main>
+            ${this.panelTemplate('end')}${this.panelTemplate('bottom')}
+            <cb-button part="backdrop" exportparts="control:backdrop-control,label:backdrop-label,button-label:backdrop-label,icon:backdrop-icon,description:backdrop-description" data-bare data-semantic-host accessible-label=${() => this.closeMobileLabel}
+                onaction=${(event: Event) => { event.stopPropagation(); if(this.mobilePanel) this.togglePanel(this.mobilePanel,false,event); }}></cb-button>`;
+    }
+    private panelTemplate(panel: WorkspacePanel): Template {
+        const closed=(): boolean => this.mobile ? this.mobilePanel !== panel : !this.isPanelOpen(panel);
+        const body=html`<div part="panel-actions"><cb-button part="panel-toggle close-panel" exportparts="control:panel-toggle-control,label:panel-toggle-label,button-label:panel-toggle-label,icon:panel-toggle-icon,description:panel-toggle-description,control:close-panel-control,label:close-panel-label,button-label:close-panel-label,icon:close-panel-icon,description:close-panel-description" icon-only variant="ghost" size="sm"
+                icon=${panel === 'start' ? 'left' : panel === 'end' ? 'right' : 'down'}
+                accessible-label=${() => this.panelToggleLabel(panel,true)} disabled=${() => this.unavailable}
+                onaction=${(event: Event) => { event.stopPropagation(); this.togglePanel(panel,false,event); }}></cb-button></div>
+            <slot name=${panel} part=${`${panel}-content`}></slot>
+            <div part=${`resize-handle ${panel}-resize-handle`} ref=${`${panel}Handle`} role="separator"
+                aria-orientation=${panel === 'bottom' ? 'horizontal' : 'vertical'}
+                tabindex=${() => this.unavailable || this.mobile ? -1 : 0}
+                aria-label=${() => this.panelLabel(panel)} aria-valuenow=${() => this.panelSize(panel)}
+                aria-valuemin=${() => panel === 'start' ? finite(this.minStartSize,180) : panel === 'end' ? finite(this.minEndSize,220) : finite(this.minBottomSize,140)}
+                aria-valuemax=${() => panel === 'start' ? finite(this.maxStartSize,560) : panel === 'end' ? finite(this.maxEndSize,720) : finite(this.maxBottomSize,640)}
+                onpointerdown=${(event: PointerEvent) => this.beginResize(panel,event)} onkeydown=${(event: KeyboardEvent) => this.resizeKey(panel,event)}></div>`;
+        const region=panel === 'bottom' ? html`<section part="panel bottom-panel" hidden=${closed} inert=${() => closed() ? '' : null} aria-label=${() => this.panelLabel(panel)}>${body}</section>`
+            : html`<aside part=${`panel ${panel}-panel`} hidden=${closed} inert=${() => closed() ? '' : null} aria-label=${() => this.panelLabel(panel)}>${body}</aside>`;
+        return html`${region}<div part=${`rail ${panel}-rail`} hidden=${() => this.mobile || this.isPanelOpen(panel)}>
+            <cb-button part="panel-toggle open-panel" exportparts="control:panel-toggle-control,label:panel-toggle-label,button-label:panel-toggle-label,icon:panel-toggle-icon,description:panel-toggle-description,control:open-panel-control,label:open-panel-label,button-label:open-panel-label,icon:open-panel-icon,description:open-panel-description" icon-only variant="ghost" size="sm" icon=${panel === 'start' ? 'right' : panel === 'end' ? 'left' : 'up'}
+                accessible-label=${() => this.panelToggleLabel(panel,false)} disabled=${() => this.unavailable}
+                onaction=${(event: Event) => { event.stopPropagation(); this.togglePanel(panel,true,event); }}></cb-button></div>`;
     }
     protected syncView(): void {
-        if (!this.main || !this.backdrop)
-            return;
-        this.style.setProperty('--workspace-start-size', `${this.panelSize('start')}px`);
-        this.style.setProperty('--workspace-end-size', `${this.panelSize('end')}px`);
-        this.style.setProperty('--workspace-bottom-size', `${this.panelSize('bottom')}px`);
-        this.style.setProperty('--workspace-start-track', this.isPanelOpen('start') ? `${this.panelSize('start')}px` : '40px');
-        this.style.setProperty('--workspace-end-track', this.isPanelOpen('end') ? `${this.panelSize('end')}px` : '40px');
-        this.style.setProperty('--workspace-bottom-track', this.isPanelOpen('bottom') ? `${this.panelSize('bottom')}px` : '40px');
-        this.setAttribute('mobile-panel', this.mobilePanel);
-        for (const panel of ['start', 'end', 'bottom'] as const)
-            this.syncPanel(panel);
-        aria(this.backdrop, 'aria-label', scalarText(this.closeMobileLabel));
-        this.main.setAttribute('aria-label', this.accessibleName());
-    }
-    private createPanel(panel: WorkspacePanel): PanelView {
-        const region = element(panel === 'bottom' ? 'section' : 'aside', { attributes: { part: `panel ${panel}-panel` } }) as HTMLElement;
-        const actions = element('div', { attributes: { part: 'panel-actions' } }) as HTMLDivElement;
-        const close = createIconButton('panel-toggle close-panel', panel === 'start' ? 'left' : panel === 'end' ? 'right' : 'down', event => this.togglePanel(panel, false, event));
-        actions.append(close);
-        region.append(actions, element("slot", { attributes: { name: panel, part: `${panel}-content` }, textContent: '' }) as HTMLSlotElement);
-        const handle = element('div', { attributes: { part: `resize-handle ${panel}-resize-handle` } }) as HTMLDivElement;
-        handle.tabIndex = 0;
-        handle.setAttribute('role', 'separator');
-        handle.setAttribute('aria-orientation', panel === 'bottom' ? 'horizontal' : 'vertical');
-        handle.addEventListener('pointerdown', event => this.beginResize(panel, event));
-        handle.addEventListener('keydown', event => this.resizeKey(panel, event));
-        region.append(handle);
-        const rail = element('div', { attributes: { part: `rail ${panel}-rail` } }) as HTMLDivElement;
-        const open = createIconButton('panel-toggle open-panel', panel === 'start' ? 'right' : panel === 'end' ? 'left' : 'up', event => this.togglePanel(panel, true, event));
-        rail.append(open);
-        const view = { panel: region, rail, close, open, handle };
-        this.panels.set(panel, view);
-        return view;
-    }
-    private syncPanel(panel: WorkspacePanel): void {
-        const view = this.panels.get(panel);
-        if (!view)
-            return;
-        const open = this.isPanelOpen(panel);
-        const mobileOpen = this.mobile && this.mobilePanel === panel;
-        view.panel.hidden = this.mobile ? !mobileOpen : !open;
-        view.panel.inert = this.mobile ? !mobileOpen : !open;
-        view.rail.hidden = this.mobile || open;
-        view.close.disabled = this.unavailable;
-        view.open.disabled = this.unavailable;
-        actionLabel(view.close, this.panelToggleLabel(panel, true));
-        actionLabel(view.open, this.panelToggleLabel(panel, false));
-        const label = this.panelLabel(panel);
-        aria(view.panel, 'aria-label', label);
-        aria(view.handle, 'aria-label', label);
-        aria(view.handle, 'aria-valuemin', panel === 'start' ? finite(this.minStartSize, 180) : panel === 'end' ? finite(this.minEndSize, 220) : finite(this.minBottomSize, 140));
-        aria(view.handle, 'aria-valuemax', panel === 'start' ? finite(this.maxStartSize, 560) : panel === 'end' ? finite(this.maxEndSize, 720) : finite(this.maxBottomSize, 640));
-        aria(view.handle, 'aria-valuenow', this.panelSize(panel));
-        view.handle.tabIndex = this.unavailable || this.mobile ? -1 : 0;
+        for(const panel of ['start','end','bottom'] as const) {
+            this.style.setProperty(`--workspace-${panel}-size`,`${this.panelSize(panel)}px`);
+            this.style.setProperty(`--workspace-${panel}-track`,this.isPanelOpen(panel) ? `${this.panelSize(panel)}px` : '40px');
+        }
+        this.setAttribute('mobile-panel',this.mobilePanel);
     }
     private beginResize(panel: WorkspacePanel, event: PointerEvent): void {
         const view = this.panels.get(panel);

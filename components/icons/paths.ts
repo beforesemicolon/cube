@@ -25,7 +25,3 @@ export const iconPaths: Record<string,string> = {
  alignLeft:'M3 4h18M3 9h12M3 14h18M3 19h12',alignCenter:'M3 4h18M6 9h12M3 14h18M6 19h12',alignRight:'M3 4h18M9 9h12M3 14h18M9 19h12',
  spark:'M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3z',
 }
-export function createIcon(name: string, part = 'icon'): SVGSVGElement {
-    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('part',part);svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false')
-    const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('part','path');path.setAttribute('d',iconPaths[name]??'');path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');path.setAttribute('stroke-width','1.5');path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');svg.append(path);return svg
-}

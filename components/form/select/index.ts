@@ -1,13 +1,10 @@
-import { type Template, element, html } from '../../core/runtime.js'
+import { html, repeat, state, when, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
 import { uid } from '../../core/id.js'
-import { createIcon } from '../../icons/paths.js';
-import { bool, text } from '../../core/value.js';
-import { PopupController } from '../../core/popup.js';
-import { SelectBase } from './SelectBase.js';
-import { createBareButton } from '../../action/create.js';
-import type { Button } from '../../action/button/index.js';
+import { bool, text } from '../../core/value.js'
+import { PopupController } from '../../core/popup.js'
+import type { Button } from '../../action/button/index.js'
+import { SelectBase } from './SelectBase.js'
 const css = editorCSS + `
 :host{display:inline-block;inline-size:var(--component-select-width,240px)}[part~=root]{position:relative;display:grid}
 [part~=trigger]{display:block;inline-size:100%;padding:0;text-align:start}[part~=trigger]::part(control),[part~=trigger]::part(button-label){display:flex;align-items:center;justify-content:space-between;gap:8px;inline-size:100%;text-align:inherit}[part~=trigger]::part(control){padding:var(--spacing-xs,4px) var(--spacing-md,12px)}[part~=value][data-placeholder]{color:var(--color-muted-foreground)}
@@ -25,164 +22,87 @@ const css = editorCSS + `
 [part~=empty]{padding:10px;color:var(--color-muted-foreground);text-align:center}
 [part~=native]{inline-size:100%;appearance:auto;color-scheme:inherit}
 `;
+
 export class Select extends SelectBase {
-    private nativeControl?: HTMLSelectElement;
-    private trigger?: Button;
-    private valueNode?: HTMLElement;
-    private popup?: HTMLElement;
-    private searchWrap?: HTMLElement;
-    private searchInput?: HTMLInputElement;
-    private listbox?: HTMLElement;
-    private emptyNode?: HTMLElement;
-    private popupController?: PopupController;
-    private query = '';
+    private readonly controlId = uid('cb-select')
+    private popupController?: PopupController
+    private get trigger(): HTMLElement | undefined { const node = this.refs.trigger?.[0]; return node instanceof HTMLElement ? node : undefined }
+    private get popup(): HTMLElement | undefined { const node = this.refs.popup?.[0]; return node instanceof HTMLElement ? node : undefined }
+    private readonly query = state('')
+    private get nativeControl(): HTMLSelectElement | undefined { const node = this.refs.native?.[0]; return node instanceof HTMLSelectElement ? node : undefined }
+    private get searchInput(): HTMLInputElement | undefined { const node = this.refs.search?.[0]; return node instanceof HTMLInputElement ? node : undefined }
+    private get listbox(): HTMLElement | undefined { const node = this.refs.listbox?.[0]; return node instanceof HTMLElement ? node : undefined }
+    private visibleOptions() {
+        const query = this.query[0]().trim().toLowerCase()
+        return query ? this.normalizedOptions.filter(option => (option.label + ' ' + option.value).toLowerCase().includes(query)) : this.normalizedOptions
+    }
+    private selectedLabels(): string[] { return this.normalizedOptions.filter(option => this.selection.includes(option.value)).map(option => option.label) }
+    private displayValue(): string { return this.selectedLabels().join(', ') || text(this.placeholder) }
+    private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))) }
+    private descriptionText(): string | null { return [text(this.description), this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null }
     render(): Template {
-        const root = element('div', { attributes: { part: 'root' } }) as HTMLDivElement;
-        this.trigger = createBareButton('trigger control', event => {
-            const opening = !bool(this.open);
-            if (this.setOpen(opening, event) && opening && this.searchEnabled)
-                this.searchInput?.focus();
-        });
-        this.trigger.id = uid('cb-select');
-        this.valueNode = element('span', { attributes: { part: 'value' } }) as HTMLSpanElement;
-        this.trigger.append(this.valueNode, createIcon('down', 'icon indicator'));
-        this.popup = element('div', { attributes: { part: 'popup' } }) as HTMLDivElement;
-        this.searchWrap = element('div', { attributes: { part: 'search-wrap' } }) as HTMLDivElement;
-        this.searchInput = element('input', { attributes: { part: 'search' } }) as HTMLInputElement;
-        this.searchInput.type = 'search';
-        this.searchInput.id = `${this.trigger.id}-search`;
-        this.listbox = element('div', { attributes: { part: 'listbox' } }) as HTMLDivElement;
-        this.listbox.id = `${this.trigger.id}-listbox`;
-        this.listbox.setAttribute('role', 'listbox');
-        this.emptyNode = element('div', { attributes: { part: 'empty' } }) as HTMLDivElement;
-        this.emptyNode.setAttribute('role', 'status');
-        this.searchWrap.append(this.searchInput);
-        this.popup.append(this.searchWrap, this.listbox, this.emptyNode);
-        this.nativeControl = element('select', { attributes: { part: 'native control' } }) as HTMLSelectElement;
-        this.nativeControl.id = `${this.trigger.id}-native`;
-        this.trigger.addEventListener('keydown', event => this.handleKey(event));
-        this.popup.addEventListener('keydown', event => this.handleKey(event));
-        this.searchInput.addEventListener('input', () => { this.query = this.searchInput?.value ?? ''; this.syncView(); });
-        this.nativeControl.addEventListener('change', event => this.choose(bool(this.multi) ? [...this.nativeControl!.selectedOptions].map(option => option.value) : this.nativeControl!.value, event));
-        this.nativeControl.addEventListener('blur', () => { this.validationShown = true; this.syncView(); });
-        root.append(this.trigger, this.popup, this.nativeControl);
-        return html`<style part="styles">${css}</style>${root}`;
+        return html`<style part="styles">${css}</style><div part="root">
+            <cb-button ref="trigger" part="trigger control" exportparts="control:trigger-control,button-label:trigger-label" data-bare data-semantic-host
+                hidden="${() => bool(this.native)}" disabled="${() => this.unavailable || bool(this.readOnly)}" data-multi="${() => bool(this.multi) ? '' : null}"
+                accessible-label="${() => this.displayValue() && this.displayValue() !== this.accessibleName() ? this.accessibleName() + ': ' + this.displayValue() : this.accessibleName()}"
+                aria-haspopup="listbox" aria-controls="${this.controlId}-listbox" aria-expanded="${() => String(bool(this.open))}"
+                aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${() => this.descriptionText()}"
+                onkeydown="${(event: KeyboardEvent) => this.handleKey(event)}"
+                onaction="${(event: Event) => { event.stopPropagation(); const opening = !bool(this.open); if (this.setOpen(opening, event) && opening && this.searchEnabled) this.searchInput?.focus() }}">
+                <span part="value" data-placeholder="${() => this.selection.length ? null : ''}">
+                    ${when(() => bool(this.multi) && this.selectedLabels().length > 0,
+                        repeat(() => this.selectedLabels(), (label, index) => html`<span part="value-item">${label}${() => index < this.selectedLabels().length - 1 ? ',' : ''}</span>`, { key: label => label }),
+                        () => this.displayValue())}
+                </span><cb-icon part="icon indicator" name="down" decorative="true"></cb-icon>
+            </cb-button>
+            <div ref="popup" part="popup" hidden
+                onkeydown="${(event: KeyboardEvent) => this.handleKey(event)}">
+                <div part="search-wrap" hidden="${() => !this.searchEnabled || bool(this.native)}">
+                    <input ref="search" part="search" type="search" id="${this.controlId}-search" value="${this.query[0]}"
+                        placeholder="${() => text(this.searchPlaceholder)}" aria-label="${() => text(this.searchLabel) || text(this.searchPlaceholder) || this.accessibleName()}"
+                        role="combobox" aria-autocomplete="list" aria-controls="${this.controlId}-listbox" aria-expanded="${() => String(bool(this.open))}"
+                        oninput="${(event: Event) => { const input = event.currentTarget; if (input instanceof HTMLInputElement) this.query[1](input.value) }}">
+                </div><div ref="listbox" part="listbox" id="${this.controlId}-listbox" role="listbox" aria-label="${() => this.accessibleName()}"
+                    aria-multiselectable="${() => bool(this.multi) ? 'true' : null}">
+                ${repeat(() => this.visibleOptions(), option => html`<cb-button part="option" exportparts="control:option-control,button-label:option-label" data-bare data-semantic-host
+                    data-value="${option.value}" role="option" accessible-label="${option.label}" disabled="${() => option.disabled || this.unavailable}"
+                    aria-selected="${() => String(this.selection.includes(option.value))}"
+                    onaction="${(event: Event) => { event.stopPropagation(); this.choose(option.value, event); if (!bool(this.multi)) this.setOpen(false, event); else queueMicrotask(() => this.optionNodes().find(node => node.dataset.value === option.value)?.focus()) }}">
+                    <span part="option-label">${option.label}</span>${when(() => this.selection.includes(option.value), html`<cb-icon part="icon check" name="check" decorative="true"></cb-icon>`)}
+                </cb-button>`, { key: option => option.value })}
+                </div>
+                <span part="empty" role="status" hidden="${() => this.visibleOptions().length > 0 || !text(this.emptyLabel)}">${() => text(this.emptyLabel)}</span>
+            </div>
+            <select ref="native" part="native control" id="${this.controlId}-native" hidden="${() => !bool(this.native)}"
+                multiple="${() => bool(this.multi)}" disabled="${() => this.unavailable || bool(this.readOnly)}" required="${() => bool(this.required) && !bool(this.readOnly)}"
+                aria-label="${() => this.accessibleName()}" aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${() => this.descriptionText()}"
+                onchange="${(event: Event) => { const select = event.currentTarget; if (select instanceof HTMLSelectElement) this.choose(bool(this.multi) ? [...select.selectedOptions].map(option => option.value) : select.value, event) }}"
+                onblur="${() => { this.validationShown = true }}">
+                ${when(() => !bool(this.multi) && !this.normalizedOptions.some(option => option.value === ''), html`<option part="option" value="" selected="${() => !this.selection.length}">${() => text(this.placeholder)}</option>`)}
+                ${repeat(() => this.normalizedOptions, option => html`<option part="option" value="${option.value}" disabled="${option.disabled}" selected="${() => this.selection.includes(option.value)}">${option.label}</option>`, { key: option => option.value })}
+            </select>
+        </div>`
     }
     protected mount(): void {
         if (this.popup && this.trigger) {
             this.popupController = new PopupController(this.popup, this.trigger, () => this.setOpen(false), {
-                placement: () => 'bottom-start',
-                matchAnchorWidth: true,
-                maxWidth: () => this.popupMaxWidth,
-                maxHeight: () => this.popupMaxHeight,
-            });
-            this.cleanup(() => this.popupController?.dispose());
+                placement: () => 'bottom-start', matchAnchorWidth: true, maxWidth: () => this.popupMaxWidth, maxHeight: () => this.popupMaxHeight,
+            })
+            this.cleanup(() => this.popupController?.dispose())
         }
-        super.mount();
-        this.syncPopup();
+        super.mount()
+        this.syncPopup()
     }
-    protected fieldElement(): HTMLSelectElement | undefined { return this.nativeControl; }
-    protected syncView(): void {
-        if (!this.nativeControl || !this.trigger || !this.valueNode || !this.popup || !this.searchWrap || !this.searchInput || !this.listbox || !this.emptyNode)
-            return;
-        const options = this.normalizedOptions, selection = this.selection, placeholder = text(this.placeholder);
-        const searching = this.searchEnabled && !bool(this.native);
-        if (!bool(this.open))
-            this.query = '';
-        const normalizedQuery = this.query.trim().toLowerCase();
-        const visibleOptions = normalizedQuery ? options.filter(option => `${option.label} ${option.value}`.toLowerCase().includes(normalizedQuery)) : options;
-        this.nativeControl.replaceChildren();
-        this.listbox.replaceChildren();
-        if (!bool(this.multi) && !options.some(option => option.value === '')) {
-            const empty = element('option', { attributes: { part: 'option' }, textContent: placeholder }) as HTMLOptionElement;
-            empty.value = '';
-            this.nativeControl.append(empty);
-        }
-        for (const option of options) {
-            const nativeOption = element('option', { attributes: { part: 'option' }, textContent: option.label }) as HTMLOptionElement;
-            nativeOption.value = option.value;
-            nativeOption.disabled = option.disabled;
-            nativeOption.selected = selection.includes(option.value);
-            this.nativeControl.append(nativeOption);
-        }
-        for (const option of visibleOptions) {
-            const button = createBareButton('option', event => {
-                this.choose(option.value, event);
-                if (!bool(this.multi))
-                    this.setOpen(false, event);
-                else
-                    this.optionNodes().find(node => node.dataset.value === option.value)?.focus();
-            });
-            button.dataset.value = option.value;
-            button.disabled = option.disabled || this.unavailable;
-            button.setAttribute('role', 'option');
-            aria(button, 'aria-selected', selection.includes(option.value));
-            button.accessibleLabel = option.label;
-            button.append(element('span', { attributes: { part: 'option-label' }, textContent: option.label }) as HTMLSpanElement);
-            if (selection.includes(option.value))
-                button.append(createIcon('check', 'icon check'));
-            this.listbox.append(button);
-        }
-        const labels = options.filter(option => selection.includes(option.value)).map(option => option.label);
-        this.valueNode.replaceChildren();
-        if (bool(this.multi) && labels.length) {
-            labels.forEach((label, index) => this.valueNode?.append(element('span', { attributes: { part: 'value-item' }, textContent: `${label}${index < labels.length - 1 ? ',' : ''}` }) as HTMLSpanElement));
-        }
-        else
-            this.valueNode.textContent = labels[0] ?? placeholder;
-        this.valueNode.toggleAttribute('data-placeholder', labels.length === 0);
-        const native = bool(this.native);
-        this.trigger.hidden = native;
-        this.nativeControl.hidden = !native;
-        this.searchWrap.hidden = !searching;
-        this.searchInput.value = this.query;
-        this.searchInput.placeholder = text(this.searchPlaceholder);
-        this.searchInput.setAttribute('aria-label', text(this.searchLabel) || text(this.searchPlaceholder) || this.accessibleName());
-        this.searchInput.setAttribute('role', 'combobox');
-        this.searchInput.setAttribute('aria-autocomplete', 'list');
-        this.searchInput.setAttribute('aria-controls', this.listbox.id);
-        aria(this.searchInput, 'aria-expanded', bool(this.open));
-        this.emptyNode.textContent = text(this.emptyLabel);
-        this.emptyNode.hidden = visibleOptions.length > 0 || !text(this.emptyLabel);
-        aria(this.listbox, 'aria-multiselectable', bool(this.multi) ? true : null);
-        this.listbox.setAttribute('aria-label', this.accessibleName());
-        this.nativeControl.multiple = bool(this.multi);
-        this.nativeControl.disabled = this.unavailable || bool(this.readOnly);
-        this.nativeControl.required = bool(this.required) && !bool(this.readOnly);
-        this.nativeControl.setAttribute('aria-label', this.accessibleName());
-        this.trigger.disabled = this.unavailable || bool(this.readOnly);
-        this.trigger.toggleAttribute('data-multi', bool(this.multi));
-        const accessibleName = this.accessibleName();
-        const visibleValue = labels.join(', ') || placeholder;
-        this.trigger.accessibleLabel = visibleValue && visibleValue !== accessibleName ? `${accessibleName}: ${visibleValue}` : accessibleName;
-        this.trigger.setAttribute('aria-haspopup', 'listbox');
-        this.trigger.setAttribute('aria-controls', this.listbox.id);
-        aria(this.trigger, 'aria-expanded', bool(this.open));
-        this.syncForm(bool(this.multi) ? this.multipleFormValue(selection) : selection[0] ?? '');
-        const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText)));
-        const description = [text(this.description), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null;
-        aria(this.trigger, 'aria-description', description);
-        aria(this.nativeControl, 'aria-description', description);
-        aria(this.trigger, 'aria-invalid', error ? true : null);
-        aria(this.nativeControl, 'aria-invalid', error ? true : null);
-        this.toggleAttribute('data-invalid', error);
-        this.syncPopup();
-    }
+    protected fieldElement(): HTMLSelectElement | undefined { return this.nativeControl }
+    protected syncView(): void { if (!bool(this.open)) this.query[1](''); this.syncPopup() }
     private syncPopup(): void {
-        if (!this.popup)
-            return;
-        if (bool(this.native) || !bool(this.open))
-            this.popupController?.hide();
-        else
-            this.popupController?.show();
-        if (!this.popupController)
-            this.popup.hidden = bool(this.native) || !bool(this.open);
+        if (!this.popup) return
+        if (bool(this.native) || !bool(this.open)) this.popupController?.hide()
+        else this.popupController?.show()
+        if (!this.popupController) this.popup.hidden = bool(this.native) || !bool(this.open)
     }
-    private multipleFormValue(values: readonly string[]): FormData { const data = new FormData(); if (this.name)
-        for (const value of values)
-            data.append(this.name, value); return data; }
-    focus(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.trigger)?.focus(options); }
-    private optionNodes(): Button[] { return [...(this.listbox?.querySelectorAll<Button>('cb-button:not([disabled])') ?? [])]; }
+    focus(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.trigger)?.focus(options) }
+    private optionNodes(): Button[] { return [...(this.listbox?.querySelectorAll<Button>('cb-button:not([disabled])') ?? [])] }
     private handleKey(event: KeyboardEvent): void {
         if (event.key === 'Escape') {
             event.preventDefault();

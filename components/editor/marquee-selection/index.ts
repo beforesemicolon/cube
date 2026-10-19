@@ -1,4 +1,4 @@
-import { type Template, element, html } from '../../core/runtime.js'
+import { type Template, html, state } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import type { EditorRect } from '../selection-overlay/SelectionOverlayBase.js';
 import { MarqueeSelectionBase } from './MarqueeSelectionBase.js';
@@ -7,22 +7,19 @@ const css = editorCSS + `
 [part~=marquee]{position:absolute;border:1px solid var(--color-primary);background:color-mix(in srgb,var(--color-selection) 42%,transparent);pointer-events:none}
 `;
 export class MarqueeSelection extends MarqueeSelectionBase {
-    private marquee?: HTMLElement;
+    private readonly rectangle = state<EditorRect | null>(null);
     render(): Template {
-        this.marquee = element('div', { attributes: { part: 'marquee' } }) as HTMLDivElement;
-        this.marquee.hidden = true;
-        this.addEventListener('pointerdown', event => this.pointerStart(event));
-        this.addEventListener('keydown', event => { if (event.key === 'Escape')
-            this.cancel(event); });
-        return html`<style part="styles">${css}</style>${this.marquee}`;
+        return html`<style part="styles">${css}</style><div part="marquee"
+            hidden=${() => !this.rectangle[0]()} style=${() => {
+                const rect = this.rectangle[0]();
+                return rect ? `left:${rect.x}px;top:${rect.y}px;width:${rect.width}px;height:${rect.height}px` : '';
+            }}></div>`;
     }
-    protected syncMarquee(rect?: EditorRect): void {
-        if (!this.marquee)
-            return;
-        this.marquee.hidden = !rect;
-        if (rect)
-            Object.assign(this.marquee.style, { left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.width}px`, height: `${rect.height}px` });
+    protected mount(): void {
+        this.listen(this, 'pointerdown', event => { if (event instanceof PointerEvent) this.pointerStart(event); });
+        this.listen(this, 'keydown', event => { if (event instanceof KeyboardEvent && event.key === 'Escape') this.cancel(event); });
     }
+    protected syncMarquee(rect?: EditorRect): void { this.rectangle[1](rect ?? null); }
     private pointerStart(event: PointerEvent): void {
         if (event.button !== 0 || event.target !== this)
             return;

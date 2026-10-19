@@ -1,10 +1,7 @@
 import type { Template } from '../core/runtime.js'
 import { editorCSS } from '../theme/styles.js'
-import { aria } from '../core/accessibility.js'
-import { bool, scalarText } from '../core/value.js'
-import { normalizeRange } from '../form/model.js'
+import { bool } from '../core/value.js'
 import { studioTemplates } from './templates.js'
-import type { UnitInputBase } from '../form/unit-input/UnitInputBase.js'
 import type { StudioItem, StudioValue } from './types.js'
 
 export interface StudioView {
@@ -159,33 +156,14 @@ cb-button[part~=token]{inline-size:auto;border:0;padding:0;background:transparen
 @container (max-width:240px){[part~=panel-header]{flex-wrap:wrap}}
 `;
 
-/** Markup owns rendering; this hook synchronizes native validation and canceled edits. */
+/** Markup owns the control DOM; this hook only reflects host-level presentation. */
 export function createStudioView(source: StudioViewSource): StudioView {
     const root = studioTemplates(source, studioCSS)
     const update = (): void => {
         source.dataset.kind = source.componentKind
         const invalid = bool(source.invalid) || source.hasAttribute('data-field-invalid')
         source.toggleAttribute('data-invalid', invalid)
-        const control = root.refs.control?.[0]
-        if (!(control instanceof HTMLElement)) return
-        aria(control, 'aria-invalid', invalid ? true : null)
-        aria(control, 'aria-readonly', bool(source.readOnly) ? true : null)
-        aria(control, 'aria-description', [scalarText(source.description), scalarText(source.error)].filter(Boolean).join(' ') || null)
-        if (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement) {
-            control.disabled = source.controlUnavailable?.() ?? bool(source.disabled)
-            control.readOnly = bool(source.readOnly)
-            control.required = bool(source.required)
-            if (control instanceof HTMLInputElement && control.type === 'checkbox') control.checked = bool(source.checked) || source.value === true
-            else if (control.type !== 'file') {
-                const value = source.componentKind === 'range' ? String(normalizeRange({ min: source.min, max: source.max, step: source.step, value: Number(source.value) }).value) : scalarText(source.value)
-                if (control.value !== value) control.value = value
-            }
-            if (source.componentName === 'unit-input') {
-                const unit = source as UnitInputBase
-                const label = unit.normalizedUnits.find(option => option.value === unit.selectedUnit)?.label ?? unit.selectedUnit
-                aria(control, 'aria-valuetext', label ? control.value + ' ' + label : null)
-            }
-        }
+
     }
     return { root, get control() { const control = root.refs.control?.[0]; return control instanceof HTMLElement ? control : undefined }, update }
 }

@@ -62,25 +62,8 @@ export abstract class MediaBase extends Component<MediaProps> {
                     media.load()
                 }
             }
-            media.autoplay = bool(this.autoplay); media.loop = bool(this.loop); media.muted = bool(this.muted)
-            media.preload = ['none', 'metadata', 'auto'].includes(text(this.preload)) ? this.preload : 'metadata'
-            if (this.crossOrigin === 'anonymous' || this.crossOrigin === 'use-credentials') media.crossOrigin = this.crossOrigin
-            else media.removeAttribute('crossorigin')
             if (media.playbackRate !== finite(this.playbackRate, 1)) this.controller?.setRate(finite(this.playbackRate, 1))
-            if (media instanceof HTMLVideoElement) {
-                media.playsInline = true
-                if (text(this.poster)) media.poster = mediaURL(this.poster, this.baseURI); else media.removeAttribute('poster')
-            }
-            if (name === 'tracks') {
-                media.querySelectorAll('track').forEach(track => track.remove())
-                for (const track of Array.isArray(this.tracks) ? this.tracks : []) {
-                    if (!track || !text(track.src)) continue
-                    const node = document.createElement('track'); node.setAttribute('part', 'track')
-                    node.kind = 'captions'; node.src = mediaURL(track.src, this.baseURI)
-                    node.srclang = text(track.language); node.label = text(track.label, node.srclang); node.default = bool(track.default)
-                    media.append(node)
-                }
-            }
+
         } catch (error) {
             if (name === 'src') { media.pause(); media.removeAttribute('src'); media.load() }
             this.playbackError = error; this.onError(error)

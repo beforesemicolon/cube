@@ -1,13 +1,9 @@
-import { element, html, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { uid } from '../../core/id.js'
+import { html, repeat, type Template } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
+import { uid } from '../../core/id.js';
 import { bool, scalarText } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
-import { actionLabel, createBareButton, createButton, createIconButton, type ActionControl } from '../../action/create.js';
-import type { Button } from '../../action/button/index.js';
-import { createIcon } from '../../icons/paths.js';
-import { AccordionBase, type AccordionAction, type AccordionContent, type AccordionItem } from './AccordionBase.js';
+import { AccordionBase, type AccordionContent, type AccordionItem } from './AccordionBase.js';
 const css = editorCSS + `
 :host{display:block;inline-size:100%;min-inline-size:0}
 [part~=root]{display:grid;inline-size:100%;min-inline-size:0}
@@ -41,201 +37,64 @@ const css = editorCSS + `
 :host(:not([data-animated])) [part~=panel],:host(:not([data-animated])) [part~=indicator]{transition:none}
 @media (prefers-reduced-motion:reduce){[part~=panel],[part~=indicator]{transition:none}}
 `;
-interface ItemView {
-    readonly root: HTMLElement;
-    readonly trigger: Button;
-    readonly label: HTMLElement;
-    readonly description: HTMLElement;
-    readonly actions: HTMLElement;
-    readonly panel: HTMLElement;
-    readonly contentSlot: HTMLSlotElement;
-    readonly disabledReason: HTMLElement;
-    contentSource?: AccordionContent;
-    contentRenderer?: AccordionItem['renderContent'];
-}
-function appendContent(parent: ParentNode, value: AccordionContent): void {
-    if (Array.isArray(value)) {
-        value.forEach(node => appendContent(parent, node));
-        return;
-    }
-    if (typeof Node !== 'undefined' && value instanceof Node) {
-        parent.append(value);
-        return;
-    }
-    if (value !== null && value !== undefined && value !== false)
-        parent.append(document.createTextNode(String(value)));
-}
-function rendered(host: Accordion, item: AccordionItem, index: number, renderer: AccordionItem['renderContent'] | AccordionItem['renderActions'], fallback: AccordionContent): AccordionContent {
-    if (typeof renderer !== 'function')
-        return fallback;
-    try {
-        return renderer({ accordion: host, item, index });
-    }
-    catch (error) {
-        host.onError(error);
-        return null;
-    }
-}
-function accordionView(host: Accordion) {
-    const root = element('div', { attributes: { part: 'root' } }) as HTMLDivElement;
-    const groupDescription = element('p', { attributes: { part: 'group-description description' } }) as HTMLParagraphElement;
-    const empty = element('div', { attributes: { part: 'empty' } }) as HTMLDivElement;
-    groupDescription.dataset.cbDescription = '';
-    groupDescription.id = uid('cb-accordion-description');
-    empty.setAttribute('role', 'status');
-    const views = new Map<string, ItemView>();
-    const focusRelative = (trigger: Button, edge: 'next' | 'previous' | 'first' | 'last'): void => {
-        const triggers = [...root.querySelectorAll<Button>('cb-button[part~=trigger]:not([disabled])')];
-        if (!triggers.length)
-            return;
-        const current = triggers.indexOf(trigger);
-        const target = edge === 'first' ? triggers[0]
-            : edge === 'last' ? triggers.at(-1)
-                : edge === 'next' ? triggers[(current + 1 + triggers.length) % triggers.length]
-                    : triggers[(current - 1 + triggers.length) % triggers.length];
-        target?.focus();
-    };
-    const create = (id: string): ItemView => {
-        const itemRoot = element('section', { attributes: { part: 'item' } }) as HTMLElement;
-        const header = element('div', { attributes: { part: 'header' } }) as HTMLDivElement;
-        const heading = element('div', { attributes: { part: 'heading' } }) as HTMLDivElement;
-        const trigger = createBareButton('trigger', event => host.toggle(id, event));
-        const triggerContent = element('span', { attributes: { part: 'trigger-content' } }) as HTMLSpanElement;
-        const label = element('span', { attributes: { part: 'label' } }) as HTMLSpanElement;
-        const description = element('span', { attributes: { part: 'description' } }) as HTMLSpanElement;
-        const indicator = createIcon('right', 'indicator icon');
-        const actions = element('div', { attributes: { part: 'actions' } }) as HTMLDivElement;
-        const panel = element('div', { attributes: { part: 'panel' } }) as HTMLDivElement;
-        const panelContent = element('div', { attributes: { part: 'panel-content' } }) as HTMLDivElement;
-        const panelInner = element('div', { attributes: { part: 'panel-inner' } }) as HTMLDivElement;
-        const contentSlot = element("slot", { attributes: { name: `item-${id}`, part: 'content' }, textContent: '' }) as HTMLSlotElement;
-        const disabledReason = element('div', { attributes: { part: 'disabled-reason' } }) as HTMLDivElement;
-        const triggerId = uid('cb-accordion-trigger');
-        const panelId = uid('cb-accordion-panel');
-        disabledReason.id = uid('cb-accordion-disabled-reason');
-        trigger.id = triggerId;
-        trigger.dataset.accordionId = id;
-        panel.id = panelId;
-        panel.setAttribute('role', 'region');
-        heading.setAttribute('role', 'heading');
-        aria(trigger, 'aria-controls', panelId);
-        aria(panel, 'aria-labelledby', triggerId);
-        triggerContent.append(label, document.createTextNode(' '), description);
-        trigger.append(triggerContent, indicator);
-        heading.append(trigger);
-        header.append(heading, actions);
-        panelInner.append(contentSlot);
-        panelContent.append(panelInner);
-        panel.append(panelContent);
-        itemRoot.append(header, panel, disabledReason);
-        trigger.addEventListener('keydown', event => {
-            const edge = event.key === 'ArrowDown' ? 'next' : event.key === 'ArrowUp' ? 'previous' : event.key === 'Home' ? 'first' : event.key === 'End' ? 'last' : null;
-            if (!edge)
-                return;
-            event.preventDefault();
-            focusRelative(trigger, edge);
-        });
-        return { root: itemRoot, trigger, label, description, actions, panel, contentSlot, disabledReason };
-    };
-    const configureAction = (control: ActionControl, action: AccordionAction, item: AccordionItem): void => {
-        actionLabel(control, scalarText(action.label));
-        control.disabled = bool(action.disabled) || host.itemDisabled(item);
-        control.variant = action.variant ?? 'ghost';
-    };
-    const syncActions = (view: ItemView, item: AccordionItem, index: number): void => {
-        view.actions.replaceChildren();
-        const actions = Array.isArray(item.actions) ? item.actions : [];
-        for (const action of actions) {
-            if (!action || typeof action !== 'object' || !scalarText(action.id).trim() || !scalarText(action.label).trim())
-                continue;
-            const activate = (event: CustomEvent): void => host.emit('itemaction', { item, id: item.id, action, actionId: action.id, originalEvent: event });
-            const control = scalarText(action.icon).trim() ? createIconButton('action', scalarText(action.icon), activate) : createButton('action', activate);
-            configureAction(control, action, item);
-            view.actions.append(control);
-        }
-        const renderedActions = rendered(host, item, index, item.renderActions, null);
-        appendContent(view.actions, renderedActions);
-        const actionSlot = element("slot", { attributes: { name: `actions-${item.id}`, part: 'actions-slot' }, textContent: '' }) as HTMLSlotElement;
-        const hasRenderedActions = Array.isArray(renderedActions) ? renderedActions.length > 0
-            : renderedActions !== null && renderedActions !== undefined && renderedActions !== false;
-        const syncVisibility = (): void => {
-            view.actions.hidden = actions.length === 0 && !hasRenderedActions && actionSlot.assignedNodes({ flatten: true }).length === 0;
-        };
-        actionSlot.addEventListener('slotchange', syncVisibility);
-        view.actions.append(actionSlot);
-        syncVisibility();
-    };
-    const syncContent = (view: ItemView, item: AccordionItem, index: number): void => {
-        view.contentSlot.name = scalarText(item.slot).trim() || `item-${item.id}`;
-        if (view.contentSource === item.content && view.contentRenderer === item.renderContent)
-            return;
-        view.contentSlot.replaceChildren();
-        appendContent(view.contentSlot, rendered(host, item, index, item.renderContent, item.content));
-        view.contentSource = item.content;
-        view.contentRenderer = item.renderContent;
-    };
-    const update = (): void => {
-        const items = host.itemList();
-        const expanded = host.expansionSet();
-        const activeIds = new Set(items.map(item => item.id));
-        for (const [id, view] of views)
-            if (!activeIds.has(id)) {
-                view.root.remove();
-                views.delete(id);
-            }
-        root.dataset.variant = host.resolvedVariant();
-        host.dataset.variant = host.resolvedVariant();
-        host.toggleAttribute('data-animated', bool(host.animated, true));
-        const accessibleName = scalarText(host.accessibleLabel) || scalarText(host.label);
-        aria(root, 'role', accessibleName ? 'group' : null);
-        aria(root, 'aria-label', accessibleName);
-        groupDescription.textContent = scalarText(host.description);
-        groupDescription.hidden = !groupDescription.textContent;
-        aria(root, 'aria-describedby', groupDescription.hidden ? null : groupDescription.id);
-        empty.textContent = scalarText(host.emptyLabel);
-        empty.hidden = items.length > 0 || !empty.textContent;
-        for (const [index, item] of items.entries()) {
-            const id = item.id;
-            const view = views.get(id) ?? create(id);
-            if (!views.has(id))
-                views.set(id, view);
-            const isExpanded = expanded.has(id);
-            const disabled = host.itemDisabled(item);
-            const active = host.shadowRoot?.activeElement ?? host.ownerDocument.activeElement;
-            if (!isExpanded && active && view.panel.contains(active))
-                view.trigger.focus();
-            view.root.toggleAttribute('data-expanded', isExpanded);
-            view.root.toggleAttribute('data-disabled', disabled);
-            view.trigger.disabled = disabled;
-            view.trigger.dataset.accordionId = id;
-            view.label.textContent = scalarText(item.label) || id;
-            view.trigger.accessibleLabel = [view.label.textContent, scalarText(item.description)].filter(Boolean).join(' ');
-            view.description.textContent = scalarText(item.description);
-            view.description.hidden = !view.description.textContent;
-            view.disabledReason.textContent = disabled ? scalarText(item.disabledReason) : '';
-            view.disabledReason.hidden = !view.disabledReason.textContent;
-            aria(view.trigger, 'aria-describedby', view.disabledReason.hidden ? null : view.disabledReason.id);
-            aria(view.trigger, 'aria-expanded', isExpanded);
-            aria(view.trigger, 'aria-disabled', disabled || null);
-            aria(view.panel, 'aria-hidden', !isExpanded);
-            const heading = view.root.querySelector('[part~=heading]');
-            if (heading) {
-                aria(heading, 'aria-level', host.resolvedHeadingLevel());
-                aria(heading, 'aria-label', view.label.textContent);
-            }
-            view.panel.inert = !isExpanded;
-            syncActions(view, item, index);
-            syncContent(view, item, index);
-            root.insertBefore(view.root, empty);
-        }
-    };
-    root.append(groupDescription, empty);
-    return { root: html`<style part="styles">${css}</style>${root}`, update };
-}
 export class Accordion extends AccordionBase {
-    private view?: ReturnType<typeof accordionView>;
-    render(): Template { this.view = accordionView(this); return html`${this.view.root}`; }
-    protected syncView(): void { this.view?.update(); }
+    private readonly instanceId = uid('cb-accordion');
+    private rendered(item: AccordionItem, index: number, actions = false): AccordionContent {
+        try { return (actions ? item.renderActions?.({ accordion: this, item, index }) : item.renderContent ? item.renderContent({ accordion: this, item, index }) : item.content) ?? ''; }
+        catch (error) { this.onError(error); return null; }
+    }
+    render(): Template {
+        const id = (item: AccordionItem, suffix: string): string => `${this.instanceId}-${item.id}-${suffix}`;
+        return html`<style part="styles">${css}</style><div part="root" data-variant=${() => this.resolvedVariant()}
+            role=${() => this.accessibleLabel || this.label ? 'group' : null}
+            aria-label=${() => this.accessibleLabel || this.label || null}
+            aria-describedby=${() => this.description ? `${this.instanceId}-description` : null}>
+            <p part="group-description description" id=${`${this.instanceId}-description`} hidden=${() => !this.description}>${() => this.description}</p>
+            ${repeat(() => this.itemList(), (item, index) => html`<section part="item"
+                data-expanded=${() => this.itemExpanded(item.id) ? '' : null} data-disabled=${() => this.itemDisabled(item) ? '' : null}>
+                <div part="header"><div part="heading" role="heading" aria-level=${() => this.resolvedHeadingLevel()} aria-label=${() => item.label || item.id}>
+                    <cb-button part="trigger" exportparts="control:trigger-control,label:trigger-label,button-label:trigger-label,icon:trigger-icon,description:trigger-description" data-bare data-semantic-host id=${id(item,'trigger')} data-accordion-id=${item.id}
+                        disabled=${() => this.itemDisabled(item)} accessible-label=${() => [item.label || item.id,item.description].filter(Boolean).join(' ')}
+                        aria-controls=${id(item,'panel')} aria-expanded=${() => this.itemExpanded(item.id)}
+                        aria-disabled=${() => this.itemDisabled(item) || null}
+                        aria-describedby=${() => this.itemDisabled(item) && item.disabledReason ? id(item,'reason') : null}
+                        onaction=${(event: Event) => { event.stopPropagation(); this.toggle(item.id,event); }}
+                        onkeydown=${(event: KeyboardEvent) => this.handleKey(item.id,event)}>
+                        <span part="trigger-content"><span part="label">${() => item.label || item.id}</span>
+                            <span part="description" hidden=${() => !item.description}>${() => item.description}</span></span>
+                        <cb-icon name="right" part="indicator icon" decorative></cb-icon>
+                    </cb-button>
+                </div><div part="actions">
+                    ${repeat(() => (item.actions ?? []).filter(action => action.id?.trim() && action.label?.trim()), action => html`
+                        <cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" icon-only=${() => Boolean(action.icon)} icon=${() => action.icon ?? ''}
+                            label=${() => action.label} accessible-label=${() => action.label}
+                            disabled=${() => bool(action.disabled) || this.itemDisabled(item)} variant=${() => action.variant ?? 'ghost'}
+                            onaction=${(event: Event) => { event.stopPropagation(); this.emit('itemaction',{item,id:item.id,action,actionId:action.id,originalEvent:event}); }}></cb-button>
+                    `, {key: action => action.id})}
+                    ${() => this.rendered(item,index,true)}<slot name=${`actions-${item.id}`} part="actions-slot"></slot>
+                </div></div>
+                <div part="panel" id=${id(item,'panel')} role="region" aria-labelledby=${id(item,'trigger')}
+                    aria-hidden=${() => !this.itemExpanded(item.id)} inert=${() => !this.itemExpanded(item.id) ? '' : null}>
+                    <div part="panel-content"><div part="panel-inner"><slot part="content" name=${() => scalarText(item.slot).trim() || `item-${item.id}`}>
+                        ${() => this.rendered(item,index)}</slot></div></div>
+                </div>
+                <div part="disabled-reason" id=${id(item,'reason')} hidden=${() => !this.itemDisabled(item) || !item.disabledReason}>${() => this.itemDisabled(item) ? item.disabledReason : ''}</div>
+            </section>`, {key: item => item.id})}
+            <div part="empty" role="status" hidden=${() => this.itemList().length > 0 || !this.emptyLabel}>${() => this.emptyLabel}</div>
+        </div>`;
+    }
+    private handleKey(id: string, event: KeyboardEvent): void {
+        const items = this.itemList().filter(item => !this.itemDisabled(item)), index = items.findIndex(item => item.id === id);
+        const next = event.key === 'ArrowDown' ? (index + 1) % items.length
+            : event.key === 'ArrowUp' ? (index - 1 + items.length) % items.length
+            : event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : -1;
+        if (next < 0 || !items[next]) return;
+        event.preventDefault(); this.focusItem(items[next].id);
+    }
+    protected syncView(): void {
+        this.dataset.variant = this.resolvedVariant();
+        this.toggleAttribute('data-animated', bool(this.animated,true));
+    }
 }
 export { AccordionBase };
 export type { AccordionAction, AccordionBulkExpansionDetail, AccordionContent, AccordionExpansionChangeDetail, AccordionExpansionDetail, AccordionItem, AccordionItemContext, AccordionProps, AccordionVariant, } from './AccordionBase.js';

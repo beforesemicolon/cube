@@ -1,6 +1,5 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
+import { type Template, html, repeat, when, state } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
 import { finite, scalarText } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
 import { RulersBase } from './RulersBase.js';
@@ -29,73 +28,39 @@ const css = editorCSS + `
 :host([data-disabled]) [part~=root]{opacity:var(--component-disabled-opacity,.5)}
 `;
 export class Rulers extends RulersBase {
-    private horizontal?: HTMLElement;
-    private vertical?: HTMLElement;
-    private surface?: HTMLElement;
-    private guideX?: HTMLElement;
-    private guideY?: HTMLElement;
-    private cursor?: HTMLOutputElement;
+    private readonly dimensions = state({width:960,height:480});
+    private get surface(): HTMLElement | undefined { const node=this.refs.surface?.[0]; return node instanceof HTMLElement ? node : undefined; }
     render(): Template {
-        const root = element('div', { attributes: { part: 'root rulers' } }) as HTMLDivElement;
-        const corner = element('span', { attributes: { part: 'corner' } }) as HTMLSpanElement;
-        this.horizontal = element('div', { attributes: { part: 'horizontal ruler' } }) as HTMLDivElement;
-        this.vertical = element('div', { attributes: { part: 'vertical ruler' } }) as HTMLDivElement;
-        this.surface = element('div', { attributes: { part: 'surface canvas control' } }) as HTMLDivElement;
-        this.surface.tabIndex = 0;
-        this.surface.setAttribute('role', 'region');
-        const content = element('slot', { attributes: { part: 'content' } }) as HTMLSlotElement;
-        this.guideX = element('span', { attributes: { part: 'guide-x' } }) as HTMLSpanElement;
-        this.guideY = element('span', { attributes: { part: 'guide-y' } }) as HTMLSpanElement;
-        this.cursor = element('output', { attributes: { part: 'cursor' } }) as HTMLOutputElement;
-        this.surface.append(content, this.guideX, this.guideY, this.cursor);
-        root.append(corner, this.horizontal, this.vertical, this.surface);
-        this.surface.addEventListener('pointermove', event => this.trackPointer(event, false));
-        this.surface.addEventListener('pointerdown', event => this.trackPointer(event, true));
-        this.surface.addEventListener('keydown', event => this.onKeydown(event));
-        return html`<style part="styles">${css}</style>${root}`;
+        const ticks = (axis: 'x' | 'y'): Template => html`${repeat(() => this.ticks(axis), tick => html`
+            <span part="tick" data-major=${tick.major ? '' : null} style=${`${axis === 'x' ? 'inset-inline-start' : 'inset-block-start'}:${tick.pixel}px`}></span>
+            ${when(() => tick.major, () => html`<span part="tick-label" style=${`${axis === 'x' ? 'inset-inline-start' : 'inset-block-start'}:${Math.max(14,tick.pixel)}px`}>${() => `${Math.round(tick.value*100)/100}${scalarText(this.unit)}`}</span>`)}
+        `, {key: tick => tick.value})}`;
+        return html`<style part="styles">${css}</style><div part="root rulers">
+            <span part="corner"></span><div part="horizontal ruler" ref="horizontal">${ticks('x')}</div><div part="vertical ruler" ref="vertical">${ticks('y')}</div>
+            <div part="surface canvas control" ref="surface" role="region" tabindex=${() => this.unavailable ? -1 : 0}
+                aria-label=${() => this.accessibleName()} aria-disabled=${() => this.unavailable || null}
+                style=${() => `--cb-cursor-x:${(finite(this.cursorX)-finite(this.originX))*this.scale()}px;--cb-cursor-y:${(finite(this.cursorY)-finite(this.originY))*this.scale()}px`}
+                onpointermove=${(event: PointerEvent) => this.trackPointer(event,false)}
+                onpointerdown=${(event: PointerEvent) => this.trackPointer(event,true)} onkeydown=${(event: KeyboardEvent) => this.onKeydown(event)}>
+                <slot part="content"></slot><span part="guide-x" hidden=${() => !this.cursorVisible()}></span><span part="guide-y" hidden=${() => !this.cursorVisible()}></span>
+                <output part="cursor" hidden=${() => !this.cursorVisible() || !this.coordinateText()}>${() => this.coordinateText()}</output>
+            </div></div>`;
     }
-    protected syncView(): void {
-        if (!this.horizontal || !this.vertical || !this.surface || !this.guideX || !this.guideY || !this.cursor)
-            return;
-        this.renderTicks(this.horizontal, 'x');
-        this.renderTicks(this.vertical, 'y');
-        const x = (finite(this.cursorX) - finite(this.originX)) * this.scale();
-        const y = (finite(this.cursorY) - finite(this.originY)) * this.scale();
-        this.surface.style.setProperty('--cb-cursor-x', `${x}px`);
-        this.surface.style.setProperty('--cb-cursor-y', `${y}px`);
-        const visible = this.cursorVisible();
-        this.guideX.hidden = !visible;
-        this.guideY.hidden = !visible;
-        this.cursor.hidden = !visible || !this.coordinateText();
-        this.cursor.value = this.coordinateText();
-        this.surface.tabIndex = this.unavailable ? -1 : 0;
-        aria(this.surface, 'aria-label', this.accessibleName());
-        aria(this.surface, 'aria-disabled', this.unavailable ? true : null);
+    protected mount(): void {
+        const horizontal=this.refs.horizontal?.[0],vertical=this.refs.vertical?.[0];
+        const observer=new ResizeObserver(() => this.dimensions[1]({width:Math.max(horizontal?.clientWidth ?? 0,960),height:Math.max(vertical?.clientHeight ?? 0,480)}));
+        if(horizontal) observer.observe(horizontal);
+        if(vertical) observer.observe(vertical);
+        this.cleanup(() => observer.disconnect());
     }
-    private renderTicks(container: HTMLElement, axis: 'x' | 'y'): void {
-        container.replaceChildren();
-        const step = this.step();
-        const minor = step / this.divisions();
-        const origin = axis === 'x' ? finite(this.originX) : finite(this.originY);
-        const pixelLimit = axis === 'x' ? Math.max(container.clientWidth, 960) : Math.max(container.clientHeight, 480);
-        const logicalLimit = pixelLimit / this.scale();
-        const first = Math.floor(origin / minor) * minor;
-        const count = Math.min(240, Math.ceil(logicalLimit / minor) + this.divisions() * 2);
-        for (let index = -this.divisions(); index <= count; index += 1) {
-            const value = first + index * minor;
-            const pixel = (value - origin) * this.scale();
-            const tick = element('span', { attributes: { part: 'tick' } }) as HTMLSpanElement;
-            const isMajor = Math.abs(value / step - Math.round(value / step)) < .001;
-            if (isMajor)
-                tick.dataset.major = '';
-            tick.style.setProperty(axis === 'x' ? 'inset-inline-start' : 'inset-block-start', `${pixel}px`);
-            container.append(tick);
-            if (isMajor) {
-                const label = element('span', { attributes: { part: 'tick-label' }, textContent: `${Math.round(value * 100) / 100}${scalarText(this.unit)}` }) as HTMLSpanElement;
-                label.style.setProperty(axis === 'x' ? 'inset-inline-start' : 'inset-block-start', `${Math.max(14, pixel)}px`);
-                container.append(label);
-            }
-        }
+    private ticks(axis: 'x' | 'y'): readonly {value:number;pixel:number;major:boolean}[] {
+        const step=this.step(), minor=step/this.divisions(), origin=axis === 'x' ? finite(this.originX) : finite(this.originY);
+        const limit=(axis === 'x' ? this.dimensions[0]().width : this.dimensions[0]().height)/this.scale();
+        const first=Math.floor(origin/minor)*minor, count=Math.min(240,Math.ceil(limit/minor)+this.divisions()*2);
+        return Array.from({length:count+this.divisions()+1},(_,index) => {
+            const value=first+(index-this.divisions())*minor;
+            return {value,pixel:(value-origin)*this.scale(),major:Math.abs(value/step-Math.round(value/step))<.001};
+        });
     }
     private trackPointer(event: PointerEvent, commit: boolean): void {
         if (!this.surface || this.unavailable)

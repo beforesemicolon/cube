@@ -23,7 +23,7 @@ export class JsonEditor extends JsonEditorBase {
         }
         return html`<div part="root"><div part="toolbar">
             <span part="status" role="status" data-invalid="${() => error() ? '' : null}">${status}</span>
-            <cb-button part="format" variant="ghost" label="${this.props.formatLabel}" accessible-label="${this.props.formatLabel}"
+            <cb-button part="format" exportparts="control:format-control,label:format-label,button-label:format-label,icon:format-icon,description:format-description" variant="ghost" label="${this.props.formatLabel}" accessible-label="${this.props.formatLabel}"
                 disabled="${() => this.unavailable || bool(this.readOnly) || !this.sourceText() || Boolean(error())}"
                 onaction="${(event: Event) => { event.stopPropagation(); this.format(event) }}"></cb-button>
         </div>

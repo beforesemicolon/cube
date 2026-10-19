@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 interface StoryEntry { id: string; type: string; title: string; name: string }
 interface StoryIndex { entries: Record<string, StoryEntry> }
 interface Capture { id: string; appearance: string; path: string; errors: string[] }
+interface ComponentErrorDetail { code?: string; component?: string; error?: Error }
 interface AuditableHost extends HTMLElement {
     open?: boolean
     expanded?: boolean
@@ -38,9 +39,23 @@ try {
     for (const appearance of appearances) {
         const page = await browser.newPage({ viewport: { width: 1100, height: 800 }, reducedMotion: 'reduce' })
         let errors: string[] = []
+        let activeStory = ''
         page.on('pageerror', error => errors.push(error.message))
+        await page.exposeFunction('reportCubeRenderError', (component: string, message: string) => {
+            if (activeStory === 'media--invalid-source') return
+            errors.push(`${component}: ${message}`)
+        })
+        await page.addInitScript(() => {
+            const reporter = window as Window & { reportCubeRenderError(component: string, message: string): Promise<void> }
+            document.addEventListener('error', event => {
+                if (!(event instanceof CustomEvent)) return
+                const detail = (event as CustomEvent<ComponentErrorDetail>).detail
+                if (detail?.code === 'COMPONENT_ERROR') void reporter.reportCubeRenderError(detail.component ?? 'component', detail.error?.message ?? 'Component rendering failed')
+            }, true)
+        })
         for (const story of stories) {
             errors = []
+            activeStory = story.id
             await page.goto(`${origin}/iframe.html?id=${story.id}&viewMode=story&globals=appearance:${appearance}`)
             await page.locator('cube-story-events').waitFor({ state: 'attached' })
             await page.waitForFunction(() => Boolean(document.querySelector('cube-story-events')?.firstElementChild))

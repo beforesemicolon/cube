@@ -1,25 +1,8 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
+import { type Template, html } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
 import { finite, scalarText } from '../../core/value.js';
 import { ResizablePanelBase } from './ResizablePanelBase.js';
-export class ResizablePanel extends ResizablePanelBase {
-    private panel?: HTMLElement;
-    private handle?: HTMLElement;
-    private startX = 0;
-    private startSize = 0;
-    render(): Template {
-        this.panel = element('section', { attributes: { part: 'panel' } }) as HTMLElement;
-        const header = element('header', { attributes: { part: 'header' } }) as HTMLElement;
-        header.append(element("slot", { attributes: { name: 'heading', part: 'heading' }, textContent: '' }) as HTMLSlotElement);
-        this.panel.append(header, element("slot", { attributes: { name: '', part: 'content' }, textContent: '' }) as HTMLSlotElement);
-        this.handle = element('div', { attributes: { part: 'resize-handle' } }) as HTMLDivElement;
-        this.handle.tabIndex = 0;
-        this.handle.setAttribute('role', 'separator');
-        this.handle.setAttribute('aria-orientation', 'vertical');
-        this.handle.addEventListener('pointerdown', event => this.beginResize(event));
-        this.handle.addEventListener('keydown', event => this.handleKey(event));
-        return html`<style part="styles">${editorCSS + `
+const css = editorCSS + `
 :host{position:relative;display:block;inline-size:var(--component-resizable-panel-size,320px);min-inline-size:0}
 [part~=panel]{block-size:100%;overflow:auto;border:1px solid var(--color-separator);border-radius:var(--radius-md);background:var(--color-surface)}
 [part~=header]{padding:var(--spacing-md,12px);border-block-end:1px solid var(--color-separator);font-weight:650}
@@ -28,23 +11,25 @@ export class ResizablePanel extends ResizablePanelBase {
 :host([data-placement=start]) [part~=resize-handle]{inset-inline-start:auto;inset-inline-end:-5px}
 [part~=resize-handle]::before{content:'';position:absolute;inset-block:0;inset-inline-start:4px;inline-size:2px;background:transparent;transition:background var(--motion-duration-fast,100ms)}
 [part~=resize-handle]:hover::before,[part~=resize-handle]:focus-visible::before,[part~=resize-handle][data-resizing]::before{background:var(--color-primary)}
-`}</style>${this.panel}${this.handle}`;
+`;
+export class ResizablePanel extends ResizablePanelBase {
+    private get handle(): HTMLElement | undefined { const node = this.refs.handle?.[0]; return node instanceof HTMLElement ? node : undefined; }
+    private startX = 0;
+    private startSize = 0;
+    render(): Template {
+        return html`<style part="styles">${css}</style><section part="panel" aria-label=${() => this.accessibleName()}>
+            <header part="header"><slot name="heading" part="heading">${() => this.label}</slot></header>
+            <slot part="content"></slot>
+        </section><div part="resize-handle" ref="handle" role="separator" aria-orientation="vertical"
+            tabindex=${() => this.unavailable ? -1 : 0} aria-label=${() => scalarText(this.resizeLabel)}
+            aria-valuemin=${() => finite(this.min,180)} aria-valuemax=${() => finite(this.max,640)}
+            aria-valuenow=${() => this.currentSize()}
+            onpointerdown=${(event: PointerEvent) => this.beginResize(event)}
+            onkeydown=${(event: KeyboardEvent) => this.handleKey(event)}></div>`;
     }
     protected syncView(): void {
-        if (!this.panel || !this.handle)
-            return;
-        const value = this.currentSize();
-        this.style.setProperty('--component-resizable-panel-size', `${value}px`);
+        this.style.setProperty('--component-resizable-panel-size', `${this.currentSize()}px`);
         this.dataset.placement = this.placement === 'start' ? 'start' : 'end';
-        this.panel.setAttribute('aria-label', this.accessibleName());
-        const heading = this.panel.querySelector<HTMLSlotElement>('slot[name=heading]');
-        if (heading)
-            heading.textContent = scalarText(this.label);
-        aria(this.handle, 'aria-label', scalarText(this.resizeLabel));
-        aria(this.handle, 'aria-valuemin', finite(this.min, 180));
-        aria(this.handle, 'aria-valuemax', finite(this.max, 640));
-        aria(this.handle, 'aria-valuenow', value);
-        this.handle.tabIndex = this.unavailable ? -1 : 0;
     }
     private beginResize(event: PointerEvent): void {
         if (this.unavailable || !this.handle)

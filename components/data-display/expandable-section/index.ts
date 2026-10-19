@@ -1,10 +1,8 @@
-import { element, html, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { uid } from '../../core/id.js'
+import { html, state, type Template } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
+import { uid } from '../../core/id.js';
 import { bool, scalarText } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
-import { createBareButton } from '../../action/create.js';
 import { ExpandableSectionBase } from './ExpandableSectionBase.js';
 const css = editorCSS + `
 :host{display:block;inline-size:100%;min-inline-size:0}
@@ -39,68 +37,46 @@ button[part~=trigger]:hover:not(:disabled),button[part~=trigger]:active:not(:dis
 :host([data-disabled]) [part~=trigger]{cursor:not-allowed;color:${v('--color-muted-foreground')};opacity:var(--component-disabled-opacity,.5)}
 @container(max-width:480px){[part~=root]{grid-template-columns:minmax(0,1fr)}[part~=header-extras]{grid-column:1;padding:0 0 var(--spacing-sm,8px) calc(var(--component-icon-size,16px) + var(--spacing-sm,8px))}}
 `;
-interface IconElement extends HTMLElement {
-    name: string;
-    decorative: boolean;
-}
-function expandableSectionView(host: ExpandableSectionBase) {
-    const root = element('section', { attributes: { part: 'root' } }) as HTMLElement;
-    const trigger = createBareButton('header trigger', event => { event.preventDefault(); host.toggle(event); });
-    const icon = document.createElement('cb-icon') as IconElement;
-    icon.name = 'right';
-    icon.decorative = true;
-    icon.setAttribute('part', 'icon');
-    const heading = element('span', { attributes: { part: 'heading' } }) as HTMLSpanElement, labelRow = element('span', { attributes: { part: 'label-row' } }) as HTMLSpanElement, label = element('span', { attributes: { part: 'label' } }) as HTMLSpanElement, counter = element('span', { attributes: { part: 'counter' } }) as HTMLSpanElement;
-    const accessibleAction = element('span', { attributes: { part: 'accessible-action sr-only' } }) as HTMLSpanElement;
-    const description = element('span', { attributes: { part: 'description' } }) as HTMLSpanElement, extras = element('div', { attributes: { part: 'header-extras' } }) as HTMLDivElement, panel = element('div', { attributes: { part: 'panel' } }) as HTMLDivElement, content = element("slot", { attributes: { name: "", part: "content" }, textContent: "" }) as HTMLSlotElement;
-    const info = element("slot", { attributes: { name: 'header-info', part: 'header-info' }, textContent: '' }) as HTMLSlotElement, actions = element("slot", { attributes: { name: 'header-actions', part: 'header-actions' }, textContent: '' }) as HTMLSlotElement;
-    const triggerId = uid('cb-expandable-trigger'), panelId = uid('cb-expandable-panel');
-    trigger.id = triggerId;
-    panel.id = panelId;
-    panel.setAttribute('role', 'region');
-    heading.setAttribute('role', 'heading');
-    labelRow.append(label, document.createTextNode(' '), counter);
-    heading.append(labelRow, document.createTextNode(' '), description);
-    trigger.append(icon, heading, document.createTextNode(' '), accessibleAction);
-    extras.append(info, actions);
-    panel.append(content);
-    root.append(trigger, extras, panel);
-    const syncExtras = (): void => { extras.hidden = info.assignedElements().length + actions.assignedElements().length === 0; };
-    info.addEventListener('slotchange', syncExtras);
-    actions.addEventListener('slotchange', syncExtras);
-    const update = (): void => {
-        const expanded = bool(host.expanded), disabled = bool(host.disabled);
-        const visibleLabel = scalarText(host.label), visibleCounter = scalarText(host.counter), visibleDescription = scalarText(host.description), extraName = scalarText(host.accessibleLabel);
-        root.toggleAttribute('data-expanded', expanded);
-        root.dataset.variant = host.resolvedVariant();
-        host.dataset.variant = host.resolvedVariant();
-        host.toggleAttribute('data-expanded', expanded);
-        host.toggleAttribute('data-disable-content-padding', bool(host.disableContentPadding));
-        icon.name = expanded ? 'down' : 'right';
-        trigger.disabled = disabled;
-        aria(trigger, 'aria-disabled', disabled || null);
-        trigger.accessibleLabel = [visibleLabel, visibleCounter, visibleDescription, extraName].filter(Boolean).join(' ');
-        accessibleAction.textContent = visibleLabel && extraName !== visibleLabel ? extraName : '';
-        aria(trigger, 'aria-controls', panelId);
-        aria(trigger, 'aria-expanded', expanded);
-        aria(panel, 'aria-labelledby', triggerId);
-        panel.hidden = !expanded;
-        panel.inert = !expanded;
-        heading.setAttribute('aria-level', String(host.resolvedHeadingLevel()));
-        aria(heading, 'aria-label', visibleLabel || extraName || null);
-        label.textContent = visibleLabel;
-        counter.textContent = visibleCounter;
-        counter.hidden = !counter.textContent;
-        description.textContent = visibleDescription;
-        description.hidden = !description.textContent;
-        syncExtras();
-    };
-    return { root: html`<style part="styles">${css}</style>${root}`, update };
-}
 export class ExpandableSection extends ExpandableSectionBase {
-    private view?: ReturnType<typeof expandableSectionView>;
-    render(): Template { this.view = expandableSectionView(this); return html`${this.view.root}`; }
-    protected syncView(): void { this.view?.update(); }
+    private readonly triggerId = uid('cb-expandable-trigger');
+    private readonly panelId = uid('cb-expandable-panel');
+    private readonly extrasVisible = state(false);
+    render(): Template {
+        return html`<style part="styles">${css}</style>
+            <section part="root" data-expanded=${() => bool(this.expanded) ? '' : null} data-variant=${() => this.resolvedVariant()}>
+                <cb-button part="header trigger" data-bare data-semantic-host variant="ghost" id=${this.triggerId}
+                    exportparts="control:trigger-control,button-label:trigger-label"
+                    disabled=${() => bool(this.disabled)} aria-disabled=${() => bool(this.disabled) || null}
+                    accessible-label=${() => [this.label,this.counter,this.description,this.accessibleLabel].map(value => scalarText(value)).filter(Boolean).join(' ')}
+                    aria-controls=${this.panelId} aria-expanded=${() => bool(this.expanded)}
+                    onaction=${(event: Event) => { event.stopPropagation(); event.preventDefault(); this.toggle(event); }}>
+                    <cb-icon part="icon" name=${() => bool(this.expanded) ? 'down' : 'right'} decorative></cb-icon>
+                    <span part="heading" role="heading" aria-level=${() => this.resolvedHeadingLevel()}
+                        aria-label=${() => scalarText(this.label) || scalarText(this.accessibleLabel) || null}>
+                        <span part="label-row"><span part="label">${() => this.label}</span>
+                            <span part="counter" hidden=${() => !scalarText(this.counter)}>${() => this.counter}</span></span>
+                        <span part="description" hidden=${() => !scalarText(this.description)}>${() => this.description}</span>
+                    </span>
+                    <span part="accessible-action sr-only">${() => this.label && this.accessibleLabel !== this.label ? this.accessibleLabel : ''}</span>
+                </cb-button>
+                <div part="header-extras" hidden=${() => !this.extrasVisible[0]()}>
+                    <slot name="header-info" part="header-info" ref="extras" onslotchange=${() => this.syncExtras()}></slot>
+                    <slot name="header-actions" part="header-actions" ref="extras" onslotchange=${() => this.syncExtras()}></slot>
+                </div>
+                <div part="panel" id=${this.panelId} role="region" aria-labelledby=${this.triggerId}
+                    hidden=${() => !bool(this.expanded)} inert=${() => !bool(this.expanded) ? '' : null}>
+                    <slot part="content"></slot>
+                </div>
+            </section>`;
+    }
+    private syncExtras(): void {
+        this.extrasVisible[1]((this.refs.extras ?? []).some(slot => slot instanceof HTMLSlotElement && slot.assignedElements().length > 0));
+    }
+    protected syncView(): void {
+        this.dataset.variant = this.resolvedVariant();
+        this.toggleAttribute('data-expanded', bool(this.expanded));
+        this.toggleAttribute('data-disable-content-padding', bool(this.disableContentPadding));
+    }
 }
 export { ExpandableSectionBase };
 export type { ExpandableSectionChangeDetail, ExpandableSectionProps, ExpandableSectionVariant } from './ExpandableSectionBase.js';

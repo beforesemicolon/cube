@@ -1,8 +1,5 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { actionLabel, createIconButton } from '../../action/create.js';
-import type { Button } from '../../action/button/index.js';
+import { type Template, html } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
 import { finite } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
 import { ViewportBase } from './ViewportBase.js';
@@ -27,67 +24,40 @@ interface PanState {
     moved: boolean;
 }
 export class Viewport extends ViewportBase {
-    private surface?: HTMLElement;
-    private world?: HTMLElement;
-    private controlsNode?: HTMLElement;
-    private status?: HTMLOutputElement;
-    private position?: HTMLOutputElement;
-    private zoomIn?: Button;
-    private zoomOut?: Button;
-    private resetButton?: Button;
+    private get surface(): HTMLElement | undefined { const node=this.refs.surface?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private pan?: PanState;
     render(): Template {
-        this.surface = element('div', { attributes: { part: 'viewport canvas control' } }) as HTMLDivElement;
-        this.surface.tabIndex = 0;
-        this.surface.setAttribute('role', 'region');
-        this.world = element('div', { attributes: { part: 'world' } }) as HTMLDivElement;
-        const content = element('slot', { attributes: { part: 'content' } }) as HTMLSlotElement;
-        this.world.append(content);
-        this.controlsNode = element('div', { attributes: { part: 'controls' } }) as HTMLDivElement;
-        this.zoomOut = createIconButton('zoom-out', 'minus', event => this.zoomBy(-Math.abs(finite(this.zoomStep, 10)), event));
-        this.resetButton = createIconButton('reset', 'reset', event => this.reset(event));
-        this.status = element('output', { attributes: { part: 'status' } }) as HTMLOutputElement;
-        this.zoomIn = createIconButton('zoom-in', 'plus', event => this.zoomBy(Math.abs(finite(this.zoomStep, 10)), event));
-        this.controlsNode.append(this.zoomOut, this.resetButton, this.status, this.zoomIn);
-        this.position = element('output', { attributes: { part: 'position' } }) as HTMLOutputElement;
-        this.surface.append(this.world, this.controlsNode, this.position);
-        this.surface.addEventListener('wheel', event => {
-            if (this.unavailable)
-                return;
-            event.preventDefault();
-            if (event.ctrlKey || event.metaKey)
-                this.zoomBy(event.deltaY < 0 ? Math.abs(finite(this.zoomStep, 10)) : -Math.abs(finite(this.zoomStep, 10)), event, false);
-            else
-                this.panBy(-event.deltaX, -event.deltaY, event, false);
-        }, { passive: false });
-        this.surface.addEventListener('pointerdown', event => this.beginPan(event));
-        this.surface.addEventListener('pointermove', event => this.movePan(event));
-        this.surface.addEventListener('pointerup', event => this.endPan(event));
-        this.surface.addEventListener('pointercancel', event => this.endPan(event));
-        this.surface.addEventListener('keydown', event => this.onKeydown(event));
-        return html`<style part="styles">${css}</style>${this.surface}`;
+        return html`<style part="styles">${css}</style><div part="viewport canvas control" ref="surface" role="region"
+            tabindex=${() => this.unavailable ? -1 : 0} aria-label=${() => this.accessibleName()}
+            aria-disabled=${() => this.unavailable || null} data-grid=${() => this.gridVisible() ? '' : null}
+            onwheel=${(event: WheelEvent) => {
+                if(this.unavailable) return;
+                event.preventDefault();
+                if(event.ctrlKey || event.metaKey) this.zoomBy((event.deltaY < 0 ? 1 : -1)*Math.abs(finite(this.zoomStep,10)),event,false);
+                else this.panBy(-event.deltaX,-event.deltaY,event,false);
+            }}
+            onpointerdown=${(event: PointerEvent) => this.beginPan(event)}
+            onpointermove=${(event: PointerEvent) => this.movePan(event)}
+            onpointerup=${(event: PointerEvent) => this.endPan(event)}
+            onpointercancel=${(event: PointerEvent) => this.endPan(event)}
+            onkeydown=${(event: KeyboardEvent) => this.onKeydown(event)}>
+            <div part="world" style=${() => { const value=this.viewportState(); return `--cb-zoom:${value.zoom/100};--cb-pan-x:${value.x}px;--cb-pan-y:${value.y}px`; }}><slot part="content"></slot></div>
+            <div part="controls" hidden=${() => !this.controlsVisible()}>
+                <cb-button part="zoom-out" exportparts="control:zoom-out-control,label:zoom-out-label,button-label:zoom-out-label,icon:zoom-out-icon,description:zoom-out-description" icon-only icon="minus" variant="ghost" accessible-label=${() => this.text('zoomOutLabel')}
+                    disabled=${() => this.unavailable || this.viewportState().zoom <= this.normalizedZoom(this.minZoom)}
+                    onaction=${(event: Event) => { event.stopPropagation(); this.zoomBy(-Math.abs(finite(this.zoomStep,10)),event); }}></cb-button>
+                <cb-button part="reset" exportparts="control:reset-control,label:reset-label,button-label:reset-label,icon:reset-icon,description:reset-description" icon-only icon="reset" variant="ghost" accessible-label=${() => this.text('resetLabel')} disabled=${() => this.unavailable}
+                    onaction=${(event: Event) => { event.stopPropagation(); this.reset(event); }}></cb-button>
+                <output part="status">${() => `${Math.round(this.viewportState().zoom)}%`}</output>
+                <cb-button part="zoom-in" exportparts="control:zoom-in-control,label:zoom-in-label,button-label:zoom-in-label,icon:zoom-in-icon,description:zoom-in-description" icon-only icon="plus" variant="ghost" accessible-label=${() => this.text('zoomInLabel')}
+                    disabled=${() => this.unavailable || this.viewportState().zoom >= this.normalizedZoom(this.maxZoom)}
+                    onaction=${(event: Event) => { event.stopPropagation(); this.zoomBy(Math.abs(finite(this.zoomStep,10)),event); }}></cb-button>
+            </div><output part="position" hidden=${() => !this.positionText()}>${() => this.positionText()}</output>
+        </div>`;
     }
-    protected syncView(): void {
-        if (!this.surface || !this.world || !this.controlsNode || !this.status || !this.position || !this.zoomIn || !this.zoomOut || !this.resetButton)
-            return;
-        const state = this.viewportState();
-        this.world.style.setProperty('--cb-zoom', String(state.zoom / 100));
-        this.world.style.setProperty('--cb-pan-x', `${state.x}px`);
-        this.world.style.setProperty('--cb-pan-y', `${state.y}px`);
-        this.surface.toggleAttribute('data-grid', this.gridVisible());
-        this.surface.tabIndex = this.unavailable ? -1 : 0;
-        aria(this.surface, 'aria-label', this.accessibleName());
-        aria(this.surface, 'aria-disabled', this.unavailable ? true : null);
-        this.controlsNode.hidden = !this.controlsVisible();
-        this.status.value = `${Math.round(state.zoom)}%`;
-        this.position.value = this.text('positionLabel').replace('{x}', String(Math.round(state.x))).replace('{y}', String(Math.round(state.y)));
-        this.position.hidden = !this.position.value;
-        actionLabel(this.zoomIn, this.text('zoomInLabel'));
-        actionLabel(this.zoomOut, this.text('zoomOutLabel'));
-        actionLabel(this.resetButton, this.text('resetLabel'));
-        this.zoomIn.disabled = this.unavailable || state.zoom >= this.normalizedZoom(this.maxZoom);
-        this.zoomOut.disabled = this.unavailable || state.zoom <= this.normalizedZoom(this.minZoom);
-        this.resetButton.disabled = this.unavailable;
+    private positionText(): string {
+        const value=this.viewportState();
+        return this.text('positionLabel').replace('{x}',String(Math.round(value.x))).replace('{y}',String(Math.round(value.y)));
     }
     private beginPan(event: PointerEvent): void {
         if (!this.surface || !this.canPan() || event.button !== 0)

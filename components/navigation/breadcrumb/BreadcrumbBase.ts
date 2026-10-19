@@ -1,6 +1,7 @@
 import { Component, type ComponentProps } from '../../core/Component.js'
 import { normalizeItems, type ActionItem, type NormalizedItem } from '../../core/items.js'
 import { finite } from '../../core/value.js'
+import { state } from '../../core/runtime.js'
 
 export interface BreadcrumbProps extends ComponentProps { items?: ActionItem[]; maxItems?: number; expandLabel?: string }
 
@@ -10,7 +11,9 @@ export abstract class BreadcrumbBase<P extends BreadcrumbProps = BreadcrumbProps
     items: ActionItem[] = []
     maxItems = 5
     expandLabel = ''
-    protected expanded = false
+    private readonly expandedState = state(false)
+    protected get expanded(): boolean { return this.expandedState[0]() }
+    protected set expanded(value: boolean) { this.expandedState[1](value) }
     protected get crumbs(): NormalizedItem[] { return normalizeItems(this.items).filter(item => !item.separator) }
     protected visibleCrumbs(): Array<NormalizedItem | 'ellipsis'> {
         const items = this.crumbs, maximum = Math.max(2, Math.trunc(finite(this.maxItems, 5)))

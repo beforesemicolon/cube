@@ -1,39 +1,27 @@
-import { type Template, element, html } from '../../core/runtime.js'
+import { html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
-import { bool, scalarText } from '../../core/value.js';
-import type { PanelHeader } from '../panel-header/index.js';
-import { DockedPanelBase } from './DockedPanelBase.js';
-export class DockedPanel extends DockedPanelBase {
-    private panel?: HTMLElement;
-    private header?: PanelHeader;
-    private content?: HTMLElement;
-    render(): Template {
-        this.panel = element('section', { attributes: { part: 'panel docked-panel' } }) as HTMLElement;
-        this.header = document.createElement('cb-panel-header') as PanelHeader;
-        this.header.setAttribute('part', 'header');
-        this.header.setAttribute('exportparts', 'header:header,heading:heading,actions:actions,toggle:toggle,toggle-control:toggle-control');
-        this.header.addEventListener('toggle', event => { event.stopPropagation(); this.togglePanel(event); });
-        this.content = element('div', { attributes: { part: 'content' } }) as HTMLDivElement;
-        this.content.append(element("slot", { attributes: { name: '', part: 'content-slot' }, textContent: '' }) as HTMLSlotElement);
-        this.panel.append(this.header, this.content);
-        return html`<style part="styles">${editorCSS + `
+import { DockedPanelBase } from './DockedPanelBase.js'
+const css = editorCSS + `
 :host{display:block;min-inline-size:0}
 [part~=panel]{overflow:hidden;border:1px solid var(--color-separator);background:var(--color-surface);box-shadow:var(--component-docked-panel-shadow,-8px 0 24px color-mix(in srgb,var(--color-foreground) 10%,transparent))}
 :host([data-placement=start]) [part~=panel]{border-radius:0 var(--radius-md) var(--radius-md) 0}:host([data-placement=end]) [part~=panel]{border-radius:var(--radius-md) 0 0 var(--radius-md)}:host([data-placement=bottom]) [part~=panel]{border-radius:var(--radius-md) var(--radius-md) 0 0}
 [part~=content]{padding:var(--spacing-md,12px);min-block-size:120px}:host(:not([expanded])) [part~=content]{display:none}
-`}</style>${this.panel}`;
+`;
+export class DockedPanel extends DockedPanelBase {
+    render(): Template {
+        return html`<style part="styles">${css}</style>
+            <section part="panel docked-panel" aria-label="${() => this.accessibleName()}">
+                <cb-panel-header part="header" exportparts="header:header,heading:heading,actions:actions,toggle:toggle,toggle-control:toggle-control"
+                    label="${() => this.label}" description="${() => this.description}"
+                    collapsible="${() => this.isCollapsible()}" expanded="${() => this.isExpanded()}"
+                    expand-label="${() => this.expandLabel}" collapse-label="${() => this.collapseLabel}" disabled="${() => this.unavailable}"
+                    ontoggle="${(event: Event) => { event.stopPropagation(); this.togglePanel(event) }}"></cb-panel-header>
+                <div part="content" hidden="${() => !this.isExpanded()}"><slot part="content-slot"></slot></div>
+            </section>`
     }
     protected syncView(): void {
-        if (!this.panel || !this.header || !this.content)
-            return;
-        const expanded = this.isExpanded();
-        const placement = ['start', 'end', 'bottom'].includes(this.placement) ? this.placement : 'end';
-        this.dataset.placement = placement;
-        this.toggleAttribute('expanded', expanded);
-        Object.assign(this.header, { label: scalarText(this.label), description: scalarText(this.description), collapsible: this.isCollapsible(), expanded, expandLabel: scalarText(this.expandLabel), collapseLabel: scalarText(this.collapseLabel), disabled: this.unavailable });
-        this.header.toggleAttribute('collapsible', this.isCollapsible());
-        this.content.hidden = !expanded;
-        this.panel.setAttribute('aria-label', this.accessibleName());
+        this.dataset.placement = ['start', 'end', 'bottom'].includes(this.placement) ? this.placement : 'end'
+        this.toggleAttribute('expanded', this.isExpanded())
     }
 }
 export { DockedPanelBase };

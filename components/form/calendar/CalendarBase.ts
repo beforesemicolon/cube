@@ -1,4 +1,5 @@
 import { finite, scalarText, bool } from '../../core/value.js'
+import { state } from '../../core/runtime.js'
 import { FieldControlBase, type FieldControlProps, type FormRestoreValue } from '../FormControlBase.js'
 
 export interface CalendarProps extends FieldControlProps {
@@ -30,7 +31,9 @@ export abstract class CalendarBase<P extends CalendarProps = CalendarProps> exte
     firstDayOfWeek = 0
     previousLabel = ''
     nextLabel = ''
-    visibleMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+    private readonly month = state(new Date(new Date().getFullYear(), new Date().getMonth(), 1))
+    get visibleMonth(): Date { return this.month[0]() }
+    set visibleMonth(value: Date) { this.month[1](value) }
     protected fieldElement(): undefined { return undefined }
     protected captureValue(): string { return this.value }
     protected restoreValue(value: string | FormRestoreValue): void { this.value = typeof value === 'string' ? value : value instanceof FormData ? scalarText(value.get(this.name)) : '' }
@@ -71,7 +74,6 @@ export abstract class CalendarBase<P extends CalendarProps = CalendarProps> exte
     }
     protected moveMonth(amount: number): void {
         this.visibleMonth = new Date(this.visibleMonth.getFullYear(), this.visibleMonth.getMonth() + amount, 1)
-        this.syncView()
     }
     protected syncMonth(): void {
         const selected = this.selectedDate()

@@ -1,14 +1,12 @@
 import { type Template } from '../../core/runtime.js'
-import { aria } from '../../core/accessibility.js'
 import { safeHref } from '../../core/url.js'
 import { buttonView } from '../../action/button/view.js';
 import { LinkBase } from './LinkBase.js';
 export class Link extends LinkBase {
     private view?: ReturnType<typeof buttonView>;
-    render(): Template { this.view = buttonView(this, e => this.activate(e), 'a'); return this.view.root; }
+    render(): Template { this.view = buttonView(this, e => this.activate(e), 'a', {href:()=>safeHref(this.href,this.baseURI),target:()=>this.target,download:()=>this.download}); return this.view.root; }
     protected actionElement() { return this.view?.control; }
-    protected syncView(): void { this.view?.update(); if (!this.view?.control)
-        return; const a = this.view.control as HTMLAnchorElement; const href = safeHref(this.href, this.baseURI); aria(a, 'href', this.unavailable ? null : href); aria(a, 'role', !href ? 'link' : null); aria(a, 'target', this.target); aria(a, 'rel', this.target === '_blank' ? 'noopener noreferrer' : null); aria(a, 'download', this.download); a.tabIndex = this.unavailable ? -1 : 0; }
+    protected syncView(): void { this.view?.update(); }
 }
 export { LinkBase };
 export type { LinkProps } from './LinkBase.js';

@@ -1,7 +1,6 @@
-import { type Template, element, html } from '../../core/runtime.js'
+import { html, state, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { AvatarBase } from './AvatarBase.js';
+import { AvatarBase } from './AvatarBase.js'
 const css = editorCSS + `
 :host{
     --cb-avatar-size:var(--component-avatar-size,var(--component-avatar-size-sm,32px));
@@ -27,77 +26,24 @@ const css = editorCSS + `
 @media (forced-colors:active){[part~=surface]{border-color:CanvasText}[part~=status]{border-color:Canvas;background:CanvasText}}
 `;
 export class Avatar extends AvatarBase {
-    private rootNode?: HTMLElement;
-    private surfaceNode?: HTMLElement;
-    private imageNode?: HTMLImageElement;
-    private initialsNode?: HTMLElement;
-    private statusNode?: HTMLElement;
-    private imageFailed = false;
-    private renderedSource = '';
+    private readonly failedSource = state('')
     render(): Template {
-        this.rootNode = element('span', { attributes: { part: 'avatar root' } }) as HTMLSpanElement;
-        this.surfaceNode = element('span', { attributes: { part: 'surface' } }) as HTMLSpanElement;
-        this.imageNode = element('img', { attributes: { part: 'image' } }) as HTMLImageElement;
-        this.imageNode.alt = '';
-        this.imageNode.decoding = 'async';
-        this.imageNode.loading = 'lazy';
-        this.initialsNode = element('span', { attributes: { part: 'initials' } }) as HTMLSpanElement;
-        this.statusNode = element('span', { attributes: { part: 'status' } }) as HTMLSpanElement;
-        this.statusNode.setAttribute('aria-hidden', 'true');
-        this.imageNode.addEventListener('load', () => {
-            if (!this.imageFailed)
-                return;
-            this.imageFailed = false;
-            this.syncView();
-        });
-        this.imageNode.addEventListener('error', () => {
-            this.imageFailed = true;
-            this.syncView();
-        });
-        this.surfaceNode.append(this.imageNode, this.initialsNode);
-        this.rootNode.append(this.surfaceNode, this.statusNode);
-        return html`<style part="styles">${css}</style>${this.rootNode}`;
+        const showsImage = () => Boolean(this.avatarSource) && this.failedSource[0]() !== this.avatarSource
+        return html`<style part="styles">${css}</style>
+            <span part="avatar root" role="${() => this.avatarDecorative ? 'presentation' : this.avatarLabel ? 'img' : null}"
+                aria-hidden="${() => this.avatarDecorative ? 'true' : null}"
+                aria-label="${() => this.avatarDecorative ? null : this.avatarLabel || null}"
+                style="${() => this.avatarColor ? '--cb-avatar-color:' + this.avatarColor : null}">
+                <span part="surface">
+                    <img part="image" alt="" decoding="async" loading="lazy" src="${() => this.avatarSource || null}" hidden="${() => !showsImage()}"
+                        onload="${() => this.failedSource[1]('')}" onerror="${() => this.failedSource[1](this.avatarSource)}">
+                    <span part="initials" hidden="${showsImage}" data-initials="${() => this.avatarInitials}"></span>
+                </span>
+                <span part="status" aria-hidden="true" data-status="${() => this.avatarStatus}"
+                    hidden="${() => this.avatarStatus === 'none'}" title="${() => this.avatarStatusLabel}"></span>
+            </span>`
     }
-    protected syncView(): void {
-        if (!this.rootNode || !this.surfaceNode || !this.imageNode || !this.initialsNode || !this.statusNode)
-            return;
-        const source = this.avatarSource;
-        if (source !== this.renderedSource) {
-            this.renderedSource = source;
-            this.imageFailed = false;
-            if (source)
-                this.imageNode.src = source;
-            else
-                this.imageNode.removeAttribute('src');
-        }
-        const showsImage = Boolean(source) && !this.imageFailed;
-        this.imageNode.hidden = !showsImage;
-        this.initialsNode.hidden = showsImage;
-        this.initialsNode.dataset.initials = this.avatarInitials;
-        const status = this.avatarStatus;
-        this.statusNode.dataset.status = status;
-        this.statusNode.hidden = status === 'none';
-        this.statusNode.title = this.avatarStatusLabel;
-        if (this.avatarColor)
-            this.style.setProperty('--cb-avatar-color', this.avatarColor);
-        else
-            this.style.removeProperty('--cb-avatar-color');
-        const decorative = this.avatarDecorative;
-        aria(this, 'aria-hidden', decorative ? true : null);
-        aria(this.rootNode, 'aria-hidden', decorative ? true : null);
-        if (decorative) {
-            this.rootNode.setAttribute('role', 'presentation');
-            this.rootNode.removeAttribute('aria-label');
-        }
-        else if (this.avatarLabel) {
-            this.rootNode.setAttribute('role', 'img');
-            this.rootNode.setAttribute('aria-label', this.avatarLabel);
-        }
-        else {
-            this.rootNode.removeAttribute('role');
-            this.rootNode.removeAttribute('aria-label');
-        }
-    }
+    protected syncView(): void { this.toggleAttribute('aria-hidden', this.avatarDecorative) }
 }
 export { AvatarBase };
 export type { AvatarProps, AvatarStatus } from './AvatarBase.js';

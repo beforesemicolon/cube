@@ -1,9 +1,6 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { actionLabel, createButton } from '../../action/create.js';
-import type { Avatar } from '../../data-display/avatar/index.js';
-import { PresenceBase, type PresenceItem } from './PresenceBase.js';
+import { type Template, html, repeat, when } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
+import { PresenceBase } from './PresenceBase.js';
 const css = editorCSS + `
 :host{display:inline-block;max-inline-size:100%}
 [part~=presence]{display:flex;align-items:center;gap:var(--spacing-sm,8px);min-block-size:var(--component-avatar-size-sm,32px);min-inline-size:0}
@@ -25,73 +22,28 @@ const css = editorCSS + `
 [part~=empty]{color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px)}
 @media (forced-colors:active){[part~=participant] cb-avatar{box-shadow:0 0 0 1px Canvas}[part~=participant]:hover cb-avatar{box-shadow:0 0 0 2px Highlight}}
 `;
-function participantLabel(item: PresenceItem): string {
-    return item.accessibleLabel?.trim() || item.label;
-}
-function avatarFor(item: PresenceItem): Avatar {
-    const avatar = document.createElement('cb-avatar') as Avatar;
-    avatar.setAttribute('part', 'avatar');
-    avatar.name = item.label;
-    avatar.src = item.src ?? '';
-    avatar.initials = item.initials ?? '';
-    avatar.color = item.color ?? '';
-    avatar.status = item.status ?? 'none';
-    avatar.statusLabel = item.statusLabel ?? '';
-    avatar.size = 'sm';
-    avatar.decorative = true;
-    return avatar;
-}
 export class Presence extends PresenceBase {
-    private rootNode?: HTMLElement;
-    private listNode?: HTMLUListElement;
-    private summaryNode?: HTMLElement;
-    private emptyNode?: HTMLElement;
     render(): Template {
-        this.rootNode = element('div', { attributes: { part: 'presence root' } }) as HTMLDivElement;
-        this.listNode = element('ul', { attributes: { part: 'list participants' } }) as HTMLUListElement;
-        this.summaryNode = element('span', { attributes: { part: 'summary' } }) as HTMLSpanElement;
-        this.emptyNode = element('span', { attributes: { part: 'empty' } }) as HTMLSpanElement;
-        this.emptyNode.setAttribute('role', 'status');
-        this.rootNode.append(this.listNode, this.summaryNode, this.emptyNode);
-        return html`<style part="styles">${css}</style>${this.rootNode}`;
-    }
-    protected syncView(): void {
-        if (!this.rootNode || !this.listNode || !this.summaryNode || !this.emptyNode)
-            return;
-        this.listNode.replaceChildren();
-        for (const item of this.visibleItems) {
-            const member = element('li', { attributes: { part: 'member' } }) as HTMLLIElement;
-            const button = createButton('participant', event => this.activate(item, event));
-            button.disabled = this.unavailable || item.disabled === true;
-            button.value = item.id;
-            actionLabel(button, participantLabel(item));
-            button.append(avatarFor(item));
-            member.append(button);
-            this.listNode.append(member);
-        }
-        const hidden = this.hiddenItems.length;
-        if (hidden) {
-            const member = element('li', { attributes: { part: 'member overflow-member' } }) as HTMLLIElement;
-            const button = createButton('participant', event => this.activateOverflow(event));
-            button.setAttribute('part', 'participant overflow');
-            button.disabled = this.unavailable;
-            actionLabel(button, this.overflowText(hidden));
-            const avatar = document.createElement('cb-avatar') as Avatar;
-            avatar.setAttribute('part', 'avatar overflow-avatar');
-            avatar.initials = `+${hidden}`;
-            avatar.size = 'sm';
-            avatar.decorative = true;
-            button.append(avatar);
-            member.append(button);
-            this.listNode.append(member);
-        }
-        this.listNode.hidden = !this.presenceItems.length;
-        this.summaryNode.textContent = this.summaryText;
-        this.summaryNode.hidden = !this.summaryText;
-        this.emptyNode.textContent = this.emptyText;
-        this.emptyNode.hidden = Boolean(this.presenceItems.length) || !this.emptyText;
-        aria(this.rootNode, 'aria-label', this.presenceLabel || null);
-        this.rootNode.setAttribute('role', 'group');
+        return html`<style part="styles">${css}</style><div part="presence root" role="group" aria-label=${() => this.presenceLabel || null}>
+            <ul part="list participants" hidden=${() => !this.presenceItems.length}>
+                ${repeat(() => this.visibleItems, item => html`<li part="member">
+                    <cb-button part="participant" exportparts="control:participant-control,label:participant-label,button-label:participant-label,icon:participant-icon,description:participant-description" disabled=${() => this.unavailable || item.disabled === true}
+                        value=${item.id} accessible-label=${() => item.accessibleLabel?.trim() || item.label}
+                        onaction=${(event: Event) => { event.stopPropagation(); this.activate(item,event); }}>
+                        <cb-avatar part="avatar" name=${() => item.label} src=${() => item.src ?? ''}
+                            initials=${() => item.initials ?? ''} color=${() => item.color ?? ''}
+                            status=${() => item.status ?? 'none'} status-label=${() => item.statusLabel ?? ''} size="sm" decorative></cb-avatar>
+                    </cb-button></li>`, {key: item => item.id})}
+                ${when(() => this.hiddenItems.length > 0, () => html`<li part="member overflow-member">
+                    <cb-button part="participant overflow" exportparts="control:participant-control,label:participant-label,button-label:participant-label,icon:participant-icon,description:participant-description,control:overflow-control,label:overflow-label,button-label:overflow-label,icon:overflow-icon,description:overflow-description" disabled=${() => this.unavailable}
+                        accessible-label=${() => this.overflowText(this.hiddenItems.length)}
+                        onaction=${(event: Event) => { event.stopPropagation(); this.activateOverflow(event); }}>
+                        <cb-avatar part="avatar overflow-avatar" initials=${() => `+${this.hiddenItems.length}`} size="sm" decorative></cb-avatar>
+                    </cb-button></li>`)}
+            </ul>
+            <span part="summary" hidden=${() => !this.summaryText}>${() => this.summaryText}</span>
+            <span part="empty" role="status" hidden=${() => Boolean(this.presenceItems.length) || !this.emptyText}>${() => this.emptyText}</span>
+        </div>`;
     }
 }
 export { PresenceBase };

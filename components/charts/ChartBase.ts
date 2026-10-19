@@ -1,4 +1,5 @@
 import { Component, type CommonProps } from '../core/Component.js'
+import { state } from '../core/runtime.js'
 import { record, text } from '../core/value.js'
 import type { ChartModel, ChartPoint, ChartSkin } from './model.js'
 export interface ChartProps extends CommonProps {
@@ -27,8 +28,12 @@ export abstract class ChartBase<P extends ChartProps = ChartProps> extends Compo
     percentageLabel = ''; missingText = ''; navigateLabel = ''; instructionsText = ''
     pinnedText = ''; unpinLabel = ''; zoomInLabel = ''; zoomOutLabel = ''; resetZoomLabel = ''
     private hiddenItems = new Set<string>()
-    private currentKey: string | null = null
-    pinned = false
+    private readonly selectionKey = state<string | null>(null)
+    private get currentKey(): string | null { return this.selectionKey[0]() }
+    private set currentKey(value: string | null) { this.selectionKey[1](value) }
+    private readonly pinnedState = state(false)
+    get pinned(): boolean { return this.pinnedState[0]() }
+    set pinned(value: boolean) { this.pinnedState[1](value) }
     private lastIssues = ''
     abstract get kind(): 'cartesian' | 'pie'
     protected abstract build(skin: ChartSkin, visible?: ReadonlySet<string>): ChartModel

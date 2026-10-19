@@ -28,7 +28,7 @@ export const buttonCSS = editorCSS + `
 @keyframes cb-spin{to{transform:rotate(360deg)}}
 `;
 
-export function buttonView<P extends ButtonProps>(host: ButtonBase<P>, activate: (event: Event) => void, tag: 'button' | 'a' = 'button') {
+export function buttonView<P extends ButtonProps>(host: ButtonBase<P>, activate: (event: Event) => void, tag: 'button' | 'a' = 'button', link?: {href:()=>string|null;target:()=>string;download:()=>string}) {
     const semanticHost = host.hasAttribute('data-semantic-host')
     const descriptionId = uid('cb-button-help')
     const busy = () => bool(host.loading)
@@ -41,9 +41,30 @@ export function buttonView<P extends ButtonProps>(host: ButtonBase<P>, activate:
         <span part="${() => (semanticHost ? 'button-label' : 'label') + (bool(host.iconOnly) ? ' sr-only' : '')}"><slot part="content">${() => scalarText(host.label)}</slot></span>
         <slot part="suffix" name="suffix"></slot>`
     const onClick = (event: Event): void => { if (!semanticHost) activate(event) }
+    const attributes = {
+        role: () => semanticHost ? 'none' : host.props.role?.() || null,
+        'aria-hidden': () => semanticHost ? 'true' : null,
+        'aria-disabled': () => tag === 'a' && host.controlUnavailable() ? true : null,
+        'aria-busy': () => busy() ? true : null,
+        'aria-describedby': () => scalarText(host.description) ? descriptionId : null,
+        'aria-label': () => semanticHost ? null : bool(host.iconOnly) ? scalarText(host.accessibleLabel) || scalarText(host.label) : scalarText(host.accessibleLabel) || null,
+        'aria-haspopup': () => semanticHost ? null : host.props.ariaHaspopup?.() || null,
+        'aria-expanded': () => semanticHost ? null : host.props.ariaExpanded?.() ?? null,
+        'aria-controls': () => semanticHost ? null : host.props.ariaControls?.() || null,
+        'aria-selected': () => semanticHost ? null : host.props.ariaSelected?.() ?? null,
+        'aria-current': () => semanticHost ? null : host.props.ariaCurrent?.() ?? null,
+        'aria-checked': () => semanticHost ? null : host.props.ariaChecked?.() ?? null,
+        'aria-valuemin': () => semanticHost ? null : host.props.ariaValuemin?.() ?? null,
+        'aria-valuemax': () => semanticHost ? null : host.props.ariaValuemax?.() ?? null,
+        'aria-valuenow': () => semanticHost ? null : host.props.ariaValuenow?.() ?? null,
+        'aria-valuetext': () => semanticHost ? null : host.props.ariaValuetext?.() || null,
+        'aria-description': () => semanticHost ? null : host.props.ariaDescription?.() || null,
+        'aria-keyshortcuts': () => semanticHost ? null : host.props.ariaKeyshortcuts?.() || null,
+        'aria-pressed': () => host.pressed === undefined ? null : bool(host.pressed),
+    }
     const surface = tag === 'a'
-        ? html`<a ref="control" part="control" onclick="${onClick}" style="padding:0;min-height:var(--cb-height);border:0;background:transparent;color:var(--color-signal-text,#1D50B3);text-decoration:underline;text-underline-offset:3px">${content}</a>`
-        : html`<button ref="control" part="control" type="button" onclick="${onClick}">${content}</button>`
+        ? html`<a ref="control" part="control" ${attributes} href="${() => host.controlUnavailable() ? null : link?.href()}" target="${() => link?.target()}" rel="${() => link?.target() === '_blank' ? 'noopener noreferrer' : null}" download="${() => link?.download() || null}" tabindex="${() => host.controlUnavailable() ? -1 : 0}" onclick="${onClick}" style="padding:0;min-height:var(--cb-height);border:0;background:transparent;color:var(--color-signal-text,#1D50B3);text-decoration:underline;text-underline-offset:3px">${content}</a>`
+        : html`<button ref="control" part="control" type="button" ${attributes} disabled="${() => semanticHost || host.controlUnavailable()}" tabindex="${semanticHost ? -1 : null}" onclick="${onClick}">${content}</button>`
     const root: Template = html`<style>${buttonCSS}</style>${surface}
         <span part="description" id="${descriptionId}" hidden="${() => !scalarText(host.description)}">${() => scalarText(host.description)}</span>`
     const control = (): HTMLButtonElement | HTMLAnchorElement | undefined => {
@@ -55,24 +76,12 @@ export function buttonView<P extends ButtonProps>(host: ButtonBase<P>, activate:
         if (!node) return
         host.dataset.variant = ['primary', 'secondary', 'outline', 'ghost', 'destructive'].includes(host.variant ?? '') ? host.variant! : 'secondary'
         host.toggleAttribute('data-icon-only', bool(host.iconOnly))
-        const disabled = host.hasAttribute('data-disabled')
-        if (node instanceof HTMLButtonElement) node.disabled = semanticHost || disabled
-        else { aria(node, 'aria-disabled', disabled ? true : null); node.tabIndex = disabled ? -1 : 0 }
-        aria(node, 'aria-busy', busy() ? true : null)
-        aria(node, 'aria-describedby', scalarText(host.description) ? descriptionId : null)
         if (semanticHost) {
-            host.tabIndex = disabled ? -1 : 0
+            if (!host.hasAttribute('tabindex')) host.tabIndex = host.controlUnavailable() ? -1 : 0
             aria(host, 'role', host.getAttribute('role') || 'button')
-            aria(host, 'aria-label', scalarText(host.accessibleLabel) || scalarText(host.label) || null)
-            aria(host, 'aria-disabled', disabled ? true : null)
-            aria(node, 'role', 'none'); aria(node, 'aria-hidden', 'true'); node.tabIndex = -1
-        } else {
-            const forwarded = ['role', 'aria-haspopup', 'aria-expanded', 'aria-controls', 'aria-selected', 'aria-current', 'aria-checked', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow', 'aria-valuetext', 'aria-description', 'aria-keyshortcuts']
-            for (const attribute of forwarded) aria(node, attribute, host.getAttribute(attribute) || null)
-            aria(node, 'aria-label', bool(host.iconOnly) ? scalarText(host.accessibleLabel) || scalarText(host.label) : scalarText(host.accessibleLabel) || null)
+            aria(host, 'aria-label', scalarText(host.accessibleLabel) || scalarText(host.label) || host.getAttribute('aria-label') || null)
+            aria(host, 'aria-disabled', host.controlUnavailable() ? true : null)
         }
-        host.applyControlAttributes(node)
-        aria(node, 'aria-pressed', host.pressed === undefined ? null : bool(host.pressed))
     }
     return { root, get control() { return control() }, update }
 }

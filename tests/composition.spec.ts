@@ -26,3 +26,15 @@ test('raw buttons are limited to semantic primitives and native form interop', (
         'action/button/view.ts': 1,
     })
 })
+
+test('component renderers use templates instead of assembling or rebuilding DOM trees', () => {
+    const offenders: string[] = []
+    for (const path of typeScriptFiles(sourceRoot)) {
+        if (!/(?:index|view)\.ts$/.test(path)) continue
+        const source = readFileSync(path, 'utf8')
+        if (/\b(?:element|createElement|createElementNS|createDocumentFragment|replaceChildren|appendChild)\s*\(|\.innerHTML\s*=/.test(source)) {
+            offenders.push(relative(sourceRoot, path).split(sep).join('/'))
+        }
+    }
+    assert.deepEqual(offenders, [], 'Native interop belongs outside component renderers; use reactive html bindings for presentation')
+})

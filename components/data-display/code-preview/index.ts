@@ -1,33 +1,9 @@
-import { type Template, element, html } from '../../core/runtime.js'
+import { html, state, unsafeHTML, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { highlightCode } from '../../core/highlight.js';
-import { actionLabel, createButton } from '../../action/create.js';
-import type { Button } from '../../action/button/index.js';
-import { scalarText } from '../../core/value.js';
-import { CodePreviewBase } from './CodePreviewBase.js';
-export class CodePreview extends CodePreviewBase {
-    private codeNode?: HTMLElement;
-    private languageNode?: HTMLElement;
-    private copyButton?: Button;
-    private statusNode?: HTMLElement;
-    private preNode?: HTMLPreElement;
-    render(): Template {
-        const root = element('figure', { attributes: { part: 'root code-preview' } }) as HTMLElement;
-        const toolbar = element('figcaption', { attributes: { part: 'toolbar row' } }) as HTMLElement;
-        this.languageNode = element('span', { attributes: { part: 'language' } }) as HTMLSpanElement;
-        this.copyButton = createButton('copy', () => { void this.copySource(); });
-        toolbar.append(this.languageNode, this.copyButton);
-        this.preNode = element('pre', { attributes: { part: 'pre' } }) as HTMLPreElement;
-        this.preNode.tabIndex = 0;
-        this.preNode.setAttribute('role', 'region');
-        this.codeNode = element('code', { attributes: { part: 'code' } }) as HTMLElement;
-        this.preNode.append(this.codeNode);
-        this.statusNode = element('span', { attributes: { part: 'status sr-only' } }) as HTMLSpanElement;
-        this.statusNode.setAttribute('role', 'status');
-        this.statusNode.setAttribute('aria-live', 'polite');
-        root.append(toolbar, this.preNode, this.statusNode);
-        return html`<style part="styles">${editorCSS + `
+import { highlightCode } from '../../core/highlight.js'
+import { scalarText } from '../../core/value.js'
+import { CodePreviewBase } from './CodePreviewBase.js'
+const css = editorCSS + `
 :host{display:block;inline-size:100%;container-type:inline-size}
 [part~=root]{margin:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:var(--color-surface)}
 [part~=toolbar]{justify-content:space-between;padding:var(--spacing-xs) var(--spacing-sm);border-block-end:1px solid var(--color-separator);background:var(--color-surface-muted)}
@@ -48,37 +24,25 @@ export class CodePreview extends CodePreviewBase {
 .hljs-addition{color:var(--color-success)}.hljs-deletion{color:var(--color-danger)}
 .hljs-strong{font-weight:700}.hljs-emphasis{font-style:italic}
 @container (max-width:360px){[part~=toolbar]{align-items:stretch;flex-direction:column}[part~=copy]{inline-size:100%}}
-`}</style>${root}`;
-    }
-    protected syncView(): void {
-        if (!this.codeNode || !this.languageNode || !this.copyButton || !this.statusNode || !this.preNode)
-            return;
-        const highlighted = highlightCode(this.source(), scalarText(this.codeLanguage, 'plaintext'));
-        const language = highlighted.language;
-        const source = this.source();
-        this.languageNode.textContent = language;
-        aria(this.preNode, 'aria-label', this.accessibleName());
-        actionLabel(this.copyButton, this.copyText());
-        this.copyButton.disabled = this.unavailable || !source;
-        this.codeNode.className = `language-${language}`;
-        if (language === 'plaintext')
-            this.codeNode.textContent = source;
-        else
-            this.codeNode.innerHTML = highlighted.html;
+`;
+export class CodePreview extends CodePreviewBase {
+    private readonly copyStatus = state('')
+    render(): Template {
+        const highlighted = () => highlightCode(this.source(), scalarText(this.codeLanguage, 'plaintext'))
+        return html`<style part="styles">${css}</style>
+            <figure part="root code-preview"><figcaption part="toolbar row">
+                <span part="language">${() => highlighted().language}</span>
+                <cb-button part="copy" exportparts="control:copy-control,label:copy-label,button-label:copy-label,icon:copy-icon,description:copy-description" variant="ghost" label="${() => this.copyText()}" disabled="${() => this.unavailable || !this.source()}"
+                    onaction="${(event: Event) => { event.stopPropagation(); void this.copySource() }}"></cb-button>
+            </figcaption>
+            <pre part="pre" tabindex="0" role="region" aria-label="${() => this.accessibleName()}"><code part="code" class="${() => 'language-' + highlighted().language}">${() => highlighted().language === 'plaintext' ? this.source() : unsafeHTML(highlighted().html)}</code></pre>
+            <span part="status sr-only" role="status" aria-live="polite">${this.copyStatus[0]}</span></figure>`
     }
     private async copySource(): Promise<void> {
-        const source = this.source();
-        if (!source || this.unavailable)
-            return;
-        try {
-            await navigator.clipboard.writeText(source);
-            if (this.statusNode)
-                this.statusNode.textContent = this.copiedText();
-            this.emit('copy', { value: source });
-        }
-        catch (error) {
-            this.onError(error);
-        }
+        const source = this.source()
+        if (!source || this.unavailable) return
+        try { await navigator.clipboard.writeText(source); this.copyStatus[1](this.copiedText()); this.emit('copy', { value: source }) }
+        catch (error) { this.onError(error) }
     }
 }
 export { CodePreviewBase };

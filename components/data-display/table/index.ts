@@ -1,10 +1,9 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { uid } from '../../core/id.js'
+import { type Template, html, repeat, when, state } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
+import { uid } from '../../core/id.js';
 import { bool, finite, scalarText } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
-import { TableBase, type TableCellContent, type TableColumn, type TableRowModel } from './TableBase.js';
+import { TableBase, type TableColumn, type TableRowModel } from './TableBase.js';
 const css = editorCSS + `
 :host{display:block;inline-size:100%;min-inline-size:0;container-type:inline-size}
 [part~=root]{display:grid;min-inline-size:0;contain:paint;border:1px solid var(--component-table-border,${v('--color-separator')});border-radius:var(--component-table-radius,var(--radius-md));background:var(--component-table-background,${v('--color-surface')});box-shadow:var(--component-table-shadow,none);overflow:hidden}
@@ -59,28 +58,6 @@ input[type=radio][part~=selection-control]:checked::after{inline-size:6px;block-
 @media(pointer:coarse){[part~=resizer]{display:none}[part~=sort-button],[part~=expand-button],[part~=group-button]{--component-control-height:36px;--component-control-height-sm:36px}}
 @media(forced-colors:active){[part~=row][data-active],[part~=row][data-selected]{outline:2px solid Highlight;outline-offset:-2px}}
 `;
-interface IconButtonElement extends HTMLElement {
-    label: string;
-    accessibleLabel: string;
-    icon: string;
-    iconOnly: boolean;
-    variant: string;
-    size: string;
-}
-function iconButton(icon: string, label: string, part: string, action: (event: Event) => void): IconButtonElement {
-    const button = document.createElement('cb-button') as IconButtonElement;
-    Object.assign(button, { icon, iconOnly: true, label, accessibleLabel: label, variant: 'ghost', size: 'xs' });
-    button.setAttribute('part', part);
-    button.addEventListener('click', event => event.stopPropagation());
-    button.addEventListener('action', event => { event.stopPropagation(); action(event); });
-    return button;
-}
-function appendContent(target: HTMLElement, content: TableCellContent): void {
-    if (content instanceof Node)
-        target.append(content);
-    else if (content !== null && content !== undefined)
-        target.textContent = String(content);
-}
 function cssSize(value: string | number | undefined, fallback = 'auto'): string {
     return typeof value === 'number' && Number.isFinite(value) ? `${value}px` : scalarText(value).trim() || fallback;
 }
@@ -93,213 +70,115 @@ function pixels(value: string | number | undefined, fallback: number): number {
 const selectionColumnWidth = 44;
 const defaultColumnWidth = 160;
 export class Table extends TableBase {
-    private container?: HTMLElement;
-    private viewport?: HTMLElement;
-    private live?: HTMLElement;
-    private readonly radioName = uid('cb-table-selection');
-    private readonly columnWidths = new Map<string, number>();
+    private readonly radioName=uid('cb-table-selection');
+    private readonly widths=state<ReadonlyMap<string,number>>(new Map());
+    private readonly offsets=state<ReadonlyMap<number,number>>(new Map());
+    private readonly liveText=state('');
+    private get columnWidths(): ReadonlyMap<string,number> { return this.widths[0](); }
+    private get container(): HTMLElement | undefined { const node=this.refs.container?.[0]; return node instanceof HTMLElement ? node : undefined; }
+    private get viewport(): HTMLElement | undefined { const node=this.refs.viewport?.[0]; return node instanceof HTMLElement ? node : undefined; }
+    private grouped(): boolean { return this.columnList().some(column=>scalarText(column.group)); }
+    private selected(): boolean { return this.normalizedSelectionMode() !== 'none'; }
+    private sticky(index:number): boolean { return index < Math.max(0,Math.round(finite(this.stickyColumns,0))); }
+    private stickyIndex(index:number): number { return index+(this.selected()?1:0); }
+    private stickyStyle(index:number): string { return `--table-sticky-offset:${this.offsets[0]().get(index) ?? 0}px`; }
+    private columnGroups(): readonly {label:string;span:number;index:number}[] {
+        const columns=this.columnList(),groups:{label:string;span:number;index:number}[]=[];
+        for(let index=0;index<columns.length;) {
+            const label=scalarText(columns[index]?.group); let span=1;
+            while(index+span<columns.length && scalarText(columns[index+span]?.group) === label) span++;
+            groups.push({label,span,index}); index+=span;
+        } return groups;
+    }
+    private tableStyle(): string {
+        const columns=this.columnList(), selection=this.selected()?selectionColumnWidth:0;
+        const minimum=Math.max(320,selection+columns.reduce((sum,column)=>sum+pixels(column.minWidth ?? column.width,defaultColumnWidth),0));
+        const width=columns.every(column=>this.columnWidths.has(column.id)) ? `inline-size:max(100%,${Math.ceil(columns.reduce((sum,column)=>sum+(this.columnWidths.get(column.id) ?? 0),selection))}px)` : '';
+        return `--table-resolved-min-width:${minimum}px;${width}`;
+    }
+    private iconAction(part:string,icon:()=>string,label:()=>string,handler:(event:Event)=>void,active=()=>false): Template {
+        return html`<cb-button part=${part} icon-only icon=${icon} variant="ghost" size="xs" label=${label} accessible-label=${label}
+            data-active=${() => active() ? '' : null} onclick=${(event:Event)=>event.stopPropagation()}
+            onaction=${(event:Event)=>{event.stopPropagation();handler(event);}}></cb-button>`;
+    }
     render(): Template {
-        this.container = element('section', { attributes: { part: 'root table-root' } }) as HTMLElement;
-        const header = element('header', { attributes: { part: 'header' } }) as HTMLElement;
-        header.append(element("slot", { attributes: { name: 'header', part: 'header-slot' }, textContent: '' }) as HTMLSlotElement);
-        this.viewport = element('div', { attributes: { part: 'viewport' } }) as HTMLDivElement;
-        this.viewport.tabIndex = 0;
-        const footer = element('footer', { attributes: { part: 'footer' } }) as HTMLElement;
-        footer.append(element("slot", { attributes: { name: 'footer', part: 'footer-slot' }, textContent: '' }) as HTMLSlotElement);
-        this.live = element('div', { attributes: { part: 'live' } }) as HTMLDivElement;
-        this.live.setAttribute('aria-live', 'polite');
-        this.live.setAttribute('aria-atomic', 'true');
-        this.container.append(header, this.viewport, footer, this.live);
-        return html`<style part="styles">${css}</style>${this.container}`;
+        return html`<style part="styles">${css}</style><section part="root table-root" ref="container">
+            <header part="header"><slot name="header" part="header-slot"></slot></header>
+            <div part="viewport" ref="viewport" tabindex="0" aria-label=${() => this.accessibleName() || null}>
+                ${when(() => bool(this.loading), () => html`<div part="loading state"><cb-skeleton part="loading-skeleton" variant="table"
+                    rows=${() => Math.max(1,Math.round(finite(this.loadingRows,5)))} columns=${() => Math.max(1,this.columnList().length)} animated accessible-label=${() => this.loadingLabel}></cb-skeleton></div>`,
+                    () => when(() => !this.itemList().length || !this.columnList().length, () => html`<div part="empty state" role="status"><slot name="empty" part="empty-slot">${() => this.emptyLabel}</slot></div>`,
+                    () => html`<table part="table" style=${() => this.tableStyle()}><caption part="caption">${() => this.accessibleName()}</caption>
+                        <colgroup part="column-group">${when(() => this.selected(),()=>html`<col part="selection-column" style="width:44px">`)}
+                            ${repeat(()=>this.columnList(),column=>html`<col part="column" data-column-id=${column.id} style=${()=>`width:${this.columnWidths.has(column.id)?`${this.columnWidths.get(column.id)}px`:cssSize(column.width ?? column.minWidth,'160px')}`}>`,{key:column=>column.id})}
+                        </colgroup><thead part="head">
+                            ${when(()=>this.grouped(),()=>html`<tr part="header-row group-header-row">
+                                ${when(()=>this.selected(),()=>html`<th part="selection-cell group-header-cell sticky" rowspan="2" data-sticky-index="0" style=${()=>this.stickyStyle(0)}></th>`)}
+                                ${repeat(()=>this.columnGroups(),group=>html`<th part=${()=>`group-header-cell${this.sticky(group.index)?' sticky':''}`}
+                                    scope=${group.label?'colgroup':'col'} colspan=${group.label?group.span:null} rowspan=${group.label?null:2}
+                                    data-sticky-index=${()=>this.sticky(group.index)?this.stickyIndex(group.index):null} style=${()=>this.stickyStyle(this.stickyIndex(group.index))}>${group.label}</th>`,{key:group=>group.index})}
+                            </tr>`)}
+                            <tr part="header-row">${when(()=>this.selected(),()=>html`<th part="header-cell selection-cell sticky" scope="col" hidden=${()=>this.grouped()} data-sticky-index="0" style=${()=>this.stickyStyle(0)}>
+                                ${when(()=>this.normalizedSelectionMode()==='multiple',()=>html`<input part="selection-control" type="checkbox" checked=${()=>this.allVisibleSelected()} indeterminate=${()=>this.someVisibleSelected()}
+                                    disabled=${()=>this.unavailable || !this.selectableRows().length} aria-label=${()=>scalarText(this.allVisibleSelected()?this.deselectAllLabel:this.selectAllLabel)||this.accessibleName()}
+                                    onclick=${(event:Event)=>event.stopPropagation()} onchange=${(event:Event)=>{event.stopPropagation();this.toggleAllRows(event);}}>`)}
+                            </th>`)}
+                            ${repeat(()=>this.columnList(),(column,index)=>this.headerTemplate(column,index),{key:column=>column.id})}
+                            </tr></thead><tbody part="body">${repeat(()=>this.groupedRows(),group=>html`
+                                ${when(()=>Boolean(group.key),()=>html`<tr part="group-row"><th part="group-cell" colspan=${()=>this.columnList().length+(this.selected()?1:0)}>
+                                    <div part="group-content">${this.iconAction('group-button',()=>this.collapsedGroupKeySet().has(group.key)?'right':'down',
+                                        ()=>scalarText(this.collapsedGroupKeySet().has(group.key)?this.expandGroupLabel:this.collapseGroupLabel).replaceAll('{group}',group.label)||group.label,event=>this.toggleGroup(group.key,event))}
+                                        <span part="group-label">${group.label}</span><span part="group-count">${group.rows.length}</span></div></th></tr>`)}
+                                ${repeat(()=>group.key && this.collapsedGroupKeySet().has(group.key)?[]:group.rows,(row,index)=>this.rowTemplate(row,index),{key:row=>row.key})}
+                            `,{key:group=>group.key})}</tbody></table>`))}
+            </div><footer part="footer"><slot name="footer" part="footer-slot"></slot></footer>
+            <div part="live" aria-live="polite" aria-atomic="true">${this.liveText[0]}</div>
+        </section>`.onUpdate(()=>{queueMicrotask(()=>this.applyStickyOffsets());});
+    }
+    private headerTemplate(column:TableColumn,index:number): Template {
+        return html`<th part=${()=>`header-cell${this.sticky(index)?' sticky':''}`} scope="col" data-column-id=${column.id} data-align=${column.align??'start'}
+            hidden=${()=>this.grouped() && !scalarText(column.group)} data-sticky-index=${()=>this.sticky(index)?this.stickyIndex(index):null} style=${()=>this.stickyStyle(this.stickyIndex(index))}
+            aria-sort=${()=>this.isSortable(column)?scalarText(this.sortBy)===column.id?`${this.normalizedSortDirection()}ending`:'none':null}>
+            <span part="header-content"><span part="header-label">${()=>scalarText(column.header)}</span>
+                ${when(()=>this.isSortable(column),()=>this.iconAction('sort-button',()=>scalarText(this.sortBy)===column.id && this.normalizedSortDirection()==='asc'?'up':'down',()=>this.sortLabel(column),event=>this.changeSort(column,event),()=>scalarText(this.sortBy)===column.id))}
+            </span>${when(()=>bool(this.resizable),()=>html`<span part="resizer" role="separator" aria-orientation="vertical" tabindex="0" data-column-id=${column.id}
+                aria-label=${()=>scalarText(this.resizeColumnLabel).replaceAll('{column}',scalarText(column.ariaLabel)||scalarText(column.header))||scalarText(column.header)}
+                aria-valuemin=${()=>Math.round(pixels(column.minWidth,72))} aria-valuemax=${()=>Math.round(pixels(column.maxWidth,2000))}
+                aria-valuenow=${()=>Math.round(this.columnWidths.get(column.id)??pixels(column.width??column.minWidth,160))}
+                onpointerdown=${(event:PointerEvent)=>{if(event.currentTarget instanceof HTMLElement)this.startResize(column,event.currentTarget,event);}}
+                onkeydown=${(event:KeyboardEvent)=>this.resizeKey(column,event)}></span>`)}</th>`;
+    }
+    private rowTemplate(row:TableRowModel,index:number): Template {
+        return html`<tr part="row data-row" data-row-key=${row.key} data-parent-key=${row.parentKey} data-depth=${row.depth}
+            data-child=${row.depth>0?'':null} data-parent=${row.hasChildren?'':null}
+            data-expanded=${()=>row.hasChildren && this.expandedKeySet().has(row.key)?'':null}
+            data-selected=${()=>this.selectedKeySet().has(row.key)?'':null} data-active=${()=>scalarText(this.activeKey)===row.key?'':null}
+            aria-current=${()=>scalarText(this.activeKey)===row.key?true:null} tabindex=${()=>bool(this.rowActivation)&&!this.unavailable?0:null}
+            onclick=${(event:Event)=>{if(bool(this.rowActivation)&&!this.unavailable&&event.currentTarget instanceof HTMLTableRowElement&&!this.isInteractiveEvent(event,event.currentTarget))this.activateRow(row,index,event);}}
+            onkeydown=${(event:KeyboardEvent)=>{if(bool(this.rowActivation)&&!this.unavailable&&event.target===event.currentTarget&&['Enter',' '].includes(event.key)){event.preventDefault();this.activateRow(row,index,event);}}}>
+            ${when(()=>this.selected(),()=>html`<td part="cell selection-cell sticky" data-sticky-index="0" style=${()=>this.stickyStyle(0)}>
+                <input part="selection-control" type=${()=>this.normalizedSelectionMode()==='single'?'radio':'checkbox'} name=${()=>this.normalizedSelectionMode()==='single'?this.radioName:null}
+                    checked=${()=>this.selectedKeySet().has(row.key)} disabled=${()=>this.unavailable||!this.isSelectable(row.item)}
+                    aria-label=${()=>this.rowLabel(this.selectedKeySet().has(row.key)?this.deselectRowLabel:this.selectRowLabel,row)}
+                    onclick=${(event:Event)=>event.stopPropagation()} onchange=${(event:Event)=>{event.stopPropagation();this.toggleRowSelection(row,event);}}></td>`)}
+            ${repeat(()=>this.columnList(),(column,columnIndex)=>html`<td part=${()=>`cell${columnIndex===0?' primary-cell':''}${this.sticky(columnIndex)?' sticky':''}`}
+                data-align=${column.align??'start'} data-column-id=${column.id} data-variant=${()=>this.cellVariant(column,row,index)} data-wrap=${()=>bool(column.wrap)?'':null}
+                data-sticky-index=${()=>this.sticky(columnIndex)?this.stickyIndex(columnIndex):null} style=${()=>this.stickyStyle(this.stickyIndex(columnIndex))}>
+                ${columnIndex===0?html`<div part="tree-cell">${when(()=>row.depth>0,()=>html`<span part="tree-indent" aria-hidden="true" style=${`--table-depth:${row.depth}`}></span>`)}
+                    ${row.hasChildren?this.iconAction('expand-button',()=>this.expandedKeySet().has(row.key)?'down':'right',()=>this.rowLabel(this.expandedKeySet().has(row.key)?this.collapseRowLabel:this.expandRowLabel,row),event=>this.toggleExpanded(row,event)):html`<span part="tree-spacer"></span>`}
+                    <span part="cell-content">${()=>this.cellContent(column,row,index)??''}</span></div>`:html`${()=>this.cellContent(column,row,index)??''}`}
+            </td>`,{key:column=>column.id})}</tr>`;
     }
     protected syncView(): void {
-        if (!this.container || !this.viewport || !this.live)
-            return;
-        this.dataset.density = this.normalizedDensity();
-        this.toggleAttribute('data-striped', bool(this.striped));
-        this.toggleAttribute('data-wrap', bool(this.wrap));
-        this.toggleAttribute('data-sticky-header', bool(this.stickyHeader));
-        this.live.textContent = this.announcement;
-        const left = this.viewport.scrollLeft;
-        const top = this.viewport.scrollTop;
-        this.viewport.replaceChildren();
-        const viewportLabel = this.accessibleName();
-        if (viewportLabel)
-            this.viewport.setAttribute('aria-label', viewportLabel);
-        else
-            this.viewport.removeAttribute('aria-label');
-        if (bool(this.loading))
-            this.viewport.append(this.loadingState());
-        else if (!this.itemList().length || !this.columnList().length)
-            this.viewport.append(this.emptyState());
-        else
-            this.viewport.append(this.createTable());
-        this.viewport.scrollLeft = left;
-        this.viewport.scrollTop = top;
-        queueMicrotask(() => this.applyStickyOffsets());
+        this.dataset.density=this.normalizedDensity(); this.toggleAttribute('data-striped',bool(this.striped));
+        this.toggleAttribute('data-wrap',bool(this.wrap)); this.toggleAttribute('data-sticky-header',bool(this.stickyHeader));
+        this.liveText[1](this.announcement); queueMicrotask(()=>this.applyStickyOffsets());
     }
-    private loadingState(): HTMLElement {
-        const state = element('div', { attributes: { part: 'loading state' } }) as HTMLDivElement;
-        const skeleton = document.createElement('cb-skeleton') as HTMLElement & {
-            variant: string;
-            rows: number;
-            columns: number;
-            animated: boolean;
-            accessibleLabel: string;
-        };
-        Object.assign(skeleton, {
-            variant: 'table', rows: Math.max(1, Math.round(finite(this.loadingRows, 5))),
-            columns: Math.max(1, this.columnList().length), animated: true, accessibleLabel: scalarText(this.loadingLabel),
-        });
-        skeleton.setAttribute('part', 'loading-skeleton');
-        state.append(skeleton);
-        return state;
-    }
-    private emptyState(): HTMLElement {
-        const state = element('div', { attributes: { part: 'empty state' } }) as HTMLDivElement;
-        state.setAttribute('role', 'status');
-        state.append(element("slot", { attributes: { name: 'empty', part: 'empty-slot' }, textContent: scalarText(this.emptyLabel) }) as HTMLSlotElement);
-        return state;
-    }
-    private createTable(): HTMLTableElement {
-        const table = element('table', { attributes: { part: 'table' } }) as HTMLTableElement;
-        const columns = this.columnList();
-        const selectionWidth = this.normalizedSelectionMode() === 'none' ? 0 : selectionColumnWidth;
-        const columnWidth = columns.reduce((total, column) => total + pixels(column.minWidth ?? column.width, defaultColumnWidth), 0);
-        table.style.setProperty('--table-resolved-min-width', `${Math.max(320, selectionWidth + columnWidth)}px`);
-        if (columns.every(column => this.columnWidths.has(column.id)))
-            this.updateTableWidth(table, columns);
-        const caption = element('caption', { attributes: { part: 'caption' }, textContent: this.accessibleName() }) as HTMLTableCaptionElement;
-        table.append(caption, this.createColumnGroup(columns), this.createHead(), this.createBody());
-        return table;
-    }
-    private createColumnGroup(columns: readonly TableColumn[]): HTMLTableColElement {
-        const group = element('colgroup', { attributes: { part: 'column-group' } }) as HTMLTableColElement;
-        if (this.normalizedSelectionMode() !== 'none') {
-            const selection = element('col', { attributes: { part: 'selection-column' } }) as HTMLTableColElement;
-            selection.style.width = `${selectionColumnWidth}px`;
-            group.append(selection);
-        }
-        for (const column of columns) {
-            const col = element('col', { attributes: { part: 'column' } }) as HTMLTableColElement;
-            col.dataset.columnId = column.id;
-            col.style.width = this.columnWidths.has(column.id)
-                ? `${this.columnWidths.get(column.id)}px`
-                : cssSize(column.width ?? column.minWidth, `${defaultColumnWidth}px`);
-            group.append(col);
-        }
-        return group;
-    }
-    private createHead(): HTMLTableSectionElement {
-        const head = element('thead', { attributes: { part: 'head' } }) as HTMLTableSectionElement;
-        const columns = this.columnList();
-        const hasGroups = columns.some(column => scalarText(column.group));
-        if (hasGroups)
-            head.append(this.createGroupHeader(columns));
-        const row = element('tr', { attributes: { part: 'header-row' } }) as HTMLTableRowElement;
-        if (this.normalizedSelectionMode() !== 'none')
-            row.append(this.selectionHeader(hasGroups));
-        columns.forEach((column, index) => row.append(this.headerCell(column, index, hasGroups)));
-        head.append(row);
-        return head;
-    }
-    private createGroupHeader(columns: readonly TableColumn[]): HTMLTableRowElement {
-        const row = element('tr', { attributes: { part: 'header-row group-header-row' } }) as HTMLTableRowElement;
-        if (this.normalizedSelectionMode() !== 'none') {
-            const cell = element('th', { attributes: { part: 'selection-cell group-header-cell sticky' } }) as HTMLTableCellElement;
-            cell.rowSpan = 2;
-            cell.dataset.stickyIndex = '0';
-            row.append(cell);
-        }
-        for (let index = 0; index < columns.length;) {
-            const group = scalarText(columns[index]?.group);
-            let span = 1;
-            while (index + span < columns.length && scalarText(columns[index + span]?.group) === group)
-                span += 1;
-            const cell = element('th', { attributes: { part: 'group-header-cell' }, textContent: group }) as HTMLTableCellElement;
-            cell.scope = group ? 'colgroup' : 'col';
-            if (group)
-                cell.colSpan = span;
-            else
-                cell.rowSpan = 2;
-            if (index < Math.max(0, Math.round(finite(this.stickyColumns, 0))))
-                this.makeSticky(cell, index);
-            row.append(cell);
-            index += span;
-        }
-        return row;
-    }
-    private selectionHeader(grouped: boolean): HTMLTableCellElement {
-        const cell = element('th', { attributes: { part: 'header-cell selection-cell sticky' } }) as HTMLTableCellElement;
-        cell.scope = 'col';
-        if (grouped)
-            cell.hidden = true;
-        cell.dataset.stickyIndex = '0';
-        if (this.normalizedSelectionMode() === 'multiple') {
-            const input = element('input', { attributes: { part: 'selection-control' } }) as HTMLInputElement;
-            input.type = 'checkbox';
-            input.checked = this.allVisibleSelected();
-            input.indeterminate = this.someVisibleSelected();
-            input.disabled = this.unavailable || !this.selectableRows().length;
-            aria(input, 'aria-label', scalarText(input.checked ? this.deselectAllLabel : this.selectAllLabel) || this.accessibleName());
-            input.addEventListener('click', event => event.stopPropagation());
-            input.addEventListener('change', event => { event.stopPropagation(); this.toggleAllRows(event); });
-            cell.append(input);
-        }
-        return cell;
-    }
-    private headerCell(column: TableColumn, index: number, grouped: boolean): HTMLTableCellElement {
-        const cell = element('th', { attributes: { part: 'header-cell' } }) as HTMLTableCellElement;
-        cell.scope = 'col';
-        cell.dataset.columnId = column.id;
-        cell.dataset.align = column.align ?? 'start';
-        if (grouped && !scalarText(column.group))
-            cell.hidden = true;
-        const content = element('span', { attributes: { part: 'header-content' } }) as HTMLSpanElement;
-        content.append(element('span', { attributes: { part: 'header-label' }, textContent: scalarText(column.header) }) as HTMLSpanElement);
-        if (this.isSortable(column)) {
-            const active = scalarText(this.sortBy) === column.id;
-            const sort = iconButton(active && this.normalizedSortDirection() === 'asc' ? 'up' : 'down', this.sortLabel(column), 'sort-button', event => this.changeSort(column, event));
-            sort.toggleAttribute('data-active', active);
-            content.append(sort);
-            aria(cell, 'aria-sort', active ? `${this.normalizedSortDirection()}ending` : 'none');
-        }
-        cell.append(content);
-        if (bool(this.resizable))
-            cell.append(this.columnResizer(column));
-        if (index < Math.max(0, Math.round(finite(this.stickyColumns, 0))))
-            this.makeSticky(cell, index);
-        return cell;
-    }
-    private columnResizer(column: TableColumn): HTMLElement {
-        const handle = element('span', { attributes: { part: 'resizer' } }) as HTMLSpanElement;
-        handle.tabIndex = 0;
-        handle.setAttribute('role', 'separator');
-        handle.setAttribute('aria-orientation', 'vertical');
-        const minimum = pixels(column.minWidth, 72);
-        const maximum = pixels(column.maxWidth, 2000);
-        const current = this.columnWidths.get(column.id) ?? pixels(column.width ?? column.minWidth, 160);
-        aria(handle, 'aria-valuemin', Math.round(minimum));
-        aria(handle, 'aria-valuemax', Math.round(maximum));
-        aria(handle, 'aria-valuenow', Math.round(Math.min(maximum, Math.max(minimum, current))));
-        const columnLabel = scalarText(column.ariaLabel) || scalarText(column.header);
-        aria(handle, 'aria-label', scalarText(this.resizeColumnLabel).replaceAll('{column}', columnLabel) || columnLabel);
-        handle.dataset.columnId = column.id;
-        handle.addEventListener('pointerdown', event => this.startResize(column, handle, event));
-        handle.addEventListener('keydown', event => {
-            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key))
-                return;
-            event.preventDefault();
-            this.freezeColumnWidths();
-            const current = this.columnWidths.get(column.id) ?? pixels(column.width ?? column.minWidth, defaultColumnWidth);
-            const proposed = event.key === 'Home'
-                ? minimum
-                : event.key === 'End'
-                    ? (Number.isFinite(maximum) ? maximum : current + 160)
-                    : current + (event.key === 'ArrowRight' ? 16 : -16);
-            this.resizeColumn(column, proposed);
-        });
-        return handle;
+    private resizeKey(column:TableColumn,event:KeyboardEvent): void {
+        if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+        event.preventDefault();this.freezeColumnWidths();
+        const current=this.columnWidths.get(column.id)??pixels(column.width??column.minWidth,160);
+        this.resizeColumn(column,event.key==='Home'?pixels(column.minWidth,72):event.key==='End'?pixels(column.maxWidth,2000):current+(event.key==='ArrowRight'?16:-16));
     }
     private startResize(column: TableColumn, handle: HTMLElement, event: PointerEvent): void {
         if (event.button !== 0)
@@ -348,174 +227,25 @@ export class Table extends TableBase {
         handle.addEventListener('pointercancel', stop);
         handle.addEventListener('lostpointercapture', stop);
     }
-    private resizeColumn(column: TableColumn, proposed: number, announce = true): void {
-        const width = Math.min(pixels(column.maxWidth, Number.POSITIVE_INFINITY), Math.max(pixels(column.minWidth, 72), proposed));
-        this.columnWidths.set(column.id, width);
-        const table = this.viewport?.querySelector<HTMLTableElement>('[part~="table"]');
-        if (table) {
-            const col = [...table.querySelectorAll<HTMLTableColElement>('col[data-column-id]')]
-                .find(candidate => candidate.dataset.columnId === column.id);
-            if (col)
-                col.style.width = `${width}px`;
-            this.updateTableWidth(table, this.columnList());
-            const resizer = [...table.querySelectorAll<HTMLElement>('[part~="resizer"][data-column-id]')]
-                .find(candidate => candidate.dataset.columnId === column.id);
-            if (resizer)
-                aria(resizer, 'aria-valuenow', Math.round(width));
-        }
-        queueMicrotask(() => this.applyStickyOffsets());
-        if (announce)
-            this.emit('columnresize', { column, width });
+    private resizeColumn(column:TableColumn,proposed:number,announce=true): void {
+        const width=Math.min(pixels(column.maxWidth,Infinity),Math.max(pixels(column.minWidth,72),proposed));
+        this.widths[1](new Map(this.columnWidths).set(column.id,width));
+        queueMicrotask(()=>this.applyStickyOffsets());
+        if(announce)this.emit('columnresize',{column,width});
     }
     private freezeColumnWidths(): void {
-        const table = this.viewport?.querySelector<HTMLTableElement>('[part~="table"]');
-        if (!table)
-            return;
-        const headers = [...table.querySelectorAll<HTMLTableCellElement>('th[data-column-id]')];
-        const measurements = this.columnList().map(column => ({
-            column,
-            width: headers.find(header => header.dataset.columnId === column.id)?.getBoundingClientRect().width,
-        }));
-        for (const measurement of measurements) {
-            if (measurement.width && measurement.width > 0)
-                this.columnWidths.set(measurement.column.id, measurement.width);
-        }
-        for (const col of table.querySelectorAll<HTMLTableColElement>('col[data-column-id]')) {
-            const columnId = col.dataset.columnId ?? '';
-            const width = this.columnWidths.get(columnId);
-            if (width !== undefined)
-                col.style.width = `${width}px`;
-        }
-        this.updateTableWidth(table, this.columnList());
-    }
-    private updateTableWidth(table: HTMLTableElement, columns: readonly TableColumn[]): void {
-        if (!columns.every(column => this.columnWidths.has(column.id)))
-            return;
-        const selectionWidth = this.normalizedSelectionMode() === 'none' ? 0 : selectionColumnWidth;
-        const width = columns.reduce((total, column) => total + (this.columnWidths.get(column.id) ?? 0), selectionWidth);
-        table.style.inlineSize = `max(100%, ${Math.ceil(width)}px)`;
-    }
-    private createBody(): HTMLTableSectionElement {
-        const body = element('tbody', { attributes: { part: 'body' } }) as HTMLTableSectionElement;
-        let rowIndex = 0;
-        for (const group of this.groupedRows()) {
-            if (group.key)
-                body.append(this.groupRow(group.key, group.label, group.rows.length));
-            if (group.key && this.collapsedGroupKeySet().has(group.key))
-                continue;
-            for (const row of group.rows)
-                body.append(this.dataRow(row, rowIndex++));
-        }
-        return body;
-    }
-    private groupRow(key: string, label: string, count: number): HTMLTableRowElement {
-        const row = element('tr', { attributes: { part: 'group-row' } }) as HTMLTableRowElement;
-        const cell = element('th', { attributes: { part: 'group-cell' } }) as HTMLTableCellElement;
-        cell.colSpan = this.columnList().length + (this.normalizedSelectionMode() === 'none' ? 0 : 1);
-        const content = element('div', { attributes: { part: 'group-content' } }) as HTMLDivElement;
-        const expanded = !this.collapsedGroupKeySet().has(key);
-        const buttonLabel = scalarText(expanded ? this.collapseGroupLabel : this.expandGroupLabel).replaceAll('{group}', label) || label;
-        content.append(iconButton(expanded ? 'down' : 'right', buttonLabel, 'group-button', event => this.toggleGroup(key, event)), element('span', { attributes: { part: 'group-label' }, textContent: label }) as HTMLSpanElement, element('span', { attributes: { part: 'group-count' }, textContent: String(count) }) as HTMLSpanElement);
-        cell.append(content);
-        row.append(cell);
-        return row;
-    }
-    private dataRow(rowModel: TableRowModel, rowIndex: number): HTMLTableRowElement {
-        const row = element('tr', { attributes: { part: 'row data-row' } }) as HTMLTableRowElement;
-        row.dataset.rowKey = rowModel.key;
-        row.dataset.parentKey = rowModel.parentKey;
-        row.dataset.depth = String(rowModel.depth);
-        row.toggleAttribute('data-child', rowModel.depth > 0);
-        row.toggleAttribute('data-parent', rowModel.hasChildren);
-        row.toggleAttribute('data-expanded', rowModel.hasChildren && this.expandedKeySet().has(rowModel.key));
-        row.toggleAttribute('data-selected', this.selectedKeySet().has(rowModel.key));
-        row.toggleAttribute('data-active', scalarText(this.activeKey) === rowModel.key);
-        aria(row, 'aria-current', scalarText(this.activeKey) === rowModel.key ? true : null);
-        if (bool(this.rowActivation) && !this.unavailable) {
-            row.tabIndex = 0;
-            row.addEventListener('click', event => { if (!this.isInteractiveEvent(event, row))
-                this.activateRow(rowModel, rowIndex, event); });
-            row.addEventListener('keydown', event => {
-                if (event.target !== row || event.key !== 'Enter' && event.key !== ' ')
-                    return;
-                event.preventDefault();
-                this.activateRow(rowModel, rowIndex, event);
-            });
-        }
-        if (this.normalizedSelectionMode() !== 'none')
-            row.append(this.selectionCell(rowModel));
-        this.columnList().forEach((column, columnIndex) => row.append(this.dataCell(column, columnIndex, rowModel, rowIndex)));
-        return row;
-    }
-    private selectionCell(row: TableRowModel): HTMLTableCellElement {
-        const cell = element('td', { attributes: { part: 'cell selection-cell sticky' } }) as HTMLTableCellElement;
-        cell.dataset.stickyIndex = '0';
-        const input = element('input', { attributes: { part: 'selection-control' } }) as HTMLInputElement;
-        input.type = this.normalizedSelectionMode() === 'single' ? 'radio' : 'checkbox';
-        if (input.type === 'radio')
-            input.name = this.radioName;
-        const selected = this.selectedKeySet().has(row.key);
-        input.checked = selected;
-        input.disabled = this.unavailable || !this.isSelectable(row.item);
-        aria(input, 'aria-label', this.rowLabel(selected ? this.deselectRowLabel : this.selectRowLabel, row));
-        input.addEventListener('click', event => event.stopPropagation());
-        input.addEventListener('change', event => { event.stopPropagation(); this.toggleRowSelection(row, event); });
-        cell.append(input);
-        return cell;
-    }
-    private dataCell(column: TableColumn, columnIndex: number, row: TableRowModel, rowIndex: number): HTMLTableCellElement {
-        const part = columnIndex === 0 ? 'cell primary-cell' : 'cell';
-        const cell = element('td', { attributes: { part: part } }) as HTMLTableCellElement;
-        cell.dataset.align = column.align ?? 'start';
-        cell.dataset.columnId = column.id;
-        cell.dataset.variant = this.cellVariant(column, row, rowIndex);
-        cell.toggleAttribute('data-wrap', bool(column.wrap));
-        if (columnIndex === 0) {
-            const tree = element('div', { attributes: { part: 'tree-cell' } }) as HTMLDivElement;
-            if (row.depth > 0) {
-                const indent = element('span', { attributes: { part: 'tree-indent' } }) as HTMLSpanElement;
-                indent.style.setProperty('--table-depth', String(row.depth));
-                indent.setAttribute('aria-hidden', 'true');
-                tree.append(indent);
-            }
-            if (row.hasChildren) {
-                const expanded = this.expandedKeySet().has(row.key);
-                tree.append(iconButton(expanded ? 'down' : 'right', this.rowLabel(expanded ? this.collapseRowLabel : this.expandRowLabel, row), 'expand-button', event => this.toggleExpanded(row, event)));
-            }
-            else
-                tree.append(element('span', { attributes: { part: 'tree-spacer' } }) as HTMLSpanElement);
-            const content = element('span', { attributes: { part: 'cell-content' } }) as HTMLSpanElement;
-            appendContent(content, this.cellContent(column, row, rowIndex));
-            tree.append(content);
-            cell.append(tree);
-        }
-        else
-            appendContent(cell, this.cellContent(column, row, rowIndex));
-        if (columnIndex < Math.max(0, Math.round(finite(this.stickyColumns, 0))))
-            this.makeSticky(cell, columnIndex);
-        return cell;
-    }
-    private makeSticky(cell: HTMLTableCellElement, columnIndex: number): void {
-        cell.setAttribute('part', `${cell.getAttribute('part') ?? ''} sticky`.trim());
-        cell.dataset.stickyIndex = String(columnIndex + (this.normalizedSelectionMode() === 'none' ? 0 : 1));
+        const headers=[...(this.viewport?.querySelectorAll<HTMLTableCellElement>('th[data-column-id]')??[])],widths=new Map(this.columnWidths);
+        for(const column of this.columnList()){
+            const width=headers.find(header=>header.dataset.columnId===column.id)?.getBoundingClientRect().width;
+            if(width && width>0)widths.set(column.id,width);
+        }this.widths[1](widths);
     }
     private applyStickyOffsets(): void {
-        if (!this.container)
-            return;
-        const cells = [...this.container.querySelectorAll<HTMLElement>('[data-sticky-index]')];
-        const widths = new Map<number, number>();
-        for (const cell of cells) {
-            const index = Number(cell.dataset.stickyIndex);
-            if (!widths.has(index))
-                widths.set(index, cell.getBoundingClientRect().width);
-        }
-        for (const cell of cells) {
-            const index = Number(cell.dataset.stickyIndex);
-            let offset = 0;
-            for (let current = 0; current < index; current += 1)
-                offset += widths.get(current) ?? 0;
-            cell.style.setProperty('--table-sticky-offset', `${offset}px`);
-        }
+        const cells=[...(this.container?.querySelectorAll<HTMLElement>('[data-sticky-index]')??[])],widths=new Map<number,number>(),offsets=new Map<number,number>();
+        for(const cell of cells){const index=Number(cell.dataset.stickyIndex);if(!widths.has(index))widths.set(index,cell.getBoundingClientRect().width);}
+        for(const index of widths.keys()){let offset=0;for(let current=0;current<index;current++)offset+=widths.get(current)??0;offsets.set(index,offset);}
+        const current=this.offsets[0]();
+        if(current.size!==offsets.size || [...offsets].some(([index,offset])=>current.get(index)!==offset))this.offsets[1](offsets);
     }
     private isInteractiveEvent(event: Event, row: HTMLTableRowElement): boolean {
         return event.composedPath().some(target => target !== row && target instanceof Element && (target.matches('button,a,input,select,textarea,[role=button],[role=checkbox],[role=radio]') ||

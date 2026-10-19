@@ -1,5 +1,6 @@
 import { FieldControlBase, type FieldControlProps, type FormRestoreValue } from '../FormControlBase.js'
 import { bool, scalarText } from '../../core/value.js'
+import { state } from '../../core/runtime.js'
 
 export interface EditableLabelProps extends FieldControlProps {
     value?: string
@@ -28,7 +29,9 @@ export abstract class EditableLabelBase<P extends EditableLabelProps = EditableL
     saveLabel = ''
     cancelLabel = ''
     emptyLabel = ''
-    protected draft = ''
+    private readonly draftValue = state('')
+    protected get draft(): string { return this.draftValue[0]() }
+    protected set draft(value: string) { this.draftValue[1](value) }
     private editStartValue = ''
 
     protected captureValue(): string { return scalarText(this.value) }

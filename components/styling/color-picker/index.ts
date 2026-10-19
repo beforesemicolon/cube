@@ -1,14 +1,12 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { uid } from '../../core/id.js'
-import { actionLabel, createBareButton, createIconButton } from '../../action/create.js';
+import { type Template, html, repeat, state } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
+import { uid } from '../../core/id.js';
 import type { Button } from '../../action/button/index.js';
 import { PopupController } from '../../core/popup.js';
 import { bool, clamp, finite, text } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
 import { ColorPickerBase } from './ColorPickerBase.js';
-import { colorToHex, hsvaToRgba, parseHexColor, rgbaToHsva, type HSVAColor, type RGBAColor } from './color.js';
+import { colorToHex, hsvaToRgba, parseHexColor, rgbaToHsva, type HSVAColor } from './color.js';
 const css = editorCSS + `
 :host{display:inline-block;inline-size:auto;min-inline-size:0}
 [part~=root]{display:grid;gap:var(--spacing-xs,4px);justify-items:start;min-inline-size:0}
@@ -74,211 +72,115 @@ const channels: readonly ChannelDefinition[] = [
     { name: 'blue', min: 0, max: 255, step: 1 },
 ];
 export class ColorPicker extends ColorPickerBase {
-    private trigger?: Button;
-    private triggerSwatch?: HTMLElement;
-    private nativeControl?: HTMLInputElement;
-    private popup?: HTMLElement;
-    private plane?: Button;
-    private hueSlider?: HTMLInputElement;
-    private alphaSlider?: HTMLInputElement;
-    private hexInput?: HTMLInputElement;
-    private hexLabelNode?: HTMLElement;
-    private paletteNode?: HTMLElement;
-    private paletteGroup?: HTMLElement;
-    private paletteLabel?: HTMLElement;
-    private samplerButton?: Button;
-    private closeButton?: Button;
-    private addSwatchButton?: Button;
+    private readonly pickerId=uid('cb-color-picker');
+    private readonly hexDraft=state<string|null>(null);
+    private node(name: string): HTMLElement | undefined { const node=this.refs[name]?.[0]; return node instanceof HTMLElement ? node : undefined; }
+    private get trigger(): HTMLElement | undefined { return this.node('trigger'); }
+    private get popup(): HTMLElement | undefined { return this.node('popup'); }
+    private get plane(): HTMLElement | undefined { return this.node('plane'); }
+    private get nativeControl(): HTMLInputElement | undefined { const node=this.node('native'); return node instanceof HTMLInputElement ? node : undefined; }
+    private get hueSlider(): HTMLInputElement | undefined { const node=this.node('hue'); return node instanceof HTMLInputElement ? node : undefined; }
+    private get alphaSlider(): HTMLInputElement | undefined { const node=this.node('alpha'); return node instanceof HTMLInputElement ? node : undefined; }
+    private get hexInput(): HTMLInputElement | undefined { const node=this.node('hex'); return node instanceof HTMLInputElement ? node : undefined; }
+    private get paletteNode(): HTMLElement | undefined { return this.node('palette'); }
+    private get addSwatchButton(): HTMLElement | undefined { return this.node('addSwatch'); }
     private popupController?: PopupController;
-    private readonly channelInputs = new Map<ChannelName, HTMLInputElement>();
-    private readonly channelLabels = new Map<ChannelName, HTMLElement>();
-    private readonly swatchButtons = new Map<string, Button>();
+    private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))); }
+    private descriptionText(): string | null { return [text(this.description),this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null; }
+    private readonly channelLabel = (name: ChannelName): string => ({
+        hue:this.hueLabel,saturation:this.saturationLabel,value:this.valueLabel,alpha:this.alphaLabel,red:this.redLabel,green:this.greenLabel,blue:this.blueLabel
+    })[name];
+    private channelValue(name: ChannelName): number {
+        const color=this.color(),rgba=hsvaToRgba(color);
+        return {hue:Math.round(color.hue),saturation:Math.round(color.saturation),value:Math.round(color.value),alpha:Math.round(color.alpha*100),red:rgba.red,green:rgba.green,blue:rgba.blue}[name];
+    }
+    private paletteColors(): readonly string[] { return [...(bool(this.allowAlpha) ? ['#00000000'] : []),...this.palette()].filter((color,index,colors) => colors.indexOf(color)===index); }
+    private removable(color: string): boolean { return color !== '#00000000' && this.palette().includes(color); }
     render(): Template {
-        const root = element('div', { attributes: { part: 'root' } }) as HTMLDivElement;
-        this.trigger = createBareButton('trigger control', event => this.setOpen(!bool(this.open), event));
-        this.trigger.id = uid('cb-color-picker');
-        this.triggerSwatch = element('span', { attributes: { part: 'trigger-swatch' } }) as HTMLSpanElement;
-        this.trigger.append(this.triggerSwatch);
-        this.nativeControl = element('input', { attributes: { part: 'native control' } }) as HTMLInputElement;
-        this.nativeControl.type = 'color';
-        this.nativeControl.id = `${this.trigger.id}-native`;
-        this.popup = element('section', { attributes: { part: 'popup' } }) as HTMLElement;
-        this.popup.id = `${this.trigger.id}-popup`;
-        this.popup.setAttribute('role', 'dialog');
-        this.popup.tabIndex = -1;
-        this.popup.hidden = true;
-        const toolbar = element('div', { attributes: { part: 'toolbar' } }) as HTMLDivElement;
-        const hexField = element('label', { attributes: { part: 'hex-field' } }) as HTMLLabelElement, hexLabel = element('span', { attributes: { part: 'channel-label' } }) as HTMLSpanElement;
-        this.hexLabelNode = hexLabel;
-        this.hexInput = element('input', { attributes: { part: 'hex-input control' } }) as HTMLInputElement;
-        this.hexInput.type = 'text';
-        this.hexInput.autocomplete = 'off';
-        this.hexInput.spellcheck = false;
-        hexField.append(hexLabel, this.hexInput);
-        this.samplerButton = createIconButton('sampler', 'eye', event => { void this.sample(event); });
-        this.closeButton = createIconButton('close', 'close', event => { if (this.setOpen(false, event))
-            this.trigger?.focus(); });
-        toolbar.append(hexField, this.samplerButton, this.closeButton);
-        this.plane = createBareButton('plane', () => { });
-        this.plane.append(element('span', { attributes: { part: 'marker' } }) as HTMLSpanElement);
-        const hueField = this.sliderField('hue'), alphaField = this.sliderField('alpha');
-        this.hueSlider = hueField.input;
-        this.alphaSlider = alphaField.input;
-        const hsvChannels = element('div', { attributes: { part: 'channels hsv-channels' } }) as HTMLDivElement, rgbChannels = element('div', { attributes: { part: 'channels rgb-channels' } }) as HTMLDivElement;
-        for (const definition of channels) {
-            const wrapper = element('label', { attributes: { part: `channel-field ${definition.name}-field` } }) as HTMLLabelElement, label = element('span', { attributes: { part: 'channel-label' } }) as HTMLSpanElement, input = element('input', { attributes: { part: `channel-input ${definition.name}-input control` } }) as HTMLInputElement;
-            input.type = 'number';
-            input.min = String(definition.min);
-            input.max = String(definition.max);
-            input.step = String(definition.step);
-            input.inputMode = 'decimal';
-            input.addEventListener('input', event => this.updateFromChannel(definition.name, input.valueAsNumber, false, event));
-            wrapper.append(label, input);
-            const target = definition.name === 'red' || definition.name === 'green' || definition.name === 'blue' ? rgbChannels : hsvChannels;
-            target.append(wrapper);
-            this.channelInputs.set(definition.name, input);
-            this.channelLabels.set(definition.name, label);
-        }
-        this.addSwatchButton = createIconButton('add-swatch', 'plus', event => {
-            const value = this.normalizedValue();
-            if (this.addSwatch(value, event))
-                this.focusSwatch(value);
-        });
-        this.addSwatchButton.variant = 'outline';
-        this.addSwatchButton.addEventListener('pointerdown', event => event.preventDefault());
-        this.paletteGroup = element('div', { attributes: { part: 'palette-group' } }) as HTMLDivElement;
-        this.paletteLabel = element('span', { attributes: { part: 'palette-label label' } }) as HTMLSpanElement;
-        this.paletteNode = element('div', { attributes: { part: 'palette' } }) as HTMLDivElement;
-        this.paletteNode.append(this.addSwatchButton);
-        this.paletteGroup.append(this.paletteLabel, this.paletteNode);
-        this.popup.append(this.plane, hueField.field, alphaField.field, toolbar, hsvChannels, rgbChannels, this.paletteGroup);
-        this.plane.addEventListener('pointerdown', event => { this.plane?.setPointerCapture(event.pointerId); this.updateFromPlane(event, false); });
-        this.plane.addEventListener('pointermove', event => { if (this.plane?.hasPointerCapture(event.pointerId))
-            this.updateFromPlane(event, false); });
-        this.plane.addEventListener('pointerup', event => { this.plane?.releasePointerCapture(event.pointerId); this.updateFromPlane(event, true); });
-        this.plane.addEventListener('keydown', event => this.handlePlaneKey(event));
-        this.hueSlider.addEventListener('input', event => this.updateHue(false, event));
-        this.alphaSlider.addEventListener('input', event => this.updateAlpha(false, event));
-        this.hexInput.addEventListener('input', event => this.updateFromHex(false, event));
-        this.nativeControl.addEventListener('input', event => { const color = parseHexColor(this.nativeControl?.value ?? ''); if (color)
-            this.changeColor(color, event); });
-        this.nativeControl.addEventListener('blur', () => { this.validationShown = true; this.syncView(); });
-        root.append(this.trigger, this.nativeControl, this.popup);
-        return html`<style part="styles">${css}</style>${root}`;
+        const blocked=(): boolean => this.unavailable || bool(this.readOnly);
+        const channelFields=(rgb: boolean): Template => html`${repeat(() => channels.filter(channel => ['red','green','blue'].includes(channel.name) === rgb), definition => html`
+            <label part=${`channel-field ${definition.name}-field`} hidden=${() => definition.name === 'alpha' && !bool(this.allowAlpha)}>
+                <span part="channel-label">${() => this.channelLabel(definition.name)}</span>
+                <input part=${`channel-input ${definition.name}-input control`} type="number" min=${definition.min} max=${definition.max} step=${definition.step} inputmode="decimal"
+                    aria-label=${() => this.channelLabel(definition.name)} value=${() => this.channelValue(definition.name)} disabled=${blocked}
+                    oninput=${(event: Event) => { if(event.currentTarget instanceof HTMLInputElement) this.updateFromChannel(definition.name,event.currentTarget.valueAsNumber,false,event); }}>
+            </label>`,{key:definition=>definition.name})}`;
+        return html`<style part="styles">${css}</style><div part="root">
+            <cb-button part="trigger control" exportparts="control:trigger-control,label:trigger-label,button-label:trigger-label,icon:trigger-icon,description:trigger-description,control:control-control,label:control-label,button-label:control-label,icon:control-icon,description:control-description" ref="trigger" data-bare data-semantic-host id=${this.pickerId}
+                disabled=${blocked} hidden=${() => bool(this.native)} accessible-label=${() => this.accessibleName()}
+                aria-haspopup="dialog" aria-controls=${`${this.pickerId}-popup`} aria-expanded=${() => bool(this.open) && !bool(this.native)}
+                aria-description=${() => this.descriptionText()} aria-invalid=${() => this.validationError() || null}
+                onaction=${(event: Event) => { event.stopPropagation(); this.setOpen(!bool(this.open),event); }}>
+                <span part="trigger-swatch" style=${() => `--cb-selected-color:${colorToHex(this.color())}`}></span>
+            </cb-button>
+            <input part="native control" ref="native" type="color" id=${`${this.pickerId}-native`}
+                value=${() => colorToHex(this.color(),false)} disabled=${blocked} required=${() => bool(this.required) && !bool(this.readOnly)}
+                hidden=${() => !bool(this.native)} aria-label=${() => this.accessibleName()} aria-description=${() => this.descriptionText()} aria-invalid=${() => this.validationError() || null}
+                oninput=${(event: Event) => { const color=parseHexColor(this.nativeControl?.value ?? ''); if(color) this.changeColor(color,event); }}
+                onblur=${() => { this.validationShown=true; }}>
+            <section part="popup" ref="popup" id=${`${this.pickerId}-popup`} role="dialog" tabindex="-1" hidden aria-label=${() => this.accessibleName()}
+                style=${() => { const color=this.color(); return `--cb-hue-color:hsl(${color.hue},100%,50%);--cb-solid-color:${colorToHex({...color,alpha:1},false)};--cb-saturation-position:${color.saturation}%;--cb-value-position:${100-color.value}%`; }}>
+                <cb-button part="plane" exportparts="control:plane-control,label:plane-label,button-label:plane-label,icon:plane-icon,description:plane-description" ref="plane" data-bare data-semantic-host accessible-label=${() => this.planeLabel || this.accessibleName()} disabled=${blocked}
+                    onpointerdown=${(event: PointerEvent) => { if(blocked()) return; this.plane?.setPointerCapture(event.pointerId); this.updateFromPlane(event,false); }}
+                    onpointermove=${(event: PointerEvent) => { if(this.plane?.hasPointerCapture(event.pointerId)) this.updateFromPlane(event,false); }}
+                    onpointerup=${(event: PointerEvent) => { if(this.plane?.hasPointerCapture(event.pointerId)) { this.plane.releasePointerCapture(event.pointerId); this.updateFromPlane(event,true); } }}
+                    onkeydown=${(event: KeyboardEvent) => this.handlePlaneKey(event)}><span part="marker"></span></cb-button>
+                <div part="slider-field hue-slider-field"><input part="slider hue-slider control" ref="hue" type="range" min="0" max="360" step="1"
+                    value=${() => Math.round(this.color().hue)} aria-label=${() => this.hueLabel} disabled=${blocked}
+                    oninput=${(event: Event) => this.updateHue(false,event)}></div>
+                <div part="slider-field alpha-slider-field" hidden=${() => !bool(this.allowAlpha)}>
+                    <input part="slider alpha-slider control" ref="alpha" type="range" min="0" max="100" step="1"
+                        value=${() => Math.round(this.color().alpha*100)} aria-label=${() => this.alphaLabel} disabled=${blocked}
+                        oninput=${(event: Event) => this.updateAlpha(false,event)}></div>
+                <div part="toolbar"><label part="hex-field"><span part="channel-label">${() => this.hexLabel}</span>
+                    <input part="hex-input control" ref="hex" type="text" autocomplete="off" spellcheck="false" disabled=${blocked}
+                        aria-label=${() => this.hexLabel} value=${() => this.hexDraft[0]() ?? colorToHex(this.color())}
+                        oninput=${(event: Event) => { this.hexDraft[1](this.hexInput?.value ?? ''); this.updateFromHex(false,event); }}
+                        onblur=${() => this.hexDraft[1](null)}></label>
+                    <cb-button part="sampler" exportparts="control:sampler-control,label:sampler-label,button-label:sampler-label,icon:sampler-icon,description:sampler-description" icon-only icon="eye" variant="ghost" size="sm" accessible-label=${() => this.samplerLabel}
+                        hidden=${() => !bool(this.allowSampler) || !this.samplerLabel || !this.samplerAvailable()} disabled=${blocked}
+                        onaction=${(event: Event) => { event.stopPropagation(); void this.sample(event); }}></cb-button>
+                    <cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" icon-only icon="close" variant="ghost" size="sm" accessible-label=${() => this.closeLabel} hidden=${() => !this.closeLabel}
+                        onaction=${(event: Event) => { event.stopPropagation(); if(this.setOpen(false,event)) this.trigger?.focus(); }}></cb-button>
+                </div><div part="channels hsv-channels">${channelFields(false)}</div><div part="channels rgb-channels">${channelFields(true)}</div>
+                <div part="palette-group" hidden=${() => !this.paletteColors().length && !this.addSwatchLabel}>
+                    <span part="palette-label label" hidden=${() => !this.swatchesLabel}>${() => this.swatchesLabel}</span>
+                    <div part="palette" ref="palette" role="group" aria-label=${() => this.swatchesLabel || null}>
+                        ${repeat(() => this.paletteColors(), color => html`<cb-button part="swatch" exportparts="control:swatch-control,label:swatch-label,button-label:swatch-label,icon:swatch-icon,description:swatch-description" data-bare data-semantic-host data-color=${color}
+                            aria-pressed=${() => color === this.normalizedValue()} disabled=${blocked} data-removable=${() => this.removable(color) ? '' : null}
+                            accessible-label=${() => { const label=color === '#00000000' ? this.transparentLabel || color : color; return this.swatchesLabel ? `${this.swatchesLabel}: ${label}` : label; }}
+                            title=${() => color === '#00000000' ? this.transparentLabel || color : color}
+                            aria-keyshortcuts=${() => this.removable(color) ? 'Delete Backspace' : null}
+                            aria-description=${() => this.removable(color) && this.removeSwatchLabel ? this.removeSwatchLabel.replaceAll('{color}',color) : null}
+                            onaction=${(event: Event) => { event.stopPropagation(); if(this.choose(color,event)) this.focusSwatch(color); }}
+                            onkeydown=${(event: KeyboardEvent) => {
+                                if(!['Delete','Backspace'].includes(event.key) || !this.removable(color)) return;
+                                const index=this.paletteColors().indexOf(color);
+                                if(this.removeSwatch(color,event)) { event.preventDefault(); queueMicrotask(() => this.focusPaletteItem(Math.max(0,index))); }
+                            }}><span part="swatch-preview"><span part="swatch-color" style=${`--cb-swatch-color:${color}`}></span></span></cb-button>`,{key:color=>color})}
+                        <cb-button part="add-swatch" exportparts="control:add-swatch-control,label:add-swatch-label,button-label:add-swatch-label,icon:add-swatch-icon,description:add-swatch-description" ref="addSwatch" icon-only icon="plus" variant="outline" size="sm"
+                            accessible-label=${() => this.addSwatchLabel} hidden=${() => !this.addSwatchLabel} disabled=${blocked}
+                            onpointerdown=${(event: PointerEvent) => event.preventDefault()}
+                            onaction=${(event: Event) => { event.stopPropagation(); const value=this.normalizedValue(); if(this.addSwatch(value,event)) queueMicrotask(() => this.focusSwatch(value)); }}></cb-button>
+                    </div></div>
+            </section></div>`;
     }
     protected mount(): void {
-        if (this.popup && this.trigger)
-            this.popupController = new PopupController(this.popup, this.trigger, event => this.setOpen(false, event), {
-                maxWidth: () => this.popupMaxWidth,
-                maxHeight: () => this.popupMaxHeight,
-            });
+        if(this.popup && this.trigger) this.popupController=new PopupController(this.popup,this.trigger,event=>this.setOpen(false,event),{maxWidth:()=>this.popupMaxWidth,maxHeight:()=>this.popupMaxHeight});
         super.mount();
     }
-    protected unmount(): void { this.popupController?.dispose(); this.popupController = undefined; }
+    protected unmount(): void { this.popupController?.dispose(); this.popupController=undefined; }
     protected fieldElement(): HTMLInputElement | undefined { return this.nativeControl; }
     protected syncView(): void {
-        if (!this.trigger || !this.triggerSwatch || !this.nativeControl || !this.popup || !this.plane || !this.hueSlider || !this.alphaSlider || !this.hexInput || !this.paletteNode || !this.paletteGroup || !this.paletteLabel || !this.samplerButton || !this.closeButton || !this.addSwatchButton)
-            return;
-        const color = this.color(), rgba = hsvaToRgba(color), value = colorToHex(color), solid = colorToHex({ ...color, alpha: 1 }, false), native = bool(this.native);
-        this.value = value;
-        this.style.setProperty('--cb-selected-color', value);
-        this.popup.style.setProperty('--cb-hue-color', `hsl(${color.hue}, 100%, 50%)`);
-        this.popup.style.setProperty('--cb-solid-color', solid);
-        this.popup.style.setProperty('--cb-saturation-position', `${color.saturation}%`);
-        this.popup.style.setProperty('--cb-value-position', `${100 - color.value}%`);
-        this.hueSlider.value = String(Math.round(color.hue));
-        this.alphaSlider.value = String(Math.round(color.alpha * 100));
-        this.setEditorValue(this.hexInput, value);
-        this.setChannelValues(color, rgba);
-        this.syncLabels();
-        this.syncPalette(value);
-        this.nativeControl.value = colorToHex(color, false);
-        this.nativeControl.disabled = this.unavailable || bool(this.readOnly);
-        this.nativeControl.required = bool(this.required) && !bool(this.readOnly);
-        this.nativeControl.setAttribute('aria-label', this.accessibleName());
-        this.trigger.disabled = this.unavailable || bool(this.readOnly);
-        this.trigger.hidden = native;
-        this.nativeControl.hidden = !native;
-        this.trigger.accessibleLabel = this.accessibleName();
-        this.trigger.setAttribute('aria-haspopup', 'dialog');
-        this.trigger.setAttribute('aria-controls', this.popup.id);
-        aria(this.trigger, 'aria-expanded', bool(this.open) && !native);
-        this.popup.setAttribute('aria-label', this.accessibleName());
-        const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText)));
-        const description = [text(this.description), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null;
-        aria(this.trigger, 'aria-description', description);
-        aria(this.nativeControl, 'aria-description', description);
-        aria(this.trigger, 'aria-invalid', error ? true : null);
-        aria(this.nativeControl, 'aria-invalid', error ? true : null);
-        this.toggleAttribute('data-invalid', error);
-        this.toggleAttribute('data-native', native);
-        if (native) {
-            this.open = false;
-            this.removeAttribute('open');
-            this.popupController?.hide();
-        }
-        else if (bool(this.open))
-            this.popupController?.show();
-        else
-            this.popupController?.hide();
+        const value=colorToHex(this.color());
+        this.value=value;
+        this.toggleAttribute('data-invalid',this.validationError()); this.toggleAttribute('data-native',bool(this.native));
+        if(bool(this.native)) { this.open=false; this.removeAttribute('open'); this.popupController?.hide(); }
+        else if(bool(this.open)) this.popupController?.show(); else this.popupController?.hide();
         this.syncForm(value);
     }
     focus(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.trigger)?.focus(options); }
-    /** Moves focus into the custom editor after an external control opens it. */
     focusEditor(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.hexInput)?.focus(options); }
-    private sliderField(name: 'hue' | 'alpha'): {
-        readonly field: HTMLElement;
-        readonly input: HTMLInputElement;
-    } {
-        const field = element('div', { attributes: { part: `slider-field ${name}-slider-field` } }) as HTMLDivElement, input = element('input', { attributes: { part: `slider ${name}-slider control` } }) as HTMLInputElement;
-        input.type = 'range';
-        input.min = '0';
-        input.max = name === 'hue' ? '360' : '100';
-        input.step = '1';
-        field.append(input);
-        return { field, input };
-    }
-    private syncLabels(): void {
-        const labels: Readonly<Record<ChannelName, string>> = {
-            hue: this.hueLabel, saturation: this.saturationLabel, value: this.valueLabel, alpha: this.alphaLabel,
-            red: this.redLabel, green: this.greenLabel, blue: this.blueLabel,
-        };
-        for (const [name, label] of this.channelLabels)
-            label.textContent = labels[name];
-        if (this.hexLabelNode)
-            this.hexLabelNode.textContent = this.hexLabel;
-        if (this.plane)
-            this.plane.accessibleLabel = this.planeLabel || this.accessibleName();
-        if (this.hueSlider)
-            this.hueSlider.setAttribute('aria-label', this.hueLabel);
-        if (this.alphaSlider)
-            this.alphaSlider.setAttribute('aria-label', this.alphaLabel);
-        if (this.hexInput)
-            this.hexInput.setAttribute('aria-label', this.hexLabel);
-        for (const [name, input] of this.channelInputs)
-            input.setAttribute('aria-label', labels[name]);
-        actionLabel(this.samplerButton!, this.samplerLabel);
-        this.samplerButton!.hidden = !bool(this.allowSampler) || !this.samplerLabel || !this.samplerAvailable();
-        actionLabel(this.closeButton!, this.closeLabel);
-        this.closeButton!.hidden = !this.closeLabel;
-        actionLabel(this.addSwatchButton!, this.addSwatchLabel);
-        this.addSwatchButton!.hidden = !this.addSwatchLabel;
-        this.addSwatchButton!.disabled = this.unavailable || bool(this.readOnly);
-        this.paletteLabel!.textContent = this.swatchesLabel;
-        this.paletteLabel!.hidden = !this.swatchesLabel;
-        this.alphaSlider!.closest<HTMLElement>('[part~=slider-field]')!.hidden = !bool(this.allowAlpha);
-        this.channelInputs.get('alpha')!.closest<HTMLElement>('[part~=channel-field]')!.hidden = !bool(this.allowAlpha);
-    }
-    private setChannelValues(color: HSVAColor, rgba: RGBAColor): void {
-        const values: Readonly<Record<ChannelName, number>> = {
-            hue: Math.round(color.hue), saturation: Math.round(color.saturation), value: Math.round(color.value), alpha: Math.round(color.alpha * 100),
-            red: rgba.red, green: rgba.green, blue: rgba.blue,
-        };
-        for (const [name, input] of this.channelInputs)
-            this.setEditorValue(input, String(values[name]));
-    }
-    private setEditorValue(input: HTMLInputElement, value: string): void { if (this.activeNode() !== input)
-        input.value = value; }
     private updateFromPlane(event: PointerEvent, commit: boolean): void {
         if (!this.plane)
             return;
@@ -349,65 +251,6 @@ export class ColorPicker extends ColorPickerBase {
             this.changeColor(next, event);
         else
             this.inputColor(next, event);
-    }
-    private syncPalette(selected: string): void {
-        if (!this.paletteNode || !this.paletteGroup || !this.addSwatchButton)
-            return;
-        const palette = this.palette();
-        const colors = [...(bool(this.allowAlpha) ? ['#00000000'] : []), ...palette].filter((color, index, list) => list.indexOf(color) === index);
-        const removableColors = new Set(palette.filter(color => color !== '#00000000'));
-        const retained = new Set(colors);
-        for (const [color, button] of this.swatchButtons) {
-            if (retained.has(color))
-                continue;
-            button.remove();
-            this.swatchButtons.delete(color);
-        }
-        let reference = this.paletteNode.firstElementChild;
-        for (const color of colors) {
-            const label = color === '#00000000' ? this.transparentLabel || color : color;
-            let button = this.swatchButtons.get(color);
-            if (!button) {
-                button = this.createSwatchButton(color);
-                this.swatchButtons.set(color, button);
-            }
-            button.setAttribute('aria-pressed', String(color === selected));
-            button.disabled = this.unavailable || bool(this.readOnly);
-            button.toggleAttribute('data-removable', removableColors.has(color));
-            button.accessibleLabel = this.swatchesLabel ? `${this.swatchesLabel}: ${label}` : label;
-            button.title = label;
-            aria(button, 'aria-keyshortcuts', removableColors.has(color) ? 'Delete Backspace' : null);
-            aria(button, 'aria-description', removableColors.has(color) && this.removeSwatchLabel ? this.removeSwatchLabel.replaceAll('{color}', label) : null);
-            if (button !== reference)
-                this.paletteNode.insertBefore(button, reference);
-            reference = button.nextElementSibling;
-        }
-        if (this.addSwatchButton.parentElement !== this.paletteNode)
-            this.paletteNode.append(this.addSwatchButton);
-        this.paletteGroup.hidden = colors.length === 0 && this.addSwatchButton.hidden;
-        this.paletteNode.setAttribute('role', 'group');
-        aria(this.paletteNode, 'aria-label', this.swatchesLabel || null);
-    }
-    private createSwatchButton(color: string): Button {
-        const button = createBareButton('swatch', event => { if (this.choose(color, event))
-            this.focusSwatch(color); });
-        button.dataset.color = color;
-        const preview = element('span', { attributes: { part: 'swatch-preview' } }) as HTMLSpanElement, fill = element('span', { attributes: { part: 'swatch-color' } }) as HTMLSpanElement;
-        fill.style.setProperty('--cb-swatch-color', color);
-        preview.append(fill);
-        button.append(preview);
-        button.addEventListener('keydown', event => {
-            if (event.key !== 'Delete' && event.key !== 'Backspace')
-                return;
-            if (!button.hasAttribute('data-removable'))
-                return;
-            const index = Array.from(this.paletteNode?.querySelectorAll<Button>('cb-button[part~=swatch]') ?? []).indexOf(button);
-            if (!this.removeSwatch(color, event))
-                return;
-            event.preventDefault();
-            this.focusPaletteItem(Math.max(0, index));
-        });
-        return button;
     }
     private focusSwatch(color: string): void {
         const normalized = colorToHex(parseHexColor(color) ?? this.color());

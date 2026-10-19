@@ -1,7 +1,5 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { actionLabel, createIconButton } from '../../action/create.js';
+import { type Template, html, repeat } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
 import type { Button } from '../../action/button/index.js';
 import { bool, finite } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
@@ -37,133 +35,62 @@ interface DragState {
     readonly button: Button;
 }
 export class Timeline extends TimelineBase {
-    private rootNode?: HTMLElement;
-    private editor?: HTMLElement;
-    private ruler?: HTMLElement;
-    private playhead?: HTMLElement;
-    private timeNode?: HTMLOutputElement;
-    private playButton?: Button;
-    private rewindButton?: Button;
-    private addButton?: Button;
+    private get ruler(): HTMLElement | undefined { const node=this.refs.ruler?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private drag?: DragState;
-    private animationFrame = 0;
-    private playbackStartedAt = 0;
-    private playbackStartedFrom = 0;
-    private renderedDuration = -1;
-    private renderedTracks = '';
+    private animationFrame=0;
+    private playbackStartedAt=0;
+    private playbackStartedFrom=0;
+    private track(id:string): TimelineTrack { return this.timelineTracks().find(track=>track.id===id) ?? {id,label:id,keyframes:[]}; }
+    private keyframe(trackId:string,id:string): TimelineKeyframe { return this.track(trackId).keyframes.find(frame=>frame.id===id) ?? {id,time:0}; }
+    private divisions(): number { return Math.min(20,Math.max(4,Math.ceil(this.timelineDuration()*2))); }
     render(): Template {
-        this.rootNode = element('section', { attributes: { part: 'root editor' } }) as HTMLElement;
-        const toolbar = element('div', { attributes: { part: 'toolbar' } }) as HTMLDivElement;
-        toolbar.setAttribute('role', 'toolbar');
-        this.rewindButton = createIconButton('rewind', 'reset', event => this.seek(0, event));
-        this.playButton = createIconButton('play', 'play', event => this.setPlaying(!this.playing, event));
-        this.addButton = createIconButton('add-keyframe', 'plus', event => this.addKeyframe(undefined, event));
-        this.timeNode = element('output', { attributes: { part: 'time' } }) as HTMLOutputElement;
-        toolbar.append(this.rewindButton, this.playButton, this.addButton, this.timeNode);
-        this.editor = element('div', { attributes: { part: 'editor' } }) as HTMLDivElement;
-        const rulerRow = element('div', { attributes: { part: 'ruler-row' } }) as HTMLDivElement;
-        const rulerLabel = element('span', { attributes: { part: 'ruler-label' } }) as HTMLSpanElement;
-        this.ruler = element('div', { attributes: { part: 'ruler' } }) as HTMLDivElement;
-        this.ruler.tabIndex = 0;
-        this.ruler.setAttribute('role', 'slider');
-        this.ruler.addEventListener('pointerdown', event => this.scrub(event, true));
-        this.ruler.addEventListener('pointermove', event => { if (event.buttons === 1)
-            this.scrub(event, false); });
-        this.ruler.addEventListener('keydown', event => this.keyScrub(event));
-        rulerRow.append(rulerLabel, this.ruler);
-        this.playhead = element('span', { attributes: { part: 'playhead' } }) as HTMLSpanElement;
-        this.editor.append(rulerRow, this.playhead);
-        this.rootNode.append(toolbar, this.editor);
-        return html`<style part="styles">${css}</style>${this.rootNode}`;
+        return html`<style part="styles">${css}</style><section part="root editor" aria-label=${() => this.accessibleName()}>
+            <div part="toolbar" role="toolbar">
+                <cb-button part="rewind" exportparts="control:rewind-control,label:rewind-label,button-label:rewind-label,icon:rewind-icon,description:rewind-description" icon-only icon="reset" variant="ghost" size="sm" accessible-label=${() => this.text('rewindLabel')} disabled=${() => this.unavailable || this.timelineTime()<=0}
+                    onaction=${(event: Event) => { event.stopPropagation(); this.seek(0,event); }}></cb-button>
+                <cb-button part="play" exportparts="control:play-control,label:play-label,button-label:play-label,icon:play-icon,description:play-description" icon-only icon=${() => this.playing ? 'pause' : 'play'} variant="ghost" size="sm"
+                    accessible-label=${() => this.text(this.playing ? 'pauseLabel' : 'playLabel')} disabled=${() => this.unavailable}
+                    onaction=${(event: Event) => { event.stopPropagation(); this.setPlaying(!this.playing,event); }}></cb-button>
+                <cb-button part="add-keyframe" exportparts="control:add-keyframe-control,label:add-keyframe-label,button-label:add-keyframe-label,icon:add-keyframe-icon,description:add-keyframe-description" icon-only icon="plus" variant="ghost" size="sm" accessible-label=${() => this.text('addKeyframeLabel')}
+                    disabled=${() => this.unavailable || !this.timelineTracks().some(track=>!track.disabled)}
+                    onaction=${(event: Event) => { event.stopPropagation(); this.addKeyframe(undefined,event); }}></cb-button>
+                <output part="time">${() => this.text('timeLabel').replace('{current}',this.formatTime(this.timelineTime())).replace('{duration}',this.formatTime(this.timelineDuration()))}</output>
+            </div><div part="editor" style=${() => `--cb-playhead:${this.timelineTime()/this.timelineDuration()};--cb-duration:${Math.max(1,Math.ceil(this.timelineDuration()))}`}>
+                <div part="ruler-row"><span part="ruler-label"></span>
+                    <div part="ruler" ref="ruler" role="slider" tabindex=${() => this.unavailable ? -1 : 0}
+                        aria-label=${() => this.text('playheadLabel')} aria-valuemin="0" aria-valuemax=${() => this.timelineDuration()}
+                        aria-valuenow=${() => this.timelineTime()} aria-valuetext=${() => this.formatTime(this.timelineTime())}
+                        onpointerdown=${(event: PointerEvent) => this.scrub(event,true)}
+                        onpointermove=${(event: PointerEvent) => { if(event.buttons===1) this.scrub(event,false); }}
+                        onkeydown=${(event: KeyboardEvent) => this.keyScrub(event)}>
+                        ${repeat(() => Array.from({length:this.divisions()+1},(_,index)=>index),index => html`<span part="tick" style=${() => `inset-inline-start:${index/this.divisions()*100}%`}></span>
+                            <span part="tick-label" style=${() => `inset-inline-start:${index/this.divisions()*100}%`}>${() => this.formatTime(index/this.divisions()*this.timelineDuration())}</span>`)}
+                    </div></div><span part="playhead"></span>
+                ${repeat(() => this.timelineTracks().map(track=>track.id),trackId => html`<div part="track" data-track-id=${trackId}>
+                    <span part="track-label">${() => this.track(trackId).label}</span>
+                    <div part="lane" data-track-id=${trackId} onpointerdown=${(event: PointerEvent) => {
+                        if(event.target === event.currentTarget && event.currentTarget instanceof HTMLElement) this.seekAt(event,event.currentTarget,true);
+                    }}>
+                        ${repeat(() => this.track(trackId).keyframes.map(frame=>frame.id),id => html`<cb-button part="keyframe" icon-only variant="ghost"
+                            exportparts="control:keyframe-control,label:keyframe-label"
+                            style=${() => `--cb-keyframe-position:calc(7px + (100% - 14px) * ${this.timelineTime(this.keyframe(trackId,id).time)/this.timelineDuration()})`}
+                            pressed=${() => this.selectedKeyframeId===id} data-selected=${() => this.selectedKeyframeId===id ? '' : null}
+                            accessible-label=${() => this.text('keyframeLabel').replace('{track}',this.track(trackId).label).replace('{time}',this.formatTime(this.keyframe(trackId,id).time))}
+                            disabled=${() => this.unavailable || bool(this.track(trackId).disabled) || bool(this.keyframe(trackId,id).disabled)}
+                            onchange=${(event: Event) => { event.stopPropagation(); this.selectKeyframe(trackId,id,event); }}
+                            onpointerdown=${(event: PointerEvent) => {
+                                const button=event.currentTarget as Button,lane=button.parentElement;
+                                if(button.disabled || !lane) return;
+                                event.stopPropagation(); this.drag={trackId,keyframeId:id,pointerId:event.pointerId,lane,button}; button.setPointerCapture(event.pointerId);
+                            }}
+                            onpointermove=${(event: PointerEvent) => this.moveDrag(event)} onpointerup=${(event: PointerEvent) => this.endDrag(event)}
+                            onpointercancel=${(event: PointerEvent) => this.endDrag(event)}
+                            onkeydown=${(event: KeyboardEvent) => this.keyKeyframe(trackId,this.keyframe(trackId,id),event)}></cb-button>`,{key:id=>id})}
+                    </div></div>`,{key:id=>id})}
+            </div></section>`;
     }
-    protected syncView(): void {
-        if (!this.rootNode || !this.editor || !this.ruler || !this.playhead || !this.timeNode || !this.playButton || !this.rewindButton || !this.addButton)
-            return;
-        const duration = this.timelineDuration(), time = this.timelineTime();
-        if (duration !== this.renderedDuration) {
-            this.renderRuler(duration);
-            this.renderedDuration = duration;
-        }
-        const trackSignature = this.trackSignature(duration);
-        if (trackSignature !== this.renderedTracks) {
-            this.editor.querySelectorAll('[part~=track]').forEach(node => node.remove());
-            for (const track of this.timelineTracks())
-                this.editor.append(this.renderTrack(track, duration));
-            this.renderedTracks = trackSignature;
-        }
-        this.editor.style.setProperty('--cb-playhead', String(time / duration));
-        this.editor.style.setProperty('--cb-duration', String(Math.max(1, Math.ceil(duration))));
-        this.timeNode.value = this.text('timeLabel').replace('{current}', this.formatTime(time)).replace('{duration}', this.formatTime(duration));
-        actionLabel(this.playButton, this.playing ? this.text('pauseLabel') : this.text('playLabel'));
-        this.playButton.icon = this.playing ? 'pause' : 'play';
-        actionLabel(this.rewindButton, this.text('rewindLabel'));
-        actionLabel(this.addButton, this.text('addKeyframeLabel'));
-        this.playButton.disabled = this.unavailable;
-        this.rewindButton.disabled = this.unavailable || time <= 0;
-        this.addButton.disabled = this.unavailable || !this.timelineTracks().some(track => !track.disabled);
-        aria(this.rootNode, 'aria-label', this.accessibleName());
-        this.ruler.setAttribute('aria-label', this.text('playheadLabel'));
-        this.ruler.setAttribute('aria-valuemin', '0');
-        this.ruler.setAttribute('aria-valuemax', String(duration));
-        this.ruler.setAttribute('aria-valuenow', String(time));
-        this.ruler.setAttribute('aria-valuetext', this.formatTime(time));
-        this.ruler.tabIndex = this.unavailable ? -1 : 0;
-        this.ensurePlayback();
-    }
-    protected unmount(): void { cancelAnimationFrame(this.animationFrame); this.animationFrame = 0; }
-    private renderRuler(duration: number): void {
-        if (!this.ruler)
-            return;
-        this.ruler.replaceChildren();
-        const divisions = Math.min(20, Math.max(4, Math.ceil(duration * 2)));
-        for (let index = 0; index <= divisions; index += 1) {
-            const percentage = index / divisions * 100;
-            const time = index / divisions * duration;
-            const tick = element('span', { attributes: { part: 'tick' } }) as HTMLSpanElement;
-            tick.style.insetInlineStart = `${percentage}%`;
-            const label = element('span', { attributes: { part: 'tick-label' }, textContent: this.formatTime(time) }) as HTMLSpanElement;
-            label.style.insetInlineStart = `${percentage}%`;
-            this.ruler.append(tick, label);
-        }
-    }
-    private renderTrack(track: TimelineTrack, duration: number): HTMLElement {
-        const row = element('div', { attributes: { part: 'track' } }) as HTMLDivElement;
-        row.dataset.trackId = track.id;
-        const label = element('span', { attributes: { part: 'track-label' }, textContent: track.label }) as HTMLSpanElement;
-        const lane = element('div', { attributes: { part: 'lane' } }) as HTMLDivElement;
-        lane.dataset.trackId = track.id;
-        lane.addEventListener('pointerdown', event => { if (event.target === lane)
-            this.seekAt(event, lane, true); });
-        for (const keyframe of track.keyframes)
-            lane.append(this.renderKeyframe(track, keyframe, lane, duration));
-        row.append(label, lane);
-        return row;
-    }
-    private renderKeyframe(track: TimelineTrack, keyframe: TimelineKeyframe, lane: HTMLElement, duration: number): Button {
-        const button = document.createElement('cb-button') as Button;
-        button.setAttribute('part', 'keyframe');
-        button.setAttribute('exportparts', 'control:keyframe-control,label:keyframe-label');
-        button.variant = 'ghost';
-        button.iconOnly = true;
-        button.style.setProperty('--cb-keyframe-position', `calc(7px + (100% - 14px) * ${this.timelineTime(keyframe.time) / duration})`);
-        button.pressed = this.selectedKeyframeId === keyframe.id;
-        button.toggleAttribute('data-selected', button.pressed);
-        button.accessibleLabel = this.text('keyframeLabel').replace('{track}', track.label).replace('{time}', this.formatTime(keyframe.time));
-        button.disabled = this.unavailable || bool(track.disabled) || bool(keyframe.disabled);
-        button.addEventListener('change', event => { event.stopPropagation(); this.selectKeyframe(track.id, keyframe.id, event); });
-        button.addEventListener('pointerdown', event => {
-            if (button.disabled)
-                return;
-            event.stopPropagation();
-            this.drag = { trackId: track.id, keyframeId: keyframe.id, pointerId: event.pointerId, lane, button };
-            button.setPointerCapture(event.pointerId);
-        });
-        button.addEventListener('pointermove', event => this.moveDrag(event));
-        button.addEventListener('pointerup', event => this.endDrag(event));
-        button.addEventListener('pointercancel', event => this.endDrag(event));
-        button.addEventListener('keydown', event => this.keyKeyframe(track.id, keyframe, event));
-        return button;
-    }
+    protected syncView(): void { this.ensurePlayback(); }
+    protected unmount(): void { cancelAnimationFrame(this.animationFrame); this.animationFrame=0; }
     private scrub(event: PointerEvent, commit: boolean): void { if (this.ruler)
         this.seekAt(event, this.ruler, commit); }
     private seekAt(event: PointerEvent, lane: HTMLElement, commit: boolean): void {
@@ -241,9 +168,6 @@ export class Timeline extends TimelineBase {
                 this.animationFrame = 0;
         };
         this.animationFrame = requestAnimationFrame(frame);
-    }
-    private trackSignature(duration: number): string {
-        return `${duration}|${this.selectedKeyframeId}|${this.timelineTracks().map(track => `${track.id}:${track.disabled ? 1 : 0}:${track.keyframes.map(frame => `${frame.id},${frame.time},${frame.disabled ? 1 : 0}`).join(';')}`).join('|')}`;
     }
     private formatTime(value: number): string { return `${Math.round(value * 100) / 100}s`; }
 }

@@ -1,38 +1,30 @@
-import { type Template, element, html } from '../../core/runtime.js'
+import { html, state, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { uid } from '../../core/id.js'
-import { bool, scalarText } from '../../core/value.js';
-import { TooltipBase } from './TooltipBase.js';
+import { bool, scalarText } from '../../core/value.js'
+import { TooltipBase } from './TooltipBase.js'
+const css = editorCSS + `:host{position:relative;display:inline-flex}[part=trigger]{display:inline-flex}[part=tooltip]{position:absolute;z-index:var(--z-index-tooltip,100);inline-size:max-content;max-inline-size:min(280px,80vw);padding:4px 8px;border-radius:var(--radius-sm,6px);background:var(--color-foreground,#20262b);color:var(--color-background,#fff);font-size:var(--component-caption-font-size,11px);line-height:1.4;pointer-events:none;opacity:0;visibility:hidden;transition:opacity var(--motion-duration-fast,100ms) ease-out;inset-block-end:calc(100% + 6px);inset-inline-start:50%;translate:-50% 0}:host([open]) [part=tooltip]{opacity:1;visibility:visible}:host([data-placement=bottom]) [part=tooltip]{inset-block-start:calc(100% + 6px);inset-block-end:auto}:host([data-placement=left]) [part=tooltip]{inset-inline-end:calc(100% + 6px);inset-inline-start:auto;inset-block-start:50%;inset-block-end:auto;translate:0 -50%}:host([data-placement=right]) [part=tooltip]{inset-inline-start:calc(100% + 6px);inset-block-start:50%;inset-block-end:auto;translate:0 -50%}`;
 export class Tooltip extends TooltipBase {
-    private trigger?: HTMLElement;
-    private triggerSlot?: HTMLSlotElement;
-    private bubble?: HTMLElement;
-    private describedElements = new Map<Element, string | null>();
+    private readonly tooltipId = uid('cb-tooltip')
+    private readonly slottedContent = state(false)
+    private describedElements = new Map<Element, string | null>()
+    private get triggerSlot(): HTMLSlotElement | undefined { const node = this.refs.trigger?.[0]; return node instanceof HTMLSlotElement ? node : undefined }
+    private get bubble(): HTMLElement | undefined { const node = this.refs.bubble?.[0]; return node instanceof HTMLElement ? node : undefined }
     render(): Template {
-        this.trigger = element('span', { attributes: { part: 'trigger' } }) as HTMLSpanElement;
-        this.triggerSlot = element("slot", { attributes: { name: '', part: 'trigger-content' }, textContent: '' }) as HTMLSlotElement;
-        this.trigger.append(this.triggerSlot);
-        this.bubble = element('span', { attributes: { part: 'tooltip' } }) as HTMLSpanElement;
-        this.bubble.id = uid('cb-tooltip');
-        this.bubble.setAttribute('role', 'tooltip');
-        this.bubble.append(element("slot", { attributes: { name: 'content', part: 'content' }, textContent: '' }) as HTMLSlotElement);
-        this.trigger.addEventListener('pointerenter', () => this.schedule(true));
-        this.trigger.addEventListener('pointerleave', () => this.schedule(false));
-        this.trigger.addEventListener('focusin', () => this.schedule(true));
-        this.trigger.addEventListener('focusout', () => this.schedule(false));
-        this.triggerSlot.addEventListener('slotchange', () => this.linkTrigger());
-        return html`<style part="styles">${editorCSS + `:host{position:relative;display:inline-flex}[part=trigger]{display:inline-flex}[part=tooltip]{position:absolute;z-index:var(--z-index-tooltip,100);inline-size:max-content;max-inline-size:min(280px,80vw);padding:4px 8px;border-radius:var(--radius-sm,6px);background:var(--color-foreground,#20262b);color:var(--color-background,#fff);font-size:var(--component-caption-font-size,11px);line-height:1.4;pointer-events:none;opacity:0;visibility:hidden;transition:opacity var(--motion-duration-fast,100ms) ease-out;inset-block-end:calc(100% + 6px);inset-inline-start:50%;translate:-50% 0}:host([open]) [part=tooltip]{opacity:1;visibility:visible}:host([data-placement=bottom]) [part=tooltip]{inset-block-start:calc(100% + 6px);inset-block-end:auto}:host([data-placement=left]) [part=tooltip]{inset-inline-end:calc(100% + 6px);inset-inline-start:auto;inset-block-start:50%;inset-block-end:auto;translate:0 -50%}:host([data-placement=right]) [part=tooltip]{inset-inline-start:calc(100% + 6px);inset-block-start:50%;inset-block-end:auto;translate:0 -50%}`}</style>${this.trigger}${this.bubble}`;
+        return html`<style part="styles">${css}</style>
+            <span part="trigger" onpointerenter="${() => this.schedule(true)}" onpointerleave="${() => this.schedule(false)}"
+                onfocus="${[() => this.schedule(true), true]}" onblur="${[() => this.schedule(false), true]}">
+                <slot ref="trigger" part="trigger-content" onslotchange="${() => this.linkTrigger()}"></slot>
+            </span>
+            <span ref="bubble" id="${this.tooltipId}" part="tooltip" role="tooltip"
+                hidden="${() => !scalarText(this.content) && !this.slottedContent[0]()}">
+                <slot name="content" part="content" onslotchange="${(event: Event) => { const slot = event.currentTarget; if (slot instanceof HTMLSlotElement) this.slottedContent[1](slot.assignedNodes().length > 0); this.syncTooltip() }}">${() => scalarText(this.content)}</slot>
+            </span>`
     }
     protected syncTooltip(): void {
-        if (!this.bubble)
-            return;
-        this.dataset.placement = ['top', 'right', 'bottom', 'left'].includes(this.placement ?? '') ? this.placement ?? 'top' : 'top';
-        this.bubble.hidden = !scalarText(this.content) && !this.querySelector('[slot=content]');
-        const contentSlot = this.bubble.querySelector('slot');
-        if (contentSlot)
-            contentSlot.textContent = scalarText(this.content);
-        this.toggleAttribute('open', bool(this.open) && !this.bubble.hidden);
-        this.linkTrigger();
+        this.dataset.placement = ['top', 'right', 'bottom', 'left'].includes(this.placement ?? '') ? this.placement ?? 'top' : 'top'
+        this.toggleAttribute('open', bool(this.open) && Boolean(scalarText(this.content) || this.slottedContent[0]()))
+        this.linkTrigger()
     }
     protected unmount(): void {
         super.unmount();

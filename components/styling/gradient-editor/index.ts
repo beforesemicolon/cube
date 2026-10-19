@@ -1,15 +1,11 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { actionLabel, createBareButton, createIconButton } from '../../action/create.js';
+import { type Template, html, repeat } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
 import type { Button } from '../../action/button/index.js';
-import type { Select } from '../../form/select/index.js';
-import type { SegmentedControl } from '../../navigation/segmented-control/index.js';
 import { bool, clamp, scalarText } from '../../core/value.js';
 import { token as v } from '../../theme/tokens.js';
 import type { ColorPicker } from '../color-picker/index.js';
-import { GradientEditorBase, type GradientEditorProps, } from './GradientEditorBase.js';
-import type { GradientExtent, GradientPosition, GradientShape, GradientStop, GradientType } from './gradient.js';
+import { GradientEditorBase } from './GradientEditorBase.js';
+import type { GradientPosition, GradientStop } from './gradient.js';
 const css = editorCSS + `
 :host{display:block;inline-size:var(--component-gradient-editor-width,560px);max-inline-size:100%;min-inline-size:min(100%,var(--component-gradient-editor-min-width,320px));container-type:inline-size}
 [part~=root]{display:grid;gap:var(--spacing-md,12px);min-inline-size:0}
@@ -54,286 +50,94 @@ interface ChoiceOption {
     readonly label: string;
 }
 export class GradientEditor extends GradientEditorBase {
-    private rootNode?: HTMLElement;
-    private modeControl?: SegmentedControl;
-    private angleField?: HTMLElement;
-    private angleLabelNode?: HTMLElement;
-    private angleInput?: HTMLInputElement;
-    private radialControls?: HTMLElement;
-    private shapeControl?: Select;
-    private extentControl?: Select;
-    private positionControl?: Select;
-    private shapeLabelNode?: HTMLElement;
-    private extentLabelNode?: HTMLElement;
-    private positionLabelNode?: HTMLElement;
-    private stopsLabelNode?: HTMLElement;
-    private addButton?: Button;
-    private track?: HTMLElement;
-    private trackColor?: HTMLElement;
-    private colorPicker?: ColorPicker;
-    private removeButton?: Button;
-    private formControl?: HTMLInputElement;
+    private node(name:string): HTMLElement | undefined { const node=this.refs[name]?.[0]; return node instanceof HTMLElement ? node : undefined; }
+    private get track(): HTMLElement | undefined { return this.node('track'); }
+    private get angleInput(): HTMLInputElement | undefined { const node=this.node('angle'); return node instanceof HTMLInputElement ? node : undefined; }
+    private get colorPicker(): ColorPicker | undefined { return this.node('picker') as ColorPicker | undefined; }
+    private get formControl(): HTMLInputElement | undefined { const node=this.node('form'); return node instanceof HTMLInputElement ? node : undefined; }
+    private get handles(): Map<string,Button> { return new Map((this.refs.handles ?? []).flatMap(node => node instanceof HTMLElement && node.dataset.stopId ? [[node.dataset.stopId,node as Button] as const] : [])); }
     private drag?: DragState;
-    private readonly handles = new Map<string, Button>();
+    private blocked(): boolean { return this.unavailable || bool(this.readOnly); }
+    private stop(id:string): GradientStop { return this.model().stops.find(stop=>stop.id === id) ?? this.selectedStop(); }
+    private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(scalarText(this.errorText))); }
     render(): Template {
-        this.rootNode = element('div', { attributes: { part: 'root' } }) as HTMLDivElement;
-        const geometry = element('div', { attributes: { part: 'geometry' } }) as HTMLDivElement;
-        this.modeControl = document.createElement('cb-segmented-control') as SegmentedControl;
-        this.modeControl.setAttribute('part', 'mode');
-        this.modeControl.setAttribute('exportparts', 'group:mode-group,item:mode-item,item-label:mode-label');
-        this.modeControl.addEventListener('change', event => {
-            event.stopPropagation();
-            const value = (event as CustomEvent<{
-                value?: string;
-            }>).detail.value;
-            if (value === 'linear' || value === 'radial')
-                this.changeType(value, event);
-        });
-        this.angleField = element('label', { attributes: { part: 'angle-field' } }) as HTMLLabelElement;
-        this.angleLabelNode = element('span', { attributes: { part: 'control-label' } }) as HTMLSpanElement;
-        this.angleInput = element('input', { attributes: { part: 'angle control' } }) as HTMLInputElement;
-        this.angleInput.type = 'number';
-        this.angleInput.step = '1';
-        this.angleInput.inputMode = 'decimal';
-        this.angleInput.addEventListener('input', event => this.changeAngle(this.angleInput?.valueAsNumber ?? this.angle, event, false));
-        this.angleField.append(this.angleLabelNode, this.angleInput);
-        this.radialControls = element('div', { attributes: { part: 'radial-controls' } }) as HTMLDivElement;
-        this.shapeControl = this.createSelect('shape', event => {
-            const value = event.detail.value;
-            if (value === 'circle' || value === 'ellipse')
-                this.changeShape(value, event);
-        });
-        this.extentControl = this.createSelect('extent', event => {
-            const value = event.detail.value;
-            if (value === 'closest-side' || value === 'closest-corner' || value === 'farthest-side' || value === 'farthest-corner')
-                this.changeExtent(value, event);
-        });
-        this.positionControl = this.createSelect('position', event => {
-            const value = event.detail.value;
-            if (this.isPosition(value))
-                this.changePosition(value, event);
-        });
-        const shapeField = element('label', { attributes: { part: 'select-field shape-field' } }) as HTMLLabelElement;
-        const extentField = element('label', { attributes: { part: 'select-field extent-field' } }) as HTMLLabelElement;
-        const radialPositionField = element('label', { attributes: { part: 'select-field position-field' } }) as HTMLLabelElement;
-        this.shapeLabelNode = element('span', { attributes: { part: 'control-label shape-label' } }) as HTMLSpanElement;
-        this.extentLabelNode = element('span', { attributes: { part: 'control-label extent-label' } }) as HTMLSpanElement;
-        this.positionLabelNode = element('span', { attributes: { part: 'control-label position-label' } }) as HTMLSpanElement;
-        shapeField.append(this.shapeLabelNode, this.shapeControl);
-        extentField.append(this.extentLabelNode, this.extentControl);
-        radialPositionField.append(this.positionLabelNode, this.positionControl);
-        this.radialControls.append(shapeField, extentField, radialPositionField);
-        geometry.append(this.modeControl, this.angleField, this.radialControls);
-        const stopsSection = element('section', { attributes: { part: 'stops' } }) as HTMLElement;
-        const stopsHeader = element('div', { attributes: { part: 'stops-header' } }) as HTMLDivElement;
-        this.stopsLabelNode = element('span', { attributes: { part: 'section-label' } }) as HTMLSpanElement;
-        this.addButton = createIconButton('add-stop', 'plus', event => this.addStop(this.largestGapPosition(), event));
-        this.removeButton = createIconButton('remove-stop', 'close', event => {
-            const selectedId = this.selectedStopId();
-            if (!this.removeStop(selectedId, event))
-                return;
-            this.handles.get(this.selectedStopId())?.focus();
-        });
-        const stopActions = element('div', { attributes: { part: 'stop-actions' } }) as HTMLDivElement;
-        stopActions.append(this.addButton, this.removeButton);
-        stopsHeader.append(this.stopsLabelNode, stopActions);
-        this.track = element('div', { attributes: { part: 'track' } }) as HTMLDivElement;
-        this.trackColor = element('div', { attributes: { part: 'track-color' } }) as HTMLDivElement;
-        this.track.append(this.trackColor);
-        this.track.addEventListener('click', event => {
-            if (event.target !== this.track && event.target !== this.trackColor)
-                return;
-            const bounds = this.track?.getBoundingClientRect();
-            if (bounds?.width)
-                this.addStop((event.clientX - bounds.left) / bounds.width * 100, event);
-        });
-        this.colorPicker = document.createElement('cb-color-picker') as ColorPicker;
-        this.colorPicker.setAttribute('part', 'stop-color');
-        this.colorPicker.setAttribute('exportparts', 'root:stop-color-root,trigger:stop-color-trigger,trigger-swatch:stop-color-swatch,popup:stop-color-popup');
-        this.colorPicker.addEventListener('change', event => {
-            event.stopPropagation();
-            this.changeStopColor(this.selectedStopId(), (event as CustomEvent<{
-                value: string;
-            }>).detail.value, event, false);
-        });
-        this.colorPicker.addEventListener('close', event => {
-            const originalEvent = (event as CustomEvent<{
-                originalEvent?: Event;
-            }>).detail.originalEvent;
-            const escape = originalEvent?.type === 'keydown' && (originalEvent as KeyboardEvent).key === 'Escape';
-            if (!escape && originalEvent?.type !== 'click')
-                return;
-            queueMicrotask(() => this.handles.get(this.selectedStopId())?.focus());
-        });
-        this.track.append(this.colorPicker);
-        stopsSection.append(stopsHeader, this.track);
-        this.formControl = element('input', { attributes: { part: 'hidden-control' } }) as HTMLInputElement;
-        this.formControl.type = 'text';
-        this.formControl.tabIndex = -1;
-        this.rootNode.append(geometry, stopsSection, this.formControl);
-        return html`<style part="styles">${css}</style>${this.rootNode}`;
+        return html`<style part="styles">${css}</style><div part="root"><div part="geometry">
+            <cb-segmented-control part="mode" exportparts="group:mode-group,item:mode-item,item-label:mode-label"
+                value=${() => this.model().type} accessible-label=${() => this.typeLabel || this.accessibleName()} disabled=${() => this.blocked()} size=${() => this.size}
+                items=${() => [{id:'linear',label:this.linearLabel || 'linear'},{id:'radial',label:this.radialLabel || 'radial'}]}
+                onchange=${(event: CustomEvent<{value:string}>) => { event.stopPropagation(); if(event.detail.value === 'linear' || event.detail.value === 'radial') this.changeType(event.detail.value,event); }}></cb-segmented-control>
+            <label part="angle-field" hidden=${() => this.model().type !== 'linear'}><span part="control-label">${() => this.angleLabel}</span>
+                <input part="angle control" ref="angle" type="number" step="1" inputmode="decimal" value=${() => this.model().angle} disabled=${() => this.blocked()}
+                    aria-label=${() => this.angleLabel} oninput=${(event: Event) => this.changeAngle(this.angleInput?.valueAsNumber ?? this.angle,event,false)}></label>
+            <div part="radial-controls" hidden=${() => this.model().type !== 'radial'}>
+                ${this.selectField('shape',() => this.shapeLabel,() => this.model().shape,() => [
+                    {value:'circle',label:this.circleLabel || 'circle'},{value:'ellipse',label:this.ellipseLabel || 'ellipse'}
+                ],event => { const value=event.detail.value; if(value === 'circle' || value === 'ellipse') this.changeShape(value,event); })}
+                ${this.selectField('extent',() => this.extentLabel,() => this.model().extent,() => [
+                    {value:'closest-side',label:this.closestSideLabel || 'closest-side'},{value:'closest-corner',label:this.closestCornerLabel || 'closest-corner'},
+                    {value:'farthest-side',label:this.farthestSideLabel || 'farthest-side'},{value:'farthest-corner',label:this.farthestCornerLabel || 'farthest-corner'}
+                ],event => { const value=event.detail.value; if(value === 'closest-side' || value === 'closest-corner' || value === 'farthest-side' || value === 'farthest-corner') this.changeExtent(value,event); })}
+                ${this.selectField('position',() => this.positionLabel,() => this.model().position,() => [
+                    {value:'left top',label:this.topLeftLabel || 'left top'},{value:'center top',label:this.topLabel || 'center top'},
+                    {value:'right top',label:this.topRightLabel || 'right top'},{value:'left center',label:this.leftLabel || 'left center'},
+                    {value:'center',label:this.centerLabel || 'center'},{value:'right center',label:this.rightLabel || 'right center'},
+                    {value:'left bottom',label:this.bottomLeftLabel || 'left bottom'},{value:'center bottom',label:this.bottomLabel || 'center bottom'},
+                    {value:'right bottom',label:this.bottomRightLabel || 'right bottom'}
+                ],event => { if(this.isPosition(event.detail.value)) this.changePosition(event.detail.value,event); })}
+            </div></div><section part="stops"><div part="stops-header"><span part="section-label">${() => this.stopsLabel}</span><div part="stop-actions">
+                <cb-button part="add-stop" exportparts="control:add-stop-control,label:add-stop-label,button-label:add-stop-label,icon:add-stop-icon,description:add-stop-description" icon-only icon="plus" variant="ghost" size="sm" accessible-label=${() => this.addStopLabel} disabled=${() => this.blocked()}
+                    onaction=${(event: Event) => { event.stopPropagation(); this.addStop(this.largestGapPosition(),event); }}></cb-button>
+                <cb-button part="remove-stop" exportparts="control:remove-stop-control,label:remove-stop-label,button-label:remove-stop-label,icon:remove-stop-icon,description:remove-stop-description" icon-only icon="close" variant="ghost" size="sm" accessible-label=${() => this.removeStopLabel}
+                    disabled=${() => this.blocked() || this.model().stops.length <= 2}
+                    onaction=${(event: Event) => { event.stopPropagation(); if(this.removeStop(this.selectedStopId(),event)) queueMicrotask(()=>this.handles.get(this.selectedStopId())?.focus()); }}></cb-button>
+            </div></div><div part="track" ref="track" role="group" aria-label=${() => this.stopsLabel}
+                onclick=${(event: MouseEvent) => {
+                    if(!(event.target instanceof HTMLElement) || !event.target.matches('[part~=track],[part~=track-color]')) return;
+                    const bounds=this.track?.getBoundingClientRect(); if(bounds?.width) this.addStop((event.clientX-bounds.left)/bounds.width*100,event);
+                }}>
+                <div part="track-color" style=${() => `--cb-track-gradient:${this.trackGradient(this.model().stops)}`}></div>
+                ${repeat(() => this.model().stops.map(stop=>stop.id), id => html`<cb-button part="stop" exportparts="control:stop-control,label:stop-label,button-label:stop-label,icon:stop-icon,description:stop-description" ref="handles" data-stop-id=${id} data-bare data-semantic-host role="slider"
+                    style=${() => `inset-inline-start:${this.stop(id).position}%;--cb-stop-color:${this.stop(id).color}`}
+                    disabled=${() => this.blocked()} data-selected=${() => id === this.selectedStopId() ? '' : null}
+                    accessible-label=${() => this.stopName(this.model().stops.findIndex(stop=>stop.id === id),this.stop(id).position)}
+                    aria-valuemin="0" aria-valuemax="100" aria-valuenow=${() => this.stop(id).position}
+                    aria-valuetext=${() => `${Math.round(this.stop(id).position*10)/10}%`} aria-description=${() => this.helpText || null}
+                    onaction=${(event: Event) => { event.stopPropagation(); this.selectStop(id,event); }}
+                    ondblclick=${(event: MouseEvent) => this.openStopColorEditor(id,event)}
+                    onpointerdown=${(event: PointerEvent) => { const handle=this.handles.get(id); if(handle) this.startDrag(event,id,handle); }}
+                    onpointermove=${(event: PointerEvent) => this.dragStop(event)} onpointerup=${(event: PointerEvent) => this.finishDrag(event)}
+                    onpointercancel=${(event: PointerEvent) => this.finishDrag(event)} onkeydown=${(event: KeyboardEvent) => this.handleStopKey(event,id)}>
+                    <span part="stop-swatch"></span></cb-button>`,{key:id=>id})}
+                <cb-color-picker part="stop-color" ref="picker" exportparts="root:stop-color-root,trigger:stop-color-trigger,trigger-swatch:stop-color-swatch,popup:stop-color-popup"
+                    style=${() => `--cb-selected-stop-position:${this.selectedStop().position}%`} value=${() => this.selectedStop().color}
+                    accessible-label=${() => this.stopName(this.model().stops.findIndex(stop=>stop.id === this.selectedStopId()),this.selectedStop().position)}
+                    disabled=${() => this.unavailable} read-only=${() => bool(this.readOnly)} allow-alpha=${() => bool(this.allowAlpha)} allow-sampler=${() => bool(this.allowSampler)}
+                    swatches=${() => Array.isArray(this.swatches) ? this.swatches : []}
+                    hue-label=${() => this.hueLabel} saturation-label=${() => this.saturationLabel} value-label=${() => this.brightnessLabel}
+                    alpha-label=${() => this.alphaLabel} red-label=${() => this.redLabel} green-label=${() => this.greenLabel} blue-label=${() => this.blueLabel}
+                    hex-label=${() => this.hexLabel} plane-label=${() => this.planeLabel} sampler-label=${() => this.samplerLabel} close-label=${() => this.closeLabel}
+                    swatches-label=${() => this.swatchesLabel} add-swatch-label=${() => this.addSwatchLabel} remove-swatch-label=${() => this.removeSwatchLabel} transparent-label=${() => this.transparentLabel}
+                    onchange=${(event: CustomEvent<{value:string}>) => { event.stopPropagation(); this.changeStopColor(this.selectedStopId(),event.detail.value,event,false); }}
+                    onclose=${(event: CustomEvent<{originalEvent?:Event}>) => {
+                        const source=event.detail.originalEvent;
+                        if(source?.type === 'click' || source instanceof KeyboardEvent && source.key === 'Escape') queueMicrotask(()=>this.handles.get(this.selectedStopId())?.focus());
+                    }}></cb-color-picker>
+            </div></section>
+            <input part="hidden-control" ref="form" type="text" tabindex="-1" value=${() => this.cssValue()}
+                disabled=${() => this.unavailable} readonly=${() => bool(this.readOnly)} required=${() => bool(this.required) && !bool(this.readOnly)}
+                aria-label=${() => this.accessibleName()} aria-invalid=${() => this.validationError() || null}
+                aria-description=${() => [this.description,this.helpText,this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null}>
+        </div>`;
+    }
+    private selectField(part:string,label:()=>string,value:()=>string,options:()=>readonly ChoiceOption[],handler:(event:CustomEvent<{value:string}>)=>void): Template {
+        return html`<label part=${`select-field ${part}-field`}><span part=${`control-label ${part}-label`} hidden=${() => !label()}>${label}</span>
+            <cb-select part=${part} ref=${part} accessible-label=${label} value=${value} options=${options}
+                disabled=${() => this.blocked()} searchable="false" size=${() => this.size}
+                onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();handler(event);}}></cb-select></label>`;
     }
     protected fieldElement(): HTMLInputElement | undefined { return this.formControl; }
-    focus(options?: FocusOptions): void {
-        if (this.model().type === 'linear')
-            this.angleInput?.focus(options);
-        else
-            this.shapeControl?.focus(options);
-    }
-    protected syncView(): void {
-        if (!this.rootNode || !this.modeControl || !this.angleField || !this.angleLabelNode || !this.angleInput
-            || !this.radialControls || !this.shapeControl || !this.extentControl || !this.positionControl || !this.shapeLabelNode || !this.extentLabelNode || !this.positionLabelNode || !this.stopsLabelNode || !this.addButton
-            || !this.track || !this.trackColor || !this.colorPicker || !this.removeButton || !this.formControl)
-            return;
-        const model = this.model();
-        const value = this.cssValue();
-        const unavailable = this.unavailable;
-        const readOnly = bool(this.readOnly);
-        const inaccessible = unavailable || readOnly;
-        const accessibleName = this.accessibleName();
-        Object.assign(this.modeControl, {
-            value: model.type,
-            label: '',
-            accessibleLabel: scalarText(this.typeLabel) || accessibleName,
-            items: [
-                { id: 'linear', label: scalarText(this.linearLabel) || 'linear' },
-                { id: 'radial', label: scalarText(this.radialLabel) || 'radial' },
-            ],
-            disabled: inaccessible,
-            size: this.size,
-        });
-        this.angleField.hidden = model.type !== 'linear';
-        this.angleLabelNode.textContent = scalarText(this.angleLabel);
-        this.angleInput.value = String(model.angle);
-        this.angleInput.disabled = inaccessible;
-        this.angleInput.setAttribute('aria-label', scalarText(this.angleLabel));
-        this.radialControls.hidden = model.type !== 'radial';
-        this.syncSelect(this.shapeControl, this.shapeLabelNode, scalarText(this.shapeLabel), model.shape, [
-            { value: 'circle', label: scalarText(this.circleLabel) || 'circle' },
-            { value: 'ellipse', label: scalarText(this.ellipseLabel) || 'ellipse' },
-        ], inaccessible);
-        this.syncSelect(this.extentControl, this.extentLabelNode, scalarText(this.extentLabel), model.extent, [
-            { value: 'closest-side', label: scalarText(this.closestSideLabel) || 'closest-side' },
-            { value: 'closest-corner', label: scalarText(this.closestCornerLabel) || 'closest-corner' },
-            { value: 'farthest-side', label: scalarText(this.farthestSideLabel) || 'farthest-side' },
-            { value: 'farthest-corner', label: scalarText(this.farthestCornerLabel) || 'farthest-corner' },
-        ], inaccessible);
-        this.syncSelect(this.positionControl, this.positionLabelNode, scalarText(this.positionLabel), model.position, [
-            { value: 'left top', label: scalarText(this.topLeftLabel) || 'left top' },
-            { value: 'center top', label: scalarText(this.topLabel) || 'center top' },
-            { value: 'right top', label: scalarText(this.topRightLabel) || 'right top' },
-            { value: 'left center', label: scalarText(this.leftLabel) || 'left center' },
-            { value: 'center', label: scalarText(this.centerLabel) || 'center' },
-            { value: 'right center', label: scalarText(this.rightLabel) || 'right center' },
-            { value: 'left bottom', label: scalarText(this.bottomLeftLabel) || 'left bottom' },
-            { value: 'center bottom', label: scalarText(this.bottomLabel) || 'center bottom' },
-            { value: 'right bottom', label: scalarText(this.bottomRightLabel) || 'right bottom' },
-        ], inaccessible);
-        this.stopsLabelNode.textContent = scalarText(this.stopsLabel);
-        actionLabel(this.addButton, scalarText(this.addStopLabel));
-        this.addButton.disabled = inaccessible;
-        this.trackColor.style.setProperty('--cb-track-gradient', this.trackGradient(model.stops));
-        this.track.setAttribute('role', 'group');
-        this.track.setAttribute('aria-label', scalarText(this.stopsLabel));
-        this.syncHandles(model.stops, inaccessible);
-        const selected = this.selectedStop();
-        this.colorPicker.style.setProperty('--cb-selected-stop-position', `${selected.position}%`);
-        Object.assign(this.colorPicker, {
-            value: selected.color,
-            label: '',
-            accessibleLabel: this.stopName(model.stops.findIndex(stop => stop.id === selected.id), selected.position),
-            disabled: unavailable,
-            readOnly,
-            allowAlpha: bool(this.allowAlpha),
-            allowSampler: bool(this.allowSampler),
-            swatches: Array.isArray(this.swatches) ? this.swatches : [],
-            hueLabel: scalarText(this.hueLabel),
-            saturationLabel: scalarText(this.saturationLabel),
-            valueLabel: scalarText(this.brightnessLabel),
-            alphaLabel: scalarText(this.alphaLabel),
-            redLabel: scalarText(this.redLabel),
-            greenLabel: scalarText(this.greenLabel),
-            blueLabel: scalarText(this.blueLabel),
-            hexLabel: scalarText(this.hexLabel),
-            planeLabel: scalarText(this.planeLabel),
-            samplerLabel: scalarText(this.samplerLabel),
-            closeLabel: scalarText(this.closeLabel),
-            swatchesLabel: scalarText(this.swatchesLabel),
-            addSwatchLabel: scalarText(this.addSwatchLabel),
-            removeSwatchLabel: scalarText(this.removeSwatchLabel),
-            transparentLabel: scalarText(this.transparentLabel),
-        });
-        actionLabel(this.removeButton, scalarText(this.removeStopLabel));
-        this.removeButton.disabled = inaccessible || model.stops.length <= 2;
-        this.formControl.value = value;
-        this.formControl.disabled = unavailable;
-        this.formControl.readOnly = readOnly;
-        this.formControl.required = bool(this.required) && !readOnly;
-        this.formControl.setAttribute('aria-label', accessibleName);
-        this.syncForm(value);
-        const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(scalarText(this.errorText)));
-        const description = [scalarText(this.description), scalarText(this.helpText), error ? this.validationMessage : ''].filter(Boolean).join(' ') || null;
-        aria(this.formControl, 'aria-description', description);
-        aria(this.formControl, 'aria-invalid', error ? true : null);
-        this.toggleAttribute('data-invalid', error);
-    }
-    private createSelect(part: string, handler: (event: CustomEvent<{
-        value: string;
-    }>) => void): Select {
-        const control = document.createElement('cb-select') as Select;
-        control.setAttribute('part', part);
-        control.setAttribute('exportparts', `root:${part}-root,trigger:${part}-trigger,value:${part}-value,popup:${part}-popup,option:${part}-option`);
-        control.addEventListener('change', event => {
-            event.stopPropagation();
-            handler(event as CustomEvent<{
-                value: string;
-            }>);
-        });
-        return control;
-    }
-    private syncSelect(control: Select, labelNode: HTMLElement, label: string, value: string, options: readonly ChoiceOption[], disabled: boolean): void {
-        labelNode.textContent = label;
-        labelNode.hidden = !label;
-        Object.assign(control, { label: '', accessibleLabel: label, value, options, disabled, searchable: false, size: this.size });
-    }
-    private syncHandles(stops: readonly GradientStop[], disabled: boolean): void {
-        if (!this.track)
-            return;
-        const ids = new Set(stops.map(stop => stop.id));
-        for (const [id, handle] of this.handles)
-            if (!ids.has(id)) {
-                handle.remove();
-                this.handles.delete(id);
-            }
-        for (const [index, stop] of stops.entries()) {
-            let handle = this.handles.get(stop.id);
-            if (!handle) {
-                handle = createBareButton('stop', event => { event.stopPropagation(); this.selectStop(stop.id, event); });
-                handle.dataset.stopId = stop.id;
-                handle.setAttribute('role', 'slider');
-                handle.append(element('span', { attributes: { part: 'stop-swatch' } }) as HTMLSpanElement);
-                handle.addEventListener('dblclick', event => this.openStopColorEditor(stop.id, event));
-                handle.addEventListener('pointerdown', event => this.startDrag(event, stop.id, handle!));
-                handle.addEventListener('pointermove', event => this.dragStop(event));
-                handle.addEventListener('pointerup', event => this.finishDrag(event));
-                handle.addEventListener('pointercancel', event => this.finishDrag(event));
-                handle.addEventListener('keydown', event => this.handleStopKey(event, stop.id));
-                this.handles.set(stop.id, handle);
-            }
-            handle.style.insetInlineStart = `${stop.position}%`;
-            handle.style.setProperty('--cb-stop-color', stop.color);
-            handle.disabled = disabled;
-            handle.toggleAttribute('data-selected', stop.id === this.selectedStopId());
-            handle.setAttribute('aria-label', this.stopName(index, stop.position));
-            handle.setAttribute('aria-valuemin', '0');
-            handle.setAttribute('aria-valuemax', '100');
-            handle.setAttribute('aria-valuenow', String(stop.position));
-            handle.setAttribute('aria-valuetext', `${Math.round(stop.position * 10) / 10}%`);
-            aria(handle, 'aria-description', scalarText(this.helpText) || null);
-            if (handle.parentElement !== this.track)
-                this.track.append(handle);
-        }
-    }
+    focus(options?: FocusOptions): void { (this.model().type === 'linear' ? this.angleInput : this.node('shape'))?.focus(options); }
+    protected syncView(): void { this.syncForm(this.cssValue()); this.toggleAttribute('data-invalid',this.validationError()); }
     private openStopColorEditor(id: string, event: Event): void {
         if (!this.colorPicker || !this.selectStop(id, event))
             return;

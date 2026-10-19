@@ -1,4 +1,5 @@
 import { Component, type ComponentProps } from '../../core/Component.js'
+import type { Template } from '../../core/runtime.js'
 import { bool, scalarText } from '../../core/value.js'
 
 export type TablePrimitive = string | number | boolean | null | undefined
@@ -9,7 +10,7 @@ export type TableSortDirection = 'asc' | 'desc'
 export type TableDensity = 'comfortable' | 'compact'
 export type TableAlign = 'start' | 'center' | 'end'
 export type TableCellVariant = 'success' | 'warning' | 'danger' | 'muted' | ''
-export type TableCellContent = Node | string | number | boolean | null | undefined
+export type TableCellContent = Template | Node | string | number | boolean | null | undefined
 
 export interface TableCellContext<TItem extends object = TableRecord> {
     readonly item: TItem

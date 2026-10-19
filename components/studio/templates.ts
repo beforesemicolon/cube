@@ -1,4 +1,4 @@
-import { html, repeat, type Template } from '../core/runtime.js'
+import { html, repeat, state, type Template } from '../core/runtime.js'
 import { bool, scalarText } from '../core/value.js'
 import { iconPaths } from '../icons/paths.js'
 import type { StudioItem } from './types.js'
@@ -24,7 +24,11 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
         : String(source.value) === String(item.value ?? item.id) || item.selected === true
     const setValue = (next: NonNullable<StudioViewSource['value']>, event: Event) => {
         event.stopPropagation()
-        source.setControlValue?.(next, event)
+        if (source.setControlValue?.(next, event) === false) {
+            const control = event.currentTarget
+            if (control instanceof HTMLInputElement && control.type === 'checkbox') control.checked = bool(source.checked) || source.value === true
+            else if (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement) control.value = kind === 'range' ? String(range().value) : value()
+        }
     }
     const activate = (event: Event, item?: StudioItem) => {
         event.stopPropagation()
@@ -44,11 +48,21 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
     const range = () => normalizeRange({ min: number('min'), max: number('max'), step: number('step'), value: Number(source.value) })
     const field = (item: StudioItem): Template => html`<div part="editor-field"><span part="editor-field-label">${item.label}</span><span part="editor-field-value">${item.description ?? String(item.value ?? '')}</span></div>`
 
+    const controlAttributes = {
+        'aria-invalid': () => invalid() ? true : null,
+        'aria-readonly': () => readOnly() ? true : null,
+        'aria-description': () => [description(),scalarText(source.error)].filter(Boolean).join(' ') || null,
+        'aria-valuetext': () => name === 'unit-input' ? (() => {
+            const unit = source as UnitInputBase
+            const label = unit.normalizedUnits.find(option => option.value === unit.selectedUnit)?.label ?? unit.selectedUnit
+            return label ? value() + ' ' + label : null
+        })() : null,
+    }
     const input = (): Template => kind === 'textarea'
-        ? html`<textarea ref="control" part="control textarea" value="${value}" placeholder="${() => scalarText(source.placeholder)}"
+        ? html`<textarea ref="control" part="control textarea" ${controlAttributes} value="${value}" placeholder="${() => scalarText(source.placeholder)}"
             disabled="${disabled}" readonly="${readOnly}" required="${required}" aria-label="${accessibleName}"
             oninput="${(event: Event) => { const target = event.currentTarget; if (target instanceof HTMLTextAreaElement) setValue(target.value, event) }}"></textarea>`
-        : html`<input ref="control" part="control input" type="${kind === 'number' ? 'number' : kind === 'range' ? 'range' : 'text'}"
+        : html`<input ref="control" part="control input" ${controlAttributes} type="${kind === 'number' ? 'number' : kind === 'range' ? 'range' : 'text'}"
             value="${() => kind === 'range' ? range().value : value()}" placeholder="${() => scalarText(source.placeholder)}"
             min="${() => kind === 'number' || kind === 'range' ? number('min') : null}"
             max="${() => kind === 'number' || kind === 'range' ? number('max') : null}"
@@ -86,7 +100,7 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
     }
 
     const choice = (): Template => html`<label part="choice">
-        <input ref="control" part="control choice-control" type="checkbox" class="${name === 'switch' ? 'visual-control' : ''}"
+        <input ref="control" part="control choice-control" ${controlAttributes} type="checkbox" class="${name === 'switch' ? 'visual-control' : ''}"
             role="${name === 'switch' ? 'switch' : null}" checked="${() => bool(source.checked) || source.value === true}"
             disabled="${disabled}" required="${required}" aria-label="${accessibleName}"
             onchange="${(event: Event) => { const target = event.currentTarget; if (target instanceof HTMLInputElement) setValue(target.checked, event) }}">
@@ -142,22 +156,22 @@ export function studioTemplates(source: StudioViewSource, styles: string): Templ
         </div>${kind === 'progress' && name !== 'spinner' ? html`<progress part="meter" max="${() => number('max')}" value="${() => number('progress')}"></progress>` : ''}
     </div>`
 
+    const slottedContent = state(false)
     const panel = (): Template => html`<section ref="control" part="${kind} panel" data-component="${name}" aria-label="${accessibleName}">
         <header part="panel-header"><span part="panel-title">${label}</span>
-            <cb-button part="action" variant="ghost" label="${() => scalarText(source.actionLabel)}" hidden="${() => !scalarText(source.actionLabel)}" disabled="${disabled}" onaction="${(event: Event) => activate(event)}"></cb-button></header>
-        <div part="content composed-content"><div ref="generated" part="generated-content"><div part="panel-content">
+            <cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" variant="ghost" label="${() => scalarText(source.actionLabel)}" hidden="${() => !scalarText(source.actionLabel)}" disabled="${disabled}" onaction="${(event: Event) => activate(event)}"></cb-button></header>
+        <div part="content composed-content"><div ref="generated" part="generated-content" hidden="${slottedContent[0]}"><div part="panel-content">
             ${name === 'card' ? html`<div part="preview-block card-media">${() => value() || label()}</div>` : ''}
             ${repeat(items, field, { key: item => item.id, empty: () => name === 'card' ? '' : html`<div part="preview-block">${() => value() || description()}</div>` })}
         </div></div><slot part="content" onslotchange="${(event: Event) => {
             const slot = event.currentTarget
-            const generated = root.refs.generated?.[0]
-            if (slot instanceof HTMLSlotElement && generated instanceof HTMLElement) generated.hidden = slot.assignedNodes().some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim()))
+            if (slot instanceof HTMLSlotElement) slottedContent[1](slot.assignedNodes().some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim())))
         }}"></slot></div>
     </section>`
 
     const file = (): Template => html`<label part="dropzone control">${glyph('upload', 'dropzone-icon icon')}
         <strong part="dropzone-title">${() => text('fileLabel')}</strong><span part="description">${() => text('fileRequirements')}</span>
-        <input ref="control" part="control file" type="file" hidden disabled="${() => disabled() || readOnly()}" required="${required}" multiple="${() => bool(source.multiple)}" aria-label="${accessibleName}"
+        <input ref="control" part="control file" ${controlAttributes} type="file" hidden disabled="${() => disabled() || readOnly()}" required="${required}" multiple="${() => bool(source.multiple)}" aria-label="${accessibleName}"
             onchange="${(event: Event) => { const target = event.currentTarget; event.stopPropagation(); if (target instanceof HTMLInputElement) source.setFiles?.([...(target.files ?? [])], event) }}">
     </label>`
 

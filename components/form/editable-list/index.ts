@@ -1,9 +1,5 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import type { TextInput } from '../text-input/index.js';
-import { actionLabel, createButton, createIconButton } from '../../action/create.js';
-import type { Button } from '../../action/button/index.js';
+import { type Template, html, repeat, when, state } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
 import { bool, scalarText } from '../../core/value.js';
 import { EditableListBase, type EditableListItem } from './EditableListBase.js';
 const css = editorCSS + `
@@ -15,123 +11,57 @@ const css = editorCSS + `
 [part~=empty]{padding:var(--spacing-md,12px);border:1px dashed var(--color-separator);border-radius:var(--radius-sm);color:var(--color-muted-foreground);text-align:center}
 `;
 export class EditableList extends EditableListBase {
-    private editor?: HTMLElement;
-    private list?: HTMLElement;
-    private addInput?: TextInput;
-    private addButton?: Button;
-    private editingId = '';
-    private addValue = '';
+    private readonly editing = state('');
+    private readonly draft = state('');
+    private readonly addition = state('');
     render(): Template {
-        this.editor = element('div', { attributes: { part: 'editor' } }) as HTMLDivElement;
-        this.editor.setAttribute('role', 'group');
-        this.list = element('ul', { attributes: { part: 'list' } }) as HTMLUListElement;
-        const addRow = element('div', { attributes: { part: 'add-row' } }) as HTMLDivElement;
-        this.addInput = document.createElement('cb-text-input') as TextInput;
-        this.addInput.setAttribute('part', 'add-input');
-        this.addInput.addEventListener('change', event => { event.stopPropagation(); this.addValue = scalarText(this.addInput?.value); });
-        this.addInput.addEventListener('keydown', event => {
-            if (event.key !== 'Enter')
-                return;
-            event.preventDefault();
-            this.addDraft(event);
-        });
-        this.addButton = createButton('add', event => this.addDraft(event));
-        addRow.append(this.addInput, this.addButton);
-        this.editor.append(this.list, addRow);
-        return html`<style part="styles">${css}</style>${this.editor}`;
+        return html`<style part="styles">${css}</style><div part="editor" role="group" aria-label=${() => this.accessibleName()}
+            aria-description=${() => [this.description,this.validationError()].filter(Boolean).join(' ')} aria-invalid=${() => Boolean(this.validationError()) || null}>
+            <ul part="list">${repeat(() => this.normalizedItems(), (item,index) => html`<li part="item" data-id=${item.id}>
+                ${when(() => this.editing[0]() === item.id, () => html`
+                    <cb-text-input part="edit-input" ref="edit" accessible-label=${() => this.inputLabel} value=${this.draft[0]}
+                        disabled=${() => this.unavailable || item.disabled}
+                        onchange=${(event: Event) => { event.stopPropagation(); if(event.target instanceof HTMLElement && 'value' in event.target) this.draft[1](scalarText(event.target.value)); }}
+                        onkeydown=${(event: KeyboardEvent) => {
+                            if(event.key === 'Enter') { event.preventDefault(); this.commitDraft(item,event); }
+                            else if(event.key === 'Escape') { event.preventDefault(); this.editing[1](''); }
+                        }}></cb-text-input>
+                    <div part="edit-actions"><cb-button part="save" exportparts="control:save-control,label:save-label,button-label:save-label,icon:save-icon,description:save-description" label=${() => this.saveLabel}
+                        onaction=${(event: Event) => { event.stopPropagation(); this.commitDraft(item,event); }}></cb-button>
+                        <cb-button part="cancel" exportparts="control:cancel-control,label:cancel-label,button-label:cancel-label,icon:cancel-icon,description:cancel-description" label=${() => this.cancelLabel} onaction=${(event: Event) => { event.stopPropagation(); this.editing[1](''); }}></cb-button></div>
+                `, () => html`<span part="item-copy"><span part="item-label">${item.label}</span>
+                    <span part="item-description" hidden=${!item.description}>${item.description}</span></span>
+                    <div part="item-actions">
+                        ${this.itemAction(item,'edit','text',() => this.editLabel,() => this.disabledItem(item),event => {
+                            this.draft[1](item.label); this.editing[1](item.id); event.stopPropagation();
+                            queueMicrotask(() => { const input=this.refs.edit?.[0]; if(input instanceof HTMLElement) input.focus(); });
+                        })}
+                        ${this.itemAction(item,'move-up','up',() => this.moveUpLabel,() => this.disabledItem(item) || !bool(this.allowReorder) || index === 0,event => this.moveItem(item.id,-1,event))}
+                        ${this.itemAction(item,'move-down','down',() => this.moveDownLabel,() => this.disabledItem(item) || !bool(this.allowReorder) || index === this.normalizedItems().length-1,event => this.moveItem(item.id,1,event))}
+                        ${this.itemAction(item,'remove','close',() => this.removeLabel,() => this.disabledItem(item) || this.normalizedItems().length <= this.minimumItems(),event => this.removeItem(item.id,event))}
+                    </div>`)}
+            </li>`,{key:item => item.id})}
+            ${when(() => !this.normalizedItems().length, () => html`<li part="empty" role="status">${() => this.emptyLabel}</li>`)}</ul>
+            <div part="add-row"><cb-text-input part="add-input" ref="add" accessible-label=${() => this.inputLabel} placeholder=${() => this.placeholder}
+                value=${this.addition[0]} disabled=${() => this.addDisabled()}
+                onchange=${(event: Event) => { event.stopPropagation(); if(event.target instanceof HTMLElement && 'value' in event.target) this.addition[1](scalarText(event.target.value)); }}
+                onkeydown=${(event: KeyboardEvent) => { if(event.key === 'Enter') { event.preventDefault(); this.addDraft(event); } }}></cb-text-input>
+                <cb-button part="add" exportparts="control:add-control,label:add-label,button-label:add-label,icon:add-icon,description:add-description" label=${() => this.addLabel} disabled=${() => this.addDisabled()}
+                    onaction=${(event: Event) => { event.stopPropagation(); this.addDraft(event); }}></cb-button>
+            </div></div>`;
     }
-    protected syncView(): void {
-        if (!this.editor || !this.list || !this.addInput || !this.addButton)
-            return;
-        const items = this.normalizedItems();
-        this.syncListForm();
-        const error = this.validationShown ? this.validationMessage : scalarText(this.errorText);
-        this.editor.setAttribute('aria-label', this.accessibleName());
-        this.editor.setAttribute('aria-description', [scalarText(this.description), error].filter(Boolean).join(' '));
-        aria(this.editor, 'aria-invalid', error ? true : null);
-        this.toggleAttribute('data-invalid', Boolean(error));
-        this.list.replaceChildren(...items.map((item, index) => this.itemNode(item, index, items.length)));
-        if (!items.length) {
-            const empty = element('li', { attributes: { part: 'empty' }, textContent: scalarText(this.emptyLabel) }) as HTMLLIElement;
-            empty.setAttribute('role', 'status');
-            this.list.append(empty);
-        }
-        Object.assign(this.addInput, {
-            label: '', accessibleLabel: scalarText(this.inputLabel), placeholder: scalarText(this.placeholder),
-            disabled: this.unavailable || bool(this.readOnly) || items.length >= this.maximumItems(),
-        });
-        actionLabel(this.addButton, scalarText(this.addLabel));
-        this.addButton.disabled = this.unavailable || bool(this.readOnly) || items.length >= this.maximumItems();
+    private validationError(): string { return this.validationShown ? this.validationMessage : scalarText(this.errorText); }
+    private addDisabled(): boolean { return this.unavailable || bool(this.readOnly) || this.normalizedItems().length >= this.maximumItems(); }
+    private disabledItem(item: EditableListItem): boolean { return this.unavailable || bool(this.readOnly) || item.disabled === true; }
+    private itemAction(item: EditableListItem, part: string, icon: string, label: () => string, disabled: () => boolean, handler: (event: Event) => void): Template {
+        return html`<cb-button part=${part} icon-only icon=${icon} variant="ghost" size="xs" disabled=${disabled}
+            accessible-label=${() => scalarText(label()).replaceAll('{item}',item.label)}
+            onaction=${(event: Event) => { event.stopPropagation(); handler(event); }}></cb-button>`;
     }
-    focus(options?: FocusOptions): void { this.addInput?.focus(options); }
-    private itemNode(item: EditableListItem, index: number, count: number): HTMLElement {
-        const row = element('li', { attributes: { part: 'item' } }) as HTMLLIElement;
-        row.dataset.id = item.id;
-        if (this.editingId === item.id) {
-            const input = document.createElement('cb-text-input') as TextInput;
-            input.setAttribute('part', 'edit-input');
-            Object.assign(input, { label: '', accessibleLabel: scalarText(this.inputLabel), value: item.label, disabled: this.unavailable || item.disabled });
-            let draft = item.label;
-            input.addEventListener('change', event => { event.stopPropagation(); draft = scalarText(input.value); });
-            const actions = element('div', { attributes: { part: 'edit-actions' } }) as HTMLDivElement;
-            const commit = (event?: Event): void => {
-                if (this.updateItem(item.id, draft, event))
-                    this.editingId = '';
-                this.syncView();
-            };
-            const dismiss = (): void => { this.editingId = ''; this.syncView(); };
-            const save = createButton('save', event => commit(event));
-            const cancel = createButton('cancel', dismiss);
-            input.addEventListener('keydown', event => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    commit(event);
-                }
-                else if (event.key === 'Escape') {
-                    event.preventDefault();
-                    dismiss();
-                }
-            });
-            actionLabel(save, scalarText(this.saveLabel));
-            actionLabel(cancel, scalarText(this.cancelLabel));
-            actions.append(save, cancel);
-            row.append(input, actions);
-            queueMicrotask(() => input.focus());
-            return row;
-        }
-        const copy = element('span', { attributes: { part: 'item-copy' } }) as HTMLSpanElement;
-        copy.append(element('span', { attributes: { part: 'item-label' }, textContent: item.label }) as HTMLSpanElement);
-        if (item.description)
-            copy.append(element('span', { attributes: { part: 'item-description' }, textContent: item.description }) as HTMLSpanElement);
-        const actions = element('div', { attributes: { part: 'item-actions' } }) as HTMLDivElement;
-        const edit = this.iconAction('edit', 'text', this.itemActionLabel(this.editLabel, item), event => { this.editingId = item.id; this.syncView(); event.stopPropagation(); });
-        const up = this.iconAction('move-up', 'up', this.itemActionLabel(this.moveUpLabel, item), event => this.moveItem(item.id, -1, event));
-        const down = this.iconAction('move-down', 'down', this.itemActionLabel(this.moveDownLabel, item), event => this.moveItem(item.id, 1, event));
-        const remove = this.iconAction('remove', 'close', this.itemActionLabel(this.removeLabel, item), event => this.removeItem(item.id, event));
-        const disabled = this.unavailable || bool(this.readOnly) || item.disabled === true;
-        edit.disabled = disabled;
-        up.disabled = disabled || !bool(this.allowReorder) || index === 0;
-        down.disabled = disabled || !bool(this.allowReorder) || index === count - 1;
-        remove.disabled = disabled || count <= this.minimumItems();
-        actions.append(edit, up, down, remove);
-        row.append(copy, actions);
-        return row;
-    }
-    private iconAction(part: string, icon: string, label: string, handler: (event: CustomEvent) => void): Button {
-        const button = createIconButton(part, icon, handler);
-        actionLabel(button, label);
-        button.size = 'xs';
-        return button;
-    }
-    private itemActionLabel(template: string, item: EditableListItem): string { return scalarText(template).replaceAll('{item}', item.label); }
-    private addDraft(event: Event): void {
-        if (!this.addInput)
-            return;
-        if (this.addItem(this.addValue, event)) {
-            this.addValue = '';
-            this.addInput.value = '';
-        }
-    }
+    private commitDraft(item: EditableListItem,event: Event): void { if(this.updateItem(item.id,this.draft[0](),event)) this.editing[1](''); }
+    private addDraft(event: Event): void { if(this.addItem(this.addition[0](),event)) this.addition[1](''); }
+    protected syncView(): void { this.syncListForm(); this.toggleAttribute('data-invalid',Boolean(this.validationError())); }
+    focus(options?: FocusOptions): void { const node=this.refs.add?.[0]; if(node instanceof HTMLElement) node.focus(options); }
 }
 export { EditableListBase };
 export type { EditableListProps, EditableListItem, EditableListChangeReason } from './EditableListBase.js';

@@ -1,9 +1,8 @@
-import { type Template, element, html } from '../../core/runtime.js'
+import { html, repeat, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
 import { uid } from '../../core/id.js'
-import { bool, text } from '../../core/value.js';
-import { RadioGroupBase } from './RadioGroupBase.js';
+import { bool, text } from '../../core/value.js'
+import { RadioGroupBase } from './RadioGroupBase.js'
 const css = editorCSS + `
 :host{display:inline-block;inline-size:var(--component-radio-group-width,auto)}
 [part~=field]{display:grid;gap:var(--spacing-xs,4px)}
@@ -20,76 +19,35 @@ const css = editorCSS + `
 [part~=error]{font-size:var(--component-caption-font-size,11px);color:var(--color-danger);margin:0}
 `;
 export class RadioGroup extends RadioGroupBase {
-    private group?: HTMLElement;
-    private titleNode?: HTMLElement;
-    private descriptionNode?: HTMLElement;
-    private errorNode?: HTMLElement;
-    private inputs: HTMLInputElement[] = [];
-    private readonly internalName = uid('cb-radio-group');
+    private readonly internalName = uid('cb-radio-group')
+    private validationError(): string { return (this.validationShown || text(this.errorText)) ? this.validationMessage || text(this.errorText) : '' }
     render(): Template {
-        const field = element('div', { attributes: { part: 'field' } }) as HTMLDivElement;
-        this.titleNode = element('span', { attributes: { part: 'label' } }) as HTMLSpanElement;
-        this.titleNode.id = `${this.internalName}-label`;
-        this.group = element('div', { attributes: { part: 'group options' } }) as HTMLDivElement;
-        this.group.setAttribute('role', 'radiogroup');
-        this.descriptionNode = element('p', { attributes: { part: 'description' } }) as HTMLParagraphElement;
-        this.descriptionNode.id = `${this.internalName}-description`;
-        this.errorNode = element('p', { attributes: { part: 'error' } }) as HTMLParagraphElement;
-        this.errorNode.id = `${this.internalName}-error`;
-        this.errorNode.setAttribute('role', 'alert');
-        field.append(this.titleNode, this.group, this.descriptionNode, this.errorNode);
-        return html`<style part="styles">${css}</style>${field}`;
+        return html`<style part="styles">${css}</style><div part="field">
+            <span part="label" id="${this.internalName}-label" hidden="${() => !text(this.label)}">${() => text(this.label)}</span>
+            <div part="group options" role="radiogroup" data-stacked="${() => bool(this.stacked) ? '' : null}"
+                aria-labelledby="${() => text(this.label) ? this.internalName + '-label' : null}"
+                aria-label="${() => text(this.label) ? null : this.accessibleName()}"
+                aria-required="${() => bool(this.required) ? 'true' : null}" aria-readonly="${() => bool(this.readOnly) ? 'true' : null}"
+                aria-invalid="${() => this.validationError() ? 'true' : null}"
+                aria-describedby="${() => [text(this.description) ? this.internalName + '-description' : '', this.validationError() ? this.internalName + '-error' : ''].filter(Boolean).join(' ') || null}">
+                ${repeat(() => this.normalizedOptions, option => html`<label part="option" data-disabled="${() => option.disabled || this.unavailable || bool(this.readOnly) ? '' : null}">
+                    <input ref="input" part="control radio" type="radio" name="${this.internalName}" value="${option.value}"
+                        checked="${() => option.value === this.selection}" disabled="${() => option.disabled || this.unavailable || bool(this.readOnly)}"
+                        required="${() => bool(this.required)}"
+                        onchange="${(event: Event) => { const input = event.currentTarget; if (input instanceof HTMLInputElement && input.checked) this.choose(input.value, event) }}">
+                    <span part="option-label">${option.label}</span>
+                </label>`, { key: option => option.value })}
+            </div>
+            <p part="description" id="${this.internalName}-description" hidden="${() => !text(this.description)}">${() => text(this.description)}</p>
+            <p part="error" role="alert" id="${this.internalName}-error" hidden="${() => !this.validationError()}">${() => this.validationError()}</p>
+        </div>`
     }
-    protected fieldElement(): HTMLInputElement | undefined { return this.inputs[0]; }
-    protected syncView(): void {
-        if (!this.group || !this.titleNode || !this.descriptionNode || !this.errorNode)
-            return;
-        const selected = this.selection;
-        this.inputs = [];
-        this.group.replaceChildren();
-        this.group.toggleAttribute('data-stacked', bool(this.stacked));
-        for (const option of this.normalizedOptions) {
-            const wrapper = element('label', { attributes: { part: 'option' } }) as HTMLLabelElement;
-            const input = element('input', { attributes: { part: 'control radio' } }) as HTMLInputElement;
-            const label = element('span', { attributes: { part: 'option-label' }, textContent: option.label }) as HTMLSpanElement;
-            input.type = 'radio';
-            input.name = this.internalName;
-            input.value = option.value;
-            input.checked = option.value === selected;
-            input.disabled = option.disabled || this.unavailable || bool(this.readOnly);
-            input.required = bool(this.required);
-            wrapper.toggleAttribute('data-disabled', input.disabled);
-            input.addEventListener('change', event => {
-                if (!input.checked)
-                    return;
-                this.choose(input.value, event);
-                this.inputs.find(candidate => candidate.value === input.value)?.focus();
-            });
-            wrapper.append(input, label);
-            this.inputs.push(input);
-            this.group.append(wrapper);
-        }
-        const visibleLabel = text(this.label);
-        const accessibleLabel = this.accessibleName();
-        this.titleNode.textContent = visibleLabel;
-        this.titleNode.hidden = !visibleLabel;
-        aria(this.group, 'aria-labelledby', visibleLabel ? this.titleNode.id : null);
-        aria(this.group, 'aria-label', visibleLabel ? null : accessibleLabel);
-        aria(this.group, 'aria-required', bool(this.required) ? true : null);
-        aria(this.group, 'aria-readonly', bool(this.readOnly) ? true : null);
-        this.descriptionNode.textContent = text(this.description);
-        this.descriptionNode.hidden = !text(this.description);
-        this.syncForm(selected);
-        const error = Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText)));
-        this.errorNode.textContent = error ? this.validationMessage : '';
-        this.errorNode.hidden = !error;
-        const describedBy = [text(this.description) ? this.descriptionNode.id : '', error ? this.errorNode.id : ''].filter(Boolean).join(' ') || null;
-        aria(this.group, 'aria-describedby', describedBy);
-        aria(this.group, 'aria-invalid', error ? true : null);
+    protected fieldElement(): HTMLInputElement | undefined {
+        return this.refs.input?.find((node): node is HTMLInputElement => node instanceof HTMLInputElement)
     }
     focus(options?: FocusOptions): void {
-        const target = this.inputs.find(input => input.checked && !input.disabled) ?? this.inputs.find(input => !input.disabled);
-        target?.focus(options);
+        const inputs = this.refs.input?.filter((node): node is HTMLInputElement => node instanceof HTMLInputElement) ?? []
+        ;(inputs.find(input => input.checked && !input.disabled) ?? inputs.find(input => !input.disabled))?.focus(options)
     }
 }
 export { RadioGroupBase };

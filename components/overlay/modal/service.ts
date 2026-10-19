@@ -1,6 +1,5 @@
 import type { ButtonVariant } from '../../action/button/ButtonBase.js'
-import { actionLabel, createButton } from '../../action/create.js'
-import type { Link } from '../../navigation/link/index.js'
+import { html, repeat, state, type Template } from '../../core/runtime.js'
 import type { Modal, ModalCloseReason, ModalLayer, ModalSize } from './index.js'
 
 export interface ModalContent { node: Node; dispose?: () => void }
@@ -61,6 +60,7 @@ interface ModalRecord {
     request: ModalRequest
     result: Promise<ModalResult>
     resolve(result: ModalResult): void
+    footerTemplate?: Template
     disposeContent?: () => void
     actionResult?: Pick<ModalResult, 'actionId' | 'value'>
     handle: ModalHandle
@@ -137,6 +137,8 @@ function applyRequest(record: ModalRecord): void {
     modal.modalSize = request.modalSize ?? request.size ?? 'md'
     modal.layer = request.layer ?? 'top'
     modal.returnFocus = request.returnFocus ?? true
+    record.footerTemplate?.unmount()
+    record.footerTemplate = undefined
     modal.replaceChildren()
     record.disposeContent?.()
     record.disposeContent = undefined
@@ -146,9 +148,6 @@ function applyRequest(record: ModalRecord): void {
     if (content.node) modal.append(content.node)
     record.disposeContent = content.dispose
 
-    const footer = document.createElement('div')
-    footer.slot = 'footer'
-    if (request.footer) footer.append(request.footer)
     const actionList = actionsFor(request)
     const closeFromAction = (action: ModalAction): boolean => {
         const previous = record.actionResult
@@ -159,38 +158,34 @@ function applyRequest(record: ModalRecord): void {
         }
         return true
     }
-    for (const [index, action] of actionList.entries()) {
-        const actionId = action.id?.trim() || `action-${index + 1}`
-        if (action.href) {
-            const link = document.createElement('cb-link') as Link
-            link.setAttribute('part', 'action')
-            Object.assign(link, { label: action.label, accessibleLabel: action.label, href: action.href, target: action.target ?? '', icon: action.icon ?? '', variant: action.variant ?? 'ghost', disabled: action.disabled ?? false })
-            link.addEventListener('navigate', () => { if (action.dismiss ?? false) closeFromAction({ ...action, id: actionId }) })
-            footer.append(link)
-            continue
-        }
-        const button = createButton('action', async event => {
-            if (button.loading || button.disabled) return
-            const detail = { id: record.id, actionId, originalEvent: event }
-            if (!modal.dispatchEvent(new CustomEvent('beforemodalaction', { detail, bubbles: true, composed: true, cancelable: true }))) return
-            button.loading = true
-            try {
-                await action.onAction?.({ id: record.id, actionId, modal, close: reason => modal.close(reason) })
-                modal.emit('modalaction', detail)
-                if (action.dismiss ?? true) closeFromAction({ ...action, id: actionId })
-            } catch (cause) {
-                report(record, cause instanceof Error ? cause : new Error(String(cause)))
-            } finally { button.loading = false }
-        })
-        actionLabel(button, action.label)
-        button.icon = action.icon ?? ''
-        button.variant = action.variant ?? (index === actionList.length - 1 ? 'primary' : 'secondary')
-        button.value = action.value ?? ''
-        button.disabled = action.disabled ?? false
-        button.loading = action.loading ?? false
-        footer.append(button)
+    if (request.showFooter !== false && (request.footer || actionList.length)) {
+        record.footerTemplate = html`<div slot="footer">${request.footer ?? ''}
+            ${repeat(actionList, (action,index) => {
+                const actionId=action.id?.trim() || `action-${index+1}`
+                const loading=state(action.loading ?? false)
+                const run=async(event:Event):Promise<void> => {
+                    event.stopPropagation()
+                    if(loading[0]() || action.disabled)return
+                    const detail={id:record.id,actionId,originalEvent:event}
+                    if(!modal.dispatchEvent(new CustomEvent('beforemodalaction',{detail,bubbles:true,composed:true,cancelable:true})))return
+                    loading[1](true)
+                    try {
+                        await action.onAction?.({id:record.id,actionId,modal,close:reason=>modal.close(reason)})
+                        modal.emit('modalaction',detail)
+                        if(action.dismiss ?? true)closeFromAction({...action,id:actionId})
+                    } catch(cause) { report(record,cause instanceof Error?cause:new Error(String(cause))) }
+                    finally { loading[1](false) }
+                }
+                return action.href ? html`<cb-link part="action" label=${action.label} accessible-label=${action.label}
+                    href=${action.href} target=${action.target ?? ''} icon=${action.icon ?? ''} variant=${action.variant ?? 'ghost'} disabled=${action.disabled ?? false}
+                    onnavigate=${(event:Event)=>{event.stopPropagation();if(action.dismiss ?? false)closeFromAction({...action,id:actionId});}}></cb-link>`
+                    : html`<cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" label=${action.label} accessible-label=${action.label} icon=${action.icon ?? ''}
+                        variant=${action.variant ?? (index === actionList.length-1?'primary':'secondary')} value=${action.value ?? ''}
+                        disabled=${action.disabled ?? false} loading=${loading[0]} onaction=${run}></cb-button>`
+            })}
+        </div>`
+        record.footerTemplate.render(modal)
     }
-    if (request.showFooter !== false && footer.childNodes.length > 0) modal.append(footer)
 }
 
 export function showModal(request: ModalRequest = {}): ModalHandle {
@@ -231,6 +226,7 @@ export function showModal(request: ModalRequest = {}): ModalHandle {
         if (record.documentLayerActive) setDocumentInert(false)
         record.documentLayerActive = false
         record.disposeContent?.()
+        record.footerTemplate?.unmount()
         records.delete(id)
         modal.remove()
         record.resolve({ id, reason: detail.reason, ...record.actionResult })

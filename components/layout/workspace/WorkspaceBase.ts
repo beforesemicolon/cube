@@ -1,3 +1,4 @@
+import { state } from '../../core/runtime.js'
 import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
 
@@ -75,7 +76,9 @@ export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> e
     openBottomLabel = ''
     closeBottomLabel = ''
     closeMobileLabel = ''
-    protected mobile = false
+    private readonly mobileState = state(false)
+    protected get mobile(): boolean { return this.mobileState[0]() }
+    protected set mobile(value: boolean) { this.mobileState[1](value) }
     private observer?: ResizeObserver
     private restored = false
 

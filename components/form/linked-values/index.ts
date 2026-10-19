@@ -1,10 +1,7 @@
-import { type Template, element, html } from '../../core/runtime.js'
+import { html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
-import type { NumberInput } from '../number-input/index.js';
-import type { Button } from '../../action/button/index.js';
-import { actionLabel } from '../../action/create.js';
-import { bool, finite, scalarText } from '../../core/value.js';
-import { LinkedValuesBase } from './LinkedValuesBase.js';
+import { bool, finite } from '../../core/value.js'
+import { LinkedValuesBase } from './LinkedValuesBase.js'
 const css = editorCSS + `
 :host{display:block;inline-size:var(--component-linked-values-width,420px);max-inline-size:100%;min-inline-size:min(100%,var(--component-linked-values-min-width,320px))}[part~=group]{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:end;gap:var(--spacing-xs,4px);inline-size:100%;min-inline-size:0}
 [part~=value-field]{display:grid;gap:var(--spacing-xs,4px);min-inline-size:0}[part~=value-label]{color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px);font-weight:600}
@@ -12,54 +9,23 @@ const css = editorCSS + `
 @container(max-width:300px){[part~=group]{grid-template-columns:minmax(0,1fr) auto}[part~=second-field]{grid-column:1}[part~=link]{grid-column:2;grid-row:1/3;align-self:center}}
 `;
 export class LinkedValues extends LinkedValuesBase {
-    private group?: HTMLElement;
-    private firstLabelNode?: HTMLElement;
-    private secondLabelNode?: HTMLElement;
-    private first?: NumberInput;
-    private second?: NumberInput;
-    private link?: Button;
     render(): Template {
-        this.group = element('div', { attributes: { part: 'group' } }) as HTMLDivElement;
-        this.group.setAttribute('role', 'group');
-        this.first = document.createElement('cb-number-input') as NumberInput;
-        this.first.setAttribute('part', 'first');
-        this.second = document.createElement('cb-number-input') as NumberInput;
-        this.second.setAttribute('part', 'second');
-        const firstField = element('label', { attributes: { part: 'value-field first-field' } }) as HTMLLabelElement;
-        const secondField = element('label', { attributes: { part: 'value-field second-field' } }) as HTMLLabelElement;
-        this.firstLabelNode = element('span', { attributes: { part: 'value-label first-label' } }) as HTMLSpanElement;
-        this.secondLabelNode = element('span', { attributes: { part: 'value-label second-label' } }) as HTMLSpanElement;
-        this.firstLabelNode.addEventListener('click', () => this.first?.focus());
-        this.secondLabelNode.addEventListener('click', () => this.second?.focus());
-        firstField.append(this.firstLabelNode, this.first);
-        secondField.append(this.secondLabelNode, this.second);
-        this.link = document.createElement('cb-button') as Button;
-        this.link.setAttribute('part', 'link');
-        this.first.addEventListener('change', event => this.setFirst(finite((event as CustomEvent<{
-            value: number;
-        }>).detail.value), event));
-        this.second.addEventListener('change', event => this.setSecond(finite((event as CustomEvent<{
-            value: number;
-        }>).detail.value), event));
-        this.link.addEventListener('change', event => this.setLinked(bool((event as CustomEvent<{
-            pressed: boolean;
-        }>).detail.pressed), event));
-        this.group.append(firstField, this.link, secondField);
-        return html`<style part="styles">${css}</style>${this.group}`;
+        return html`<style part="styles">${css}</style><div part="group" role="group" aria-label="${() => this.accessibleName()}">
+            <label part="value-field first-field"><span part="value-label first-label" onclick="${() => this.focus()}">${() => this.firstLabel}</span>
+                <cb-number-input ref="first" part="first" label="${() => this.firstLabel}" accessible-label="${() => this.firstLabel}"
+                    value="${() => finite(this.firstValue)}" min="${() => this.min}" max="${() => this.max}" step="${() => this.step}"
+                    disabled="${() => this.unavailable}" onchange="${(event: CustomEvent<{ value: number }>) => { event.stopPropagation(); this.setFirst(finite(event.detail.value), event) }}"></cb-number-input></label>
+            <cb-button part="link" exportparts="control:link-control,label:link-label,button-label:link-label,icon:link-icon,description:link-description" accessible-label="${() => this.toggleLabel()}" title="${() => this.toggleLabel()}" pressed="${() => bool(this.linked)}"
+                icon="${() => bool(this.linked) ? 'link' : 'unlink'}" icon-only="true" variant="ghost" disabled="${() => this.unavailable}"
+                onchange="${(event: CustomEvent<{ pressed: boolean }>) => { event.stopPropagation(); this.setLinked(bool(event.detail.pressed), event) }}"></cb-button>
+            <label part="value-field second-field"><span part="value-label second-label" onclick="${() => { const second = this.refs.second?.[0]; if (second instanceof HTMLElement) second.focus() }}">${() => this.secondLabel}</span>
+                <cb-number-input ref="second" part="second" label="${() => this.secondLabel}" accessible-label="${() => this.secondLabel}"
+                    value="${() => finite(this.secondValue)}" min="${() => this.min}" max="${() => this.max}" step="${() => this.step}"
+                    disabled="${() => this.unavailable}" onchange="${(event: CustomEvent<{ value: number }>) => { event.stopPropagation(); this.setSecond(finite(event.detail.value), event) }}"></cb-number-input></label>
+        </div>`
     }
-    protected syncView(): void {
-        if (!this.group || !this.firstLabelNode || !this.secondLabelNode || !this.first || !this.second || !this.link)
-            return;
-        this.group.setAttribute('aria-label', this.accessibleName());
-        this.firstLabelNode.textContent = scalarText(this.firstLabel);
-        this.secondLabelNode.textContent = scalarText(this.secondLabel);
-        Object.assign(this.first, { label: scalarText(this.firstLabel), accessibleLabel: scalarText(this.firstLabel), value: finite(this.firstValue), min: this.min, max: this.max, step: this.step, disabled: this.unavailable });
-        Object.assign(this.second, { label: scalarText(this.secondLabel), accessibleLabel: scalarText(this.secondLabel), value: finite(this.secondValue), min: this.min, max: this.max, step: this.step, disabled: this.unavailable });
-        Object.assign(this.link, { label: '', accessibleLabel: this.toggleLabel(), pressed: bool(this.linked), icon: bool(this.linked) ? 'link' : 'unlink', iconOnly: true, variant: 'ghost', disabled: this.unavailable });
-        actionLabel(this.link, this.toggleLabel());
-        this.syncFormValues();
-    }
-    focus(options?: FocusOptions): void { this.first?.focus(options); }
+    protected syncView(): void { this.syncFormValues() }
+    focus(options?: FocusOptions): void { const first = this.refs.first?.[0]; if (first instanceof HTMLElement) first.focus(options) }
 }
 export { LinkedValuesBase };
 export type { LinkedValuesProps } from './LinkedValuesBase.js';

@@ -1,16 +1,9 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import { safeHref } from '../../core/url.js'
-import type { TextInput } from '../../form/text-input/index.js';
-import type { SegmentedControl } from '../../navigation/segmented-control/index.js';
-import type { Breadcrumb } from '../../navigation/breadcrumb/index.js';
-import type { Table } from '../table/index.js';
+import { type Template, html, repeat, when } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
+import { safeHref } from '../../core/url.js';
 import type { TableColumn, TableRecord } from '../table/TableBase.js';
-import { createIcon } from '../../icons/paths.js';
 import { bool, scalarText } from '../../core/value.js';
 import { FileBrowserBase, type FileBrowserEntry, type FileBrowserSort, type FileBrowserSortDirection, type FileBrowserView } from './FileBrowserBase.js';
-import { createBareButton } from '../../action/create.js';
 interface FileRecord extends TableRecord {
     id: string;
     name: string;
@@ -36,162 +29,55 @@ const css = editorCSS + `
 @container(max-width:520px){[part~=toolbar]{align-items:stretch;flex-direction:column}[part~=toolbar-main]{inline-size:100%}[part~=search]{inline-size:100%}}
 `;
 export class FileBrowser extends FileBrowserBase {
-    private surface?: HTMLElement;
-    private search?: TextInput;
-    private views?: SegmentedControl;
-    private path?: Breadcrumb;
-    private content?: HTMLElement;
     render(): Template {
-        this.surface = element('section', { attributes: { part: 'browser' } }) as HTMLElement;
-        const toolbar = element('div', { attributes: { part: 'toolbar' } }) as HTMLDivElement;
-        const toolbarMain = element('div', { attributes: { part: 'toolbar-main' } }) as HTMLDivElement;
-        this.search = document.createElement('cb-text-input') as TextInput;
-        this.search.setAttribute('part', 'search');
-        this.search.addEventListener('change', event => { event.stopPropagation(); this.setQuery(scalarText((event as CustomEvent<{
-            value: string;
-        }>).detail.value), event); });
-        this.views = document.createElement('cb-segmented-control') as SegmentedControl;
-        this.views.setAttribute('part', 'view-toggle');
-        this.views.addEventListener('change', event => { event.stopPropagation(); this.setView((event as CustomEvent<{
-            value: FileBrowserView;
-        }>).detail.value, event); });
-        toolbarMain.append(this.search, element("slot", { attributes: { name: 'toolbar', part: 'toolbar-content' }, textContent: '' }) as HTMLSlotElement);
-        toolbar.append(toolbarMain, this.views);
-        this.path = document.createElement('cb-breadcrumb') as Breadcrumb;
-        this.path.setAttribute('part', 'path');
-        this.path.addEventListener('navigate', event => {
-            event.stopPropagation();
-            const encoded = scalarText((event as CustomEvent<{
-                id: string;
-            }>).detail.id);
-            this.navigate(encoded.startsWith('folder:') ? encoded.slice('folder:'.length) : '', event);
-        });
-        this.content = element('div', { attributes: { part: 'content' } }) as HTMLDivElement;
-        this.surface.append(toolbar, this.path, this.content);
-        return html`<style part="styles">${css}</style>${this.surface}`;
+        return html`<style part="styles">${css}</style><section part="browser" aria-label=${() => this.accessibleName()}>
+            <div part="toolbar"><div part="toolbar-main">
+                <cb-text-input part="search" hidden=${()=>!bool(this.searchable)} accessible-label=${()=>this.searchLabel} placeholder=${()=>this.searchPlaceholder}
+                    value=${()=>scalarText(this.query)} disabled=${()=>this.unavailable}
+                    onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();this.setQuery(event.detail.value,event);}}></cb-text-input>
+                <slot name="toolbar" part="toolbar-content"></slot></div>
+                <cb-segmented-control part="view-toggle" accessible-label=${()=>this.accessibleName()} value=${()=>this.view} disabled=${()=>this.unavailable}
+                    items=${()=>[{id:'grid',label:this.gridViewLabel,icon:'grid'},{id:'table',label:this.tableViewLabel,icon:'layers'}]}
+                    onchange=${(event:CustomEvent<{value:FileBrowserView}>)=>{event.stopPropagation();this.setView(event.detail.value,event);}}></cb-segmented-control>
+            </div><cb-breadcrumb part="path" accessible-label=${()=>this.breadcrumbLabel} expand-label=${()=>this.expandPathLabel}
+                items=${()=>this.pathItems().map(item=>({id:item.id?`folder:${item.id}`:'root:',label:item.label}))}
+                onnavigate=${(event:CustomEvent<{id:string}>)=>{event.stopPropagation();const id=event.detail.id;this.navigate(id.startsWith('folder:')?id.slice(7):'',event);}}></cb-breadcrumb>
+            <div part="content">${when(()=>bool(this.loading),()=>html`<div part="state"><cb-skeleton variant=${()=>this.view==='table'?'table':'card'} rows="4" columns="3" accessible-label=${()=>this.loadingLabel}></cb-skeleton></div>`,
+                ()=>when(()=>!this.visibleEntries().length,()=>html`<div part="state" role="status">${()=>scalarText(this.query).trim()?this.noMatchLabel:this.emptyLabel}</div>`,
+                ()=>when(()=>this.view==='table',()=>this.tableTemplate(),()=>this.gridTemplate())))}</div>
+        </section>`;
     }
-    protected syncView(): void {
-        if (!this.surface || !this.search || !this.views || !this.path || !this.content)
-            return;
-        aria(this.surface, 'aria-label', this.accessibleName());
-        this.search.hidden = !bool(this.searchable);
-        Object.assign(this.search, {
-            label: '', accessibleLabel: scalarText(this.searchLabel), placeholder: scalarText(this.searchPlaceholder),
-            value: scalarText(this.query), disabled: this.unavailable,
-        });
-        Object.assign(this.views, {
-            accessibleLabel: this.accessibleName(), value: this.view, disabled: this.unavailable,
-            items: [{ id: 'grid', label: scalarText(this.gridViewLabel), icon: 'grid' }, { id: 'table', label: scalarText(this.tableViewLabel), icon: 'layers' }],
-        });
-        Object.assign(this.path, {
-            accessibleLabel: scalarText(this.breadcrumbLabel), expandLabel: scalarText(this.expandPathLabel),
-            items: this.pathItems().map(item => ({ id: item.id ? `folder:${item.id}` : 'root:', label: item.label })),
-        });
-        this.content.replaceChildren();
-        if (bool(this.loading)) {
-            this.content.append(this.loadingState());
-            return;
-        }
-        const entries = this.visibleEntries();
-        if (!entries.length) {
-            const state = element('div', { attributes: { part: 'state' }, textContent: scalarText(this.query).trim() ? scalarText(this.noMatchLabel) : scalarText(this.emptyLabel) }) as HTMLDivElement;
-            state.setAttribute('role', 'status');
-            this.content.append(state);
-            return;
-        }
-        this.content.append(this.view === 'table' ? this.tableView(entries) : this.gridView(entries));
+    private gridTemplate(): Template {
+        return html`<div part="grid" role=${()=>this.selectionMode==='none'?'list':'listbox'} aria-multiselectable=${()=>this.selectionMode==='multiple'?true:null}>
+            ${repeat(()=>this.visibleEntries(),entry=>html`<cb-button part="entry" exportparts="control:entry-control,label:entry-label,button-label:entry-label,icon:entry-icon,description:entry-description" data-bare data-semantic-host data-id=${entry.id}
+                disabled=${()=>this.unavailable||entry.disabled===true} role=${()=>this.selectionMode==='none'?'listitem':'option'}
+                aria-selected=${()=>this.selectionMode==='none'?null:this.selectedIds.includes(entry.id)}
+                accessible-label=${()=>this.entryActionLabel(entry,this.selectedIds.includes(entry.id))}
+                onaction=${(event:Event)=>{event.stopPropagation();entry.type==='folder'?this.activate(entry,event):this.select(entry,event);}}
+                ondblclick=${(event:MouseEvent)=>this.activate(entry,event)}>
+                <span part="entry-preview">${when(()=>Boolean(safeHref(entry.thumbnail,this.baseURI)),()=>html`<img src=${()=>safeHref(entry.thumbnail,this.baseURI)} alt="">`,
+                    ()=>html`<cb-icon name=${entry.type==='folder'?'folder':'file'} part="entry-icon icon" decorative></cb-icon>`)}</span>
+                <span part="entry-copy"><span part="entry-name">${entry.name}</span><span part="entry-meta">${entry.description||entry.mime||entry.type}</span></span>
+            </cb-button>`,{key:entry=>entry.id})}</div>`;
     }
-    private loadingState(): HTMLElement {
-        const state = element('div', { attributes: { part: 'state' } }) as HTMLDivElement;
-        const skeleton = document.createElement('cb-skeleton') as HTMLElement & {
-            variant: string;
-            rows: number;
-            columns: number;
-            accessibleLabel: string;
-        };
-        Object.assign(skeleton, { variant: this.view === 'table' ? 'table' : 'card', rows: 4, columns: 3, accessibleLabel: scalarText(this.loadingLabel) });
-        state.append(skeleton);
-        return state;
+    private tableTemplate(): Template {
+        return html`<cb-table part="table" label=${()=>this.accessibleName()} accessible-label=${()=>this.accessibleName()}
+            items=${()=>this.visibleEntries().map(entry=>({id:entry.id,name:entry.name,type:entry.type,size:entry.size??'',modified:entry.modified??''}))}
+            columns=${()=>this.tableColumns()} selection-mode=${()=>this.selectionMode} selected-keys=${()=>[...this.selectedIds]} item-key="id" row-activation
+            sort-by=${()=>this.sortBy} sort-direction=${()=>this.sortDirection} resizable sticky-header
+            select-row-label=${()=>scalarText(this.selectEntryLabel).replaceAll('{entry}','{row}')} deselect-row-label=${()=>scalarText(this.deselectEntryLabel).replaceAll('{entry}','{row}')}
+            sort-ascending-label=${()=>this.sortAscendingLabel} sort-descending-label=${()=>this.sortDescendingLabel}
+            onselectionchange=${(event:CustomEvent<{selectedKeys:readonly string[]}>)=>{event.stopPropagation();this.setSelection(event.detail.selectedKeys,event);}}
+            onrowactivate=${(event:CustomEvent<{key:string}>)=>{event.stopPropagation();const entry=this.visibleEntries().find(entry=>entry.id===event.detail.key);if(entry)this.activate(entry,event);}}
+            onsortchange=${(event:CustomEvent<{sortBy:FileBrowserSort;sortDirection:FileBrowserSortDirection}>)=>{event.stopPropagation();this.changeSort(event.detail.sortBy,event.detail.sortDirection,event);}}></cb-table>`;
     }
-    private gridView(entries: readonly FileBrowserEntry[]): HTMLElement {
-        const grid = element('div', { attributes: { part: 'grid' } }) as HTMLDivElement;
-        grid.setAttribute('role', this.selectionMode === 'none' ? 'list' : 'listbox');
-        aria(grid, 'aria-multiselectable', this.selectionMode === 'multiple' ? true : null);
-        const selected = new Set(this.selectedIds);
-        for (const entry of entries) {
-            const button = createBareButton('entry', event => entry.type === 'folder' ? this.activate(entry, event) : this.select(entry, event));
-            button.disabled = this.unavailable || entry.disabled === true;
-            button.dataset.id = entry.id;
-            button.setAttribute('role', this.selectionMode === 'none' ? 'listitem' : 'option');
-            aria(button, 'aria-selected', this.selectionMode === 'none' ? null : selected.has(entry.id));
-            button.accessibleLabel = this.entryActionLabel(entry, selected.has(entry.id));
-            const preview = element('span', { attributes: { part: 'entry-preview' } }) as HTMLSpanElement;
-            const thumbnail = safeHref(entry.thumbnail, this.baseURI);
-            if (thumbnail) {
-                const image = document.createElement('img');
-                image.src = thumbnail;
-                image.alt = '';
-                preview.append(image);
-            }
-            else
-                preview.append(createIcon(entry.type === 'folder' ? 'folder' : 'file', 'entry-icon icon'));
-            const copy = element('span', { attributes: { part: 'entry-copy' } }) as HTMLSpanElement;
-            copy.append(element('span', { attributes: { part: 'entry-name' }, textContent: entry.name }) as HTMLSpanElement, element('span', { attributes: { part: 'entry-meta' }, textContent: entry.description || entry.mime || entry.type }) as HTMLSpanElement);
-            button.append(preview, copy);
-            button.addEventListener('dblclick', event => this.activate(entry, event));
-            grid.append(button);
-        }
-        return grid;
-    }
-    private tableView(entries: readonly FileBrowserEntry[]): Table {
-        const table = document.createElement('cb-table') as Table;
-        table.setAttribute('part', 'table');
-        const records: FileRecord[] = entries.map(entry => ({ id: entry.id, name: entry.name, type: entry.type, size: entry.size ?? '', modified: entry.modified ?? '' }));
-        const entryById = new Map(entries.map(entry => [entry.id, entry]));
-        const columns: TableColumn<FileRecord>[] = [
-            { id: 'name', header: scalarText(this.nameLabel), field: 'name', sortable: true, minWidth: 200, cell: context => {
-                    const cell = element('span', { attributes: { part: 'file-name' } }) as HTMLSpanElement;
-                    cell.style.cssText = 'display:inline-flex;align-items:center;gap:8px';
-                    cell.append(createIcon(context.item.type === 'folder' ? 'folder' : 'file', 'icon'), document.createTextNode(context.item.name));
-                    return cell;
-                } },
-            { id: 'type', header: scalarText(this.typeLabel), field: 'type', sortable: true, width: 120 },
-            { id: 'size', header: scalarText(this.sizeLabel), field: 'size', sortable: true, align: 'end', width: 120 },
-            { id: 'modified', header: scalarText(this.modifiedLabel), field: 'modified', sortable: true, width: 160 },
+    private tableColumns(): readonly TableColumn<FileRecord>[] {
+        return [
+            {id:'name',header:this.nameLabel,field:'name',sortable:true,minWidth:200,cell:context=>html`<span part="file-name" style="display:inline-flex;align-items:center;gap:8px"><cb-icon name=${context.item.type==='folder'?'folder':'file'} part="icon" decorative></cb-icon>${context.item.name}</span>`},
+            {id:'type',header:this.typeLabel,field:'type',sortable:true,width:120},
+            {id:'size',header:this.sizeLabel,field:'size',sortable:true,align:'end',width:120},
+            {id:'modified',header:this.modifiedLabel,field:'modified',sortable:true,width:160}
         ];
-        Object.assign(table, {
-            label: this.accessibleName(), accessibleLabel: this.accessibleName(), items: records, columns,
-            selectionMode: this.selectionMode, selectedKeys: [...this.selectedIds], itemKey: 'id', rowActivation: true,
-            sortBy: this.sortBy, sortDirection: this.sortDirection, resizable: true, stickyHeader: true,
-            selectRowLabel: scalarText(this.selectEntryLabel).replaceAll('{entry}', '{row}'),
-            deselectRowLabel: scalarText(this.deselectEntryLabel).replaceAll('{entry}', '{row}'),
-            sortAscendingLabel: scalarText(this.sortAscendingLabel), sortDescendingLabel: scalarText(this.sortDescendingLabel),
-        });
-        table.addEventListener('selectionchange', event => {
-            event.stopPropagation();
-            const detail = (event as CustomEvent<{
-                selectedKeys: readonly string[];
-            }>).detail;
-            this.setSelection(detail.selectedKeys, event);
-        });
-        table.addEventListener('rowactivate', event => {
-            event.stopPropagation();
-            const id = scalarText((event as CustomEvent<{
-                key: string;
-            }>).detail.key);
-            const entry = entryById.get(id);
-            if (entry)
-                this.activate(entry, event);
-        });
-        table.addEventListener('sortchange', event => {
-            event.stopPropagation();
-            const detail = (event as CustomEvent<{
-                sortBy: FileBrowserSort;
-                sortDirection: FileBrowserSortDirection;
-            }>).detail;
-            this.changeSort(detail.sortBy, detail.sortDirection, event);
-        });
-        return table;
     }
     private entryActionLabel(entry: FileBrowserEntry, selected: boolean): string {
         const template = entry.type === 'folder' ? this.openEntryLabel : selected ? this.deselectEntryLabel : this.selectEntryLabel;

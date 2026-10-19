@@ -29,7 +29,9 @@ export abstract class FormControlBase<P extends FormControlSharedProps=FormContr
     private readonly containValueEvent:EventListener=event=>{
         if(event.target!==this)event.stopPropagation()
     }
-    protected validationShown=false
+    private readonly validationVisible=state(false)
+    protected get validationShown():boolean{return this.validationVisible[0]()}
+    protected set validationShown(value:boolean){this.validationVisible[1](value)}
     protected abstract fieldElement():HTMLButtonElement|HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement|undefined
     protected abstract captureValue():S
     protected abstract restoreValue(value:S|FormRestoreValue):void

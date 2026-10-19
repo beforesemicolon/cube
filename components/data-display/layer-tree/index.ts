@@ -1,10 +1,6 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
-import type { TextInput } from '../../form/text-input/index.js';
-import { actionLabel, createButton, createIconButton } from '../../action/create.js';
-import type { Button } from '../../action/button/index.js';
-import { createIcon, iconPaths } from '../../icons/paths.js';
+import { type Template, html, repeat, when, state } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
+import { iconPaths } from '../../icons/paths.js';
 import { bool, scalarText } from '../../core/value.js';
 import { LayerTreeBase, type LayerDropPosition, type LayerTreeItem } from './LayerTreeBase.js';
 const css = editorCSS + `
@@ -18,139 +14,60 @@ const css = editorCSS + `
 [part~=row][data-drop=before]{box-shadow:inset 0 2px var(--color-primary)}[part~=row][data-drop=after]{box-shadow:inset 0 -2px var(--color-primary)}[part~=row][data-drop=inside]{background:var(--color-selection);outline:1px solid var(--color-primary)}
 `;
 export class LayerTree extends LayerTreeBase {
-    private tree?: HTMLElement;
-    private editingId = '';
-    private draggingId = '';
+    private readonly editing=state('');
+    private readonly draft=state('');
+    private get editingId(): string {return this.editing[0]();}
+    private set editingId(id:string) {this.editing[1](id);}
+    private draggingId='';
+    private get tree(): HTMLElement | undefined {const node=this.refs.tree?.[0];return node instanceof HTMLElement?node:undefined;}
     render(): Template {
-        this.tree = element('div', { attributes: { part: 'tree' } }) as HTMLDivElement;
-        this.tree.setAttribute('role', 'tree');
-        this.tree.addEventListener('keydown', event => this.handleKey(event));
-        return html`<style part="styles">${css}</style>${this.tree}`;
+        return html`<style part="styles">${css}</style><div part="tree" ref="tree" role="tree" aria-label=${()=>this.accessibleName()}
+            aria-multiselectable=${()=>bool(this.multiple)?true:null} onkeydown=${(event:KeyboardEvent)=>this.handleKey(event)}>
+            ${when(()=>!this.normalizedItems().length,()=>html`<div part="empty" role="status">${()=>this.emptyLabel}</div>`)}
+            ${this.itemsTemplate(()=>this.normalizedItems(),1)}</div>`;
     }
-    protected syncView(): void {
-        if (!this.tree)
-            return;
-        this.tree.setAttribute('aria-label', this.accessibleName());
-        aria(this.tree, 'aria-multiselectable', bool(this.multiple) ? true : null);
-        const items = this.normalizedItems();
-        this.tree.replaceChildren();
-        if (!items.length) {
-            const empty = element('div', { attributes: { part: 'empty' }, textContent: scalarText(this.emptyLabel) }) as HTMLDivElement;
-            empty.setAttribute('role', 'status');
-            this.tree.append(empty);
-            return;
-        }
-        this.tree.append(...this.renderItems(items, 1));
-        const first = this.rowNodes()[0];
-        if (first && !this.rowNodes().some(row => row.tabIndex === 0))
-            first.tabIndex = 0;
+    private beginEdit(item:LayerTreeItem): void {
+        this.draft[1](item.label);this.editingId=item.id;
+        queueMicrotask(()=>{const node=this.refs.edit?.[0];if(node instanceof HTMLElement)node.focus();});
     }
-    private renderItems(items: readonly LayerTreeItem[], level: number): HTMLElement[] {
-        const expanded = new Set(this.expandedIds);
-        const selected = new Set(this.selectedIds);
-        return items.map(item => {
-            const container = element('div', { attributes: { part: 'item' } }) as HTMLDivElement;
-            const row = element('div', { attributes: { part: 'row' } }) as HTMLDivElement;
-            row.dataset.id = item.id;
-            row.tabIndex = selected.has(item.id) ? 0 : -1;
-            row.setAttribute('role', 'treeitem');
-            row.setAttribute('aria-level', String(level));
-            aria(row, 'aria-selected', selected.has(item.id));
-            if (item.children?.length)
-                aria(row, 'aria-expanded', expanded.has(item.id));
-            row.toggleAttribute('data-hidden', bool(item.hidden));
-            row.toggleAttribute('data-locked', bool(item.locked));
-            row.draggable = bool(this.reorderable) && item.draggable !== false && !item.disabled && !this.unavailable;
-            if (item.children?.length) {
-                const disclosure = createIconButton('disclosure', expanded.has(item.id) ? 'down' : 'right', event => this.toggleExpanded(item.id, event));
-                actionLabel(disclosure, this.itemLabel(expanded.has(item.id) ? this.collapseLabel : this.expandLabel, item));
-                disclosure.size = 'xs';
-                row.append(disclosure);
-            }
-            else
-                row.append(element('span', { attributes: { part: 'spacer' } }) as HTMLSpanElement);
-            row.append(createIcon(item.icon && Object.hasOwn(iconPaths, item.icon) ? item.icon : item.children?.length ? 'layers' : 'component', 'type-icon icon'));
-            if (this.editingId === item.id)
-                row.append(this.editRow(item));
-            else {
-                const copy = element('span', { attributes: { part: 'copy' } }) as HTMLSpanElement;
-                copy.append(element('span', { attributes: { part: 'label' }, textContent: item.label }) as HTMLSpanElement);
-                if (item.description)
-                    copy.append(element('span', { attributes: { part: 'description' }, textContent: item.description }) as HTMLSpanElement);
-                row.append(copy, this.actions(item));
-            }
-            row.addEventListener('click', event => {
-                if (event.composedPath().some(node => node !== row && node instanceof Element && (node.matches('button,input') || node.localName.startsWith('cb-'))))
-                    return;
-                this.select(item.id, event.metaKey || event.ctrlKey, event);
-            });
-            row.addEventListener('dblclick', event => { if (bool(this.editable) && item.renamable !== false) {
-                this.editingId = item.id;
-                this.syncView();
-                event.preventDefault();
-            } });
-            row.addEventListener('dragstart', event => { this.draggingId = item.id; event.dataTransfer?.setData('text/plain', item.id); if (event.dataTransfer)
-                event.dataTransfer.effectAllowed = 'move'; });
-            row.addEventListener('dragover', event => this.dragOver(row, event));
-            row.addEventListener('dragleave', () => row.removeAttribute('data-drop'));
-            row.addEventListener('drop', event => this.drop(item.id, row, event));
-            container.append(row);
-            if (item.children?.length && expanded.has(item.id)) {
-                const group = element('div', { attributes: { part: 'group' } }) as HTMLDivElement;
-                group.setAttribute('role', 'group');
-                group.append(...this.renderItems(item.children, level + 1));
-                container.append(group);
-            }
-            return container;
-        });
+    private itemsTemplate(items:()=>readonly LayerTreeItem[],level:number): Template {
+        return html`${repeat(items,item=>html`<div part="item"><div part="row" data-id=${item.id} role="treeitem"
+            tabindex=${()=>this.selectedIds.includes(item.id)||!this.selectedIds.length&&this.normalizedItems()[0]?.id===item.id?0:-1}
+            aria-level=${level} aria-selected=${()=>this.selectedIds.includes(item.id)} aria-expanded=${()=>item.children?.length?this.expandedIds.includes(item.id):null}
+            data-hidden=${()=>bool(item.hidden)?'':null} data-locked=${()=>bool(item.locked)?'':null}
+            draggable=${()=>bool(this.reorderable)&&item.draggable!==false&&!item.disabled&&!this.unavailable}
+            onclick=${(event:MouseEvent)=>{
+                if(event.composedPath().some(node=>node!==event.currentTarget&&node instanceof Element&&(node.matches('button,input')||node.localName.startsWith('cb-'))))return;
+                this.select(item.id,event.metaKey||event.ctrlKey,event);
+            }} ondblclick=${(event:MouseEvent)=>{if(bool(this.editable)&&item.renamable!==false){this.beginEdit(item);event.preventDefault();}}}
+            ondragstart=${(event:DragEvent)=>{this.draggingId=item.id;event.dataTransfer?.setData('text/plain',item.id);if(event.dataTransfer)event.dataTransfer.effectAllowed='move';}}
+            ondragover=${(event:DragEvent)=>{if(event.currentTarget instanceof HTMLElement)this.dragOver(event.currentTarget,event);}}
+            ondragleave=${(event:DragEvent)=>{if(event.currentTarget instanceof HTMLElement)event.currentTarget.removeAttribute('data-drop');}}
+            ondrop=${(event:DragEvent)=>{if(event.currentTarget instanceof HTMLElement)this.drop(item.id,event.currentTarget,event);}}>
+            ${item.children?.length?this.actionTemplate('disclosure',()=>this.expandedIds.includes(item.id)?'down':'right',
+                ()=>this.itemLabel(this.expandedIds.includes(item.id)?this.collapseLabel:this.expandLabel,item),event=>this.toggleExpanded(item.id,event))
+                :html`<span part="spacer"></span>`}
+            <cb-icon name=${item.icon&&Object.hasOwn(iconPaths,item.icon)?item.icon:item.children?.length?'layers':'component'} part="type-icon icon" decorative></cb-icon>
+            ${when(()=>this.editingId===item.id,()=>html`<span part="edit-row"><cb-text-input part="edit-input" ref="edit"
+                value=${this.draft[0]} accessible-label=${()=>this.itemLabel(this.renameLabel,item)}
+                onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();this.draft[1](event.detail.value);}}
+                onkeydown=${(event:KeyboardEvent)=>{if(event.key==='Enter'){event.preventDefault();this.commitRename(item,event);}else if(event.key==='Escape'){event.preventDefault();this.editingId='';}}}></cb-text-input>
+                <cb-button part="save" exportparts="control:save-control,label:save-label,button-label:save-label,icon:save-icon,description:save-description" variant="ghost" size="sm" label=${()=>this.saveLabel} onaction=${(event:Event)=>{event.stopPropagation();this.commitRename(item,event);}}></cb-button>
+                <cb-button part="cancel" exportparts="control:cancel-control,label:cancel-label,button-label:cancel-label,icon:cancel-icon,description:cancel-description" variant="ghost" size="sm" label=${()=>this.cancelLabel} onaction=${(event:Event)=>{event.stopPropagation();this.editingId='';}}></cb-button></span>`,
+                ()=>html`<span part="copy"><span part="label">${item.label}</span><span part="description" hidden=${!item.description}>${item.description??''}</span></span><span part="actions">
+                    ${when(()=>bool(this.showVisibility),()=>this.actionTemplate('action visibility',()=>bool(item.hidden)?'eyeOff':'eye',()=>this.itemLabel(bool(item.hidden)?this.showLabel:this.hideLabel,item),event=>this.toggleVisibility(item.id,event)))}
+                    ${when(()=>bool(this.showLock),()=>this.actionTemplate('action lock',()=>bool(item.locked)?'lock':'unlock',()=>this.itemLabel(bool(item.locked)?this.unlockLabel:this.lockLabel,item),event=>this.toggleLock(item.id,event)))}
+                    ${when(()=>bool(this.editable)&&item.renamable!==false,()=>this.actionTemplate('action rename',()=> 'text',()=>this.itemLabel(this.renameLabel,item),()=>this.beginEdit(item)))}
+                </span>`)}
+            </div>${when(()=>Boolean(item.children?.length)&&this.expandedIds.includes(item.id),()=>html`<div part="group" role="group">${this.itemsTemplate(()=>item.children??[],level+1)}</div>`)}</div>`,{key:item=>item.id})}`;
     }
-    private actions(item: LayerTreeItem): HTMLElement {
-        const actions = element('span', { attributes: { part: 'actions' } }) as HTMLSpanElement;
-        if (bool(this.showVisibility))
-            actions.append(this.itemAction('visibility', bool(item.hidden) ? 'eyeOff' : 'eye', this.itemLabel(bool(item.hidden) ? this.showLabel : this.hideLabel, item), event => this.toggleVisibility(item.id, event)));
-        if (bool(this.showLock))
-            actions.append(this.itemAction('lock', bool(item.locked) ? 'lock' : 'unlock', this.itemLabel(bool(item.locked) ? this.unlockLabel : this.lockLabel, item), event => this.toggleLock(item.id, event)));
-        if (bool(this.editable) && item.renamable !== false)
-            actions.append(this.itemAction('rename', 'text', this.itemLabel(this.renameLabel, item), event => { this.editingId = item.id; this.syncView(); event.stopPropagation(); }));
-        return actions;
+    private actionTemplate(part:string,icon:()=>string,label:()=>string,handler:(event:Event)=>void): Template {
+        return html`<cb-button part=${part} icon-only icon=${icon} variant="ghost" size="xs" accessible-label=${label} disabled=${()=>this.unavailable}
+            onaction=${(event:Event)=>{event.stopPropagation();handler(event);}}></cb-button>`;
     }
-    private itemAction(part: string, icon: string, label: string, handler: (event: CustomEvent) => void): Button {
-        const button = createIconButton(`action ${part}`, icon, handler);
-        actionLabel(button, label);
-        button.size = 'xs';
-        button.disabled = this.unavailable;
-        return button;
-    }
-    private editRow(item: LayerTreeItem): HTMLElement {
-        const editor = element('span', { attributes: { part: 'edit-row' } }) as HTMLSpanElement;
-        const input = document.createElement('cb-text-input') as TextInput;
-        input.setAttribute('part', 'edit-input');
-        Object.assign(input, { value: item.label, label: '', accessibleLabel: this.itemLabel(this.renameLabel, item) });
-        let draft = item.label;
-        input.addEventListener('change', event => { event.stopPropagation(); draft = scalarText(input.value); });
-        const commit = (event?: Event): void => {
-            if (this.rename(item.id, draft, event))
-                this.editingId = '';
-            this.syncView();
-        };
-        const dismiss = (): void => { this.editingId = ''; this.syncView(); };
-        const save = createButton('save', event => commit(event));
-        const cancel = createButton('cancel', dismiss);
-        actionLabel(save, scalarText(this.saveLabel));
-        actionLabel(cancel, scalarText(this.cancelLabel));
-        input.addEventListener('keydown', event => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                commit(event);
-            }
-            else if (event.key === 'Escape') {
-                event.preventDefault();
-                dismiss();
-            }
-        });
-        editor.append(input, save, cancel);
-        queueMicrotask(() => input.focus());
-        return editor;
+    private commitRename(item:LayerTreeItem,event:Event): void {if(this.rename(item.id,this.draft[0](),event))this.editingId='';}
+    private findItem(items:readonly LayerTreeItem[],id:string): LayerTreeItem | undefined {
+        for(const item of items){if(item.id===id)return item;const child=this.findItem(item.children??[],id);if(child)return child;}return undefined;
     }
     private rowNodes(): HTMLElement[] { return [...(this.tree?.querySelectorAll<HTMLElement>('[role=treeitem]') ?? [])]; }
     private handleKey(event: KeyboardEvent): void {
@@ -184,8 +101,7 @@ export class LayerTree extends LayerTreeBase {
         else if (event.key === 'Enter' || event.key === ' ')
             this.select(id, event.metaKey || event.ctrlKey, event);
         else if (event.key === 'F2' && bool(this.editable)) {
-            this.editingId = id;
-            this.syncView();
+            const item=this.findItem(this.normalizedItems(),id); if(item)this.beginEdit(item);
         }
         else
             return;

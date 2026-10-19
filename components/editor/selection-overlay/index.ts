@@ -1,10 +1,7 @@
-import { type Template, element, html } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
-import { aria } from '../../core/accessibility.js'
+import { type Template, html, repeat } from '../../core/runtime.js';
+import { editorCSS } from '../../theme/styles.js';
 import { bool, finite, scalarText } from '../../core/value.js';
 import { SelectionOverlayBase, type SelectionHandle } from './SelectionOverlayBase.js';
-import { createBareButton } from '../../action/create.js';
-import type { Button } from '../../action/button/index.js';
 const css = editorCSS + `
 :host{position:absolute;z-index:var(--z-index-selection,20);display:block;box-sizing:border-box;pointer-events:none;transform-origin:center}
 [part~=outline]{position:absolute;inset:0;border:var(--component-selection-width,1px) solid var(--color-primary);background:color-mix(in srgb,var(--color-selection) 16%,transparent);pointer-events:auto;cursor:move}
@@ -20,54 +17,38 @@ const css = editorCSS + `
 :host([data-disabled]) [part~=outline]{cursor:default}:host([data-disabled]) [part~=handle],:host([data-disabled]) [part~=rotate]{display:none}
 `;
 export class SelectionOverlay extends SelectionOverlayBase {
-    private outline?: HTMLElement;
-    private sizeNode?: HTMLElement;
-    private rotateHandle?: Button;
-    private handles = new Map<SelectionHandle, Button>();
+    private get outline(): HTMLElement | undefined { const node=this.refs.outline?.[0]; return node instanceof HTMLElement ? node : undefined; }
+    private get rotateHandle(): HTMLElement | undefined { const node=this.refs.rotate?.[0]; return node instanceof HTMLElement ? node : undefined; }
+    private get handles(): Map<SelectionHandle, HTMLElement> {
+        return new Map(this.allHandles().flatMap(handle => {
+            const node = (this.refs.handles ?? []).find(node => node instanceof HTMLElement && node.dataset.handle === handle);
+            return node instanceof HTMLElement ? [[handle,node] as const] : [];
+        }));
+    }
     render(): Template {
-        this.outline = element('div', { attributes: { part: 'outline' } }) as HTMLDivElement;
-        this.outline.tabIndex = 0;
-        this.outline.setAttribute('role', 'group');
-        this.outline.addEventListener('pointerdown', event => this.beginMove(event));
-        this.outline.addEventListener('keydown', event => this.moveKey(event));
-        const nodes: Node[] = [this.outline];
-        for (const handle of this.allHandles()) {
-            const button = createBareButton(`handle handle-${handle}`, () => { });
-            button.dataset.handle = handle;
-            button.addEventListener('pointerdown', event => { event.stopPropagation(); this.beginResize(handle, event); });
-            button.addEventListener('keydown', event => this.resizeKey(handle, event));
-            this.handles.set(handle, button);
-            nodes.push(button);
-        }
-        this.rotateHandle = createBareButton('rotate', () => { });
-        this.rotateHandle.addEventListener('pointerdown', event => { event.stopPropagation(); this.beginRotate(event); });
-        this.rotateHandle.addEventListener('keydown', event => {
-            if (!['ArrowLeft', 'ArrowRight'].includes(event.key))
-                return;
-            event.preventDefault();
-            this.setRotation(finite(this.rotation) + (event.key === 'ArrowRight' ? 1 : -1) * this.normalizedStep(event.shiftKey ? 10 : 1), event);
-        });
-        this.sizeNode = element('span', { attributes: { part: 'size' } }) as HTMLSpanElement;
-        nodes.push(this.rotateHandle, this.sizeNode);
-        return html`<style part="styles">${css}</style>${nodes}`;
+        return html`<style part="styles">${css}</style><div part="outline" ref="outline" role="group"
+            tabindex=${() => this.unavailable || !bool(this.movable) ? -1 : 0}
+            aria-label=${() => scalarText(this.moveLabel) || this.accessibleName()}
+            onpointerdown=${(event: PointerEvent) => this.beginMove(event)} onkeydown=${(event: KeyboardEvent) => this.moveKey(event)}></div>
+            ${repeat(() => this.allHandles(), handle => html`<cb-button part=${`handle handle-${handle}`} ref="handles" data-handle=${handle} data-bare data-semantic-host
+                hidden=${() => !bool(this.resizable)} disabled=${() => this.unavailable} accessible-label=${() => this.handleLabel(handle)}
+                onpointerdown=${(event: PointerEvent) => { event.stopPropagation(); this.beginResize(handle,event); }}
+                onkeydown=${(event: KeyboardEvent) => this.resizeKey(handle,event)}></cb-button>`, {key: handle => handle})}
+            <cb-button part="rotate" exportparts="control:rotate-control,label:rotate-label,button-label:rotate-label,icon:rotate-icon,description:rotate-description" ref="rotate" data-bare data-semantic-host hidden=${() => !bool(this.rotatable)} disabled=${() => this.unavailable}
+                accessible-label=${() => scalarText(this.rotateLabel)}
+                onpointerdown=${(event: PointerEvent) => { event.stopPropagation(); this.beginRotate(event); }}
+                onkeydown=${(event: KeyboardEvent) => {
+                    if (!['ArrowLeft','ArrowRight'].includes(event.key)) return;
+                    event.preventDefault(); this.setRotation(finite(this.rotation)+(event.key === 'ArrowRight' ? 1 : -1)*this.normalizedStep(event.shiftKey ? 10 : 1),event);
+                }}></cb-button>
+            <span part="size" hidden=${() => !bool(this.showSize)}>${() => {
+                const rect = this.currentRect();
+                return scalarText(this.sizeLabel).replaceAll('{width}',String(Math.round(rect.width))).replaceAll('{height}',String(Math.round(rect.height)));
+            }}</span>`;
     }
     protected syncView(): void {
-        if (!this.outline || !this.rotateHandle || !this.sizeNode)
-            return;
-        const rect = this.currentRect();
-        Object.assign(this.style, { left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.width}px`, height: `${rect.height}px`, rotate: `${finite(this.rotation)}deg` });
-        aria(this.outline, 'aria-label', scalarText(this.moveLabel) || this.accessibleName());
-        this.outline.tabIndex = this.unavailable || !bool(this.movable) ? -1 : 0;
-        for (const [handle, button] of this.handles) {
-            button.hidden = !bool(this.resizable);
-            button.disabled = this.unavailable;
-            button.accessibleLabel = this.handleLabel(handle);
-        }
-        this.rotateHandle.hidden = !bool(this.rotatable);
-        this.rotateHandle.disabled = this.unavailable;
-        this.rotateHandle.accessibleLabel = scalarText(this.rotateLabel);
-        this.sizeNode.hidden = !bool(this.showSize);
-        this.sizeNode.textContent = scalarText(this.sizeLabel).replaceAll('{width}', String(Math.round(rect.width))).replaceAll('{height}', String(Math.round(rect.height)));
+        const rect=this.currentRect();
+        Object.assign(this.style,{left:`${rect.x}px`,top:`${rect.y}px`,width:`${rect.width}px`,height:`${rect.height}px`,rotate:`${finite(this.rotation)}deg`});
     }
     private beginMove(event: PointerEvent): void {
         if (event.button !== 0 || !bool(this.movable) || this.unavailable || event.target !== this.outline || !this.outline)

@@ -1,4 +1,4 @@
-import { type Template, element, html } from '../../core/runtime.js'
+import { type Template, html, state } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { aria } from '../../core/accessibility.js'
 import { uid } from '../../core/id.js'
@@ -28,90 +28,45 @@ interface FieldControlElement extends HTMLElement {
     errorText?: string;
 }
 export class Field extends FieldBase {
-    private group?: HTMLElement;
-    private header?: HTMLElement;
-    private labelNode?: HTMLElement;
-    private requirementNode?: HTMLElement;
-    private descriptionNode?: HTMLElement;
-    private helpNode?: HTMLElement;
-    private detailsNode?: HTMLDetailsElement;
-    private detailsSummary?: HTMLElement;
-    private detailsCopy?: HTMLElement;
-    private errorNode?: HTMLElement;
-    private successNode?: HTMLElement;
-    private controlSlot?: HTMLSlotElement;
+    private readonly fieldId = uid('cb-field');
+    private readonly labelId = uid('cb-field-label');
+    private readonly assigned = state({actions:false, details:false});
+    private get controlSlot(): HTMLSlotElement | undefined {
+        const slot=this.refs.control?.[0]; return slot instanceof HTMLSlotElement ? slot : undefined;
+    }
+    private syncSlots(): void {
+        const has = (name: string): boolean => (this.refs[name] ?? []).some(slot => slot instanceof HTMLSlotElement && slot.assignedNodes({flatten:true}).length > 0);
+        this.assigned[1]({actions:has('actions'),details:has('details')});
+    }
     render(): Template {
-        this.group = element('div', { attributes: { part: 'field' } }) as HTMLDivElement;
-        this.group.setAttribute('role', 'group');
-        this.header = element('div', { attributes: { part: 'header' } }) as HTMLDivElement;
-        const labelWrap = element('div', { attributes: { part: 'label-wrap' } }) as HTMLDivElement;
-        this.labelNode = element('span', { attributes: { part: 'label' } }) as HTMLSpanElement;
-        this.requirementNode = element('span', { attributes: { part: 'requirement' } }) as HTMLSpanElement;
-        labelWrap.append(this.labelNode, this.requirementNode);
-        labelWrap.addEventListener('click', () => this.focusControl());
-        this.header.append(labelWrap, element("slot", { attributes: { name: 'actions', part: 'actions' }, textContent: '' }) as HTMLSlotElement);
-        const control = element('div', { attributes: { part: 'control-container' } }) as HTMLDivElement;
-        this.controlSlot = element("slot", { attributes: { name: '', part: 'control-slot' }, textContent: '' }) as HTMLSlotElement;
-        this.controlSlot.addEventListener('slotchange', () => this.syncControl());
-        control.append(this.controlSlot);
-        this.descriptionNode = element('p', { attributes: { part: 'description' } }) as HTMLParagraphElement;
-        this.helpNode = element('p', { attributes: { part: 'help' } }) as HTMLParagraphElement;
-        this.detailsNode = element('details', { attributes: { part: 'details' } }) as HTMLDetailsElement;
-        this.detailsSummary = element('summary', { attributes: { part: 'details-summary' } }) as HTMLElement;
-        this.detailsCopy = element('p', { attributes: { part: 'details-copy' } }) as HTMLParagraphElement;
-        this.detailsNode.append(this.detailsSummary, this.detailsCopy, element("slot", { attributes: { name: 'details', part: 'details-content' }, textContent: '' }) as HTMLSlotElement);
-        this.errorNode = element('p', { attributes: { part: 'error' } }) as HTMLParagraphElement;
-        this.errorNode.setAttribute('role', 'alert');
-        this.successNode = element('p', { attributes: { part: 'success' } }) as HTMLParagraphElement;
-        this.successNode.setAttribute('role', 'status');
-        this.group.append(this.header, control, this.descriptionNode, this.helpNode, this.detailsNode, this.errorNode, this.successNode);
-        return html`<style part="styles">${css}</style>${this.group}`;
+        return html`<style part="styles">${css}</style><div part="field" role="group"
+            aria-labelledby=${() => this.fieldLabel() ? this.labelId : null}
+            aria-describedby=${() => [
+                this.description ? `${this.fieldId}-description` : '',
+                this.fieldHelp() ? `${this.fieldId}-help` : '',
+                this.fieldError() ? `${this.fieldId}-error` : '',
+                this.isSuccess() && this.fieldSuccess() ? `${this.fieldId}-success` : ''
+            ].filter(Boolean).join(' ') || null}
+            aria-invalid=${() => this.isInvalid() || null} aria-disabled=${() => this.unavailable || null}>
+            <div part="header" hidden=${() => !this.fieldLabel() && (bool(this.required) || !this.optionalLabel) && !this.assigned[0]().actions}>
+                <div part="label-wrap" onclick=${() => this.focusControl()}>
+                    <span part="label" id=${this.labelId} hidden=${() => !this.fieldLabel()}>${() => this.fieldLabel()}</span>
+                    <span part="requirement" hidden=${() => bool(this.required) || !this.optionalLabel}>${() => this.optionalLabel}</span>
+                </div><slot part="actions" name="actions" ref="actions" onslotchange=${() => this.syncSlots()}></slot>
+            </div><div part="control-container"><slot part="control-slot" ref="control" onslotchange=${() => this.syncControl()}></slot></div>
+            <p part="description" id=${`${this.fieldId}-description`} hidden=${() => !this.description}>${() => this.description}</p>
+            <p part="help" id=${`${this.fieldId}-help`} hidden=${() => !this.fieldHelp()}>${() => this.fieldHelp()}</p>
+            <details part="details" hidden=${() => !this.detailsLabel && !this.fieldDetails() && !this.assigned[0]().details}>
+                <summary part="details-summary">${() => this.detailsLabel}</summary><p part="details-copy" hidden=${() => !this.fieldDetails()}>${() => this.fieldDetails()}</p>
+                <slot part="details-content" name="details" ref="details" onslotchange=${() => this.syncSlots()}></slot>
+            </details>
+            <p part="error" role="alert" id=${`${this.fieldId}-error`} hidden=${() => !this.fieldError()}>${() => this.fieldError()}</p>
+            <p part="success" role="status" id=${`${this.fieldId}-success`} hidden=${() => !this.fieldSuccess() || this.isInvalid()}>${() => this.fieldSuccess()}</p>
+        </div>`;
     }
     protected syncView(): void {
-        if (!this.group || !this.header || !this.labelNode || !this.requirementNode || !this.descriptionNode || !this.helpNode || !this.detailsNode || !this.detailsSummary || !this.detailsCopy || !this.errorNode || !this.successNode)
-            return;
-        const label = this.fieldLabel();
-        const required = bool(this.required);
-        const requirement = required ? '' : scalarText(this.optionalLabel);
-        const description = scalarText(this.description);
-        const help = this.fieldHelp();
-        const details = this.fieldDetails();
-        const detailsLabel = scalarText(this.detailsLabel);
-        const error = this.fieldError();
-        const success = this.fieldSuccess();
-        this.labelNode.textContent = label;
-        this.labelNode.hidden = !label;
-        this.requirementNode.textContent = requirement;
-        this.requirementNode.hidden = !requirement;
-        this.descriptionNode.textContent = description;
-        this.descriptionNode.hidden = !description;
-        this.helpNode.textContent = help;
-        this.helpNode.hidden = !help;
-        this.detailsSummary.textContent = detailsLabel;
-        this.detailsCopy.textContent = details;
-        this.detailsCopy.hidden = !details;
-        this.detailsNode.hidden = !detailsLabel && !details && !this.querySelector('[slot=details]');
-        this.errorNode.textContent = error;
-        this.errorNode.hidden = !error;
-        this.successNode.textContent = success;
-        this.successNode.hidden = !success || this.isInvalid();
-        this.toggleAttribute('data-invalid', this.isInvalid());
-        this.toggleAttribute('data-success', this.isSuccess());
-        this.header.hidden = !label && !requirement && !this.querySelector('[slot=actions]');
-        const labelId = this.labelNode.id || uid('cb-field-label');
-        this.labelNode.id = labelId;
-        const descriptionId = this.descriptionNode.id || uid('cb-field-description');
-        this.descriptionNode.id = descriptionId;
-        const helpId = this.helpNode.id || uid('cb-field-help');
-        this.helpNode.id = helpId;
-        const errorId = this.errorNode.id || uid('cb-field-error');
-        this.errorNode.id = errorId;
-        const successId = this.successNode.id || uid('cb-field-success');
-        this.successNode.id = successId;
-        aria(this.group, 'aria-labelledby', label ? labelId : null);
-        aria(this.group, 'aria-describedby', [description ? descriptionId : '', help ? helpId : '', error ? errorId : '', this.isSuccess() && success ? successId : ''].filter(Boolean).join(' ') || null);
-        aria(this.group, 'aria-invalid', this.isInvalid() ? true : null);
-        aria(this.group, 'aria-disabled', this.unavailable ? true : null);
+        this.toggleAttribute('data-invalid',this.isInvalid());
+        this.toggleAttribute('data-success',this.isSuccess());
         this.syncControl();
     }
     private syncControl(): void {

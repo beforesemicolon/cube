@@ -1,17 +1,13 @@
-import { element, html, type Template } from '../../core/runtime.js'
+import { html, type Template } from '../../core/runtime.js'
 import { editorCSS } from '../../theme/styles.js'
 import { uid } from '../../core/id.js'
-import { createIconButton } from '../../action/create.js';
-import type { Button } from '../../action/button/index.js';
-export interface ModalView {
-    root: Template;
-    dialog: HTMLDialogElement;
-    header: HTMLElement;
-    heading: HTMLSlotElement;
-    description: HTMLSlotElement;
-    close: Button;
-    body: HTMLElement;
-    footer: HTMLElement;
+export interface ModalView { root: Template; readonly dialog?: HTMLDialogElement }
+interface ModalBindings {
+    heading: () => string
+    description: () => string
+    dismissible: () => boolean
+    closeLabel: () => string
+    modal: () => boolean
 }
 export const modalCSS = editorCSS + `
 :host{display:contents}
@@ -31,27 +27,20 @@ export const modalCSS = editorCSS + `
 :host([modal-size=page]) [part~=dialog]{inline-size:min(calc(100vw - 32px),var(--component-modal-page-width,1120px));block-size:min(calc(100dvh - 32px),var(--component-modal-page-height,900px))}
 @media(max-width:520px){[part~=dialog]{inline-size:calc(100vw - 16px);max-block-size:calc(100dvh - 16px)}[part~=header],[part~=body]{padding:var(--spacing-md,12px)}}
 `;
-export function createModalView(onClose: (event: Event) => void, onCancel: (event: Event) => void, onClick: (event: MouseEvent) => void): ModalView {
-    const dialog = element('dialog', { attributes: { part: 'dialog surface' } }) as HTMLDialogElement;
-    const titleId = uid('cb-modal-title');
-    const descriptionId = uid('cb-modal-description');
-    dialog.setAttribute('aria-labelledby', titleId);
-    dialog.setAttribute('aria-describedby', descriptionId);
-    dialog.addEventListener('cancel', onCancel);
-    dialog.addEventListener('click', onClick);
-    const header = element('header', { attributes: { part: 'header' } }) as HTMLElement;
-    const copy = element('div', { attributes: { part: 'header-copy' } }) as HTMLDivElement;
-    const heading = element("slot", { attributes: { name: 'heading', part: 'heading' }, textContent: '' }) as HTMLSlotElement;
-    heading.id = titleId;
-    const description = element("slot", { attributes: { name: 'description', part: 'description' }, textContent: '' }) as HTMLSlotElement;
-    description.id = descriptionId;
-    copy.append(heading, description);
-    const close = createIconButton('close', 'close', onClose);
-    header.append(copy, close);
-    const body = element('section', { attributes: { part: 'body' } }) as HTMLElement;
-    body.append(element("slot", { attributes: { name: '', part: 'content' }, textContent: '' }) as HTMLSlotElement);
-    const footer = element('footer', { attributes: { part: 'footer actions' } }) as HTMLElement;
-    footer.append(element("slot", { attributes: { name: 'footer', part: 'footer-content' }, textContent: '' }) as HTMLSlotElement);
-    dialog.append(header, body, footer);
-    return { root: html`<style part="styles">${modalCSS}</style>${dialog}`, dialog, header, heading, description, close, body, footer };
+
+export function createModalView(bindings: ModalBindings, onClose: (event: Event) => void, onCancel: (event: Event) => void, onClick: (event: MouseEvent) => void, actions: Template, role = 'dialog'): ModalView {
+    const titleId = uid('cb-modal-title')
+    const descriptionId = uid('cb-modal-description')
+    const root = html`<style part="styles">${modalCSS}</style>
+        <dialog ref="dialog" part="dialog surface" role="${role}" aria-labelledby="${titleId}" aria-describedby="${descriptionId}"
+            aria-modal="${() => String(bindings.modal())}" oncancel="${onCancel}" onclick="${onClick}">
+            <header part="header"><div part="header-copy">
+                <div part="heading" id="${titleId}"><slot name="heading">${bindings.heading}</slot></div>
+                <div part="description" id="${descriptionId}" hidden="${() => !bindings.description()}"><slot name="description">${bindings.description}</slot></div>
+            </div><cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" variant="ghost" icon="close" icon-only="true" hidden="${() => !bindings.dismissible()}"
+                accessible-label="${bindings.closeLabel}" onaction="${(event: Event) => { event.stopPropagation(); onClose(event) }}"></cb-button></header>
+            <section part="body"><slot part="content"></slot></section>
+            <footer part="footer actions">${actions}<slot name="footer" part="footer-content"></slot></footer>
+        </dialog>`
+    return { root, get dialog() { const node = root.refs.dialog?.[0]; return node instanceof HTMLDialogElement ? node : undefined } }
 }
