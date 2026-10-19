@@ -20,7 +20,7 @@ export abstract class BreadcrumbBase<P extends BreadcrumbProps = BreadcrumbProps
     protected navigate(item: NormalizedItem, originalEvent: Event): void {
         if (item.disabled) { originalEvent.preventDefault(); return }
         const detail = { id: item.id, item, originalEvent }
-        if (!this.request('cb-before-navigate', detail)) { originalEvent.preventDefault(); return }
-        this.emit('cb-navigate', detail)
+        if (!this.request('beforenavigate', detail)) { originalEvent.preventDefault(); return }
+        this.emit('navigate', detail)
     }
 }

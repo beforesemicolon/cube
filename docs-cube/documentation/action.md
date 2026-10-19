@@ -22,7 +22,7 @@ order: 20
 | Action bar | `<cb-action-bar>` | `@beforesemicolon/cube/action/action-bar` |
 | Shortcut | `<cb-shortcut>` | `@beforesemicolon/cube/action/shortcut` |
 
-Set a button's optional `pressed` property when the action represents a persistent on/off state. The same `<cb-button>` then exposes `aria-pressed`, toggles on click or keyboard activation, and emits `cb-change`. Leave `pressed` undefined for a normal action button that emits `cb-action`.
+Set a button's optional `pressed` property when the action represents a persistent on/off state. The same `<cb-button>` then exposes `aria-pressed`, toggles on click or keyboard activation, and emits `change`. Leave `pressed` undefined for a normal action button that emits `action`.
 
 ## API
 

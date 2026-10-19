@@ -145,7 +145,7 @@ export class Bezier extends BezierBase {
         const control = document.createElement('cb-number-input') as NumberControl
         control.setAttribute('part', `field-control point-${point}-${axis}-control`)
         control.min = axis === 'x' ? 0 : -1; control.max = axis === 'x' ? 1 : 2; control.step = .01
-        control.addEventListener('cb-change', event => {
+        control.addEventListener('change', event => {
             event.stopPropagation()
             const value = Number((event as CustomEvent<{ value: string | number }>).detail.value)
             const curve = this.curve()

@@ -17,11 +17,11 @@ export class SplitButton extends SplitButtonBase {
     private menu?: Menu
     render(): Node {
         this.group = el('div', 'group'); this.group.setAttribute('role', 'group')
-        this.primary = document.createElement('cb-button') as Button; this.primary.setAttribute('part', 'primary'); this.primary.setAttribute('exportparts', 'control:primary-control,label:primary-label,icon:primary-icon,spinner:primary-spinner'); this.primary.addEventListener('cb-before-action', event => event.stopPropagation()); this.primary.addEventListener('cb-action', event => { event.stopPropagation(); this.activatePrimary(event) })
-        this.trigger = document.createElement('cb-icon-button') as IconButton; this.trigger.setAttribute('part', 'trigger'); this.trigger.setAttribute('exportparts', 'control:trigger-control,label:trigger-label,icon:trigger-icon,spinner:trigger-spinner'); this.trigger.addEventListener('cb-before-action', event => event.stopPropagation()); this.trigger.addEventListener('cb-action', event => { event.stopPropagation(); this.toggle() })
+        this.primary = document.createElement('cb-button') as Button; this.primary.setAttribute('part', 'primary'); this.primary.setAttribute('exportparts', 'control:primary-control,label:primary-label,icon:primary-icon,spinner:primary-spinner'); this.primary.addEventListener('beforeaction', event => event.stopPropagation()); this.primary.addEventListener('action', event => { event.stopPropagation(); this.activatePrimary(event) })
+        this.trigger = document.createElement('cb-icon-button') as IconButton; this.trigger.setAttribute('part', 'trigger'); this.trigger.setAttribute('exportparts', 'control:trigger-control,label:trigger-label,icon:trigger-icon,spinner:trigger-spinner'); this.trigger.addEventListener('beforeaction', event => event.stopPropagation()); this.trigger.addEventListener('action', event => { event.stopPropagation(); this.toggle() })
         this.group.append(this.primary, this.trigger)
         this.popup = el('div', 'popup'); this.popup.hidden = true
-        this.menu = document.createElement('cb-menu') as Menu; this.menu.setAttribute('part', 'menu'); this.menu.addEventListener('cb-before-action', event => event.stopPropagation()); this.menu.addEventListener('cb-action', event => { event.stopPropagation(); this.emit('cb-action', { ...(event as CustomEvent).detail, source: 'menu' }); this.setOpen(false) })
+        this.menu = document.createElement('cb-menu') as Menu; this.menu.setAttribute('part', 'menu'); this.menu.addEventListener('beforeaction', event => event.stopPropagation()); this.menu.addEventListener('action', event => { event.stopPropagation(); this.emit('action', { ...(event as CustomEvent).detail, source: 'menu' }); this.setOpen(false) })
         this.popup.append(this.menu)
         return fragment(sheet(editorCSS + `
 :host{display:inline-block}

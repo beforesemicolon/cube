@@ -60,7 +60,7 @@ export class Flashbar extends FlashbarBase {
                 action.setAttribute('part', 'action')
                 action.setAttribute('exportparts', 'control:action-control,label:action-label,icon:action-icon')
                 Object.assign(action, { label: message.actionLabel, accessibleLabel: message.actionLabel, href: message.actionHref, target: message.actionTarget, size: 'xs' })
-                action.addEventListener('cb-navigate', event => { void this.action(message, event) })
+                action.addEventListener('navigate', event => { event.stopPropagation(); void this.action(message, event) })
                 actions.append(action)
             } else {
                 const action = createButton('action', event => { void this.action(message, event) })

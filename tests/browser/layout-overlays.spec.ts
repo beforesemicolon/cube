@@ -144,10 +144,10 @@ test('modal owns its cancel action, spaces footer actions, and respects dismissa
         Object.assign(save, { label: 'Create page', variant: 'primary' })
         footer.append(save)
         modal.append(footer)
-        modal.addEventListener('cb-close', event => {
+        modal.addEventListener('close', event => {
             modal.dataset.closeReason = (event as CustomEvent<{ reason: string }>).detail.reason
         })
-        modal.addEventListener('cb-cancel', event => {
+        modal.addEventListener('cancel', event => {
             modal.dataset.cancelReason = (event as CustomEvent<{ reason: string }>).detail.reason
         })
         document.querySelector('#fixture')?.append(modal)
@@ -204,7 +204,7 @@ test('alert dialog confirmation is cancelable and flashbars update in place', as
         alert.heading = 'Delete this page?'
         alert.confirmLabel = 'Delete page'
         alert.open = true
-        alert.addEventListener('cb-before-confirm', event => event.preventDefault())
+        alert.addEventListener('beforeconfirm', event => event.preventDefault())
         document.querySelector('#fixture')?.append(alert)
 
         const flashbar = document.createElement('cb-flashbar') as HTMLElement & {

@@ -167,18 +167,18 @@ function applyRequest(record: ModalRecord): void {
             const link = document.createElement('cb-link') as Link
             link.setAttribute('part', 'action')
             Object.assign(link, { label: action.label, accessibleLabel: action.label, href: action.href, target: action.target ?? '', icon: action.icon ?? '', variant: action.variant ?? 'ghost', disabled: action.disabled ?? false })
-            link.addEventListener('cb-navigate', () => { if (action.dismiss ?? false) closeFromAction({ ...action, id: actionId }) })
+            link.addEventListener('navigate', () => { if (action.dismiss ?? false) closeFromAction({ ...action, id: actionId }) })
             footer.append(link)
             continue
         }
         const button = createButton('action', async event => {
             if (button.loading || button.disabled) return
             const detail = { id: record.id, actionId, originalEvent: event }
-            if (!modal.dispatchEvent(new CustomEvent('cb-before-modal-action', { detail, bubbles: true, composed: true, cancelable: true }))) return
+            if (!modal.dispatchEvent(new CustomEvent('beforemodalaction', { detail, bubbles: true, composed: true, cancelable: true }))) return
             button.loading = true
             try {
                 await action.onAction?.({ id: record.id, actionId, modal, close: reason => modal.close(reason) })
-                modal.emit('cb-modal-action', detail)
+                modal.emit('modalaction', detail)
                 if (action.dismiss ?? true) closeFromAction({ ...action, id: actionId })
             } catch (cause) {
                 report(record, cause instanceof Error ? cause : new Error(String(cause)))
@@ -222,13 +222,13 @@ export function showModal(request: ModalRequest = {}): ModalHandle {
     records.set(id, record)
     applyRequest(record)
     getModalHost().append(modal)
-    modal.addEventListener('cb-cancel', () => {
+    modal.addEventListener('cancel', () => {
         try {
             const result = record.request.onCancel?.(modal)
             if (result) void result.catch(cause => report(record, cause instanceof Error ? cause : new Error(String(cause))))
         } catch (cause) { report(record, cause instanceof Error ? cause : new Error(String(cause))) }
     })
-    modal.addEventListener('cb-close', event => {
+    modal.addEventListener('close', event => {
         const detail = (event as CustomEvent<{ reason: ModalCloseReason }>).detail
         if (record.documentLayerActive) setDocumentInert(false)
         record.documentLayerActive = false

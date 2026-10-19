@@ -46,7 +46,7 @@ function fill<T extends HTMLElement>(node: T): T {
 }
 
 function onValueChange(node: HTMLElement, handler: (value: ComponentValue) => void): void {
-    node.addEventListener('cb-change', event => handler((event as CustomEvent<ExampleChangeDetail>).detail.value))
+    node.addEventListener('change', event => handler((event as CustomEvent<ExampleChangeDetail>).detail.value))
 }
 
 function numberValue(value: ComponentValue, fallback: number): number {
@@ -448,9 +448,9 @@ export const PublishFlow: Story = {
         modal.append(form)
         const publish = component('cb-button', { label: 'Publish', variant: 'primary' })
         publish.slot = 'footer'
-        publish.addEventListener('cb-action', () => modal.close('action'))
+        publish.addEventListener('action', () => modal.close('action'))
         modal.append(publish)
-        launcher.addEventListener('cb-action', () => modal.show())
+        launcher.addEventListener('action', () => modal.show())
         return compactSurface(launcher, modal)
     },
 }
@@ -510,7 +510,7 @@ export const GlobalModalSystem: Story = {
         result.style.cssText = 'margin:0;color:var(--color-muted-foreground)'
         result.textContent = 'Open the modal and complete an action.'
         const launcher = component('cb-button', { label: 'Create project', variant: 'primary' })
-        launcher.addEventListener('cb-action', async () => {
+        launcher.addEventListener('action', async () => {
             const body = component('cb-col', { gap: '12px' })
             body.append(
                 formField('cb-text-input', { label: 'Project name', value: 'Cube documentation' }),
@@ -535,8 +535,8 @@ export const GlobalFlashbarSystem: Story = {
         const actions = component('cb-row', { gap: '8px', wrap: true })
         const save = component('cb-button', { label: 'Show success', variant: 'primary' })
         const retry = component('cb-button', { label: 'Show retry action' })
-        save.addEventListener('cb-action', () => createFlashbar({ id: 'saved-example', type: 'success', heading: 'Changes saved', message: 'The project is up to date.', dismissible: true, dismissLabel: 'Dismiss changes saved' }))
-        retry.addEventListener('cb-action', () => {
+        save.addEventListener('action', () => createFlashbar({ id: 'saved-example', type: 'success', heading: 'Changes saved', message: 'The project is up to date.', dismissible: true, dismissLabel: 'Dismiss changes saved' }))
+        retry.addEventListener('action', () => {
             const handle = createFlashbar({
                 id: 'retry-example', type: 'error', heading: 'Publish failed', message: 'Check the connection and try again.',
                 actionLabel: 'Retry publish', dismissOnAction: false, dismissible: true, dismissLabel: 'Dismiss publish error',

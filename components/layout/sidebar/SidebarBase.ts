@@ -25,11 +25,11 @@ export abstract class SidebarBase<P extends SidebarProps = SidebarProps> extends
         if (!this.isCollapsible() || this.unavailable) return false
         const expanded = !this.isExpanded()
         const detail = { expanded, originalEvent }
-        if (!this.request('cb-before-toggle', detail)) return false
+        if (!this.request('beforetoggle', detail)) return false
         this.expanded = expanded
         this.toggleAttribute('expanded', expanded)
         this.syncView()
-        this.emit('cb-toggle', detail)
+        this.emit('toggle', detail)
         return true
     }
 

@@ -48,11 +48,11 @@ export abstract class RulersBase extends Component<RulersProps> {
     setCursor(x: number, y: number, originalEvent?: Event, commit = false): boolean {
         if (this.unavailable) return false
         const detail: RulerCursorDetail = { x: finite(x), y: finite(y), originalEvent }
-        if (!this.request(commit ? 'cb-before-change' : 'cb-before-input', detail)) return false
+        if (!this.request(commit ? 'beforechange' : 'beforeinput', detail)) return false
         this.cursorX = detail.x
         this.cursorY = detail.y
         this.syncView()
-        this.emit(commit ? 'cb-change' : 'cb-input', detail)
+        this.emit(commit ? 'change' : 'input', detail)
         return true
     }
 }

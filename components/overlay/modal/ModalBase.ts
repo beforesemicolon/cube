@@ -56,23 +56,23 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
 
     show(): boolean {
         if (this.open) return true
-        if (!this.dispatchEvent(new CustomEvent('cb-before-open', { bubbles: true, composed: true, cancelable: true }))) return false
+        if (!this.dispatchEvent(new CustomEvent('beforeopen', { bubbles: true, composed: true, cancelable: true }))) return false
         this.captureReturnTarget()
         this.setOpen(true)
         if (!this.dialogElement()?.open) {
             this.setOpen(false)
             return false
         }
-        this.emit('cb-open', {})
+        this.emit('open', {})
         return true
     }
 
     close(reason: ModalCloseReason = 'programmatic'): boolean {
         if (!this.open && !this.dialogElement()?.open) return true
         const detail = { reason }
-        if (!this.dispatchEvent(new CustomEvent('cb-before-close', { detail, bubbles: true, composed: true, cancelable: true }))) return false
+        if (!this.dispatchEvent(new CustomEvent('beforeclose', { detail, bubbles: true, composed: true, cancelable: true }))) return false
         this.setOpen(false)
-        this.emit('cb-close', detail)
+        this.emit('close', detail)
         this.restoreFocus()
         return true
     }
@@ -95,7 +95,7 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
 
     protected dismiss(reason: ModalCloseReason, originalEvent?: Event): void {
         if (!bool(this.dismissible)) return
-        this.emit('cb-cancel', { reason, originalEvent })
+        this.emit('cancel', { reason, originalEvent })
         this.close(reason)
     }
 

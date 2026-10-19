@@ -46,10 +46,10 @@ export abstract class ExpandableSectionBase extends Component<ExpandableSectionP
     private setExpanded(expanded: boolean, originalEvent?: Event): boolean {
         if (this.unavailable || bool(this.expanded) === expanded) return false
         const detail: ExpandableSectionChangeDetail = { expanded, originalEvent }
-        if (!this.request('cb-before-expansion-change', detail)) return false
+        if (!this.request('beforeexpansionchange', detail)) return false
         this.expanded = expanded
         this.syncView()
-        this.emit('cb-expansion-change', detail)
+        this.emit('expansionchange', detail)
         return true
     }
 }

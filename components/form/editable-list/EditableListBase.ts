@@ -128,11 +128,11 @@ export abstract class EditableListBase<P extends EditableListProps = EditableLis
     protected maximumItems(): number { return Math.max(this.minimumItems(), Math.trunc(finite(this.maxItems, Number.POSITIVE_INFINITY))) }
     private commit(items: readonly EditableListItem[], reason: EditableListChangeReason, id: string, originalEvent?: Event): boolean {
         const detail = { items, reason, id, originalEvent }
-        if (!this.request('cb-before-items-change', detail)) return false
+        if (!this.request('beforeitemschange', detail)) return false
         this.items = items
         this.validationShown = true
         this.syncView()
-        this.emit('cb-change', { ...detail, value: items.map(item => item.value) })
+        this.emit('change', { ...detail, value: items.map(item => item.value) })
         return true
     }
 }

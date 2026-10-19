@@ -38,12 +38,12 @@ export abstract class EditableLabelBase<P extends EditableLabelProps = EditableL
     startEditing(originalEvent?: Event): boolean {
         if (this.unavailable || bool(this.readOnly) || bool(this.editing)) return false
         const detail = { value: scalarText(this.value), originalEvent }
-        if (!this.request('cb-before-edit', detail)) return false
+        if (!this.request('beforeedit', detail)) return false
         this.draft = scalarText(this.value)
         this.editStartValue = this.draft
         this.editing = true
         this.syncView()
-        this.emit('cb-edit-start', detail)
+        this.emit('editstart', detail)
         return true
     }
 
@@ -55,7 +55,7 @@ export abstract class EditableLabelBase<P extends EditableLabelProps = EditableL
         this.editing = false
         this.validationShown = true
         this.syncView()
-        this.emit('cb-edit-end', { ...detail, reason: 'commit' })
+        this.emit('editend', { ...detail, reason: 'commit' })
         return true
     }
 
@@ -64,26 +64,26 @@ export abstract class EditableLabelBase<P extends EditableLabelProps = EditableL
         const next = scalarText(value)
         if (next === this.value) return false
         const detail = { value: next, previousValue: scalarText(this.value), originalEvent }
-        if (!this.request('cb-before-change', detail)) return false
+        if (!this.request('beforechange', detail)) return false
         this.value = next
         this.draft = next
         this.syncView()
-        this.emit('cb-change', detail)
+        this.emit('change', detail)
         return true
     }
 
     cancelEditing(originalEvent?: Event): boolean {
         if (!bool(this.editing)) return false
         const detail = { value: this.editStartValue, draft: this.draft, originalEvent }
-        if (!this.request('cb-before-edit-cancel', detail)) return false
+        if (!this.request('beforeeditcancel', detail)) return false
         const changed = this.value !== this.editStartValue
         const previousValue = this.value
         this.value = this.editStartValue
         this.draft = this.editStartValue
         this.editing = false
         this.syncView()
-        if (changed) this.emit('cb-change', { value: this.value, previousValue, originalEvent, reason: 'cancel' })
-        this.emit('cb-edit-end', { ...detail, reason: 'cancel' })
+        if (changed) this.emit('change', { value: this.value, previousValue, originalEvent, reason: 'cancel' })
+        this.emit('editend', { ...detail, reason: 'cancel' })
         return true
     }
 }

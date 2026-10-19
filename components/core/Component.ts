@@ -80,7 +80,7 @@ export abstract class Component<P extends CommonProps = CommonProps> extends Web
         if (control) control.focus(options)
         else super.focus(options)
     }
-    onError(error: unknown): void { this.emit('cb-error', { code: 'COMPONENT_ERROR', error, component: this.localName }) }
+    onError(error: unknown): void { this.emit('error', { code: 'COMPONENT_ERROR', error, component: this.localName }) }
     protected documentLanguage(): string | undefined { return this.ownerDocument.documentElement.lang || undefined }
 }
 const brand = Symbol.for('@beforesemicolon/cube/component-version')

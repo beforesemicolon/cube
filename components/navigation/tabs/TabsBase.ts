@@ -21,11 +21,11 @@ export abstract class TabsBase<P extends TabsProps = TabsProps> extends ChoiceGr
             ? scalarText(remaining[Math.min(index, remaining.length - 1)]?.id)
             : scalarText(this.value)
         const detail = { id: item.id, item, items: remaining, value: nextValue, originalEvent }
-        if (!this.request('cb-before-close', detail)) return false
+        if (!this.request('beforeclose', detail)) return false
         this.items = remaining
         this.value = nextValue
         this.syncView()
-        this.emit('cb-close', detail)
+        this.emit('close', detail)
         return true
     }
 }

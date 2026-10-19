@@ -18,7 +18,7 @@ export class ChartView {
     private details = el('p', 'details'); private instructions = el('p', 'instructions'); private actions = el('div', 'actions')
     private data = document.createElement('cb-expandable-section') as ExpandableSection
     private table = document.createElement('cb-table') as Table
-    private navigator = createPressedButton('navigator', () => this.pin()); private retry = createButton('retry', () => { this.failure = false; this.owner.emit('cb-retry'); this.refresh() })
+    private navigator = createPressedButton('navigator', () => this.pin()); private retry = createButton('retry', () => { this.failure = false; this.owner.emit('retry'); this.refresh() })
     private all = createButton('show-all', () => this.owner.showAll(this.model?.legend.map(i => i.id) ?? []))
     private unpin = createButton('unpin', () => { this.owner.pinned = false; this.showDetails() })
     private zoomIn = createIconButton('zoom-in','plus', () => this.zoom(.75)); private zoomOut = createIconButton('zoom-out','minus', () => this.zoom(1.25)); private reset = createIconButton('reset-zoom','reset', () => this.zoom(0))
@@ -47,7 +47,7 @@ export class ChartView {
         this.table.setAttribute('part', 'data-table'); this.table.setAttribute('exportparts', 'root:data-table-root,table:data-table-grid,head:data-table-head,row:data-table-row,cell:data-table-cell')
         Object.assign(this.data, { variant: 'default', headingLevel: 2, disableContentPadding: true })
         Object.assign(this.table, { density: 'compact', resizable: false, wrap: true })
-        this.data.addEventListener('cb-expansion-change', event => { if ((event as CustomEvent<ExpandableSectionChangeDetail>).detail.expanded) this.renderTable() })
+        this.data.addEventListener('expansionchange', event => { event.stopPropagation(); if ((event as CustomEvent<ExpandableSectionChangeDetail>).detail.expanded) this.renderTable() })
         this.data.append(this.table)
         this.actions.append(this.navigator, this.unpin, this.all, this.retry, this.zoomIn, this.zoomOut, this.reset)
         this.group.append(this.title, this.description, this.legend, this.plot, this.state, this.actions, this.instructions, this.details, this.data)
@@ -70,7 +70,7 @@ cb-table[part=data-table]{--component-table-min-width:100%;--component-table-max
         if (typeof ResizeObserver !== 'undefined') { this.observer = new ResizeObserver(() => { this.instance?.resize(); this.refresh() }); this.observer.observe(this.owner) }
         this.scheme = globalThis.matchMedia?.('(prefers-color-scheme: dark)'); this.reduced = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')
         this.scheme?.addEventListener('change', this.windowChange); this.reduced?.addEventListener('change', this.windowChange)
-        document.addEventListener('cb-theme-change', this.windowChange, true)
+        document.addEventListener('themechange', this.windowChange, true)
         window.addEventListener('resize', this.windowChange)
         this.mutations = new MutationObserver(this.windowChange)
         let ancestor: Node | null = this.owner
@@ -83,7 +83,7 @@ cb-table[part=data-table]{--component-table-min-width:100%;--component-table-max
     destroy(): void {
         this.alive = false; this.revision++; this.instance?.dispose(); this.instance = undefined
         this.observer?.disconnect(); this.mutations?.disconnect(); this.scheme?.removeEventListener('change', this.windowChange); this.reduced?.removeEventListener('change', this.windowChange)
-        document.removeEventListener('cb-theme-change', this.windowChange, true); window.removeEventListener('resize', this.windowChange)
+        document.removeEventListener('themechange', this.windowChange, true); window.removeEventListener('resize', this.windowChange)
     }
     refresh(): void {
         if (!this.alive || this.scheduled) return
@@ -140,7 +140,7 @@ cb-table[part=data-table]{--component-table-min-width:100%;--component-table-max
                 const start = clamp(batch.start, 0, 100), end = clamp(batch.end, start, 100)
                 if (start === this.zoomRange[0] && end === this.zoomRange[1]) return
                 this.zoomRange = [start, end]
-                this.owner.emit('cb-zoom-change', { start, end })
+                this.owner.emit('zoomchange', { start, end })
             })
         }
         this.instance?.setOption(this.model.option, { notMerge: true })
@@ -234,7 +234,7 @@ cb-table[part=data-table]{--component-table-min-width:100%;--component-table-max
         const center = (this.zoomRange[0] + this.zoomRange[1]) / 2, span = factor ? clamp((this.zoomRange[1] - this.zoomRange[0]) * factor, 5, 100) : 100
         const start = clamp(center - span / 2, 0, 100 - span)
         this.zoomRange = [start, start + span]; this.applyZoom()
-        this.owner.emit('cb-zoom-change', { start: start, end: start + span })
+        this.owner.emit('zoomchange', { start: start, end: start + span })
     }
     private applyZoom(): void { this.instance?.dispatchAction({ type: 'dataZoom', start: this.zoomRange[0], end: this.zoomRange[1] }) }
 }

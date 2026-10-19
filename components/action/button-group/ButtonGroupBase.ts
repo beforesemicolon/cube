@@ -18,6 +18,6 @@ export abstract class ButtonGroupBase<P extends ButtonGroupProps = ButtonGroupPr
     protected activate(item: NormalizedItem, originalEvent: Event): void {
         if (this.unavailable || item.disabled) return
         const detail = { value: item.id, item, originalEvent }
-        if (this.request('cb-before-action', detail)) this.emit('cb-action', detail)
+        if (this.request('beforeaction', detail)) this.emit('action', detail)
     }
 }

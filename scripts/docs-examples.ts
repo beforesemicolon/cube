@@ -53,7 +53,7 @@ function renderOverlays(container: HTMLElement, provider: HTMLElement, cube: Cub
     Object.assign(row, { gap: 'var(--spacing-sm)', wrap: true })
     const button = document.createElement('cb-button')
     Object.assign(button, { label: labels.openModal, variant: 'primary' })
-    button.addEventListener('cb-action', () => { void cube.showModal({ heading: labels.modalHeading, description: labels.modalDescription, body: labels.modalBody }) })
+    button.addEventListener('action', () => { void cube.showModal({ heading: labels.modalHeading, description: labels.modalDescription, body: labels.modalBody }) })
     const flashbar = document.createElement('cb-flashbar') as HTMLElement & { show(message: { type: string; heading: string; message: string; duration: number }): string }
     flashbar.style.position = 'relative'
     flashbar.style.inset = 'auto'

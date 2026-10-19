@@ -35,9 +35,9 @@ export class LinkedValues extends LinkedValuesBase {
         firstField.append(this.firstLabelNode, this.first)
         secondField.append(this.secondLabelNode, this.second)
         this.link = document.createElement('cb-icon-button') as IconButton; this.link.setAttribute('part', 'link')
-        this.first.addEventListener('cb-change', event => this.setFirst(finite((event as CustomEvent<{ value: number }>).detail.value), event))
-        this.second.addEventListener('cb-change', event => this.setSecond(finite((event as CustomEvent<{ value: number }>).detail.value), event))
-        this.link.addEventListener('cb-change', event => this.setLinked(bool((event as CustomEvent<{ pressed: boolean }>).detail.pressed), event))
+        this.first.addEventListener('change', event => this.setFirst(finite((event as CustomEvent<{ value: number }>).detail.value), event))
+        this.second.addEventListener('change', event => this.setSecond(finite((event as CustomEvent<{ value: number }>).detail.value), event))
+        this.link.addEventListener('change', event => this.setLinked(bool((event as CustomEvent<{ pressed: boolean }>).detail.pressed), event))
         this.group.append(firstField, this.link, secondField)
         return fragment(sheet(css), this.group)
     }

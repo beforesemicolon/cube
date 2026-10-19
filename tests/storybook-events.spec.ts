@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readdirSync, readFileSync, type Dirent } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
+import * as ts from 'typescript'
 import { cubeEventNames } from '../stories/event-names.js'
 
 function sourceFiles(directory: string): string[] {
@@ -15,12 +16,22 @@ function sourceFiles(directory: string): string[] {
 
 function emittedEventNames(source: string): string[] {
     const names: string[] = []
-    const callPattern = /(?:\.(?:emit|request)|new CustomEvent)\(([^;\n]*)/g
-    const namePattern = /['"](cb-[a-z0-9-]+)['"]/g
-    for (const call of source.matchAll(callPattern)) {
-        const argumentsSource = call[1] ?? ''
-        for (const match of argumentsSource.matchAll(namePattern)) if (match[1]) names.push(match[1])
+    const sourceFile = ts.createSourceFile('component.ts', source, ts.ScriptTarget.Latest, true)
+    const collectNames = (node: ts.Node): void => {
+        if (ts.isStringLiteral(node) && /^[a-z][a-z0-9-]*$/.test(node.text)) names.push(node.text)
+        else ts.forEachChild(node, collectNames)
     }
+    const visit = (node: ts.Node): void => {
+        const isSemanticCall = ts.isCallExpression(node)
+            && ts.isPropertyAccessExpression(node.expression)
+            && (node.expression.name.text === 'emit' || node.expression.name.text === 'request')
+        const isCustomEvent = ts.isNewExpression(node)
+            && ts.isIdentifier(node.expression)
+            && node.expression.text === 'CustomEvent'
+        if ((isSemanticCall || isCustomEvent) && node.arguments?.[0]) collectNames(node.arguments[0])
+        ts.forEachChild(node, visit)
+    }
+    visit(sourceFile)
     return names
 }
 

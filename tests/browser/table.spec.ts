@@ -65,7 +65,7 @@ test('sorts siblings, expands nested rows, selects eligible rows and activates r
     await expect(table.getByRole('checkbox', { name: 'Select Archive' })).toBeDisabled()
 
     const activation = page.evaluate(() => new Promise<string>(resolve => {
-        document.querySelector('cb-table')?.addEventListener('cb-row-activate', event => {
+        document.querySelector('cb-table')?.addEventListener('rowactivate', event => {
             const detail = (event as CustomEvent<{ key: string }>).detail
             resolve(detail.key)
         }, { once: true })
@@ -102,7 +102,7 @@ test('keeps headers and rows aligned while resizing columns with a pointer', asy
     const handle = await separator.boundingBox()
     if (!handle) throw new Error('Expected the Name column resize handle to be visible')
     const resized = table.evaluate(element => new Promise<number>(resolve => {
-        element.addEventListener('cb-column-resize', event => {
+        element.addEventListener('columnresize', event => {
             resolve((event as CustomEvent<{ width: number }>).detail.width)
         }, { once: true })
     }))

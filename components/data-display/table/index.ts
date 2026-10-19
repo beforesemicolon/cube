@@ -74,7 +74,7 @@ function iconButton(icon: string, label: string, part: string, action: (event: E
     Object.assign(button, { icon, label, accessibleLabel: label, variant: 'ghost', size: 'xs' })
     button.setAttribute('part', part)
     button.addEventListener('click', event => event.stopPropagation())
-    button.addEventListener('cb-action', event => { event.stopPropagation(); action(event) })
+    button.addEventListener('action', event => { event.stopPropagation(); action(event) })
     return button
 }
 
@@ -236,7 +236,7 @@ export class Table extends TableBase {
             input.disabled = this.unavailable || !this.selectableRows().length
             aria(input, 'aria-label', scalarText(input.checked ? this.deselectAllLabel : this.selectAllLabel) || this.accessibleName())
             input.addEventListener('click', event => event.stopPropagation())
-            input.addEventListener('change', event => this.toggleAllRows(event))
+            input.addEventListener('change', event => { event.stopPropagation(); this.toggleAllRows(event) })
             cell.append(input)
         }
         return cell
@@ -325,7 +325,7 @@ export class Table extends TableBase {
             handle.toggleAttribute('data-resizing', false)
             this.toggleAttribute('data-resizing', false)
             preserveScrollPosition()
-            this.emit('cb-column-resize', { column, width: this.columnWidths.get(column.id), originalEvent: endEvent })
+            this.emit('columnresize', { column, width: this.columnWidths.get(column.id), originalEvent: endEvent })
         }
         handle.setPointerCapture(event.pointerId)
         handle.toggleAttribute('data-resizing', true)
@@ -350,7 +350,7 @@ export class Table extends TableBase {
             if (resizer) aria(resizer, 'aria-valuenow', Math.round(width))
         }
         queueMicrotask(() => this.applyStickyOffsets())
-        if (announce) this.emit('cb-column-resize', { column, width })
+        if (announce) this.emit('columnresize', { column, width })
     }
 
     private freezeColumnWidths(): void {
@@ -439,7 +439,7 @@ export class Table extends TableBase {
         input.disabled = this.unavailable || !this.isSelectable(row.item)
         aria(input, 'aria-label', this.rowLabel(selected ? this.deselectRowLabel : this.selectRowLabel, row))
         input.addEventListener('click', event => event.stopPropagation())
-        input.addEventListener('change', event => this.toggleRowSelection(row, event))
+        input.addEventListener('change', event => { event.stopPropagation(); this.toggleRowSelection(row, event) })
         cell.append(input)
         return cell
     }

@@ -18,12 +18,12 @@ export abstract class PopoverBase<P extends PopoverProps = PopoverProps> extends
     private setOpen(open: boolean, originalEvent?: Event): boolean {
         if (this.unavailable || this.isOpen() === open) return !this.unavailable
         const detail = { open, originalEvent }
-        if (!this.request(open ? 'cb-before-open' : 'cb-before-close', detail)) return false
+        if (!this.request(open ? 'beforeopen' : 'beforeclose', detail)) return false
         this.open = open
         this.toggleAttribute('open', open)
         this.syncView()
-        this.emit(open ? 'cb-open' : 'cb-close', detail)
-        this.emit('cb-open-change', detail)
+        this.emit(open ? 'open' : 'close', detail)
+        this.emit('openchange', detail)
         return true
     }
 }

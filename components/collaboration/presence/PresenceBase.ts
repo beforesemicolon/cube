@@ -49,16 +49,16 @@ export abstract class PresenceBase extends Component<PresenceProps> {
     activate(item: PresenceItem, originalEvent?: Event): boolean {
         if (this.unavailable || item.disabled) return false
         const detail = { item, value: item.id, originalEvent }
-        if (!this.request('cb-before-action', detail)) return false
-        this.emit('cb-action', detail)
+        if (!this.request('beforeaction', detail)) return false
+        this.emit('action', detail)
         return true
     }
 
     activateOverflow(originalEvent?: Event): boolean {
         if (this.unavailable || !this.hiddenItems.length) return false
         const detail = { items: this.hiddenItems, count: this.hiddenItems.length, originalEvent }
-        if (!this.request('cb-before-overflow', detail)) return false
-        this.emit('cb-overflow', detail)
+        if (!this.request('beforeoverflow', detail)) return false
+        this.emit('overflow', detail)
         return true
     }
 }

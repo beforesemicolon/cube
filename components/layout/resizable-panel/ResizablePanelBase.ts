@@ -25,10 +25,10 @@ export abstract class ResizablePanelBase<P extends ResizablePanelProps = Resizab
         const next = clamp(value, finite(this.min, 180), finite(this.max, 640))
         if (this.unavailable || next === this.currentSize()) return false
         const detail = { value: next, originalEvent }
-        if (!this.request('cb-before-resize', detail)) return false
+        if (!this.request('beforeresize', detail)) return false
         this.value = next
         this.syncView()
-        this.emit('cb-resize', detail)
+        this.emit('resize', detail)
         return true
     }
 }

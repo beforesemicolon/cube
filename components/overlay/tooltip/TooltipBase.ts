@@ -22,6 +22,6 @@ export abstract class TooltipBase<P extends TooltipProps = TooltipProps> extends
     }
     protected setOpen(open: boolean): void {
         if (this.open === open) return
-        this.open = open; this.toggleAttribute('open', open); this.syncTooltip(); this.emit('cb-open-change', { open })
+        this.open = open; this.toggleAttribute('open', open); this.syncTooltip(); this.emit('openchange', { open })
     }
 }

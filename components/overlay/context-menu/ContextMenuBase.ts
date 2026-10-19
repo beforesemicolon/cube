@@ -15,6 +15,6 @@ export abstract class ContextMenuBase<P extends ContextMenuProps = ContextMenuPr
     close(): void { this.setOpen(false) }
     protected setOpen(open: boolean): void {
         if (this.open === open) return
-        this.open = open; this.toggleAttribute('open', open); this.syncView(); this.emit('cb-open-change', { open })
+        this.open = open; this.toggleAttribute('open', open); this.syncView(); this.emit('openchange', { open })
     }
 }

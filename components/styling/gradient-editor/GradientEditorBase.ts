@@ -167,7 +167,7 @@ export abstract class GradientEditorBase extends FormControlBase<GradientEditorP
         if (!stop || this.unavailable) return false
         this.selectedId = stop.id
         this.syncView()
-        this.emit('cb-stop-select', { stop, originalEvent })
+        this.emit('stopselect', { stop, originalEvent })
         return true
     }
 
@@ -228,7 +228,7 @@ export abstract class GradientEditorBase extends FormControlBase<GradientEditorP
         const value = serializeGradient(model)
         if (value === this.cssValue()) return false
         const detail: GradientChangeDetail = { ...model, value, selectedStopId: this.selectedId, originalEvent }
-        if (!this.request('cb-before-change', detail)) return false
+        if (!this.request('beforechange', detail)) return false
         this.type = model.type
         this.angle = model.angle
         this.shape = model.shape
@@ -238,7 +238,7 @@ export abstract class GradientEditorBase extends FormControlBase<GradientEditorP
         this.value = value
         this.ensureSelectedStop()
         this.syncView()
-        this.emit('cb-change', detail)
+        this.emit('change', detail)
         return true
     }
 

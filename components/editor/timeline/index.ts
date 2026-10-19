@@ -145,7 +145,7 @@ export class Timeline extends TimelineBase {
         button.toggleAttribute('data-selected', button.pressed)
         button.accessibleLabel = this.text('keyframeLabel').replace('{track}', track.label).replace('{time}', this.formatTime(keyframe.time))
         button.disabled = this.unavailable || bool(track.disabled) || bool(keyframe.disabled)
-        button.addEventListener('cb-change', event => { event.stopPropagation(); this.selectKeyframe(track.id, keyframe.id, event) })
+        button.addEventListener('change', event => { event.stopPropagation(); this.selectKeyframe(track.id, keyframe.id, event) })
         button.addEventListener('pointerdown', event => {
             if (button.disabled) return
             event.stopPropagation()
@@ -199,7 +199,7 @@ export class Timeline extends TimelineBase {
             let time = this.playbackStartedFrom + (now - this.playbackStartedAt) / 1000
             if (time >= this.timelineDuration()) {
                 if (bool(this.loop)) { time %= this.timelineDuration(); this.playbackStartedAt = now; this.playbackStartedFrom = time }
-                else { this.playing = false; time = this.timelineDuration(); this.emit('cb-end', { currentTime: time }) }
+                else { this.playing = false; time = this.timelineDuration(); this.emit('end', { currentTime: time }) }
             }
             this.currentTime = time
             this.syncView()

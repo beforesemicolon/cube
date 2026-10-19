@@ -53,11 +53,11 @@ export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValue
     setLinked(linked: boolean, originalEvent?: Event): boolean {
         if (this.unavailable || bool(this.linked) === linked) return false
         const detail = { linked, originalEvent }
-        if (!this.request('cb-before-link-change', detail)) return false
+        if (!this.request('beforelinkchange', detail)) return false
         this.linked = linked
         if (linked) this.captureRatio()
         this.syncView()
-        this.emit('cb-link-change', detail)
+        this.emit('linkchange', detail)
         return true
     }
 
@@ -83,9 +83,9 @@ export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValue
             else firstValue = this.normalized(this.ratio ? secondValue / this.ratio : secondValue)
         }
         const detail = { firstValue, secondValue, source, linked: bool(this.linked), originalEvent }
-        if (!this.request('cb-before-change', detail)) return false
+        if (!this.request('beforechange', detail)) return false
         this.firstValue = firstValue; this.secondValue = secondValue
-        this.syncView(); this.emit('cb-change', detail); return true
+        this.syncView(); this.emit('change', detail); return true
     }
     private normalized(value: number): number {
         const minimum = finite(this.min, Number.NEGATIVE_INFINITY), maximum = finite(this.max, Number.POSITIVE_INFINITY)

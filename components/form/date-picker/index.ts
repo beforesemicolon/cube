@@ -15,7 +15,7 @@ export class DatePicker extends DatePickerBase {
         this.popup = el('div', 'popup'); this.popup.id = `${this.trigger.id}-popup`; this.popup.setAttribute('role', 'dialog'); this.calendar = document.createElement('cb-calendar') as Calendar; this.popup.append(this.calendar)
         this.nativeControl = el('input', 'native control'); this.nativeControl.type = 'date'; this.nativeControl.id = `${this.trigger.id}-native`
         this.trigger.addEventListener('click', event => this.setOpen(!this.open, event)); root.addEventListener('keydown', event => { if (event.key === 'Escape') { this.setOpen(false, event); this.trigger?.focus() } })
-        this.calendar.addEventListener('cb-change', event => { const detail = (event as CustomEvent<{ value: string }>).detail; this.setValue(detail.value, event); this.trigger?.focus() })
+        this.calendar.addEventListener('change', event => { const detail = (event as CustomEvent<{ value: string }>).detail; this.setValue(detail.value, event); this.trigger?.focus() })
         this.nativeControl.addEventListener('input', event => this.setValue(this.nativeControl!.value, event)); this.nativeControl.addEventListener('blur', () => { this.validationShown = true; this.syncView() })
         root.append(this.trigger, this.popup, this.nativeControl); return fragment(sheet(css), root)
     }

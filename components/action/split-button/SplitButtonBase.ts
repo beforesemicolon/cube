@@ -12,6 +12,6 @@ export abstract class SplitButtonBase<P extends SplitButtonProps = SplitButtonPr
     protected activatePrimary(originalEvent: Event): void {
         if (this.unavailable || this.loading) return
         const detail = { value: scalarText(this.actionValue), source: 'primary' as const, originalEvent }
-        if (this.request('cb-before-action', detail)) this.emit('cb-action', detail)
+        if (this.request('beforeaction', detail)) this.emit('action', detail)
     }
 }

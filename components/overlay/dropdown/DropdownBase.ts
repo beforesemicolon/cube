@@ -35,8 +35,8 @@ export abstract class DropdownBase<P extends DropdownProps = DropdownProps> exte
     protected setOpen(open: boolean): void {
         if (this.unavailable && open || bool(this.open) === open) return
         const detail = { open }
-        if (!this.request('cb-before-open-change', detail)) return
-        this.open = open; this.toggleAttribute('open', open); this.syncView(); this.syncPopup(); this.emit('cb-open-change', detail)
+        if (!this.request('beforeopenchange', detail)) return
+        this.open = open; this.toggleAttribute('open', open); this.syncView(); this.syncPopup(); this.emit('openchange', detail)
     }
     protected syncPopup(): void {
         if (bool(this.open)) this.popupController?.show(); else this.popupController?.hide()

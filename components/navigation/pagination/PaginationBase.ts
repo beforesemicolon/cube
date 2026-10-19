@@ -21,7 +21,7 @@ export abstract class PaginationBase<P extends PaginationProps = PaginationProps
         const next = Math.max(1, Math.min(this.pageCount, Math.trunc(finite(page, 1))))
         if (next === this.currentPage || this.unavailable) return
         const detail = { page: next, previousPage: this.currentPage, originalEvent }
-        if (!this.request('cb-before-change', detail)) return
-        this.page = next; this.syncView(); this.emit('cb-change', detail)
+        if (!this.request('beforechange', detail)) return
+        this.page = next; this.syncView(); this.emit('change', detail)
     }
 }

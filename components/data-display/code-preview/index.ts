@@ -72,7 +72,7 @@ export class CodePreview extends CodePreviewBase {
         try {
             await navigator.clipboard.writeText(source)
             if (this.statusNode) this.statusNode.textContent = this.copiedText()
-            this.emit('cb-copy', { value:source })
+            this.emit('copy', { value:source })
         } catch (error) { this.onError(error) }
     }
 }

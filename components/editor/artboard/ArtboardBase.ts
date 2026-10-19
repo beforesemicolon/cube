@@ -37,11 +37,11 @@ export abstract class ArtboardBase extends Component<ArtboardProps> {
     select(selected = true, originalEvent?: Event): boolean {
         if (!this.canSelect()) return false
         const detail: ArtboardSelectDetail = { selected, originalEvent }
-        if (!this.request('cb-before-select', detail)) return false
+        if (!this.request('beforeselect', detail)) return false
         this.selected = selected
         this.toggleAttribute('selected', selected)
         this.syncView()
-        this.emit('cb-select', detail)
+        this.emit('select', detail)
         return true
     }
 }

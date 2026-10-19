@@ -78,7 +78,7 @@ export abstract class FlashbarBase<P extends FlashbarProps = FlashbarProps> exte
         else this.records.unshift(record)
         this.schedule(record)
         this.renderMessages()
-        this.emit('cb-flashbar-show', { message: record })
+        this.emit('flashbarshow', { message: record })
         return record.id
     }
 
@@ -97,14 +97,14 @@ export abstract class FlashbarBase<P extends FlashbarProps = FlashbarProps> exte
         if (timer !== undefined) globalThis.clearTimeout(timer.handle)
         this.timers.delete(id)
         this.renderMessages()
-        this.emit('cb-flashbar-dismiss', { id, reason, message })
+        this.emit('flashbardismiss', { id, reason, message })
         return true
     }
 
     clear(): void { for (const message of [...this.records]) this.dismiss(message.id, 'clear') }
 
     protected async action(message: NormalizedFlashbarMessage, originalEvent: Event): Promise<void> {
-        this.emit('cb-flashbar-action', { id: message.id, message, originalEvent })
+        this.emit('flashbaraction', { id: message.id, message, originalEvent })
         if (message.actionLoading) return
         if (!message.action) {
             if (message.dismissOnAction) this.dismiss(message.id, 'action')

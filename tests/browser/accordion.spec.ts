@@ -32,7 +32,7 @@ test('expands one item at a time, exposes actions, disabled reasons and semantic
     await expect(accordion.getByRole('region', { name: /Content/ })).toContainText('Content controls')
 
     const expansion = page.evaluate(() => new Promise<{ id: string; expandedIds: readonly string[] }>(resolve => {
-        document.querySelector('cb-accordion')?.addEventListener('cb-expansion-change', event => {
+        document.querySelector('cb-accordion')?.addEventListener('expansionchange', event => {
             const detail = (event as CustomEvent<{ id: string; expandedIds: readonly string[] }>).detail
             resolve({ id: detail.id, expandedIds: detail.expandedIds })
         }, { once: true })
@@ -43,7 +43,7 @@ test('expands one item at a time, exposes actions, disabled reasons and semantic
     await expect(appearance).toHaveAttribute('aria-expanded', 'true')
 
     const action = page.evaluate(() => new Promise<string>(resolve => {
-        document.querySelector('cb-accordion')?.addEventListener('cb-item-action', event => {
+        document.querySelector('cb-accordion')?.addEventListener('itemaction', event => {
             resolve((event as CustomEvent<{ actionId: string }>).detail.actionId)
         }, { once: true })
     }))
@@ -66,7 +66,7 @@ test('supports multiple panels, cancellation, public controls and preserves rend
                 { id: 'two', label: 'Two', content: 'Second panel' },
             ],
         })
-        accordion.addEventListener('cb-before-expansion-change', event => {
+        accordion.addEventListener('beforeexpansionchange', event => {
             if ((event as CustomEvent<{ id: string }>).detail.id === 'two' && accordion.dataset.block === 'true') event.preventDefault()
         })
         document.querySelector('#fixture')?.append(accordion)

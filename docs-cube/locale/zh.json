@@ -9,7 +9,7 @@
     "themeBody": "ThemeProvider 通过 theme 或 src 接受 site-builder ThemeDefinitionV1。appearance 支持 light、dark 或 system。CSS 变量名与 site-builder 一致；嵌套提供器创建明确的作用域。JSON 主题和 CSS 生成到 dist/themes。",
     "actions": "操作组件",
     "actionsBody": "按钮、分组操作、选择控件、导航、菜单、工具栏、分页、提示、快捷键与命令面板共享同一套条目模型、焦点规则和事件约定。",
-    "actionsApi": "集合组件接受带稳定 id、label、description、icon、disabled、href、shortcut 与选择元数据的条目。选择触发 cb-change，命令触发 cb-action，导航触发 cb-navigate，浮层状态触发 cb-open-change；结果事件均可冒泡并穿过 shadow DOM。",
+    "actionsApi": "集合组件接受带稳定 id、label、description、icon、disabled、href、shortcut 与选择元数据的条目。选择触发 change，命令触发 action，导航触发 navigate，浮层状态触发 openchange；结果事件均可冒泡并穿过 shadow DOM。",
     "actionsAccess": "原生按钮和链接保留键盘行为。复合控件补充正确的分组、标签页、菜单、工具栏或导航角色，以及移动焦点、Home/End、翻译名称和可见焦点。纯图标操作应提供简短标签。",
     "layout": "布局原语",
     "layoutBody": "Box、Row、Col、Grid 与 Divider 是不添加包装节点的布局宿主，通过插槽组合。它们共享逻辑尺寸、间距、表面和溢出属性，并继承当前主题的全部值。",
@@ -17,13 +17,13 @@
     "layoutAccess": "布局标签不会改变插槽内容的语义，请在内部使用语义化 HTML。Divider 会公开方向；装饰性分隔符会从无障碍树中移除。",
     "overlays": "模态框与通知",
     "overlaysBody": "Modal 与 AlertDialog 使用原生 dialog 实现焦点约束和键盘关闭。Flashbar 管理实时通知队列。服务函数可从任意模块把两套系统挂载到文档根节点。",
-    "overlaysApi": "Modal 提供 show、close 以及可取消的 cb-before-open 和 cb-before-close 事件。AlertDialog 增加 cb-before-confirm 与 cb-confirm。Flashbar 提供 show、updateMessage、dismiss 和 clear，并有等价的全局函数。",
+    "overlaysApi": "Modal 提供 show、close 以及可取消的 beforeopen 和 beforeclose 事件。AlertDialog 增加 beforeconfirm 与 confirm。Flashbar 提供 show、updateMessage、dismiss 和 clear，并有等价的全局函数。",
     "overlaysAccess": "所有可见文本和 aria 文本均可传入或本地化。对话框关联标题与说明，Escape 行为可配置，破坏性确认保持明确，通知严重级别决定实时区域的紧急程度。",
     "source": "媒体来源与字幕",
     "mediaApi": "两个播放器都支持 src、mediaTitle、muted、autoplay、loop、preload、seekStep 和 playbackRate。视频另支持 poster 和 tracks。应用通过 playLabel、errorText 等明确的文本属性提供最终翻译后的控件与状态文字。所有属性都可省略，默认不自动播放。方法包括 play、pause、stop、seek、backward、forward、setVolume、setMuted 和 setRate。浏览器允许时可使用 fullscreen。",
-    "chartApi": "CartesianChart 支持 series、xAxis、yAxis、inverted、stacking 和 zoomable。系列类型包括 line、spline、area、areaspline、bar、column、scatter、bubble、errorbar、x-threshold 和 y-threshold。请使用稳定 ID；第二数值轴通过 ID 指定。Null 保留空缺，无效值触发 cb-error，不会编造数据。",
+    "chartApi": "CartesianChart 支持 series、xAxis、yAxis、inverted、stacking 和 zoomable。系列类型包括 line、spline、area、areaspline、bar、column、scatter、bubble、errorbar、x-threshold 和 y-threshold。请使用稳定 ID；第二数值轴通过 ID 指定。Null 保留空缺，无效值触发 error，不会编造数据。",
     "pieApi": "PieChart 支持包含命名片段的 series，以及 variant（pie 或 donut）、innerTitle 和 innerDescription。片段具有 id、name、value（或 y）。全零数据呈现空状态。负数与非有限数会被安全拒绝。百分比以可见数据之和为分母。",
-    "commonCharts": "两个图表都支持 heading、description、height、status 和 valueFormatter。应用通过明确的文本属性提供最终翻译后的状态、操作、表格与无障碍文字。设置 visibleSeries 或 visibleSegments 后，筛选由调用方控制；否则组件自行管理。修改数据后请重新赋值。cb-select 表示选择，cb-visibility-change 表示筛选，cb-retry 请求重试，cb-error 报告可恢复错误。",
+    "commonCharts": "两个图表都支持 heading、description、height、status 和 valueFormatter。应用通过明确的文本属性提供最终翻译后的状态、操作、表格与无障碍文字。设置 visibleSeries 或 visibleSegments 后，筛选由调用方控制；否则组件自行管理。修改数据后请重新赋值。select 表示选择，visibilitychange 表示筛选，retry 请求重试，error 报告可恢复错误。",
     "access": "无障碍与样式",
     "accessBody": "使用原生按钮、滑块和选择框，标签可注入翻译。图表提供键盘点导航、可见图例、持续显示的详情和数据表，并尊重减少动态效果设置。作者应提供有意义的数据名称、字幕与文字稿。自动测试不能替代屏幕阅读器及可用性评估。",
     "parts": "媒体样式部件：player、media、title、controls、play、stop、backward、forward、seek、time、volume、mute、rate、captions、fullscreen、status、transcript。图表部件：chart、title、description、legend、legend-item、plot、graphic、navigator、details、data、table、table-cell。使用主题变量与 ::part，不要依赖引擎私有标记。",
@@ -41,7 +41,7 @@
     "categoryForm": "表单",
     "formNative": "Select、DatePicker 和 TimePicker 默认使用一致的 Cube 渲染。仅在希望使用浏览器原生选择器时添加 native 标志。Combobox 通过 autocomplete 属性同时提供列表和自动补全行为，Calendar 也可作为独立组件使用。",
     "popupConstraintsBody": "锚定菜单和选择器会根据内容调整大小，并保持在视口范围内。可使用 popupMaxWidth 和 popupMaxHeight，通过 CSS 长度或以像素为单位的数值覆盖默认限制；受限内容会在弹出层内滚动。",
-    "unitInputBody": "UnitInput 接受当前 unit 和 units 集合。单个单位显示为静态后缀；多个单位则显示为支持键盘操作的选择器。单位变化会触发 cb-unit-change，且不会修改数值。",
+    "unitInputBody": "UnitInput 接受当前 unit 和 units 集合。单个单位显示为静态后缀；多个单位则显示为支持键盘操作的选择器。单位变化会触发 unitchange，且不会修改数值。",
     "selectBody": "Select 通过 multi 标志同时支持单选和多选。搜索可以开启、关闭或设为 auto；当选项数量超过 searchThreshold 时，auto 会显示筛选框，默认阈值为 10。",
     "formCompositionBody": "Field 提供可复用的标签、帮助、详情与验证结构。EditableList 负责无障碍的添加、重命名、排序和删除。CodeEditor 与 JsonEditor 提供语法感知编辑，LinkedValues 用于协调成比例的数值字段。所有可见文本和无障碍文本均由应用提供。",
     "workspaceBody": "Workspace 组合页眉、起始、末端、底部和主区域，并支持面板展开、指针与键盘调整大小、响应式浮层、可取消事件和可选本地持久化。它不接管应用数据或导航。",
@@ -60,6 +60,6 @@
     "categoryAssets": "资源",
     "categoryCollaboration": "协作",
     "studioCatalogBody": "此分类经过审核，仅包含可复用且导入后自动注册的 cb-* 元素。Studio 设计板中的视觉组合会作为示例记录，而不会升级为重复组件。每个真实组件都有独立的浏览器入口、类型化无界面基类、主题驱动渲染、稳定的 CSS part、响应式行为和可交互的 Storybook story。",
-    "studioCatalogApi": "所有属性均可选。请使用当前语言提供 label、accessible-label、description、status、action-label、empty-label 和项目文本。交互组件会先发出可取消的 cb-before-change 或 cb-before-action，再发出 cb-change 或 cb-action。导入组件入口可完成注册；导入 /base 入口则可提供其他渲染器。"
+    "studioCatalogApi": "所有属性均可选。请使用当前语言提供 label、accessible-label、description、status、action-label、empty-label 和项目文本。交互组件会先发出可取消的 beforechange 或 beforeaction，再发出 change 或 action。导入组件入口可完成注册；导入 /base 入口则可提供其他渲染器。"
   }
 }

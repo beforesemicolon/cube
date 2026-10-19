@@ -60,10 +60,10 @@ test('presence composes avatars, exposes overflow, and emits participant actions
                 { id: 'noah', label: 'Noah Williams', initials: 'NW', status: 'offline', accessibleLabel: 'Noah Williams, offline' },
             ],
         })
-        presence.addEventListener('cb-action', event => {
+        presence.addEventListener('action', event => {
             document.body.dataset.participant = (event as CustomEvent<{ value: string }>).detail.value
         })
-        presence.addEventListener('cb-overflow', event => {
+        presence.addEventListener('overflow', event => {
             document.body.dataset.overflow = String((event as CustomEvent<{ count: number }>).detail.count)
         })
         document.querySelector('#fixture')!.append(presence)

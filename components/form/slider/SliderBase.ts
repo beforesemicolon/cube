@@ -17,8 +17,8 @@ export abstract class SliderBase extends FormControlBase<SliderProps, number> {
         if(this.unavailable||bool(this.readOnly)){this.syncView();return false}
         const next=normalizeRange({...this.range,value}).value
         if(Object.is(this.range.value,next))return false
-        if(!this.request('cb-before-change',{value:next,originalEvent})){this.syncView();return false}
-        this.value=next;this.syncView();this.emit('cb-change',{value:next,originalEvent});return true
+        if(!this.request('beforechange',{value:next,originalEvent})){this.syncView();return false}
+        this.value=next;this.syncView();this.emit('change',{value:next,originalEvent});return true
     }
     stepUp(count=1):void{this.setValue(this.range.value+(this.range.step==='any'?1:this.range.step)*finite(count,1))}
     stepDown(count=1):void{this.stepUp(-finite(count,1))}

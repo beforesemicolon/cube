@@ -51,8 +51,8 @@ test('opens from a compact swatch and exposes every custom color control', async
 test('edits color, saves and removes swatches, supports keyboard movement and native opt-in', async ({ page }) => {
     const picker = page.locator('cb-color-picker'), trigger = picker.getByRole('button', { name: 'Choose fill color', exact: true })
     await picker.evaluate(element => {
-        element.addEventListener('cb-swatch-add', () => { element.dataset.swatchAddCount = String(Number(element.dataset.swatchAddCount ?? 0) + 1) })
-        element.addEventListener('cb-swatch-remove', () => { element.dataset.swatchRemoveCount = String(Number(element.dataset.swatchRemoveCount ?? 0) + 1) })
+        element.addEventListener('swatchadd', () => { element.dataset.swatchAddCount = String(Number(element.dataset.swatchAddCount ?? 0) + 1) })
+        element.addEventListener('swatchremove', () => { element.dataset.swatchRemoveCount = String(Number(element.dataset.swatchRemoveCount ?? 0) + 1) })
     })
     await trigger.click()
     const hue = picker.getByLabel('Hue', { exact: true }).first()

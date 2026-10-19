@@ -13,7 +13,7 @@ test('every Studio design entry registers and mounts without missing-property fa
         const { studioDefinitions } = await import('/components/studio/catalog.ts')
         const fixture = document.querySelector<HTMLElement>('#fixture')!
         const componentErrors: string[] = []
-        fixture.addEventListener('cb-error', event => componentErrors.push((event as CustomEvent<{ code?: string }>).detail.code ?? 'error'))
+        fixture.addEventListener('error', event => componentErrors.push((event as CustomEvent<{ code?: string }>).detail.code ?? 'error'))
         for (const definition of studioDefinitions) {
             const element = document.createElement(`cb-${definition.name}`) as HTMLElement & {
                 label: string

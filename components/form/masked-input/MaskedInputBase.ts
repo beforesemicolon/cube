@@ -43,10 +43,10 @@ export abstract class MaskedInputBase<P extends MaskedInputProps = MaskedInputPr
         const next = formatMaskedValue(value, this.mask)
         const detail = { value: next, rawValue: unmaskValue(next, this.mask), originalEvent }
         if (next === scalarText(this.value)) return false
-        if (!this.request('cb-before-change', detail)) return false
+        if (!this.request('beforechange', detail)) return false
         this.value = next
         this.syncView()
-        this.emit('cb-change', detail)
+        this.emit('change', detail)
         return true
     }
 }

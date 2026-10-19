@@ -43,8 +43,8 @@ export class ButtonGroup extends ButtonGroupBase {
                 size: this.size,
                 variant: this.variant,
             })
-            button.addEventListener('cb-before-action', event => event.stopPropagation())
-            button.addEventListener('cb-action', event => { event.stopPropagation(); this.activate(item, event) })
+            button.addEventListener('beforeaction', event => event.stopPropagation())
+            button.addEventListener('action', event => { event.stopPropagation(); this.activate(item, event) })
             return button
         }))
     }

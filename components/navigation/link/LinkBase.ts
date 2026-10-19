@@ -3,5 +3,5 @@ export type LinkProps = Omit<ButtonProps,'pressed'> & { href?:string; target?:st
 export abstract class LinkBase extends ButtonBase<LinkProps> {
     static observedAttributes=[...ButtonBase.observedAttributes.filter(attribute=>attribute!=='pressed'),'href','target','download']
     href='';target='';download='';variant:ButtonProps['variant']='ghost'
-    protected activate(event:Event):void { if(this.unavailable){event.preventDefault();event.stopImmediatePropagation();return} if(!this.request('cb-before-navigate',{href:this.href,originalEvent:event})){event.preventDefault();return} this.emit('cb-navigate',{href:this.href,originalEvent:event}) }
+    protected activate(event:Event):void { if(this.unavailable){event.preventDefault();event.stopImmediatePropagation();return} if(!this.request('beforenavigate',{href:this.href,originalEvent:event})){event.preventDefault();return} this.emit('navigate',{href:this.href,originalEvent:event}) }
 }

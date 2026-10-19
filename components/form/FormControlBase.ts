@@ -10,6 +10,9 @@ export abstract class FormControlBase<P extends FormControlProps=FormControlProp
     private initialized=false
     private initialValue?:{readonly value:S}
     private disabledByForm=false
+    private readonly containValueEvent:EventListener=event=>{
+        if(event.target!==this)event.stopPropagation()
+    }
     protected validationShown=false
     protected abstract fieldElement():HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement|undefined
     protected abstract captureValue():S
@@ -22,7 +25,11 @@ export abstract class FormControlBase<P extends FormControlProps=FormControlProp
     get willValidate():boolean{return this.internals?.willValidate??false}
     get validity():ValidityState|undefined{return this.internals?.validity}
     get validationMessage():string{return this.internals?.validationMessage??''}
-    protected mount():void{if(!this.initialized){this.initialized=true;this.initialValue={value:this.captureValue()}}super.mount();this.syncFormValue()}
+    protected mount():void{
+        if(!this.initialized){this.initialized=true;this.initialValue={value:this.captureValue()}}
+        for(const name of ['beforeinput','input','change'])this.listen(this.contentRoot,name,this.containValueEvent)
+        super.mount();this.syncFormValue()
+    }
     protected update(name:string):void{super.update(name);this.syncFormValue()}
     protected syncForm(value:string|File|FormData|null):void {
         // The native successful-control algorithm reads the attribute, not a custom JS property.

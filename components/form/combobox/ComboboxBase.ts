@@ -33,11 +33,11 @@ export abstract class ComboboxBase<P extends ComboboxProps = ComboboxProps> exte
     protected restoreValue(value: string | File | FormData | null): void { this.value = typeof value === 'string' ? value : value instanceof FormData ? scalarText(value.get(this.name)) : '' }
     setValue(value: string, originalEvent?: Event): boolean {
         if (this.unavailable || this.readOnly) return false
-        if (!this.request('cb-before-change', { value, originalEvent })) return false
-        this.value = value; this.syncView(); this.emit('cb-change', { value, originalEvent }); return true
+        if (!this.request('beforechange', { value, originalEvent })) return false
+        this.value = value; this.syncView(); this.emit('change', { value, originalEvent }); return true
     }
     setOpen(open: boolean, originalEvent?: Event): boolean {
         if (this.unavailable || this.readOnly || this.open === open) return false
-        this.open = open; this.toggleAttribute('open', open); this.syncView(); this.emit(open ? 'cb-open' : 'cb-close', { open, originalEvent }); return true
+        this.open = open; this.toggleAttribute('open', open); this.syncView(); this.emit(open ? 'open' : 'close', { open, originalEvent }); return true
     }
 }

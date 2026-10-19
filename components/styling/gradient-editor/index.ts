@@ -90,7 +90,7 @@ export class GradientEditor extends GradientEditorBase {
         this.modeControl = document.createElement('cb-segmented-control') as SegmentedControl
         this.modeControl.setAttribute('part', 'mode')
         this.modeControl.setAttribute('exportparts', 'group:mode-group,item:mode-item,item-label:mode-label')
-        this.modeControl.addEventListener('cb-change', event => {
+        this.modeControl.addEventListener('change', event => {
             event.stopPropagation()
             const value = (event as CustomEvent<{ value?: string }>).detail.value
             if (value === 'linear' || value === 'radial') this.changeType(value, event)
@@ -153,11 +153,11 @@ export class GradientEditor extends GradientEditorBase {
         this.colorPicker = document.createElement('cb-color-picker') as ColorPicker
         this.colorPicker.setAttribute('part', 'stop-color')
         this.colorPicker.setAttribute('exportparts', 'root:stop-color-root,trigger:stop-color-trigger,trigger-swatch:stop-color-swatch,popup:stop-color-popup')
-        this.colorPicker.addEventListener('cb-change', event => {
+        this.colorPicker.addEventListener('change', event => {
             event.stopPropagation()
             this.changeStopColor(this.selectedStopId(), (event as CustomEvent<{ value: string }>).detail.value, event, false)
         })
-        this.colorPicker.addEventListener('cb-close', event => {
+        this.colorPicker.addEventListener('close', event => {
             const originalEvent = (event as CustomEvent<{ originalEvent?: Event }>).detail.originalEvent
             const escape = originalEvent?.type === 'keydown' && (originalEvent as KeyboardEvent).key === 'Escape'
             if (!escape && originalEvent?.type !== 'click') return
@@ -285,7 +285,7 @@ export class GradientEditor extends GradientEditorBase {
         const control = document.createElement('cb-select') as Select
         control.setAttribute('part', part)
         control.setAttribute('exportparts', `root:${part}-root,trigger:${part}-trigger,value:${part}-value,popup:${part}-popup,option:${part}-option`)
-        control.addEventListener('cb-change', event => {
+        control.addEventListener('change', event => {
             event.stopPropagation()
             handler(event as CustomEvent<{ value: string }>)
         })

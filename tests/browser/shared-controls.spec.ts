@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright'
 async function start(page:import('@playwright/test').Page){await page.goto('/tests/browser/fixture.html');await page.waitForFunction(()=>!!customElements.get('cb-select'))}
 test('shared controls accept application-supplied names and report no component errors',async({page})=>{
     await start(page)
-    await page.evaluate(()=>{(window as any).componentErrors=[];document.addEventListener('cb-error',e=>(window as any).componentErrors.push(String((e as CustomEvent).detail.error)));const values=[['button',{accessibleLabel:'Action'}],['slider',{accessibleLabel:'Value'}],['select',{accessibleLabel:'Choose an option'}],['calendar',{accessibleLabel:'Calendar',previousLabel:'Previous month',nextLabel:'Next month'}],['icon',{label:'Icon'}]] as const;for(const [name,props] of values){const element=document.createElement('cb-'+name);Object.assign(element,props);document.querySelector('#fixture')!.append(element)}})
+    await page.evaluate(()=>{(window as any).componentErrors=[];document.addEventListener('error',e=>(window as any).componentErrors.push(String((e as CustomEvent).detail.error)));const values=[['button',{accessibleLabel:'Action'}],['slider',{accessibleLabel:'Value'}],['select',{accessibleLabel:'Choose an option'}],['calendar',{accessibleLabel:'Calendar',previousLabel:'Previous month',nextLabel:'Next month'}],['icon',{label:'Icon'}]] as const;for(const [name,props] of values){const element=document.createElement('cb-'+name);Object.assign(element,props);document.querySelector('#fixture')!.append(element)}})
     await expect(page.locator('cb-button').getByRole('button')).toHaveAccessibleName('Action')
     await expect(page.locator('cb-slider').getByRole('slider')).toHaveAccessibleName('Value')
     await expect(page.locator('cb-select').getByRole('button')).toHaveAccessibleName('Choose an option')
@@ -21,9 +21,9 @@ test('slider and select use native form association, keyboard editing, reset and
 })
 test('button preserves keyboard and cancelable action behavior',async({page})=>{
     await start(page)
-    await page.evaluate(()=>{(window as any).actionCount=0;const node=document.createElement('cb-button');Object.assign(node,{label:'Run action'});node.addEventListener('cb-action',()=>((window as any).actionCount++));document.querySelector('#fixture')!.append(node)})
+    await page.evaluate(()=>{(window as any).actionCount=0;const node=document.createElement('cb-button');Object.assign(node,{label:'Run action'});node.addEventListener('action',()=>((window as any).actionCount++));document.querySelector('#fixture')!.append(node)})
     const button=page.getByRole('button',{name:'Run action'});await button.focus();await page.keyboard.press('Space');expect(await page.evaluate(()=>(window as any).actionCount)).toBe(1)
-    await page.locator('cb-button').evaluate(n=>n.addEventListener('cb-before-action',e=>e.preventDefault()))
+    await page.locator('cb-button').evaluate(n=>n.addEventListener('beforeaction',e=>e.preventDefault()))
     await page.keyboard.press('Enter');expect(await page.evaluate(()=>(window as any).actionCount)).toBe(1)
 })
 
@@ -51,14 +51,16 @@ test('primitive controls submit, reset, disable, and emit one real-time change',
         const range=document.createElement('cb-range-slider');Object.assign(range,{label:'Opacity',name:'opacity',value:25,min:0,max:100})
         const choice=document.createElement('cb-checkbox');Object.assign(choice,{label:'Published',name:'published',value:'yes',checked:true})
         const tokens=document.createElement('cb-token-input');Object.assign(tokens,{label:'Tags',name:'tags',value:['design','system'],items:[]})
-        text.addEventListener('cb-change',()=>{text.dataset.changeCount=String(Number(text.dataset.changeCount??0)+1)})
-        range.addEventListener('cb-change',()=>{range.dataset.changeCount=String(Number(range.dataset.changeCount??0)+1)})
+        text.addEventListener('change',()=>{text.dataset.changeCount=String(Number(text.dataset.changeCount??0)+1)})
+        text.addEventListener('cb-change',()=>{text.dataset.prefixedChangeCount=String(Number(text.dataset.prefixedChangeCount??0)+1)})
+        range.addEventListener('change',()=>{range.dataset.changeCount=String(Number(range.dataset.changeCount??0)+1)})
         fieldset.append(text,number,range,choice,tokens);form.append(fieldset);document.querySelector('#fixture')!.append(form)
     })
     const submitted=await page.locator('form').evaluate((form:HTMLFormElement)=>{const data=new FormData(form);return{values:Object.fromEntries([...data.entries()].map(([name,value])=>[name,String(value)])),tags:data.getAll('tags')}})
     expect(submitted).toEqual({values:{title:'Initial',count:'2',opacity:'25',published:'yes',tags:'system'},tags:['design','system']})
     const text=page.getByRole('textbox',{name:'Title'});await text.fill('Edited')
     await expect(page.locator('cb-text-input')).toHaveAttribute('data-change-count','1')
+    await expect(page.locator('cb-text-input')).not.toHaveAttribute('data-prefixed-change-count')
     const range=page.getByRole('slider',{name:'Opacity'});await range.focus();await page.keyboard.press('ArrowRight')
     await expect(page.locator('cb-range-slider')).toHaveAttribute('data-change-count','1')
     await page.locator('form').evaluate((form:HTMLFormElement)=>form.reset())
@@ -72,7 +74,7 @@ test('token selection is a live form value change',async({page})=>{
     await page.evaluate(()=>{
         const form=document.createElement('form')
         const tokens=document.createElement('cb-token-input');Object.assign(tokens,{label:'Tags',name:'tags',value:[],items:[{id:'design',label:'Design'},{id:'system',label:'System'}]})
-        tokens.addEventListener('cb-change',()=>{tokens.dataset.changeCount=String(Number(tokens.dataset.changeCount??0)+1)})
+        tokens.addEventListener('change',()=>{tokens.dataset.changeCount=String(Number(tokens.dataset.changeCount??0)+1)})
         form.append(tokens);document.querySelector('#fixture')!.append(form)
     })
     await page.getByRole('button',{name:'Design'}).click()
@@ -80,7 +82,7 @@ test('token selection is a live form value change',async({page})=>{
     expect(await page.locator('form').evaluate((form:HTMLFormElement)=>new FormData(form).getAll('tags'))).toEqual(['design'])
 })
 
-test('editing controls use cb-change as their single live value event',async({page})=>{
+test('editing controls use change as their single live value event',async({page})=>{
     await start(page)
     await page.evaluate(()=>{
         const fixture=document.querySelector('#fixture')!
@@ -92,8 +94,8 @@ test('editing controls use cb-change as their single live value event',async({pa
             ['cb-gradient-editor',{label:'Live gradient'}],
         ] as const){
             const control=document.createElement(tag);Object.assign(control,props)
-            control.addEventListener('cb-change',()=>{control.dataset.changeCount=String(Number(control.dataset.changeCount??0)+1)})
-            control.addEventListener('cb-input',()=>{control.dataset.inputCount=String(Number(control.dataset.inputCount??0)+1)})
+            control.addEventListener('change',()=>{control.dataset.changeCount=String(Number(control.dataset.changeCount??0)+1)})
+            control.addEventListener('input',()=>{control.dataset.inputCount=String(Number(control.dataset.inputCount??0)+1)})
             fixture.append(control)
         }
     })

@@ -195,7 +195,7 @@ test('unit input offers configurable units without changing its numeric value', 
     await expect(input.locator('input[type="number"]')).toHaveAttribute('aria-valuetext', '320 percent')
 
     const event = await input.evaluate(element => new Promise<{ unit: string; value: number }>(resolve => {
-        element.addEventListener('cb-unit-change', customEvent => {
+        element.addEventListener('unitchange', customEvent => {
             const detail = (customEvent as CustomEvent<{ unit: string }>).detail
             resolve({ unit: detail.unit, value: (element as HTMLElement & { value: number }).value })
         }, { once: true })

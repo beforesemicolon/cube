@@ -83,19 +83,19 @@ export abstract class BezierBase extends Component<BezierProps> {
     setPlaying(playing: boolean, originalEvent?: Event): boolean {
         if (this.unavailable) return false
         const next = bool(playing)
-        if (!this.request('cb-before-playback-change', { playing: next, originalEvent })) return false
+        if (!this.request('beforeplaybackchange', { playing: next, originalEvent })) return false
         this.playing = next
         this.syncView()
-        this.emit(next ? 'cb-play' : 'cb-pause', { playing: next, originalEvent })
+        this.emit(next ? 'play' : 'pause', { playing: next, originalEvent })
         return true
     }
 
     private applyCurve(curve: BezierValue, originalEvent: Event | undefined, commit: boolean): boolean {
         const detail: BezierChangeDetail = { ...curve, value: this.cssValue(curve), originalEvent }
-        if (!this.request(commit ? 'cb-before-change' : 'cb-before-input', detail)) return false
+        if (!this.request(commit ? 'beforechange' : 'beforeinput', detail)) return false
         this.x1 = curve.x1; this.y1 = curve.y1; this.x2 = curve.x2; this.y2 = curve.y2; this.value = detail.value
         this.syncView()
-        this.emit(commit ? 'cb-change' : 'cb-input', detail)
+        this.emit(commit ? 'change' : 'input', detail)
         return true
     }
 

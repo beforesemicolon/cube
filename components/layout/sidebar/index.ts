@@ -15,7 +15,7 @@ export class Sidebar extends SidebarBase {
         this.header = document.createElement('cb-panel-header') as PanelHeader
         this.header.setAttribute('part', 'header')
         this.header.setAttribute('exportparts', 'header:header,heading:heading,actions:actions,toggle:toggle,toggle-control:toggle-control')
-        this.header.addEventListener('cb-toggle', event => this.toggle(event))
+        this.header.addEventListener('toggle', event => { event.stopPropagation(); this.toggle(event) })
         this.content = el('div', 'content')
         this.content.append(slot('', '', 'content-slot'))
         this.panel.append(this.header, this.content)

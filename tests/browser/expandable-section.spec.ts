@@ -48,7 +48,7 @@ test('has a visible labeled trigger, semantic state, header actions and preserve
 test('supports cancelable expansion changes and public state controls', async ({ page }) => {
     const section = page.locator('cb-expandable-section'), trigger = section.getByRole('button', { name: /^Chart data/ })
     await trigger.click()
-    await section.evaluate(element => element.addEventListener('cb-before-expansion-change', event => event.preventDefault()))
+    await section.evaluate(element => element.addEventListener('beforeexpansionchange', event => event.preventDefault()))
     await trigger.click(); await expect(trigger).toHaveAttribute('aria-expanded', 'true')
     const collapsed = await section.evaluate(element => (element as ExpandableSectionElement).collapse())
     expect(collapsed).toBe(false)

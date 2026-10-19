@@ -63,13 +63,13 @@ export abstract class ViewportBase extends Component<ViewportProps> {
     setViewport(zoom: number, x: number, y: number, originalEvent?: Event, commit = true): boolean {
         if (this.unavailable) return false
         const detail: ViewportChangeDetail = { zoom: this.normalizedZoom(zoom), x: finite(x), y: finite(y), originalEvent }
-        const eventName = commit ? 'cb-before-change' : 'cb-before-input'
+        const eventName = commit ? 'beforechange' : 'beforeinput'
         if (!this.request(eventName, detail)) return false
         this.zoom = detail.zoom
         this.x = detail.x
         this.y = detail.y
         this.syncView()
-        this.emit(commit ? 'cb-change' : 'cb-input', detail)
+        this.emit(commit ? 'change' : 'input', detail)
         return true
     }
 

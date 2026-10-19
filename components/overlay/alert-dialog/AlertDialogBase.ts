@@ -19,8 +19,8 @@ export abstract class AlertDialogBase<P extends AlertDialogProps = AlertDialogPr
     protected confirm(event: Event): void {
         if (bool(this.busy)) return
         const detail = { originalEvent: event }
-        if (!this.dispatchEvent(new CustomEvent('cb-before-confirm', { detail, bubbles: true, composed: true, cancelable: true }))) return
-        this.emit('cb-confirm', detail)
+        if (!this.dispatchEvent(new CustomEvent('beforeconfirm', { detail, bubbles: true, composed: true, cancelable: true }))) return
+        this.emit('confirm', detail)
         this.close('confirmed')
     }
 

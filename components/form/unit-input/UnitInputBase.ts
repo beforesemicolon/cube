@@ -39,13 +39,13 @@ export abstract class UnitInputBase extends NumericInputBase<UnitInputProps> {
         const options = this.normalizedUnits
         if (options.length && !options.some(option => option.value === selected && !option.disabled)) return false
         const detail = { unit: selected, originalEvent }
-        if (!this.request('cb-before-unit-change', detail)) {
+        if (!this.request('beforeunitchange', detail)) {
             this.syncView()
             return false
         }
         this.unit = selected
         this.syncView()
-        this.emit('cb-unit-change', detail)
+        this.emit('unitchange', detail)
         return true
     }
 }

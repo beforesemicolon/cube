@@ -28,10 +28,10 @@ export abstract class RadioGroupBase extends FormControlBase<RadioGroupProps> {
         const option = this.normalizedOptions.find(candidate => candidate.value === value)
         if (!option || option.disabled) { this.syncView(); return false }
         const detail = { value: option.value, originalEvent }
-        if (!this.request('cb-before-change', detail)) { this.syncView(); return false }
+        if (!this.request('beforechange', detail)) { this.syncView(); return false }
         this.value = option.value
         this.syncView()
-        this.emit('cb-change', detail)
+        this.emit('change', detail)
         return true
     }
 }

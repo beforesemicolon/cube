@@ -19,9 +19,9 @@ export abstract class ChoiceGroupBase<P extends ChoiceGroupProps = ChoiceGroupPr
     protected choose(item: NormalizedItem, originalEvent: Event): void {
         if (this.unavailable || item.disabled || item.id === scalarText(this.value)) return
         const detail = { value: item.id, item, originalEvent }
-        if (!this.request('cb-before-change', detail)) return
+        if (!this.request('beforechange', detail)) return
         this.value = item.id
         this.syncView()
-        this.emit('cb-change', detail)
+        this.emit('change', detail)
     }
 }

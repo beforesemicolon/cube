@@ -27,15 +27,15 @@ export abstract class MarqueeSelectionBase<P extends MarqueeSelectionProps = Mar
     begin(point: EditorPoint, additive = false, originalEvent?: Event): boolean {
         if (bool(this.disabled)) return false
         const detail = { point, additive, originalEvent }
-        if (!this.dispatchEvent(new CustomEvent('cb-before-marquee-start', { detail, bubbles: true, composed: true, cancelable: true }))) return false
+        if (!this.dispatchEvent(new CustomEvent('beforemarqueestart', { detail, bubbles: true, composed: true, cancelable: true }))) return false
         this.startPoint = { x: finite(point.x), y: finite(point.y) }; this.currentPoint = { ...this.startPoint }; this.additive = additive
-        this.syncMarquee(bounds(this.startPoint, this.currentPoint)); this.emit('cb-marquee-start', detail); return true
+        this.syncMarquee(bounds(this.startPoint, this.currentPoint)); this.emit('marqueestart', detail); return true
     }
     updateSelection(point: EditorPoint, originalEvent?: Event): void {
         if (!this.startPoint) return
         this.currentPoint = { x: finite(point.x), y: finite(point.y) }
         const rect = bounds(this.startPoint, this.currentPoint)
-        this.syncMarquee(rect); this.emit('cb-marquee-change', { rect, originalEvent })
+        this.syncMarquee(rect); this.emit('marqueechange', { rect, originalEvent })
     }
     finish(originalEvent?: Event): readonly string[] {
         if (!this.startPoint || !this.currentPoint) return []
@@ -43,10 +43,10 @@ export abstract class MarqueeSelectionBase<P extends MarqueeSelectionProps = Mar
         const active = rect.width >= Math.max(0, finite(this.threshold, 3)) || rect.height >= Math.max(0, finite(this.threshold, 3))
         const selectedIds = active && Array.isArray(this.targets) ? this.targets.filter(target => !bool(target.disabled) && intersects(rect, target.rect)).map(target => target.id) : []
         const detail = { rect, selectedIds, additive: this.additive, originalEvent }
-        this.startPoint = undefined; this.currentPoint = undefined; this.syncMarquee(); this.emit('cb-marquee-end', detail); return selectedIds
+        this.startPoint = undefined; this.currentPoint = undefined; this.syncMarquee(); this.emit('marqueeend', detail); return selectedIds
     }
     cancel(originalEvent?: Event): void {
         if (!this.startPoint) return
-        this.startPoint = undefined; this.currentPoint = undefined; this.syncMarquee(); this.emit('cb-marquee-cancel', { originalEvent })
+        this.startPoint = undefined; this.currentPoint = undefined; this.syncMarquee(); this.emit('marqueecancel', { originalEvent })
     }
 }

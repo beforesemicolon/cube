@@ -192,7 +192,7 @@ function seedPreview(tag: string, node: HTMLElement): void {
 
 function launchButton(label: string, action: () => void): HTMLElement {
     const button = demoButton(label, 'primary')
-    button.addEventListener('cb-action', action)
+    button.addEventListener('action', action)
     return button
 }
 

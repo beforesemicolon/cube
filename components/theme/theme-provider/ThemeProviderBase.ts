@@ -35,7 +35,7 @@ export abstract class ThemeProviderBase extends Component<ThemeProviderProps> {
                 this.original.set(name, [this.style.getPropertyValue(name), this.style.getPropertyPriority(name)])
                 this.style.setProperty(name, value)
             }
-            this.emit('cb-theme-change', { appearance: mode, theme: this.loaded })
+            this.emit('themechange', { appearance: mode, theme: this.loaded })
         } catch (error) { this.onError(error) }
     }
     private load(): void {

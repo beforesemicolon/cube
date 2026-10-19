@@ -97,7 +97,7 @@ player.seekStep = 15
 player.backwardLabel = 'Back 15 seconds'
 player.forwardLabel = 'Ahead 15 seconds'
 player.tracks = [{ src: '/captions/en.vtt', language: 'en', label: 'English', default: true }]
-await player.play() // false on a rejected play attempt; cb-error reports the cause
+await player.play() // false on a rejected play attempt; the error event reports the cause
 player.stop()
 ```
 
@@ -111,7 +111,7 @@ The two chart components use an independent Apache ECharts adapter inspired by C
 - Pie: pie/donut, center text, segment visibility and selection. All-zero data produces an empty state, not equal fake wedges. Percentages describe **visible data**.
 - Both: stable IDs, explicit empty/loading/error/no-match states, DOM legend controls, keyboard point exploration, pinnable details, selectable data table and container resizing. Missing values stay gaps, not zero.
 
-`visibleSeries` / `visibleSegments` arrays make visibility controlled. Handle `cb-visibility-change` and assign the proposed `visibleItems` to accept a change. Omit these properties for internal control. Data changes should use a new array/object or call `refresh()` after intentional in-place edits. `cb-select` reports the selected point; `cb-zoom-change` reports zoom bounds.
+`visibleSeries` / `visibleSegments` arrays make visibility controlled. Handle `visibilitychange` and assign the proposed `visibleItems` to accept a change. Omit these properties for internal control. Data changes should use a new array/object or call `refresh()` after intentional in-place edits. `select` reports the selected point; `zoomchange` reports zoom bounds.
 
 The chart graphic is decorative to assistive technology; Cube owns the textual exploration and table. Keyboard instructions are localized. Rich HTML tooltip rendering is intentionally not exposed, avoiding untrusted HTML interpretation. Chart animation honors reduced motion.
 

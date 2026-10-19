@@ -397,7 +397,7 @@ export abstract class TableBase extends Component<TableProps> {
         if (!this.isSortable(column) || this.unavailable) return false
         const next: TableSortDirection = this.sortBy === column.id && this.normalizedSortDirection() === 'asc' ? 'desc' : 'asc'
         const detail = { column, sortBy: column.id, sortDirection: next, originalEvent }
-        if (!this.request('cb-before-sort-change', detail)) return false
+        if (!this.request('beforesortchange', detail)) return false
         this.sortBy = column.id
         this.sortDirection = next
         this.announcement = template(scalarText(this.sortAnnouncement), {
@@ -405,7 +405,7 @@ export abstract class TableBase extends Component<TableProps> {
             direction: next === 'asc' ? scalarText(this.ascendingLabel) : scalarText(this.descendingLabel),
         })
         this.syncView()
-        this.emit('cb-sort-change', detail)
+        this.emit('sortchange', detail)
         return true
     }
 
@@ -414,11 +414,11 @@ export abstract class TableBase extends Component<TableProps> {
         const unique = [...new Set(keys)]
         const selectedItems = this.itemList().filter((item, index) => unique.includes(this.keyFor(item, index)))
         const detail = { selectedKeys: unique, selectedItems, originalEvent }
-        if (!this.request('cb-before-selection-change', detail)) return false
+        if (!this.request('beforeselectionchange', detail)) return false
         this.selectedKeys = unique
         this.announcement = template(scalarText(this.selectionAnnouncement), { count: unique.length })
         this.syncView()
-        this.emit('cb-selection-change', detail)
+        this.emit('selectionchange', detail)
         return true
     }
 
@@ -447,14 +447,14 @@ export abstract class TableBase extends Component<TableProps> {
         if (nextExpanded) expanded.add(row.key)
         else expanded.delete(row.key)
         const detail = { item: row.item, key: row.key, expanded: nextExpanded, expandedKeys: [...expanded], originalEvent }
-        if (!this.request('cb-before-expansion-change', detail)) return false
+        if (!this.request('beforeexpansionchange', detail)) return false
         this.expandedKeys = [...expanded]
         this.announcement = template(scalarText(this.expansionAnnouncement), {
             row: this.rowLabel('{row}', row),
             state: nextExpanded ? scalarText(this.expandedLabel) : scalarText(this.collapsedLabel),
         })
         this.syncView()
-        this.emit('cb-expansion-change', detail)
+        this.emit('expansionchange', detail)
         return true
     }
 
@@ -465,20 +465,20 @@ export abstract class TableBase extends Component<TableProps> {
         if (nextExpanded) collapsed.delete(key)
         else collapsed.add(key)
         const detail = { key, expanded: nextExpanded, collapsedGroupKeys: [...collapsed], originalEvent }
-        if (!this.request('cb-before-group-change', detail)) return false
+        if (!this.request('beforegroupchange', detail)) return false
         this.collapsedGroupKeys = [...collapsed]
         this.syncView()
-        this.emit('cb-group-change', detail)
+        this.emit('groupchange', detail)
         return true
     }
 
     protected activateRow(row: TableRowModel, rowIndex: number, originalEvent?: Event): boolean {
         if (!bool(this.rowActivation) || this.unavailable) return false
         const detail = { item: row.item, key: row.key, index: rowIndex, originalEvent }
-        if (!this.request('cb-before-row-activate', detail)) return false
+        if (!this.request('beforerowactivate', detail)) return false
         this.activeKey = row.key
         this.syncView()
-        this.emit('cb-row-activate', detail)
+        this.emit('rowactivate', detail)
         return true
     }
 }

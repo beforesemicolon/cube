@@ -25,12 +25,12 @@ export abstract class FilePickerBase extends InputBase<FilePickerProps> {
         const next = this.multiple ? [...files] : files.slice(0, 1)
         const value = this.multiple ? next.map(file => file.name) : next[0]?.name ?? ''
         const detail = { value, files: next, originalEvent }
-        if (!this.request('cb-before-change', detail)) return false
+        if (!this.request('beforechange', detail)) return false
         this.files = next
         this.value = value
         this.syncView()
         this.syncFormValue()
-        this.emit('cb-change', detail)
+        this.emit('change', detail)
         return true
     }
     protected restoreValue(value: StudioValue | FormRestoreValue): void {

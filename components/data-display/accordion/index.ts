@@ -137,7 +137,7 @@ function accordionView(host: Accordion) {
         const actions = Array.isArray(item.actions) ? item.actions : []
         for (const action of actions) {
             if (!action || typeof action !== 'object' || !scalarText(action.id).trim() || !scalarText(action.label).trim()) continue
-            const activate = (event: CustomEvent): void => host.emit('cb-item-action', { item, id: item.id, action, actionId: action.id, originalEvent: event })
+            const activate = (event: CustomEvent): void => host.emit('itemaction', { item, id: item.id, action, actionId: action.id, originalEvent: event })
             const control = scalarText(action.icon).trim() ? createIconButton('action', scalarText(action.icon), activate) : createButton('action', activate)
             configureAction(control, action, item)
             view.actions.append(control)

@@ -141,20 +141,20 @@ export abstract class FileBrowserBase<P extends FileBrowserProps = FileBrowserPr
         const next = scalarText(query)
         if (next === this.query) return true
         const detail = { query: next, originalEvent }
-        if (!this.request('cb-before-filter-change', detail)) return false
+        if (!this.request('beforefilterchange', detail)) return false
         this.query = next
         this.syncView()
-        this.emit('cb-filter-change', detail)
+        this.emit('filterchange', detail)
         return true
     }
 
     setView(view: FileBrowserView, originalEvent?: Event): boolean {
         if (this.unavailable || view === this.view || !['grid', 'table'].includes(view)) return false
         const detail = { view, originalEvent }
-        if (!this.request('cb-before-view-change', detail)) return false
+        if (!this.request('beforeviewchange', detail)) return false
         this.view = view
         this.syncView()
-        this.emit('cb-view-change', detail)
+        this.emit('viewchange', detail)
         return true
     }
 
@@ -162,11 +162,11 @@ export abstract class FileBrowserBase<P extends FileBrowserProps = FileBrowserPr
         const id = scalarText(folderId)
         if (this.unavailable || id && !this.normalizedEntries().some(entry => entry.id === id && entry.type === 'folder' && !entry.disabled)) return false
         const detail = { folderId: id, originalEvent }
-        if (!this.request('cb-before-navigate', detail)) return false
+        if (!this.request('beforenavigate', detail)) return false
         this.currentFolderId = id
         this.query = ''
         this.syncView()
-        this.emit('cb-navigate', detail)
+        this.emit('navigate', detail)
         return true
     }
 
@@ -188,10 +188,10 @@ export abstract class FileBrowserBase<P extends FileBrowserProps = FileBrowserPr
         const selectedEntries = this.selectionMode === 'single' ? allowed.slice(0, 1) : allowed
         const selectedIds = selectedEntries.map(entry => entry.id)
         const detail = { selectedIds, selectedEntries, originalEvent }
-        if (!this.request('cb-before-selection-change', detail)) return false
+        if (!this.request('beforeselectionchange', detail)) return false
         this.selectedIds = selectedIds
         this.syncView()
-        this.emit('cb-selection-change', detail)
+        this.emit('selectionchange', detail)
         return true
     }
 
@@ -199,19 +199,19 @@ export abstract class FileBrowserBase<P extends FileBrowserProps = FileBrowserPr
         if (this.unavailable || entry.disabled) return false
         if (entry.type === 'folder') return this.navigate(entry.id, originalEvent)
         const detail = { entry, originalEvent }
-        if (!this.request('cb-before-entry-open', detail)) return false
-        this.emit('cb-entry-open', detail)
+        if (!this.request('beforeentryopen', detail)) return false
+        this.emit('entryopen', detail)
         return true
     }
 
     changeSort(sortBy: FileBrowserSort, sortDirection: FileBrowserSortDirection, originalEvent?: Event): boolean {
         if (this.unavailable) return false
         const detail = { sortBy, sortDirection, originalEvent }
-        if (!this.request('cb-before-sort-change', detail)) return false
+        if (!this.request('beforesortchange', detail)) return false
         this.sortBy = sortBy
         this.sortDirection = sortDirection
         this.syncView()
-        this.emit('cb-sort-change', detail)
+        this.emit('sortchange', detail)
         return true
     }
 }

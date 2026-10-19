@@ -22,13 +22,13 @@ export abstract class ButtonBase<P extends ButtonProps = ButtonProps> extends Co
         if(this.unavailable){event.preventDefault();event.stopImmediatePropagation();return}
         if(this.pressed!==undefined){
             const next=!bool(this.pressed)
-            if(!this.request('cb-before-change',{value:next,pressed:next,originalEvent:event})){event.preventDefault();return}
+            if(!this.request('beforechange',{value:next,pressed:next,originalEvent:event})){event.preventDefault();return}
             this.pressed=next
-            this.emit('cb-change',{value:next,pressed:next,originalEvent:event})
+            this.emit('change',{value:next,pressed:next,originalEvent:event})
             return
         }
-        if(!this.request('cb-before-action',{value:this.value,originalEvent:event})){event.preventDefault();return}
-        this.emit('cb-action',{value:this.value,originalEvent:event})
+        if(!this.request('beforeaction',{value:this.value,originalEvent:event})){event.preventDefault();return}
+        this.emit('action',{value:this.value,originalEvent:event})
         const form=this.form
         if(form&&this.type==='reset')form.reset()
         if(form&&this.type==='submit'){

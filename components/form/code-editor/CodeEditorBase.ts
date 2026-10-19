@@ -76,10 +76,10 @@ export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps
         const next = scalarText(value)
         if (next === this.sourceText()) return false
         const detail = { value: next, originalEvent }
-        if (!this.request('cb-before-change', detail)) { this.syncView(); return false }
+        if (!this.request('beforechange', detail)) { this.syncView(); return false }
         this.sourceValue.set(next, false)
         this.syncView()
-        this.emit('cb-change', detail)
+        this.emit('change', detail)
         return true
     }
 
@@ -179,8 +179,8 @@ export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps
         if (event.key !== 'Enter' || !(event.ctrlKey || event.metaKey)) return false
         event.preventDefault()
         const detail = { value: this.sourceText(), originalEvent: event }
-        if (!this.request('cb-before-submit', detail)) return false
-        this.emit('cb-submit', detail)
+        if (!this.request('beforesubmit', detail)) return false
+        this.emit('submit', detail)
         return true
     }
 }

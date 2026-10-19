@@ -27,13 +27,13 @@ export abstract class SelectBase extends FormControlBase<SelectProps, string|str
             ? next.length===this.value.length&&next.every((item,index)=>item===this.value[index])
             : !Array.isArray(next)&&!Array.isArray(this.value)&&next===this.value
         if(unchanged)return false
-        if(!this.request('cb-before-change',{value:next,originalEvent})){this.syncView();return false}
-        this.value=next;this.syncView();this.emit('cb-change',{value:next,originalEvent});return true
+        if(!this.request('beforechange',{value:next,originalEvent})){this.syncView();return false}
+        this.value=next;this.syncView();this.emit('change',{value:next,originalEvent});return true
     }
     setOpen(open:boolean,originalEvent?:Event):boolean{
         if(this.unavailable||bool(this.readOnly)||bool(this.native))return false
         if(bool(this.open)===open)return true
-        if(!this.request(open?'cb-before-open':'cb-before-close',{open,originalEvent}))return false
-        this.open=open;this.toggleAttribute('open',open);this.syncView();this.emit(open?'cb-open':'cb-close',{open,originalEvent});return true
+        if(!this.request(open?'beforeopen':'beforeclose',{open,originalEvent}))return false
+        this.open=open;this.toggleAttribute('open',open);this.syncView();this.emit(open?'open':'close',{open,originalEvent});return true
     }
 }

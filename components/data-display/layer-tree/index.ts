@@ -102,11 +102,7 @@ export class LayerTree extends LayerTreeBase {
         input.setAttribute('part', 'edit-input')
         Object.assign(input, { value: item.label, label: '', accessibleLabel: this.itemLabel(this.renameLabel, item) })
         let draft = item.label
-        input.addEventListener('input', event => {
-            const control = event.composedPath().find(node => node instanceof HTMLInputElement)
-            if (control instanceof HTMLInputElement) draft = control.value
-        })
-        input.addEventListener('cb-change', () => { draft = scalarText(input.value) })
+        input.addEventListener('change', event => { event.stopPropagation(); draft = scalarText(input.value) })
         const commit = (event?: Event): void => {
             if (this.rename(item.id, draft, event)) this.editingId = ''
             this.syncView()

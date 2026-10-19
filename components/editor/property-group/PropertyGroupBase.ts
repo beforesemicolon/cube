@@ -30,17 +30,17 @@ export abstract class PropertyGroupBase<P extends PropertyGroupProps = PropertyG
         if (!bool(this.collapsible) || this.unavailable) return false
         const expanded = !bool(this.expanded)
         const detail = { expanded, originalEvent }
-        if (!this.request('cb-before-expansion-change', detail)) return false
+        if (!this.request('beforeexpansionchange', detail)) return false
         this.expanded = expanded
         this.syncView()
-        this.emit('cb-expansion-change', detail)
+        this.emit('expansionchange', detail)
         return true
     }
     reset(originalEvent?: Event): boolean {
         if (!bool(this.dirty) || this.unavailable) return false
         const detail = { originalEvent }
-        if (!this.request('cb-before-reset', detail)) return false
-        this.emit('cb-reset', detail)
+        if (!this.request('beforereset', detail)) return false
+        this.emit('reset', detail)
         return true
     }
     protected toggleLabel(): string { return scalarText(bool(this.expanded) ? this.collapseLabel : this.expandLabel) }

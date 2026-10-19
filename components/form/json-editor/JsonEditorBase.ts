@@ -93,10 +93,10 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
         if (this.unavailable || bool(this.readOnly)) return false
         const next = scalarText(value)
         const detail = { value: next, originalEvent }
-        if (!this.request('cb-before-change', detail)) { this.syncView(); return false }
+        if (!this.request('beforechange', detail)) { this.syncView(); return false }
         this.sourceValue.set(next, false)
         this.syncView()
-        this.emit('cb-change', detail)
+        this.emit('change', detail)
         return true
     }
 
@@ -105,7 +105,7 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
         if (parsed.error || parsed.value === undefined) { this.validationShown = true; this.syncView(); return false }
         const next = JSON.stringify(parsed.value, null, this.normalizedIndent())
         if (!this.setValue(next, originalEvent)) return false
-        this.emit('cb-format', { value: next, originalEvent })
+        this.emit('format', { value: next, originalEvent })
         return true
     }
 

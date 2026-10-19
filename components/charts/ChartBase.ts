@@ -41,7 +41,7 @@ export abstract class ChartBase<P extends ChartProps = ChartProps> extends Compo
         const allowed = Array.isArray(controlled) ? new Set(controlled) : new Set(all.legend.filter(i => !this.hiddenItems.has(i.id)).map(i => i.id))
         const model = this.build(skin, allowed)
         const issueKey = model.issues.join('|')
-        if (issueKey && issueKey !== this.lastIssues) this.emit('cb-error', { code: 'CHART_DATA', issues: model.issues })
+        if (issueKey && issueKey !== this.lastIssues) this.emit('error', { code: 'CHART_DATA', issues: model.issues })
         this.lastIssues = issueKey
         if (this.currentKey && !model.points.some(p => p.key === this.currentKey && p.y !== null)) { this.currentKey = null; this.pinned = false }
         return model
@@ -51,13 +51,13 @@ export abstract class ChartBase<P extends ChartProps = ChartProps> extends Compo
         const selected = new Set(Array.isArray(controlled) ? controlled : items.filter(i => !this.hiddenItems.has(i)))
         if (visible) selected.add(id); else selected.delete(id)
         if (!Array.isArray(controlled)) this.hiddenItems = new Set(items.filter(i => !selected.has(i)))
-        this.emit('cb-visibility-change', { visibleItems: [...selected], kind: this.kind, id, visible })
+        this.emit('visibilitychange', { visibleItems: [...selected], kind: this.kind, id, visible })
         this.display()
     }
     showAll(items: readonly string[]): void {
         const controlled = this.kind === 'pie' ? this.visibleSegments : this.visibleSeries
         if (!Array.isArray(controlled)) this.hiddenItems.clear()
-        this.emit('cb-visibility-change', { visibleItems: [...items], kind: this.kind })
+        this.emit('visibilitychange', { visibleItems: [...items], kind: this.kind })
         this.display()
     }
     selected(model: ChartModel): ChartPoint | undefined {
@@ -65,7 +65,7 @@ export abstract class ChartBase<P extends ChartProps = ChartProps> extends Compo
     }
     select(point: ChartPoint, pinned = this.pinned): void {
         this.currentKey = point.key; this.pinned = pinned
-        this.emit('cb-select', { point, pinned })
+        this.emit('select', { point, pinned })
     }
     navigate(model: ChartModel, key: string): ChartPoint | undefined {
         const points = model.points.filter(p => p.y !== null), current = this.selected(model)

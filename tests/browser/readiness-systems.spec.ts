@@ -218,7 +218,7 @@ test('code, JSON, property, and canvas primitives are interactive and render mea
     expect(await jsonControl.inputValue()).toContain('\n')
     await expect(json.getByRole('status')).toHaveText('Valid JSON')
     const formatted = await jsonControl.inputValue()
-    await json.evaluate(node => node.addEventListener('cb-before-change', event => event.preventDefault(), { once: true }))
+    await json.evaluate(node => node.addEventListener('beforechange', event => event.preventDefault(), { once: true }))
     await jsonControl.fill('{"blocked":true}')
     await expect(jsonControl).toHaveValue(formatted)
     await jsonControl.fill('{"name":}')
@@ -274,7 +274,7 @@ test('global modal and flashbar services support asynchronous application workfl
             const modal = event.target
             if (modal instanceof HTMLElement && modal.id === 'cancelled-document-modal') event.preventDefault()
         }
-        document.addEventListener('cb-before-open', cancelOpen, { once: true })
+        document.addEventListener('beforeopen', cancelOpen, { once: true })
         const result = await showModal({ id: 'cancelled-document-modal', layer: 'document', heading: 'Never shown' })
         return { reason: result.reason, fixtureInert: (document.querySelector('#fixture') as HTMLElement).inert, modalExists: Boolean(document.getElementById('cancelled-document-modal')) }
     })

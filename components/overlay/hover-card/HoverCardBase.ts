@@ -25,6 +25,6 @@ export abstract class HoverCardBase<P extends HoverCardProps = HoverCardProps> e
     }
     protected setOpen(open: boolean): void {
         if (this.isOpen() === open) return
-        this.open = open; this.toggleAttribute('open', open); this.syncView(); this.emit('cb-open-change', { open })
+        this.open = open; this.toggleAttribute('open', open); this.syncView(); this.emit('openchange', { open })
     }
 }

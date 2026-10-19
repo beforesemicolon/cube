@@ -66,20 +66,20 @@ export abstract class TimelineBase extends Component<TimelineProps> {
     seek(time: number, originalEvent?: Event, commit = true): boolean {
         if (this.unavailable) return false
         const detail: TimelineTimeDetail = { currentTime: this.timelineTime(time), duration: this.timelineDuration(), originalEvent }
-        if (!this.request(commit ? 'cb-before-change' : 'cb-before-input', detail)) return false
+        if (!this.request(commit ? 'beforechange' : 'beforeinput', detail)) return false
         this.currentTime = detail.currentTime
         this.syncView()
-        this.emit(commit ? 'cb-change' : 'cb-input', detail)
+        this.emit(commit ? 'change' : 'input', detail)
         return true
     }
 
     setPlaying(playing: boolean, originalEvent?: Event): boolean {
         if (this.unavailable) return false
         const next = bool(playing)
-        if (!this.request('cb-before-playback-change', { playing: next, originalEvent })) return false
+        if (!this.request('beforeplaybackchange', { playing: next, originalEvent })) return false
         this.playing = next
         this.syncView()
-        this.emit(next ? 'cb-play' : 'cb-pause', { currentTime: this.timelineTime(), originalEvent })
+        this.emit(next ? 'play' : 'pause', { currentTime: this.timelineTime(), originalEvent })
         return true
     }
 
@@ -89,11 +89,11 @@ export abstract class TimelineBase extends Component<TimelineProps> {
         const keyframe = track?.keyframes.find(candidate => candidate.id === keyframeId)
         if (!track || !keyframe || track.disabled || keyframe.disabled) return false
         const detail: TimelineKeyframeDetail = { trackId, keyframe, originalEvent }
-        if (!this.request('cb-before-select', detail)) return false
+        if (!this.request('beforeselect', detail)) return false
         this.selectedKeyframeId = keyframe.id
         this.currentTime = this.timelineTime(keyframe.time)
         this.syncView()
-        this.emit('cb-select', detail)
+        this.emit('select', detail)
         return true
     }
 
@@ -106,14 +106,14 @@ export abstract class TimelineBase extends Component<TimelineProps> {
         if (!track || !keyframe || track.disabled || keyframe.disabled) return false
         const moved: TimelineKeyframe = { ...keyframe, time: nextTime }
         const detail: TimelineKeyframeDetail = { trackId, keyframe: moved, originalEvent }
-        if (!this.request(commit ? 'cb-before-keyframe-change' : 'cb-before-keyframe-input', detail)) return false
+        if (!this.request(commit ? 'beforekeyframechange' : 'beforekeyframeinput', detail)) return false
         this.tracks = this.timelineTracks().map(candidate => candidate.id === trackId
             ? { ...candidate, keyframes: candidate.keyframes.map(frame => frame.id === keyframeId ? moved : frame) }
             : candidate)
         this.selectedKeyframeId = keyframeId
         this.currentTime = nextTime
         this.syncView()
-        this.emit(commit ? 'cb-keyframe-change' : 'cb-keyframe-input', detail)
+        this.emit(commit ? 'keyframechange' : 'keyframeinput', detail)
         return true
     }
 
@@ -125,11 +125,11 @@ export abstract class TimelineBase extends Component<TimelineProps> {
         const id = `${track.id}-${Math.round(time * 1000)}`
         const keyframe: TimelineKeyframe = { id, time }
         const detail: TimelineKeyframeDetail = { trackId, keyframe, originalEvent }
-        if (!this.request('cb-before-keyframe-add', detail)) return false
+        if (!this.request('beforekeyframeadd', detail)) return false
         this.tracks = this.timelineTracks().map(candidate => candidate.id === trackId ? { ...candidate, keyframes: [...candidate.keyframes, keyframe] } : candidate)
         this.selectedKeyframeId = id
         this.syncView()
-        this.emit('cb-keyframe-add', detail)
+        this.emit('keyframeadd', detail)
         return true
     }
 }

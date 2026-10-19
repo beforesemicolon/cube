@@ -150,10 +150,10 @@ export abstract class AccordionBase extends Component<AccordionProps> {
         } else next.delete(id)
         const expandedIds = [...next]
         const detail: AccordionExpansionDetail = { item, id, expanded, expandedIds, originalEvent }
-        if (!this.request('cb-before-expansion-change', detail)) return false
+        if (!this.request('beforeexpansionchange', detail)) return false
         this.expandedIds = expandedIds
         this.syncView()
-        this.emit('cb-expansion-change', detail)
+        this.emit('expansionchange', detail)
         return true
     }
 
@@ -164,10 +164,10 @@ export abstract class AccordionBase extends Component<AccordionProps> {
         const limited = bool(this.multiple) ? next : next.slice(0, 1)
         if (sameStrings(this.expansionSet(), limited)) return false
         const detail: AccordionBulkExpansionDetail = { items: available, expanded, expandedIds: limited }
-        if (!this.request('cb-before-expansion-change', detail)) return false
+        if (!this.request('beforeexpansionchange', detail)) return false
         this.expandedIds = limited
         this.syncView()
-        this.emit('cb-expansion-change', detail)
+        this.emit('expansionchange', detail)
         return true
     }
 }

@@ -27,7 +27,7 @@ export abstract class MediaBase extends Component<MediaProps> {
     protected mount(): void {
         const media = this.mediaElement(); if (!media) return
         this.controller = new MediaController(media, state => {
-            this.playbackChanged(state); this.emit('cb-media-change', state)
+            this.playbackChanged(state); this.emit('mediachange', state)
         }, error => { this.playbackError = error; this.onError(error); this.controller?.notify() })
         this.listen(document, 'fullscreenchange', () => this.controller?.notify())
         this.sync('src'); this.sync('tracks')

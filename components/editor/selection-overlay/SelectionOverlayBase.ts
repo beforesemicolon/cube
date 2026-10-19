@@ -73,10 +73,10 @@ export abstract class SelectionOverlayBase<P extends SelectionOverlayProps = Sel
         if (!bool(this.rotatable) || this.unavailable) return false
         const normalized = ((finite(rotation) % 360) + 360) % 360
         const detail = { rotation: normalized, originalEvent }
-        if (!this.request('cb-before-rotation-change', detail)) return false
+        if (!this.request('beforerotationchange', detail)) return false
         this.rotation = normalized
         this.syncView()
-        this.emit('cb-rotation-change', detail)
+        this.emit('rotationchange', detail)
         return true
     }
 
@@ -89,10 +89,10 @@ export abstract class SelectionOverlayBase<P extends SelectionOverlayProps = Sel
     private commitRect(rect: EditorRect, reason: 'move' | 'resize', originalEvent?: Event, handle?: SelectionHandle): boolean {
         const next = { x: finite(rect.x), y: finite(rect.y), width: Math.max(0, finite(rect.width)), height: Math.max(0, finite(rect.height)) }
         const detail = { rect: next, reason, handle, originalEvent }
-        if (!this.request('cb-before-rect-change', detail)) return false
+        if (!this.request('beforerectchange', detail)) return false
         this.rect = next
         this.syncView()
-        this.emit('cb-rect-change', detail)
+        this.emit('rectchange', detail)
         return true
     }
 }

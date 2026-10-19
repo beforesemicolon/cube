@@ -45,19 +45,16 @@ export class FileBrowser extends FileBrowserBase {
         const toolbarMain = el('div', 'toolbar-main')
         this.search = document.createElement('cb-text-input') as TextInput
         this.search.setAttribute('part', 'search')
-        this.search.addEventListener('input', event => {
-            const control = event.composedPath().find(node => node instanceof HTMLInputElement)
-            if (control instanceof HTMLInputElement) this.setQuery(control.value, event)
-        })
-        this.search.addEventListener('cb-change', event => this.setQuery(scalarText((event as CustomEvent<{ value: string }>).detail.value), event))
+        this.search.addEventListener('change', event => { event.stopPropagation(); this.setQuery(scalarText((event as CustomEvent<{ value: string }>).detail.value), event) })
         this.views = document.createElement('cb-segmented-control') as SegmentedControl
         this.views.setAttribute('part', 'view-toggle')
-        this.views.addEventListener('cb-change', event => this.setView((event as CustomEvent<{ value: FileBrowserView }>).detail.value, event))
+        this.views.addEventListener('change', event => { event.stopPropagation(); this.setView((event as CustomEvent<{ value: FileBrowserView }>).detail.value, event) })
         toolbarMain.append(this.search, slot('toolbar', '', 'toolbar-content'))
         toolbar.append(toolbarMain, this.views)
         this.path = document.createElement('cb-breadcrumb') as Breadcrumb
         this.path.setAttribute('part', 'path')
-        this.path.addEventListener('cb-navigate', event => {
+        this.path.addEventListener('navigate', event => {
+            event.stopPropagation()
             const encoded = scalarText((event as CustomEvent<{ id: string }>).detail.id)
             this.navigate(encoded.startsWith('folder:') ? encoded.slice('folder:'.length) : '', event)
         })
@@ -152,16 +149,19 @@ export class FileBrowser extends FileBrowserBase {
             deselectRowLabel: scalarText(this.deselectEntryLabel).replaceAll('{entry}', '{row}'),
             sortAscendingLabel: scalarText(this.sortAscendingLabel), sortDescendingLabel: scalarText(this.sortDescendingLabel),
         })
-        table.addEventListener('cb-selection-change', event => {
+        table.addEventListener('selectionchange', event => {
+            event.stopPropagation()
             const detail = (event as CustomEvent<{ selectedKeys: readonly string[] }>).detail
             this.setSelection(detail.selectedKeys, event)
         })
-        table.addEventListener('cb-row-activate', event => {
+        table.addEventListener('rowactivate', event => {
+            event.stopPropagation()
             const id = scalarText((event as CustomEvent<{ key: string }>).detail.key)
             const entry = entryById.get(id)
             if (entry) this.activate(entry, event)
         })
-        table.addEventListener('cb-sort-change', event => {
+        table.addEventListener('sortchange', event => {
+            event.stopPropagation()
             const detail = (event as CustomEvent<{ sortBy: FileBrowserSort; sortDirection: FileBrowserSortDirection }>).detail
             this.changeSort(detail.sortBy, detail.sortDirection, event)
         })

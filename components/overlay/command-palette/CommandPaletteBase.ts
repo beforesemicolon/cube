@@ -21,12 +21,12 @@ export abstract class CommandPaletteBase<P extends CommandPaletteProps = Command
     close(): void { this.setOpen(false) }
     protected setOpen(open: boolean): void {
         if (this.open === open) return
-        this.open = open; this.toggleAttribute('open', open); this.syncView(); this.emit('cb-open-change', { open })
+        this.open = open; this.toggleAttribute('open', open); this.syncView(); this.emit('openchange', { open })
     }
     protected select(item: NormalizedItem, originalEvent: Event): void {
         if (item.disabled) return
         const detail = { id: item.id, item, originalEvent }
-        if (!this.request('cb-before-action', detail)) return
-        this.emit('cb-action', detail); this.close()
+        if (!this.request('beforeaction', detail)) return
+        this.emit('action', detail); this.close()
     }
 }

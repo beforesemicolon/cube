@@ -15,7 +15,7 @@ export abstract class MenuBase<P extends MenuProps = MenuProps> extends Componen
         if (this.unavailable || item.disabled || item.separator) return
         const checked = item.type === 'checkbox' || item.type === 'radio' ? !item.checked : undefined
         const detail = { id: item.id, item, checked, originalEvent }
-        if (!this.request('cb-before-action', detail)) return
-        this.emit('cb-action', detail)
+        if (!this.request('beforeaction', detail)) return
+        this.emit('action', detail)
     }
 }

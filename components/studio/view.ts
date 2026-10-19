@@ -89,20 +89,20 @@ class StudioViewAdapter {
         const current = typeof value === 'boolean' && 'checked' in this.source ? this.source.checked : this.source.value
         if (Object.is(current, value)) return false
         const detail = { value, originalEvent }
-        if (!this.request('cb-before-change', detail)) return false
+        if (!this.request('beforechange', detail)) return false
         if (typeof value === 'boolean' && 'checked' in this.source) this.source.checked = value
         else this.source.value = value
         this.refreshView()
-        this.emit('cb-change', detail)
+        this.emit('change', detail)
         return true
     }
     activate(item?: StudioItem, originalEvent?: Event): boolean {
         if (this.studioDisabled() || item?.disabled) return false
         const detail = { item: item ?? null, value: item?.value ?? item?.id ?? this.source.value, originalEvent }
-        if (!this.request('cb-before-action', detail)) return false
+        if (!this.request('beforeaction', detail)) return false
         if (item) this.source.value = item.value ?? item.id
         this.refreshView()
-        this.emit('cb-action', detail)
+        this.emit('action', detail)
         return true
     }
     toggleToken(item: StudioItem, originalEvent?: Event): boolean {
@@ -466,7 +466,7 @@ export function createStudioView(source: StudioViewSource): StudioView {
             unit.setAttribute('aria-hidden', 'true')
             const unitSelect = document.createElement('cb-select') as Select
             unitSelect.setAttribute('part', 'unit unit-select')
-            unitSelect.addEventListener('cb-change', event => {
+            unitSelect.addEventListener('change', event => {
                 event.stopPropagation()
                 const detail = (event as CustomEvent<{ value: string | string[]; originalEvent?: Event }>).detail
                 const selectedUnit = Array.isArray(detail.value) ? detail.value[0] ?? '' : detail.value
@@ -725,7 +725,7 @@ export function createStudioView(source: StudioViewSource): StudioView {
         canvas.addEventListener('keydown', event => {
             if (!['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'].includes(event.key)) return
             event.preventDefault()
-            host.emit('cb-nudge', { direction: event.key, originalEvent: event })
+            host.emit('nudge', { direction: event.key, originalEvent: event })
         })
         canvas.addEventListener('click', event => host.activate(undefined, event))
         updateBody = (): void => { canvas.setAttribute('aria-label', host.studioAccessibleName()); aria(canvas, 'aria-disabled', host.studioDisabled() ? true : null); canvas.tabIndex = host.studioDisabled() ? -1 : 0 }

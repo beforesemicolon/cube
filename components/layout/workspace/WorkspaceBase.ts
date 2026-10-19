@@ -103,14 +103,14 @@ export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> e
     togglePanel(panel: WorkspacePanel, open = !this.isPanelOpen(panel), originalEvent?: Event): boolean {
         if (this.unavailable) return false
         const detail = { panel, open, originalEvent }
-        if (!this.request('cb-before-panel-toggle', detail)) return false
+        if (!this.request('beforepaneltoggle', detail)) return false
         if (this.mobile) {
             this.mobilePanel = open ? panel : ''
             this.setAttribute('mobile-panel', this.mobilePanel)
         } else this.setPanelOpen(panel, open)
         this.persist()
         this.syncView()
-        this.emit('cb-panel-toggle', detail)
+        this.emit('paneltoggle', detail)
         this.emitLayout()
         return true
     }
@@ -120,13 +120,13 @@ export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> e
         const next = this.clampedSize(panel, size)
         if (next === this.panelSize(panel)) return false
         const detail = { panel, size: next, originalEvent }
-        if (!this.request('cb-before-panel-resize', detail)) return false
+        if (!this.request('beforepanelresize', detail)) return false
         if (panel === 'start') this.startSize = next
         else if (panel === 'end') this.endSize = next
         else this.bottomSize = next
         this.persist()
         this.syncView()
-        this.emit('cb-panel-resize', detail)
+        this.emit('panelresize', detail)
         this.emitLayout()
         return true
     }
@@ -165,7 +165,7 @@ export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> e
     }
 
     private emitLayout(): void {
-        this.emit('cb-layout-change', {
+        this.emit('layoutchange', {
             mobile: this.mobile, mobilePanel: this.mobilePanel, startOpen: this.isPanelOpen('start'), endOpen: this.isPanelOpen('end'),
             bottomOpen: this.isPanelOpen('bottom'), startSize: this.panelSize('start'), endSize: this.panelSize('end'), bottomSize: this.panelSize('bottom'),
         })

@@ -123,10 +123,10 @@ export abstract class LayerTreeBase<P extends LayerTreeProps = LayerTreeProps> e
         const next = !expanded.has(id)
         if (next) expanded.add(id); else expanded.delete(id)
         const detail = { id, expanded: next, expandedIds: [...expanded], originalEvent }
-        if (!this.request('cb-before-expansion-change', detail)) return false
+        if (!this.request('beforeexpansionchange', detail)) return false
         this.expandedIds = detail.expandedIds
         this.syncView()
-        this.emit('cb-expansion-change', detail)
+        this.emit('expansionchange', detail)
         return true
     }
 
@@ -138,10 +138,10 @@ export abstract class LayerTreeBase<P extends LayerTreeProps = LayerTreeProps> e
         if (additive && selected.has(id)) selected.delete(id); else selected.add(id)
         const selectedIds = [...selected]
         const detail = { id, selectedIds, selectedItems: this.flattenedItems().filter(candidate => selected.has(candidate.id)), originalEvent }
-        if (!this.request('cb-before-selection-change', detail)) return false
+        if (!this.request('beforeselectionchange', detail)) return false
         this.selectedIds = selectedIds
         this.syncView()
-        this.emit('cb-selection-change', detail)
+        this.emit('selectionchange', detail)
         return true
     }
 
@@ -185,10 +185,10 @@ export abstract class LayerTreeBase<P extends LayerTreeProps = LayerTreeProps> e
 
     private commitItems(items: readonly LayerTreeItem[], reason: string, detail: object): boolean {
         const change = { items, reason, ...detail }
-        if (!this.request('cb-before-items-change', change)) return false
+        if (!this.request('beforeitemschange', change)) return false
         this.items = items
         this.syncView()
-        this.emit('cb-items-change', change)
+        this.emit('itemschange', change)
         return true
     }
 }

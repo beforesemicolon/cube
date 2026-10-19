@@ -52,10 +52,10 @@ export abstract class DeviceFrameBase extends Component<DeviceFrameProps> {
         if (this.unavailable) return false
         const orientation: DeviceOrientation = this.orientation === 'portrait' ? 'landscape' : 'portrait'
         const detail = { orientation, originalEvent }
-        if (!this.request('cb-before-change', detail)) return false
+        if (!this.request('beforechange', detail)) return false
         this.orientation = orientation
         this.syncView()
-        this.emit('cb-change', detail)
+        this.emit('change', detail)
         return true
     }
 }

@@ -32,8 +32,7 @@ export class EditableList extends EditableListBase {
         const addRow = el('div', 'add-row')
         this.addInput = document.createElement('cb-text-input') as TextInput
         this.addInput.setAttribute('part', 'add-input')
-        this.addInput.addEventListener('input', event => { this.addValue = this.inputValue(event, this.addValue) })
-        this.addInput.addEventListener('cb-change', () => { this.addValue = scalarText(this.addInput?.value) })
+        this.addInput.addEventListener('change', event => { event.stopPropagation(); this.addValue = scalarText(this.addInput?.value) })
         this.addInput.addEventListener('keydown', event => {
             if (event.key !== 'Enter') return
             event.preventDefault()
@@ -78,8 +77,7 @@ export class EditableList extends EditableListBase {
             input.setAttribute('part', 'edit-input')
             Object.assign(input, { label: '', accessibleLabel: scalarText(this.inputLabel), value: item.label, disabled: this.unavailable || item.disabled })
             let draft = item.label
-            input.addEventListener('input', event => { draft = this.inputValue(event, draft) })
-            input.addEventListener('cb-change', () => { draft = scalarText(input.value) })
+            input.addEventListener('change', event => { event.stopPropagation(); draft = scalarText(input.value) })
             const actions = el('div', 'edit-actions')
             const commit = (event?: Event): void => {
                 if (this.updateItem(item.id, draft, event)) this.editingId = ''
@@ -124,10 +122,6 @@ export class EditableList extends EditableListBase {
     }
 
     private itemActionLabel(template: string, item: EditableListItem): string { return scalarText(template).replaceAll('{item}', item.label) }
-    private inputValue(event: Event, fallback: string): string {
-        const control = event.composedPath().find(node => node instanceof HTMLInputElement)
-        return control instanceof HTMLInputElement ? control.value : fallback
-    }
     private addDraft(event: Event): void {
         if (!this.addInput) return
         if (this.addItem(this.addValue, event)) {

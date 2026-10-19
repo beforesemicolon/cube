@@ -36,14 +36,14 @@ test('button only becomes a toggle when pressed is defined and preserves every v
         const action = document.createElement('cb-button') as TestButton
         action.id = 'action-button'
         action.label = 'Run action'
-        action.addEventListener('cb-action', () => { action.dataset.actionCount = String(Number(action.dataset.actionCount ?? 0) + 1) })
+        action.addEventListener('action', () => { action.dataset.actionCount = String(Number(action.dataset.actionCount ?? 0) + 1) })
         const primary = document.createElement('cb-button') as TestButton
         primary.id = 'primary-toggle'
         Object.assign(primary, { label: 'Pin preview', pressed: false, variant: 'primary' })
-        primary.addEventListener('cb-change', () => { primary.dataset.changeCount = String(Number(primary.dataset.changeCount ?? 0) + 1) })
+        primary.addEventListener('change', () => { primary.dataset.changeCount = String(Number(primary.dataset.changeCount ?? 0) + 1) })
         const destructive = document.createElement('cb-button') as TestButton
         Object.assign(destructive, { label: 'Block publishing', pressed: false, variant: 'destructive' })
-        destructive.addEventListener('cb-change', () => { destructive.dataset.changeCount = String(Number(destructive.dataset.changeCount ?? 0) + 1) })
+        destructive.addEventListener('change', () => { destructive.dataset.changeCount = String(Number(destructive.dataset.changeCount ?? 0) + 1) })
         document.querySelector('#fixture')?.append(action, primary, destructive)
     })
 
@@ -62,7 +62,7 @@ test('button only becomes a toggle when pressed is defined and preserves every v
     }
     await expect(page.locator('cb-button[pressed=true]')).toHaveCount(2)
     await expect(page.locator('cb-button[pressed=true]').first()).toHaveAttribute('data-change-count', '1')
-    await page.locator('#primary-toggle').evaluate(element => element.addEventListener('cb-before-change', event => event.preventDefault(), { once: true }))
+    await page.locator('#primary-toggle').evaluate(element => element.addEventListener('beforechange', event => event.preventDefault(), { once: true }))
     await page.getByRole('button', { name: 'Pin preview' }).click()
     await expect(page.getByRole('button', { name: 'Pin preview' })).toHaveAttribute('aria-pressed', 'true')
     await expect(page.locator('#primary-toggle')).toHaveAttribute('data-change-count', '1')
@@ -79,7 +79,7 @@ test('button group owns its buttons and renders one continuous control', async (
         }
         group.accessibleLabel = 'Clipboard actions'
         group.items = [{ id: 'copy', label: 'Copy' }, { id: 'paste', label: 'Paste' }, { id: 'duplicate', label: 'Duplicate', disabled: true }]
-        group.addEventListener('cb-action', () => { group.dataset.actionCount = String(Number(group.dataset.actionCount ?? 0) + 1) })
+        group.addEventListener('action', () => { group.dataset.actionCount = String(Number(group.dataset.actionCount ?? 0) + 1) })
         document.querySelector('#fixture')?.append(group)
     })
     const group = page.getByRole('group', { name: 'Clipboard actions' })
@@ -142,7 +142,7 @@ test('split button joins its primary and menu trigger into one control', async (
     await page.evaluate(() => {
         const split = document.createElement('cb-split-button') as HTMLElement & { label: string; menuLabel: string; items: Array<{ id: string; label: string }> }
         split.label = 'Create'; split.menuLabel = 'More create actions'; split.items = [{ id: 'page', label: 'Page' }]
-        split.addEventListener('cb-action', () => { split.dataset.actionCount = String(Number(split.dataset.actionCount ?? 0) + 1) })
+        split.addEventListener('action', () => { split.dataset.actionCount = String(Number(split.dataset.actionCount ?? 0) + 1) })
         document.querySelector('#fixture')?.append(split)
     })
     const buttons = page.locator('cb-split-button').getByRole('button')

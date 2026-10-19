@@ -20,7 +20,7 @@ export class PropertyGroup extends PropertyGroupBase {
         this.section = document.createElement('cb-expandable-section') as ExpandableSection
         this.section.setAttribute('part', 'section')
         this.section.setAttribute('exportparts', 'root:root,trigger:trigger,heading:heading,label:label,description:description,panel:panel,content:content,header-extras:header-extras')
-        this.section.addEventListener('cb-expansion-change', event => {
+        this.section.addEventListener('expansionchange', event => {
             event.stopPropagation()
             this.toggle(event)
         })

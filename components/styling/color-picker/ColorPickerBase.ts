@@ -91,12 +91,12 @@ export abstract class ColorPickerBase extends FormControlBase<ColorPickerProps> 
         if (this.unavailable || bool(this.readOnly) || bool(this.native)) return false
         if (bool(this.open) === open) return true
         const detail = { open, originalEvent }
-        if (!this.request(open ? 'cb-before-open' : 'cb-before-close', detail)) return false
+        if (!this.request(open ? 'beforeopen' : 'beforeclose', detail)) return false
         this.open = open
         this.toggleAttribute('open', open)
         this.syncView()
-        this.emit(open ? 'cb-open' : 'cb-close', detail)
-        this.emit('cb-open-change', detail)
+        this.emit(open ? 'open' : 'close', detail)
+        this.emit('openchange', detail)
         return true
     }
 
@@ -109,10 +109,10 @@ export abstract class ColorPickerBase extends FormControlBase<ColorPickerProps> 
         const next = colorToHex({ ...color, alpha: bool(this.allowAlpha) ? color.alpha : 1 })
         if (next === this.normalizedValue()) return false
         const detail: ColorPickerChangeDetail = { value: next, color: parseHexColor(next) ?? color, originalEvent }
-        if (!this.request('cb-before-change', detail)) return false
+        if (!this.request('beforechange', detail)) return false
         this.value = next
         this.syncView()
-        this.emit('cb-change', detail)
+        this.emit('change', detail)
         return true
     }
 
@@ -134,10 +134,10 @@ export abstract class ColorPickerBase extends FormControlBase<ColorPickerProps> 
             recentColors: this.normalizedColors(this.recentColors),
             originalEvent,
         }
-        if (!this.request('cb-before-swatch-add', detail)) return false
+        if (!this.request('beforeswatchadd', detail)) return false
         this.swatches = detail.swatches
         this.syncView()
-        this.emit('cb-swatch-add', detail)
+        this.emit('swatchadd', detail)
         return true
     }
 
@@ -152,11 +152,11 @@ export abstract class ColorPickerBase extends FormControlBase<ColorPickerProps> 
         const recentColors = currentRecent.filter(candidate => candidate !== normalized)
         if (swatches.length === currentSwatches.length && recentColors.length === currentRecent.length) return false
         const detail: ColorPickerSwatchDetail = { value: normalized, swatches, recentColors, originalEvent }
-        if (!this.request('cb-before-swatch-remove', detail)) return false
+        if (!this.request('beforeswatchremove', detail)) return false
         this.swatches = detail.swatches
         this.recentColors = detail.recentColors
         this.syncView()
-        this.emit('cb-swatch-remove', detail)
+        this.emit('swatchremove', detail)
         return true
     }
 
