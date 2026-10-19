@@ -48,7 +48,7 @@ export class LinkedValues extends LinkedValuesBase {
         this.secondLabelNode.textContent = scalarText(this.secondLabel)
         Object.assign(this.first, { label: scalarText(this.firstLabel), accessibleLabel: scalarText(this.firstLabel), value: finite(this.firstValue), min: this.min, max: this.max, step: this.step, disabled: this.unavailable })
         Object.assign(this.second, { label: scalarText(this.secondLabel), accessibleLabel: scalarText(this.secondLabel), value: finite(this.secondValue), min: this.min, max: this.max, step: this.step, disabled: this.unavailable })
-        Object.assign(this.link, { label: '', accessibleLabel: this.toggleLabel(), pressed: bool(this.linked), icon: bool(this.linked) ? 'link' : 'unlink', variant: 'icon', disabled: this.unavailable })
+        Object.assign(this.link, { label: '', accessibleLabel: this.toggleLabel(), pressed: bool(this.linked), icon: bool(this.linked) ? 'link' : 'unlink', iconOnly: true, variant: 'ghost', disabled: this.unavailable })
         actionLabel(this.link, this.toggleLabel())
         this.syncFormValues()
     }

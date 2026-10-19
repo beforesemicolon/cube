@@ -34,7 +34,7 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 
 const booleanProperties = new Set([
     'allowAlpha', 'allowReorder', 'allowSampler', 'animated', 'autoplay', 'bottomOpen', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'dirty', 'disabled', 'dismissible',
-    'controls', 'disableContentPadding', 'expanded', 'formNoValidate', 'grid', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
+    'controls', 'disableContentPadding', 'expanded', 'formNoValidate', 'grid', 'iconOnly', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
     'editable', 'editing', 'endOpen', 'guide', 'inline', 'lineNumbers', 'linked', 'mixed', 'movable', 'open', 'patterns', 'pinned', 'pressed', 'readOnly', 'reorderable', 'required', 'resizable', 'returnFocus', 'reverse', 'rotatable', 'rowActivation',
     'pannable', 'playing', 'searchable', 'selectable', 'selected', 'selectOnEdit', 'showCancel', 'showChrome', 'showCursor', 'showDimensions', 'showLock', 'showOrientationControl', 'showSize', 'showVisibility', 'startOpen', 'stickyHeader', 'striped', 'submitOnBlur', 'success', 'unmask', 'wrap', 'zoomable',
 ])
@@ -73,8 +73,8 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
 
 const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly ControlOption[]>>>> = {
     'cb-avatar': { status: ['none', 'online', 'idle', 'busy', 'offline'] },
-    'cb-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive', 'icon'] },
-    'cb-button-group': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive', 'icon'] },
+    'cb-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
+    'cb-button-group': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-heading': { variant: ['h2', 'h3', 'h4', 'h5', 'h6'] },
     'cb-link': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-cartesian-chart': { status: ['finished', 'loading', 'error'], stacking: [false, 'normal'] },
@@ -178,6 +178,7 @@ const descriptions: Readonly<Record<string, string>> = {
     unmask: 'Submits only characters accepted by mask tokens while retaining the formatted display value.',
     firstDayOfWeek: 'Weekday used as the first calendar column, from 0 (Sunday) through 6 (Saturday).',
     icon: 'Icon name displayed by the control.',
+    iconOnly: 'Displays only the icon while preserving the label as the accessible name. This can be combined with any visual variant.',
     items: 'Editable item collection. Add, remove, reorder, label, value, or disable entries here.',
     name: 'Form-control name used when the value is submitted.',
     src: 'Image source. When absent or unavailable, the avatar displays initials.',
@@ -331,7 +332,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     color: '', confirmLabel: '', content: '', copiedLabel: '', copyLabel: '', crossOrigin: '', decorative: false, delay: 0,
     description: '', destructive: false, disabled: false, disableContentPadding: false, dismissible: true, download: '', emptyLabel: '', error: '',
     device: 'desktop', duration: 4, errorText: '', expanded: false, extent: 'farthest-corner', firstDayOfWeek: 0, formNoValidate: false, gap: '', grid: true, heading: '', height: 320,
-    href: '', icon: '', initials: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
+    href: '', icon: '', iconOnly: false, initials: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
     keys: '', label: '', loading: false, loop: false, margin: '', max: 100, maxBlockSize: '', maxInlineSize: '',
     majorStep: 100, maxItems: 4, maxRecent: 8, maxVisible: 4, maxZoom: 400, mediaTitle: '', min: 0, minorDivisions: 10, minZoom: 25, minBlockSize: '', minInlineSize: '',
     modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal', originX: 0, originY: 0, overflowLabel: '',

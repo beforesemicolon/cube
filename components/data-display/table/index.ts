@@ -65,13 +65,14 @@ interface IconButtonElement extends HTMLElement {
     label: string
     accessibleLabel: string
     icon: string
+    iconOnly: boolean
     variant: string
     size: string
 }
 
 function iconButton(icon: string, label: string, part: string, action: (event: Event) => void): IconButtonElement {
     const button = document.createElement('cb-button') as IconButtonElement
-    Object.assign(button, { icon, label, accessibleLabel: label, variant: 'icon', size: 'xs' })
+    Object.assign(button, { icon, iconOnly: true, label, accessibleLabel: label, variant: 'ghost', size: 'xs' })
     button.setAttribute('part', part)
     button.addEventListener('click', event => event.stopPropagation())
     button.addEventListener('action', event => { event.stopPropagation(); action(event) })

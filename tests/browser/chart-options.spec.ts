@@ -20,7 +20,7 @@ for(const appearance of ['light','dark'])for(const type of Object.keys(chartExam
     await expect.poll(()=>chart.evaluate(n=>n.scrollWidth<=n.clientWidth+1)).toBe(true)
     await chart.screenshot({path:`test-results/${type}-${appearance}.png`})
 })
-test('media players compose button icon variants, range inputs and selects',async({page})=>{
+test('media players compose icon-only buttons, range inputs and selects',async({page})=>{
     await page.goto('/tests/browser/fixture.html');await page.waitForFunction(()=>!!customElements.get('cb-audio-player'))
     await page.evaluate(async(mediaText)=>{const {silentAudio}=await import('/stories/helpers.ts');const n=document.createElement('cb-audio-player');Object.assign(n,mediaText,{src:silentAudio(8),mediaTitle:'Recording'});document.querySelector('#fixture')!.append(n)},mediaText)
     const player=page.locator('cb-audio-player');await expect(player.locator('cb-button[part=play]')).toBeVisible();await expect(player.locator('cb-slider[part=seek]')).toBeVisible();await expect(player.locator('cb-select[part=rate]')).toBeVisible()

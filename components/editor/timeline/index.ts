@@ -138,7 +138,8 @@ export class Timeline extends TimelineBase {
         const button = document.createElement('cb-button') as Button
         button.setAttribute('part', 'keyframe')
         button.setAttribute('exportparts', 'control:keyframe-control,label:keyframe-label')
-        button.variant = 'icon'
+        button.variant = 'ghost'
+        button.iconOnly = true
         button.style.setProperty('--cb-keyframe-position', `calc(7px + (100% - 14px) * ${this.timelineTime(keyframe.time) / duration})`)
         button.pressed = this.selectedKeyframeId === keyframe.id
         button.toggleAttribute('data-selected', button.pressed)

@@ -357,7 +357,7 @@ export const ResourceTable: Story = {
             },
             { id: 'owner', header: 'Owner', field: 'owner', sortable: true, minWidth: 160 },
             { id: 'updated', header: 'Updated', field: 'updated', sortable: true, minWidth: 140 },
-            { id: 'actions', header: 'Actions', ariaLabel: 'Resource actions', width: 88, align: 'center', cell: ({ item }) => component('cb-button', { icon: 'more', label: `Actions for ${String(item.name ?? '')}`, accessibleLabel: `Actions for ${String(item.name ?? '')}`, variant: 'icon' }) },
+            { id: 'actions', header: 'Actions', ariaLabel: 'Resource actions', width: 88, align: 'center', cell: ({ item }) => component('cb-button', { icon: 'more', iconOnly: true, label: `Actions for ${String(item.name ?? '')}`, accessibleLabel: `Actions for ${String(item.name ?? '')}`, variant: 'ghost' }) },
         ]
         const table = document.createElement('cb-table') as HTMLElement & {
             items: readonly TableRecord[]

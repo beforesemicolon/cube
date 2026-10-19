@@ -43,7 +43,7 @@ export class SplitButton extends SplitButtonBase {
         if (!this.group || !this.primary || !this.trigger || !this.menu) return
         this.group.setAttribute('aria-label', this.accessibleName())
         Object.assign(this.primary, { label: scalarText(this.label), accessibleLabel: this.accessibleName(), disabled: this.unavailable, loading: bool(this.loading), variant: 'primary' })
-        Object.assign(this.trigger, { icon: 'down', accessibleLabel: this.accessibleName(), disabled: this.unavailable, variant: 'icon' })
+        Object.assign(this.trigger, { icon: 'down', accessibleLabel: this.accessibleName(), disabled: this.unavailable, variant: 'primary', iconOnly: true })
         this.trigger.setAttribute('aria-haspopup', 'menu')
         this.trigger.setAttribute('aria-expanded', String(bool(this.open)))
         Object.assign(this.menu, { items: this.items, disabled: this.unavailable, accessibleLabel: this.accessibleName() })

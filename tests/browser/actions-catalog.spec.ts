@@ -70,16 +70,17 @@ test('button only becomes a toggle when pressed is defined and preserves every v
     expect(audit.violations).toEqual([])
 })
 
-test('button icon variant replaces the separate icon-button element', async ({ page }) => {
+test('button icon-only flag composes with its visual variant', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
-        const button = document.createElement('cb-button') as HTMLElement & { label: string; icon: string; variant: string }
-        Object.assign(button, { label: 'Settings', icon: 'settings', variant: 'icon' })
+        const button = document.createElement('cb-button') as HTMLElement & { label: string; icon: string; iconOnly: boolean; variant: string }
+        Object.assign(button, { label: 'Settings', icon: 'settings', iconOnly: true, variant: 'destructive' })
         document.querySelector('#fixture')?.append(button)
     })
     const button = page.getByRole('button', { name: 'Settings' })
     await expect(button).toBeVisible()
-    await expect(page.locator('cb-button')).toHaveAttribute('data-variant', 'icon')
+    await expect(page.locator('cb-button')).toHaveAttribute('data-variant', 'destructive')
+    await expect(page.locator('cb-button')).toHaveAttribute('data-icon-only', '')
     await expect(page.locator('cb-icon-button')).toHaveCount(0)
 })
 
@@ -152,6 +153,9 @@ test('split button joins its primary and menu trigger into one control', async (
     })
     const buttons = page.locator('cb-split-button').getByRole('button')
     await expect(buttons).toHaveCount(2)
+    const trigger = page.locator('cb-split-button cb-button[part=trigger]')
+    await expect(trigger).toHaveAttribute('data-icon-only', '')
+    await expect(trigger).toHaveAttribute('data-variant', 'primary')
     const geometry = await buttons.evaluateAll(controls => controls.map(control => {
         const style = getComputedStyle(control)
         const box = control.getBoundingClientRect()

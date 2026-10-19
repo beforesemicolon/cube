@@ -25,12 +25,13 @@ test('built Storybook: Split Button exposes its complete interactive API',async(
     await expect(panel.locator('button[aria-label="add a new item to the \'items\' array"]')).toBeVisible()
 })
 
-test('built Storybook: icon-variant Button and Flashbar share the action primitive',async({page})=>{
+test('built Storybook: icon-only Button and Flashbar share the action primitive',async({page})=>{
     await page.goto('http://127.0.0.1:6006/iframe.html?id=action--button-icon&viewMode=story')
-    await expect(page.locator('cb-button[data-variant=icon]').getByRole('button',{name:'Settings'})).toBeVisible()
+    await expect(page.locator('cb-button[data-icon-only][data-variant=secondary]').getByRole('button',{name:'Settings'})).toBeVisible()
     await page.goto('http://127.0.0.1:6006/iframe.html?id=feedback--flashbar&viewMode=story')
     const dismiss=page.locator('cb-flashbar cb-button[part=dismiss]')
-    await expect(dismiss).toHaveAttribute('data-variant','icon')
+    await expect(dismiss).toHaveAttribute('data-variant','ghost')
+    await expect(dismiss).toHaveAttribute('data-icon-only','')
     await expect(dismiss.getByRole('button',{name:'Dismiss'})).toBeVisible()
 })
 

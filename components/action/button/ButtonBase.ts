@@ -1,13 +1,13 @@
 import { FormControlBase, type FormControlProps, type FormRestoreValue } from '../../form/FormControlBase.js'
 import { bool, scalarText } from '../../core/value.js'
-export type ButtonVariant = 'primary'|'secondary'|'outline'|'ghost'|'destructive'|'icon'
+export type ButtonVariant = 'primary'|'secondary'|'outline'|'ghost'|'destructive'
 export interface ButtonProps extends FormControlProps<string> {
-    variant?: ButtonVariant; loading?:boolean; icon?:string; pressed?:boolean
+    variant?: ButtonVariant; loading?:boolean; icon?:string; iconOnly?:boolean; pressed?:boolean
     type?:'button'|'submit'|'reset'
 }
 export abstract class ButtonBase<P extends ButtonProps = ButtonProps> extends FormControlBase<P> {
-    static observedAttributes=[...FormControlBase.observedAttributes,'variant','loading','icon','pressed','type','aria-haspopup','aria-expanded','aria-controls']
-    variant:ButtonProps['variant']='secondary';loading=false;icon='';pressed:boolean|undefined=undefined;type:ButtonProps['type']='button';value=''
+    static observedAttributes=[...FormControlBase.observedAttributes,'variant','loading','icon','icon-only','pressed','type','aria-haspopup','aria-expanded','aria-controls']
+    variant:ButtonProps['variant']='secondary';loading=false;icon='';iconOnly=false;pressed:boolean|undefined=undefined;type:ButtonProps['type']='button';value=''
     protected abstract actionElement(): HTMLButtonElement | HTMLAnchorElement | undefined
     protected fieldElement(): HTMLButtonElement | undefined { const control=this.actionElement();return control instanceof HTMLButtonElement?control:undefined }
     protected captureValue(): string { return scalarText(this.value) }

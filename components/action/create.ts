@@ -12,7 +12,7 @@ export function createButton(part:string,handler:(event:CustomEvent)=>void):Butt
     return configure(document.createElement('cb-button') as Button,part,handler,'action')
 }
 export function createIconButton(part:string,icon:string,handler:(event:CustomEvent)=>void):Button{
-    const control=configure(document.createElement('cb-button') as Button,part,handler,'action');control.icon=icon;control.variant='icon';return control
+    const control=configure(document.createElement('cb-button') as Button,part,handler,'action');control.icon=icon;control.iconOnly=true;return control
 }
 export function createPressedButton(part:string,handler:(event:CustomEvent)=>void):Button{
     const control=configure(document.createElement('cb-button') as Button,part,handler,'change');control.pressed=false;return control

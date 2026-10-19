@@ -9,7 +9,7 @@ const items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary ite
 
 export const Button: Story = componentStory('cb-button', { label: 'Button', value: 'add-section', variant: 'primary', icon: 'plus', loading: false })
 
-export const ButtonIcon: Story = componentStory('cb-button', { label: 'Settings', accessibleLabel: 'Settings', value: 'settings', variant: 'icon', icon: 'settings', loading: false })
+export const ButtonIcon: Story = componentStory('cb-button', { label: 'Settings', accessibleLabel: 'Settings', value: 'settings', variant: 'secondary', icon: 'settings', iconOnly: true, loading: false })
 
 export const SplitButton: Story = componentStory('cb-split-button', { label: 'Split button', value: 'create', items, open: false, placement: 'bottom-start', loading: false })
 

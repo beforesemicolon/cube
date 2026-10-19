@@ -7,9 +7,9 @@ export const buttonCSS=editorCSS+`
 :host([data-variant=primary]) [part~=control]{background:var(--color-primary,#2563EB);color:var(--color-primary-foreground,#fff);border-color:transparent}
 :host([data-variant=primary]) [part~=control]:hover:not(:disabled):not([aria-disabled=true]){background:var(--color-primary-hover,#1D50B3)}
 :host([data-variant=outline]) [part~=control]{background:transparent}
-:host([data-variant=ghost]) [part~=control],:host([data-variant=icon]) [part~=control]{border-color:transparent;background:transparent}
-:host([data-variant=ghost]) [part~=control]:hover:not(:disabled):not([aria-disabled=true]),:host([data-variant=icon]) [part~=control]:hover:not(:disabled):not([aria-disabled=true]){background:var(--color-active,#E8ECEE)}
-:host([data-variant=icon]) [part~=control]{min-inline-size:var(--cb-height);padding-inline:var(--spacing-xs,4px)}
+:host([data-variant=ghost]) [part~=control]{border-color:transparent;background:transparent}
+:host([data-variant=ghost]) [part~=control]:hover:not(:disabled):not([aria-disabled=true]){background:var(--color-active,#E8ECEE)}
+:host([data-icon-only]) [part~=control]{min-inline-size:var(--cb-height);padding-inline:var(--spacing-xs,4px)}
 :host([data-variant=destructive]) [part~=control]{color:var(--color-danger,#B4233C);background:var(--color-danger-soft,#FFF0F2);border-color:var(--color-danger,#B4233C)}
 :host([data-variant=secondary]) [part~=control][aria-pressed=true],:host([data-variant=outline]) [part~=control][aria-pressed=true]{background:var(--color-selection,#EAF1FF);color:var(--color-signal-text,#1D50B3);border-color:var(--color-primary,#2563EB)}
 :host([data-variant=ghost]) [part~=control][aria-pressed=true]{background:var(--color-selection,#EAF1FF);color:var(--color-signal-text,#1D50B3);border-color:transparent}
@@ -26,7 +26,8 @@ export function buttonView<P extends ButtonProps>(host:ButtonBase<P>,activate:(e
     label.append(content);control.append(prefix,icon,loading,label,suffix);control.addEventListener('click',activate)
     const desc=el('span','description');desc.id=uid('cb-button-help');desc.dataset.cbDescription='';desc.hidden=true
     const update=()=>{
-        host.dataset.variant=['primary','secondary','outline','ghost','destructive','icon'].includes(host.variant??'')?host.variant!:'secondary'
+        host.dataset.variant=['primary','secondary','outline','ghost','destructive'].includes(host.variant??'')?host.variant!:'secondary'
+        host.toggleAttribute('data-icon-only',bool(host.iconOnly))
         const disabled=host.hasAttribute('data-disabled'),busy=bool(host.loading)
         if(control instanceof HTMLButtonElement)control.disabled=disabled
         else { aria(control,'aria-disabled',disabled?true:null);control.tabIndex=disabled?-1:0 }
@@ -35,7 +36,7 @@ export function buttonView<P extends ButtonProps>(host:ButtonBase<P>,activate:(e
         aria(control,'aria-haspopup',hasPopup||null);aria(control,'aria-expanded',expanded||null);aria(control,'aria-controls',controls||null)
         aria(control,'aria-pressed',host.pressed===undefined?null:bool(host.pressed))
         const name=scalarText(host.accessibleLabel)||scalarText(host.label)
-        const iconOnly=host.variant==='icon'
+        const iconOnly=bool(host.iconOnly)
         aria(control,'aria-label',iconOnly?name:scalarText(host.accessibleLabel)||null)
         const glyph=Object.hasOwn(iconPaths,host.icon)?iconPaths[host.icon]:''
         content.textContent=scalarText(host.label);icon.toggleAttribute('hidden',busy||!glyph);icon.querySelector('path')!.setAttribute('d',glyph);loading.hidden=!busy

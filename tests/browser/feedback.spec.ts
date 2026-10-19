@@ -36,7 +36,7 @@ test('skeleton renders visible text, card and table placeholders', async ({ page
     expect(audit.violations).toEqual([])
 })
 
-test('flashbar composes its dismiss action from the shared button icon variant', async ({ page }) => {
+test('flashbar composes its dismiss action from the shared icon-only button', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
         const flashbar = document.createElement('cb-flashbar') as HTMLElement & {
@@ -48,7 +48,8 @@ test('flashbar composes its dismiss action from the shared button icon variant',
     const flashbar = page.locator('cb-flashbar')
     const dismiss = flashbar.locator('cb-button[part=dismiss]')
     await expect(dismiss).toBeVisible()
-    await expect(dismiss).toHaveAttribute('data-variant', 'icon')
+    await expect(dismiss).toHaveAttribute('data-variant', 'ghost')
+    await expect(dismiss).toHaveAttribute('data-icon-only', '')
     await expect(dismiss.getByRole('button', { name: 'Dismiss notification' })).toBeVisible()
     await dismiss.click()
     await expect(flashbar.locator('[part=message]')).toHaveCount(0)
