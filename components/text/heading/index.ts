@@ -22,7 +22,7 @@ export class Heading extends HeadingBase {
 :host([data-size=md]) [part~=heading]{font-size:var(--component-heading-font-size-md,1.25rem)}
 :host([data-size=lg]) [part~=heading]{font-size:var(--component-heading-font-size-lg,1.5rem)}
 [part~=heading]{font-family:var(--typography-heading-font-family,inherit);font-weight:var(--typography-heading-font-weight,700);line-height:var(--typography-heading-line-height,1.2)}
-[part~=description]{margin-block-start:var(--spacing-xs,4px);color:var(--color-muted-foreground);font-size:var(--component-body-font-size,1rem)}
+[part~=description]{color:var(--color-muted-foreground);font-size:var(--component-heading-description-font-size,.875rem)}
 `), this.container)
     }
     protected syncView(): void {

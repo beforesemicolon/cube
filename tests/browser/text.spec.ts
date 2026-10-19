@@ -11,6 +11,12 @@ test('heading renders semantic text and shortcut remains a text component', asyn
         document.querySelector('#fixture')?.append(heading, shortcut)
     })
     await expect(page.getByRole('heading', { level: 3, name: 'Design system' })).toBeVisible()
-    await expect(page.getByText('Shared components')).toBeVisible()
+    const description = page.getByText('Shared components')
+    await expect(description).toBeVisible()
+    const descriptionStyle = await description.evaluate(element => {
+        const style = getComputedStyle(element)
+        return { fontSize: style.fontSize, marginBlockStart: style.marginBlockStart, marginBlockEnd: style.marginBlockEnd }
+    })
+    expect(descriptionStyle).toEqual({ fontSize: '14px', marginBlockStart: '0px', marginBlockEnd: '0px' })
     await expect(page.getByLabel('Command K')).toBeVisible()
 })
