@@ -43,7 +43,7 @@ export class ExpandableSection extends ExpandableSectionBase {
     private readonly extrasVisible = state(false);
     render(): Template {
         return html`<style part="styles">${css}</style>
-            <section part="root" data-expanded=${() => bool(this.expanded) ? '' : null} data-variant=${() => this.resolvedVariant()}>
+            <section part="root" data-expanded=${() => bool(this.expanded) ? '' : null} data-variant=${this.resolvedVariant}>
                 <cb-button part="header trigger" data-bare data-semantic-host variant="ghost" id=${this.triggerId}
                     exportparts="control:trigger-control,button-label:trigger-label"
                     disabled=${() => bool(this.disabled)} aria-disabled=${() => bool(this.disabled) || null}
@@ -51,17 +51,17 @@ export class ExpandableSection extends ExpandableSectionBase {
                     aria-controls=${this.panelId} aria-expanded=${() => bool(this.expanded)}
                     onaction=${(event: Event) => { event.stopPropagation(); event.preventDefault(); this.toggle(event); }}>
                     <cb-icon part="icon" name=${() => bool(this.expanded) ? 'down' : 'right'} decorative></cb-icon>
-                    <span part="heading" role="heading" aria-level=${() => this.resolvedHeadingLevel()}
+                    <span part="heading" role="heading" aria-level=${this.resolvedHeadingLevel}
                         aria-label=${() => scalarText(this.label) || scalarText(this.accessibleLabel) || null}>
-                        <span part="label-row"><span part="label">${() => this.label}</span>
-                            <span part="counter" hidden=${() => !scalarText(this.counter)}>${() => this.counter}</span></span>
-                        <span part="description" hidden=${() => !scalarText(this.description)}>${() => this.description}</span>
+                        <span part="label-row"><span part="label">${this.props.label}</span>
+                            <span part="counter" hidden=${() => !scalarText(this.counter)}>${this.props.counter}</span></span>
+                        <span part="description" hidden=${() => !scalarText(this.description)}>${this.props.description}</span>
                     </span>
                     <span part="accessible-action sr-only">${() => this.label && this.accessibleLabel !== this.label ? this.accessibleLabel : ''}</span>
                 </cb-button>
                 <div part="header-extras" hidden=${() => !this.extrasVisible[0]()}>
-                    <slot name="header-info" part="header-info" ref="extras" onslotchange=${() => this.syncExtras()}></slot>
-                    <slot name="header-actions" part="header-actions" ref="extras" onslotchange=${() => this.syncExtras()}></slot>
+                    <slot name="header-info" part="header-info" ref="extras" onslotchange=${this.syncExtras}></slot>
+                    <slot name="header-actions" part="header-actions" ref="extras" onslotchange=${this.syncExtras}></slot>
                 </div>
                 <div part="panel" id=${this.panelId} role="region" aria-labelledby=${this.triggerId}
                     hidden=${() => !bool(this.expanded)} inert=${() => !bool(this.expanded) ? '' : null}>
@@ -69,7 +69,7 @@ export class ExpandableSection extends ExpandableSectionBase {
                 </div>
             </section>`;
     }
-    private syncExtras(): void {
+    private syncExtras = (): void => {
         this.extrasVisible[1]((this.refs.extras ?? []).some(slot => slot instanceof HTMLSlotElement && slot.assignedElements().length > 0));
     }
     protected syncView(): void {

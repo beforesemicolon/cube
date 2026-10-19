@@ -29,8 +29,8 @@ export class SelectionOverlay extends SelectionOverlayBase {
         return html`<style part="styles">${css}</style><div part="outline" ref="outline" role="group"
             tabindex=${() => this.unavailable || !bool(this.movable) ? -1 : 0}
             aria-label=${() => scalarText(this.moveLabel) || this.accessibleName()}
-            onpointerdown=${(event: PointerEvent) => this.beginMove(event)} onkeydown=${(event: KeyboardEvent) => this.moveKey(event)}></div>
-            ${repeat(() => this.allHandles(), handle => html`<cb-button part=${`handle handle-${handle}`} ref="handles" data-handle=${handle} data-bare data-semantic-host
+            onpointerdown=${this.beginMove} onkeydown=${this.moveKey}></div>
+            ${repeat(this.allHandles, handle => html`<cb-button part=${`handle handle-${handle}`} ref="handles" data-handle=${handle} data-bare data-semantic-host
                 hidden=${() => !bool(this.resizable)} disabled=${() => this.unavailable} accessible-label=${() => this.handleLabel(handle)}
                 onpointerdown=${(event: PointerEvent) => { event.stopPropagation(); this.beginResize(handle,event); }}
                 onkeydown=${(event: KeyboardEvent) => this.resizeKey(handle,event)}></cb-button>`, {key: handle => handle})}
@@ -50,7 +50,7 @@ export class SelectionOverlay extends SelectionOverlayBase {
         const rect=this.currentRect();
         Object.assign(this.style,{left:`${rect.x}px`,top:`${rect.y}px`,width:`${rect.width}px`,height:`${rect.height}px`,rotate:`${finite(this.rotation)}deg`});
     }
-    private beginMove(event: PointerEvent): void {
+    private beginMove = (event: PointerEvent): void => {
         if (event.button !== 0 || !bool(this.movable) || this.unavailable || event.target !== this.outline || !this.outline)
             return;
         const startX = event.clientX, startY = event.clientY;
@@ -88,7 +88,7 @@ export class SelectionOverlay extends SelectionOverlayBase {
         button.addEventListener('pointerup', end);
         button.addEventListener('pointercancel', end);
     }
-    private moveKey(event: KeyboardEvent): void {
+    private moveKey = (event: KeyboardEvent): void => {
         const step = this.normalizedStep(event.shiftKey ? 10 : 1);
         let dx = 0, dy = 0;
         if (event.key === 'ArrowLeft')

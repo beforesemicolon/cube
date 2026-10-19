@@ -38,3 +38,14 @@ test('component renderers use templates instead of assembling or rebuilding DOM 
     }
     assert.deepEqual(offenders, [], 'Native interop belongs outside component renderers; use reactive html bindings for presentation')
 })
+
+test('templates bind shared derived values directly instead of wrapping function calls', () => {
+    const offenders: string[] = []
+    for (const path of typeScriptFiles(sourceRoot)) {
+        const source = readFileSync(path, 'utf8')
+        if (/\$\{\s*\(\)\s*=>\s*this\.(?:accessibleName|displayLabel)\(\)\s*\}/.test(source)) {
+            offenders.push(relative(sourceRoot, path).split(sep).join('/'))
+        }
+    }
+    assert.deepEqual(offenders, [], 'Pass bound template getters directly; Markup evaluates and subscribes to them')
+})

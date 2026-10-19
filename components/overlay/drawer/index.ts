@@ -14,13 +14,13 @@ export class Drawer extends DrawerBase {
     render(): Template {
         return html`<style part="styles">${css}</style>
             <dialog ref="dialog" part="dialog drawer" aria-labelledby="${this.headingId}" aria-describedby="${this.descriptionId}"
-                oncancel="${(event: Event) => this.handleCancel(event)}" onclick="${(event: MouseEvent) => this.handleBackdrop(event)}">
+                oncancel="${this.handleCancel}" onclick="${this.handleBackdrop}">
 
                 <header part="header"><div part="copy">
                     <slot name="heading" part="heading" id="${this.headingId}">${() => scalarText(this.heading)}</slot>
                     <slot name="description" part="description" id="${this.descriptionId}" hidden="${() => !scalarText(this.description)}">${() => scalarText(this.description)}</slot>
                 </div><cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" variant="ghost" icon="close" icon-only="true" hidden="${() => !bool(this.dismissible)}"
-                    accessible-label="${() => this.closeText()}" onaction="${(event: Event) => { event.stopPropagation(); this.dismiss('close-button', event) }}"></cb-button></header>
+                    accessible-label="${this.closeText}" onaction="${(event: Event) => { event.stopPropagation(); this.dismiss('close-button', event) }}"></cb-button></header>
                 <section part="body"><slot part="content"></slot></section>
                 <footer part="footer"><slot name="footer" part="footer-content"></slot></footer>
             </dialog>`

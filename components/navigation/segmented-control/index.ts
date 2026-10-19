@@ -9,7 +9,7 @@ export class SegmentedControl extends SegmentedControlBase {
     private selected(): string { return this.choices.some(item => item.id === scalarText(this.value)) ? scalarText(this.value) : this.choices.find(item => !item.disabled)?.id ?? '' }
     render(): Template {
         return html`<style part="styles">${css}</style>
-            <div part="group" role="radiogroup" aria-orientation="${() => this.navigationAxis}" aria-label="${() => this.accessibleName()}"
+            <div part="group" role="radiogroup" aria-orientation="${() => this.navigationAxis}" aria-label="${this.accessibleName}"
                 onkeydown="${(event: KeyboardEvent) => this.roving.keydown(event)}">
                 ${repeat(() => this.choices, item => html`<cb-button part="item" exportparts="control:item-control,label:item-label,button-label:item-label,icon:item-icon,description:item-description" data-bare data-semantic-host role="radio"
                     data-label="${item.label}" label="${item.label}" accessible-label="${item.label}"

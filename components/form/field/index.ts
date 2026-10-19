@@ -34,7 +34,7 @@ export class Field extends FieldBase {
     private get controlSlot(): HTMLSlotElement | undefined {
         const slot=this.refs.control?.[0]; return slot instanceof HTMLSlotElement ? slot : undefined;
     }
-    private syncSlots(): void {
+    private syncSlots = (): void => {
         const has = (name: string): boolean => (this.refs[name] ?? []).some(slot => slot instanceof HTMLSlotElement && slot.assignedNodes({flatten:true}).length > 0);
         this.assigned[1]({actions:has('actions'),details:has('details')});
     }
@@ -49,19 +49,19 @@ export class Field extends FieldBase {
             ].filter(Boolean).join(' ') || null}
             aria-invalid=${() => this.isInvalid() || null} aria-disabled=${() => this.unavailable || null}>
             <div part="header" hidden=${() => !this.fieldLabel() && (bool(this.required) || !this.optionalLabel) && !this.assigned[0]().actions}>
-                <div part="label-wrap" onclick=${() => this.focusControl()}>
-                    <span part="label" id=${this.labelId} hidden=${() => !this.fieldLabel()}>${() => this.fieldLabel()}</span>
-                    <span part="requirement" hidden=${() => bool(this.required) || !this.optionalLabel}>${() => this.optionalLabel}</span>
-                </div><slot part="actions" name="actions" ref="actions" onslotchange=${() => this.syncSlots()}></slot>
-            </div><div part="control-container"><slot part="control-slot" ref="control" onslotchange=${() => this.syncControl()}></slot></div>
-            <p part="description" id=${`${this.fieldId}-description`} hidden=${() => !this.description}>${() => this.description}</p>
-            <p part="help" id=${`${this.fieldId}-help`} hidden=${() => !this.fieldHelp()}>${() => this.fieldHelp()}</p>
+                <div part="label-wrap" onclick=${this.focusControl}>
+                    <span part="label" id=${this.labelId} hidden=${() => !this.fieldLabel()}>${this.fieldLabel}</span>
+                    <span part="requirement" hidden=${() => bool(this.required) || !this.optionalLabel}>${this.props.optionalLabel}</span>
+                </div><slot part="actions" name="actions" ref="actions" onslotchange=${this.syncSlots}></slot>
+            </div><div part="control-container"><slot part="control-slot" ref="control" onslotchange=${this.syncControl}></slot></div>
+            <p part="description" id=${`${this.fieldId}-description`} hidden=${() => !this.description}>${this.props.description}</p>
+            <p part="help" id=${`${this.fieldId}-help`} hidden=${() => !this.fieldHelp()}>${this.fieldHelp}</p>
             <details part="details" hidden=${() => !this.detailsLabel && !this.fieldDetails() && !this.assigned[0]().details}>
-                <summary part="details-summary">${() => this.detailsLabel}</summary><p part="details-copy" hidden=${() => !this.fieldDetails()}>${() => this.fieldDetails()}</p>
-                <slot part="details-content" name="details" ref="details" onslotchange=${() => this.syncSlots()}></slot>
+                <summary part="details-summary">${this.props.detailsLabel}</summary><p part="details-copy" hidden=${() => !this.fieldDetails()}>${this.fieldDetails}</p>
+                <slot part="details-content" name="details" ref="details" onslotchange=${this.syncSlots}></slot>
             </details>
-            <p part="error" role="alert" id=${`${this.fieldId}-error`} hidden=${() => !this.fieldError()}>${() => this.fieldError()}</p>
-            <p part="success" role="status" id=${`${this.fieldId}-success`} hidden=${() => !this.fieldSuccess() || this.isInvalid()}>${() => this.fieldSuccess()}</p>
+            <p part="error" role="alert" id=${`${this.fieldId}-error`} hidden=${() => !this.fieldError()}>${this.fieldError}</p>
+            <p part="success" role="status" id=${`${this.fieldId}-success`} hidden=${() => !this.fieldSuccess() || this.isInvalid()}>${this.fieldSuccess}</p>
         </div>`;
     }
     protected syncView(): void {
@@ -69,7 +69,7 @@ export class Field extends FieldBase {
         this.toggleAttribute('data-success',this.isSuccess());
         this.syncControl();
     }
-    private syncControl(): void {
+    private syncControl = (): void => {
         const control = this.controlSlot?.assignedElements({ flatten: true })[0];
         if (!(control instanceof HTMLElement))
             return;
@@ -106,7 +106,7 @@ export class Field extends FieldBase {
         control.toggleAttribute('data-field-success', this.isSuccess());
         control.toggleAttribute('data-field-disabled', disabled);
     }
-    private focusControl(): void {
+    private focusControl = (): void => {
         const control = this.controlSlot?.assignedElements({ flatten: true })[0];
         if (control instanceof HTMLElement && !this.unavailable)
             control.focus();

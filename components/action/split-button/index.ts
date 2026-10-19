@@ -18,19 +18,19 @@ export class SplitButton extends SplitButtonBase {
     protected popupElement(): HTMLElement | undefined { const node = this.refs.popup?.[0]; return node instanceof HTMLElement ? node : undefined }
     render(): Template {
         return html`<style part="styles">${css}</style>
-            <div part="group" role="group" aria-label="${() => this.accessibleName()}">
+            <div part="group" role="group" aria-label="${this.accessibleName}">
                 <cb-button part="primary" exportparts="control:primary-control,label:primary-label,icon:primary-icon,spinner:primary-spinner"
-                    label="${() => this.label}" accessible-label="${() => this.accessibleName()}" disabled="${() => this.unavailable}" loading="${() => bool(this.loading)}" variant="primary"
+                    label="${this.props.label}" accessible-label="${this.accessibleName}" disabled="${() => this.unavailable}" loading="${() => bool(this.loading)}" variant="primary"
                     onbeforeaction="${(event: Event) => event.stopPropagation()}"
                     onaction="${(event: Event) => { event.stopPropagation(); this.activatePrimary(event) }}"></cb-button>
             <cb-button ref="trigger" part="trigger" exportparts="control:trigger-control,label:trigger-label,icon:trigger-icon,spinner:trigger-spinner"
                 icon="down" icon-only="true" variant="primary"
-                accessible-label="${() => this.accessibleName()}" disabled="${() => this.unavailable}"
+                accessible-label="${this.accessibleName}" disabled="${() => this.unavailable}"
                 aria-haspopup="menu" aria-expanded="${() => String(bool(this.open))}"
                 onbeforeaction="${(event: Event) => event.stopPropagation()}"
                 onaction="${(event: Event) => { event.stopPropagation(); this.toggle() }}"></cb-button></div>
             <div ref="popup" part="popup" hidden>
-                <cb-menu part="menu" items="${() => this.items}" disabled="${() => this.unavailable}" accessible-label="${() => this.accessibleName()}"
+                <cb-menu part="menu" items="${this.props.items}" disabled="${() => this.unavailable}" accessible-label="${this.accessibleName}"
                     onbeforeaction="${(event: Event) => event.stopPropagation()}"
                     onaction="${(event: CustomEvent<{ item: NormalizedItem }>) => { event.stopPropagation(); if (this.select(event.detail.item, event)) this.setOpen(false) }}"></cb-menu>
             </div>`

@@ -15,7 +15,7 @@ export abstract class BreadcrumbBase<P extends BreadcrumbProps = BreadcrumbProps
     protected get expanded(): boolean { return this.expandedState[0]() }
     protected set expanded(value: boolean) { this.expandedState[1](value) }
     protected get crumbs(): NormalizedItem[] { return normalizeItems(this.items).filter(item => !item.separator) }
-    protected visibleCrumbs(): Array<NormalizedItem | 'ellipsis'> {
+    protected visibleCrumbs = (): Array<NormalizedItem | 'ellipsis'> => {
         const items = this.crumbs, maximum = Math.max(2, Math.trunc(finite(this.maxItems, 5)))
         if (this.expanded || items.length <= maximum) return items
         return [items[0], 'ellipsis', ...items.slice(-(maximum - 1))]

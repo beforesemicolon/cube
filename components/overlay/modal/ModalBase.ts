@@ -77,17 +77,17 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
         return true
     }
 
-    protected handleCancel(event: Event): void {
+    protected handleCancel = (event: Event): void => {
         event.preventDefault()
         this.dismiss('escape', event)
     }
 
-    protected handleBackdrop(event: MouseEvent): void {
+    protected handleBackdrop = (event: MouseEvent): void => {
         if (event.target === this.dialogElement() && bool(this.closeOnBackdrop)) this.dismiss('backdrop', event)
     }
 
-    protected closeText(): string { return scalarText(this.closeLabel) }
-    protected cancelText(): string { return scalarText(this.cancelLabel) }
+    protected closeText = (): string => { return scalarText(this.closeLabel) }
+    protected cancelText = (): string => { return scalarText(this.cancelLabel) }
 
     protected cancel(event: Event): void {
         this.dismiss('cancelled', event)

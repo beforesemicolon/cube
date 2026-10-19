@@ -60,7 +60,7 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
     protected abstract nestedEditor(): HTMLElement | undefined
     protected fieldElement(): undefined { return undefined }
     protected normalizedIndent(): number { return Math.min(8, Math.max(0, Math.trunc(finite(this.indent, 2)))) }
-    protected sourceText(): string {
+    protected sourceText = (): string => {
         if (typeof this.value === 'string') return this.value
         return isJsonValue(this.value) ? JSON.stringify(this.value, null, this.normalizedIndent()) : ''
     }

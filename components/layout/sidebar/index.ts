@@ -14,17 +14,17 @@ const css = editorCSS + `
 :host([data-placement=start]) [part~=sidebar]{border-start-start-radius:0;border-end-start-radius:0}
 `;
 export class Sidebar extends SidebarBase {
-    private collapsed(): boolean { return this.isCollapsible() && !this.isExpanded() }
+    private collapsed = (): boolean => { return this.isCollapsible() && !this.isExpanded() }
     render(): Template {
         return html`<style part="styles">${css}</style>
-            <aside part="sidebar panel" aria-label="${() => this.accessibleName()}">
+            <aside part="sidebar panel" aria-label="${this.accessibleName}">
                 <cb-panel-header part="header" exportparts="header:header,heading:heading,actions:actions,toggle:toggle,toggle-control:toggle-control"
                     label="${() => this.collapsed() ? '' : scalarText(this.label)}"
                     description="${() => this.collapsed() ? '' : scalarText(this.description)}"
-                    collapsible="${() => this.isCollapsible()}" expanded="${() => this.isExpanded()}"
-                    expand-label="${() => this.expandLabel}" collapse-label="${() => this.collapseLabel}" disabled="${() => this.unavailable}"
+                    collapsible="${this.isCollapsible}" expanded="${this.isExpanded}"
+                    expand-label="${this.props.expandLabel}" collapse-label="${this.props.collapseLabel}" disabled="${() => this.unavailable}"
                     ontoggle="${(event: Event) => { event.stopPropagation(); this.toggle(event) }}"></cb-panel-header>
-                <div part="content" hidden="${() => this.collapsed()}"><slot part="content-slot"></slot></div>
+                <div part="content" hidden="${this.collapsed}"><slot part="content-slot"></slot></div>
             </aside>`
     }
     protected syncView(): void {

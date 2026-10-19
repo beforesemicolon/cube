@@ -29,7 +29,7 @@ export class JsonEditor extends JsonEditorBase {
         </div>
         <cb-code-editor ref="editor" part="editor" language="json" label="${this.props.label}"
             accessible-label="${this.props.accessibleLabel}" description="${this.props.description}"
-            value="${() => this.sourceText()}" placeholder="${this.props.placeholder}" line-numbers="${this.props.lineNumbers}"
+            value="${this.sourceText}" placeholder="${this.props.placeholder}" line-numbers="${this.props.lineNumbers}"
             wrap="${this.props.wrap}" tab-size="${() => Math.max(1, this.normalizedIndent())}" position-label="${this.props.positionLabel}"
             disabled="${() => this.unavailable}" read-only="${this.props.readOnly}" required="${this.props.required}" error-text="${error}"
             onbeforechange="${(event: Event) => event.stopPropagation()}"

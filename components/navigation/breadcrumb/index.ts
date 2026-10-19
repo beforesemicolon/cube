@@ -5,11 +5,11 @@ import { BreadcrumbBase } from './BreadcrumbBase.js'
 const css = editorCSS + `:host{display:block;min-inline-size:0}[part=list]{display:flex;align-items:center;gap:var(--spacing-xs,4px);padding:0;margin:0;list-style:none;min-inline-size:0;overflow:hidden}[part=item]{display:flex;align-items:center;gap:var(--spacing-xs,4px);min-inline-size:0}[part=link],[part=current],[part=expand]{min-block-size:24px;padding:2px 4px;border:0;background:transparent;color:var(--color-muted-foreground,#606b73);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}[part=link]::part(control){color:inherit;text-decoration:none}[part=current]{color:var(--color-foreground,#20262b);font-weight:600}[part=separator]{inline-size:12px;block-size:12px;color:var(--color-muted-foreground,#606b73)}`;
 export class Breadcrumb extends BreadcrumbBase {
     render(): Template {
-        return html`<style part="styles">${css}</style><nav part="navigation" aria-label="${() => this.accessibleName()}"><ol part="list">
-            ${repeat(() => this.visibleCrumbs(), (item, index) => html`<li part="item">
+        return html`<style part="styles">${css}</style><nav part="navigation" aria-label="${this.accessibleName}"><ol part="list">
+            ${repeat(this.visibleCrumbs, (item, index) => html`<li part="item">
                 ${index > 0 ? html`<cb-icon part="separator" name="right" decorative="true"></cb-icon>` : ''}
                 ${item === 'ellipsis' ? html`<cb-button part="expand" exportparts="control:expand-control,label:expand-label,button-label:expand-label,icon:expand-icon,description:expand-description" icon="more" icon-only="true" variant="ghost"
-                    accessible-label="${() => this.expandLabel}" onaction="${() => { this.expanded = true }}"></cb-button>`
+                    accessible-label="${this.props.expandLabel}" onaction="${() => { this.expanded = true }}"></cb-button>`
                     : index === this.visibleCrumbs().length - 1 && item.id === this.crumbs.at(-1)?.id
                         ? html`<span part="current" aria-current="page">${item.label}</span>`
                         : safeHref(item.href) ? html`<cb-link part="link" exportparts="control:link-control,label:link-label" data-bare

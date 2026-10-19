@@ -30,26 +30,26 @@ const css = editorCSS + `
 `;
 export class FileBrowser extends FileBrowserBase {
     render(): Template {
-        return html`<style part="styles">${css}</style><section part="browser" aria-label=${() => this.accessibleName()}>
+        return html`<style part="styles">${css}</style><section part="browser" aria-label=${this.accessibleName}>
             <div part="toolbar"><div part="toolbar-main">
-                <cb-text-input part="search" hidden=${()=>!bool(this.searchable)} accessible-label=${()=>this.searchLabel} placeholder=${()=>this.searchPlaceholder}
+                <cb-text-input part="search" hidden=${()=>!bool(this.searchable)} accessible-label=${this.props.searchLabel} placeholder=${this.props.searchPlaceholder}
                     value=${()=>scalarText(this.query)} disabled=${()=>this.unavailable}
                     onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();this.setQuery(event.detail.value,event);}}></cb-text-input>
                 <slot name="toolbar" part="toolbar-content"></slot></div>
-                <cb-segmented-control part="view-toggle" accessible-label=${()=>this.accessibleName()} value=${()=>this.view} disabled=${()=>this.unavailable}
+                <cb-segmented-control part="view-toggle" accessible-label=${this.accessibleName} value=${this.props.view} disabled=${()=>this.unavailable}
                     items=${()=>[{id:'grid',label:this.gridViewLabel,icon:'grid'},{id:'table',label:this.tableViewLabel,icon:'layers'}]}
                     onchange=${(event:CustomEvent<{value:FileBrowserView}>)=>{event.stopPropagation();this.setView(event.detail.value,event);}}></cb-segmented-control>
-            </div><cb-breadcrumb part="path" accessible-label=${()=>this.breadcrumbLabel} expand-label=${()=>this.expandPathLabel}
+            </div><cb-breadcrumb part="path" accessible-label=${this.props.breadcrumbLabel} expand-label=${this.props.expandPathLabel}
                 items=${()=>this.pathItems().map(item=>({id:item.id?`folder:${item.id}`:'root:',label:item.label}))}
                 onnavigate=${(event:CustomEvent<{id:string}>)=>{event.stopPropagation();const id=event.detail.id;this.navigate(id.startsWith('folder:')?id.slice(7):'',event);}}></cb-breadcrumb>
-            <div part="content">${when(()=>bool(this.loading),()=>html`<div part="state"><cb-skeleton variant=${()=>this.view==='table'?'table':'card'} rows="4" columns="3" accessible-label=${()=>this.loadingLabel}></cb-skeleton></div>`,
+            <div part="content">${when(()=>bool(this.loading),()=>html`<div part="state"><cb-skeleton variant=${()=>this.view==='table'?'table':'card'} rows="4" columns="3" accessible-label=${this.props.loadingLabel}></cb-skeleton></div>`,
                 ()=>when(()=>!this.visibleEntries().length,()=>html`<div part="state" role="status">${()=>scalarText(this.query).trim()?this.noMatchLabel:this.emptyLabel}</div>`,
-                ()=>when(()=>this.view==='table',()=>this.tableTemplate(),()=>this.gridTemplate())))}</div>
+                ()=>when(()=>this.view==='table',this.tableTemplate,this.gridTemplate)))}</div>
         </section>`;
     }
-    private gridTemplate(): Template {
+    private gridTemplate = (): Template => {
         return html`<div part="grid" role=${()=>this.selectionMode==='none'?'list':'listbox'} aria-multiselectable=${()=>this.selectionMode==='multiple'?true:null}>
-            ${repeat(()=>this.visibleEntries(),entry=>html`<cb-button part="entry" exportparts="control:entry-control,label:entry-label,button-label:entry-label,icon:entry-icon,description:entry-description" data-bare data-semantic-host data-id=${entry.id}
+            ${repeat(this.visibleEntries,entry=>html`<cb-button part="entry" exportparts="control:entry-control,label:entry-label,button-label:entry-label,icon:entry-icon,description:entry-description" data-bare data-semantic-host data-id=${entry.id}
                 disabled=${()=>this.unavailable||entry.disabled===true} role=${()=>this.selectionMode==='none'?'listitem':'option'}
                 aria-selected=${()=>this.selectionMode==='none'?null:this.selectedIds.includes(entry.id)}
                 accessible-label=${()=>this.entryActionLabel(entry,this.selectedIds.includes(entry.id))}
@@ -60,18 +60,18 @@ export class FileBrowser extends FileBrowserBase {
                 <span part="entry-copy"><span part="entry-name">${entry.name}</span><span part="entry-meta">${entry.description||entry.mime||entry.type}</span></span>
             </cb-button>`,{key:entry=>entry.id})}</div>`;
     }
-    private tableTemplate(): Template {
-        return html`<cb-table part="table" label=${()=>this.accessibleName()} accessible-label=${()=>this.accessibleName()}
+    private tableTemplate = (): Template => {
+        return html`<cb-table part="table" label=${this.accessibleName} accessible-label=${this.accessibleName}
             items=${()=>this.visibleEntries().map(entry=>({id:entry.id,name:entry.name,type:entry.type,size:entry.size??'',modified:entry.modified??''}))}
-            columns=${()=>this.tableColumns()} selection-mode=${()=>this.selectionMode} selected-keys=${()=>[...this.selectedIds]} item-key="id" row-activation
-            sort-by=${()=>this.sortBy} sort-direction=${()=>this.sortDirection} resizable sticky-header
+            columns=${this.tableColumns} selection-mode=${this.props.selectionMode} selected-keys=${()=>[...this.selectedIds]} item-key="id" row-activation
+            sort-by=${this.props.sortBy} sort-direction=${this.props.sortDirection} resizable sticky-header
             select-row-label=${()=>scalarText(this.selectEntryLabel).replaceAll('{entry}','{row}')} deselect-row-label=${()=>scalarText(this.deselectEntryLabel).replaceAll('{entry}','{row}')}
-            sort-ascending-label=${()=>this.sortAscendingLabel} sort-descending-label=${()=>this.sortDescendingLabel}
+            sort-ascending-label=${this.props.sortAscendingLabel} sort-descending-label=${this.props.sortDescendingLabel}
             onselectionchange=${(event:CustomEvent<{selectedKeys:readonly string[]}>)=>{event.stopPropagation();this.setSelection(event.detail.selectedKeys,event);}}
             onrowactivate=${(event:CustomEvent<{key:string}>)=>{event.stopPropagation();const entry=this.visibleEntries().find(entry=>entry.id===event.detail.key);if(entry)this.activate(entry,event);}}
             onsortchange=${(event:CustomEvent<{sortBy:FileBrowserSort;sortDirection:FileBrowserSortDirection}>)=>{event.stopPropagation();this.changeSort(event.detail.sortBy,event.detail.sortDirection,event);}}></cb-table>`;
     }
-    private tableColumns(): readonly TableColumn<FileRecord>[] {
+    private tableColumns = (): readonly TableColumn<FileRecord>[] => {
         return [
             {id:'name',header:this.nameLabel,field:'name',sortable:true,minWidth:200,cell:context=>html`<span part="file-name" style="display:inline-flex;align-items:center;gap:8px"><cb-icon name=${context.item.type==='folder'?'folder':'file'} part="icon" decorative></cb-icon>${context.item.name}</span>`},
             {id:'type',header:this.typeLabel,field:'type',sortable:true,width:120},

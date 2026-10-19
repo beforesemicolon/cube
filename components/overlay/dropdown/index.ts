@@ -11,13 +11,13 @@ export class Dropdown extends DropdownBase {
         return html`<style part="styles">${css}</style>
 
             <cb-button ref="trigger" part="trigger" exportparts="control:trigger-control,label:trigger-label,icon:trigger-icon,spinner:trigger-spinner"
-                label="${() => this.label}" icon="${() => this.icon}" loading="${() => bool(this.loading)}"
-                accessible-label="${() => this.accessibleName()}" disabled="${() => this.unavailable}"
+                label="${this.props.label}" icon="${this.props.icon}" loading="${() => bool(this.loading)}"
+                accessible-label="${this.accessibleName}" disabled="${() => this.unavailable}"
                 aria-haspopup="menu" aria-expanded="${() => String(bool(this.open))}"
                 onbeforeaction="${(event: Event) => event.stopPropagation()}"
                 onaction="${(event: Event) => { event.stopPropagation(); this.toggle() }}"></cb-button>
             <div ref="popup" part="popup" hidden>
-                <cb-menu part="menu" items="${() => this.items}" disabled="${() => this.unavailable}" accessible-label="${() => this.accessibleName()}"
+                <cb-menu part="menu" items="${this.props.items}" disabled="${() => this.unavailable}" accessible-label="${this.accessibleName}"
                     onbeforeaction="${(event: Event) => event.stopPropagation()}"
                     onaction="${(event: CustomEvent<{ item: NormalizedItem }>) => { event.stopPropagation(); if (this.select(event.detail.item, event)) this.setOpen(false) }}"></cb-menu>
             </div>`

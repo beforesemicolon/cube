@@ -202,7 +202,7 @@ export abstract class TableBase extends Component<TableProps> {
         return Array.isArray(this.items) ? this.items.filter(item => dataRecord(item) !== null) : []
     }
 
-    protected columnList(): readonly TableColumn[] {
+    protected columnList = (): readonly TableColumn[] => {
         if (!Array.isArray(this.columns)) return []
         const seen = new Set<string>()
         return this.columns.filter(column => {
@@ -280,7 +280,7 @@ export abstract class TableBase extends Component<TableProps> {
         return ['success', 'warning', 'danger', 'muted'].includes(variant ?? '') ? variant ?? '' : ''
     }
 
-    protected groupedRows(): readonly TableGroupModel[] {
+    protected groupedRows = (): readonly TableGroupModel[] => {
         const rows = this.visibleRows()
         const groupPath = scalarText(this.groupBy).trim()
         if (!groupPath) return [{ key: '', label: '', rows }]
@@ -382,13 +382,13 @@ export abstract class TableBase extends Component<TableProps> {
 
     protected selectableRows(): readonly TableRowModel[] { return this.visibleRows().filter(row => this.isSelectable(row.item)) }
 
-    protected allVisibleSelected(): boolean {
+    protected allVisibleSelected = (): boolean => {
         const rows = this.selectableRows()
         const selected = this.selectedKeySet()
         return rows.length > 0 && rows.every(row => selected.has(row.key))
     }
 
-    protected someVisibleSelected(): boolean {
+    protected someVisibleSelected = (): boolean => {
         const rows = this.selectableRows()
         const selected = this.selectedKeySet()
         return rows.some(row => selected.has(row.key)) && !rows.every(row => selected.has(row.key))

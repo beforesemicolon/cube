@@ -25,8 +25,8 @@ export abstract class Component<P extends CommonProps = CommonProps> extends Web
     protected update(_name: string): void { this.syncView() }
     protected unmount(): void {}
     protected get unavailable(): boolean { return bool(this.disabled) }
-    protected displayLabel(): string { return scalarText(this.label) }
-    protected accessibleName(): string { return scalarText(this.accessibleLabel) || scalarText(this.label) }
+    protected displayLabel = (): string => { return scalarText(this.label) }
+    protected accessibleName = (): string => { return scalarText(this.accessibleLabel) || scalarText(this.label) }
     protected syncCommon(): void {
         if (!this.reflectingNativeState) {
             this.reflectingNativeState = true

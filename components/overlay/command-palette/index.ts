@@ -10,10 +10,10 @@ export class CommandPalette extends CommandPaletteBase {
             <dialog ref="dialog" part="dialog" oncancel="${(event: Event) => { event.preventDefault(); event.stopPropagation(); this.close() }}">
                 <label part="search"><cb-icon part="icon" name="search" decorative="true"></cb-icon>
                     <cb-text-input ref="input" part="input" exportparts="control:input-control"
-                        placeholder="${() => scalarText(this.placeholder)}" accessible-label="${() => this.accessibleName()}" value="${() => scalarText(this.query)}"
+                        placeholder="${() => scalarText(this.placeholder)}" accessible-label="${this.accessibleName}" value="${() => scalarText(this.query)}"
                         onchange="${(event: CustomEvent<{ value: string }>) => { event.stopPropagation(); this.query = scalarText(event.detail.value) }}"></cb-text-input>
                 </label>
-                <cb-menu part="results" items="${() => this.results}" accessible-label="${() => this.accessibleName()}"
+                <cb-menu part="results" items="${() => this.results}" accessible-label="${this.accessibleName}"
                     onaction="${(event: CustomEvent<{ item: NormalizedItem }>) => { event.stopPropagation(); if (event.detail.item) this.select(event.detail.item, event) }}"></cb-menu>
                 <p part="empty" hidden="${() => this.results.length > 0 || !scalarText(this.emptyLabel)}">${() => scalarText(this.emptyLabel)}</p>
             </dialog>`

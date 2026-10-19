@@ -16,18 +16,18 @@ const calendarCSS = editorCSS + `
 export class Calendar extends CalendarBase {
     render(): Template {
         return html`<style part="styles">${calendarCSS}</style>
-            <div part="calendar" role="group" aria-label="${() => this.accessibleName()}">
+            <div part="calendar" role="group" aria-label="${this.accessibleName}">
                 <div part="header">
                     <cb-button part="previous" exportparts="control:previous-control,label:previous-label,button-label:previous-label,icon:previous-icon,description:previous-description" variant="ghost" icon="left" icon-only="true"
-                        accessible-label="${() => this.previousLabel}" disabled="${() => this.unavailable}"
+                        accessible-label="${this.props.previousLabel}" disabled="${() => this.unavailable}"
                         onaction="${(event: Event) => { event.stopPropagation(); this.moveMonth(-1); }}"></cb-button>
-                    <div part="month" aria-live="polite">${() => new Intl.DateTimeFormat(this.documentLanguage(), { month: 'long', year: 'numeric' }).format(this.visibleMonth)}</div>
+                    <div part="month" aria-live="polite">${this.monthLabel}</div>
                     <cb-button part="next" exportparts="control:next-control,label:next-label,button-label:next-label,icon:next-icon,description:next-description" variant="ghost" icon="right" icon-only="true"
-                        accessible-label="${() => this.nextLabel}" disabled="${() => this.unavailable}"
+                        accessible-label="${this.props.nextLabel}" disabled="${() => this.unavailable}"
                         onaction="${(event: Event) => { event.stopPropagation(); this.moveMonth(1); }}"></cb-button>
                 </div>
-                <div part="weekdays">${repeat(() => [0, 1, 2, 3, 4, 5, 6], index => html`<span part="weekday">${() => new Intl.DateTimeFormat(this.documentLanguage(), { weekday: 'short' }).format(new Date(2024, 0, 7 + ((this.weekStart() + index) % 7)))}</span>`)}</div>
-                <div ref="days" part="days" role="group">${repeat(() => this.visibleDates(), date => {
+                <div part="weekdays">${repeat([0, 1, 2, 3, 4, 5, 6], index => html`<span part="weekday">${() => new Intl.DateTimeFormat(this.documentLanguage(), { weekday: 'short' }).format(new Date(2024, 0, 7 + ((this.weekStart() + index) % 7)))}</span>`)}</div>
+                <div ref="days" part="days" role="group">${repeat(this.visibleDates, date => {
                     const value = this.dateValue(date)
                     return html`<cb-button part="day" exportparts="control:day-control,label:day-label,button-label:day-label,icon:day-icon,description:day-description" data-bare data-semantic-host
                         data-value="${value}" label="${date.getDate()}"
@@ -39,10 +39,11 @@ export class Calendar extends CalendarBase {
                         tabindex="${() => value === this.focusableDate() ? 0 : -1}"
                         onaction="${(event: Event) => { event.stopPropagation(); this.chooseDate(date, event); }}"
                         onkeydown="${(event: KeyboardEvent) => this.handleDayKey(event, date)}"></cb-button>`
-                }, { key: date => this.dateValue(date) })}</div>
+                }, { key: this.dateValue })}</div>
             </div>`
     }
-    private visibleDates(): Date[] {
+    private monthLabel = (): string => new Intl.DateTimeFormat(this.documentLanguage(), { month: 'long', year: 'numeric' }).format(this.visibleMonth)
+    private visibleDates = (): Date[] => {
         const first = new Date(this.visibleMonth.getFullYear(), this.visibleMonth.getMonth(), 1)
         const offset = (first.getDay() - this.weekStart() + 7) % 7
         return Array.from({ length: 42 }, (_, index) => new Date(first.getFullYear(), first.getMonth(), 1 - offset + index))

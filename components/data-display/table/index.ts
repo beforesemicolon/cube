@@ -77,12 +77,12 @@ export class Table extends TableBase {
     private get columnWidths(): ReadonlyMap<string,number> { return this.widths[0](); }
     private get container(): HTMLElement | undefined { const node=this.refs.container?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private get viewport(): HTMLElement | undefined { const node=this.refs.viewport?.[0]; return node instanceof HTMLElement ? node : undefined; }
-    private grouped(): boolean { return this.columnList().some(column=>scalarText(column.group)); }
-    private selected(): boolean { return this.normalizedSelectionMode() !== 'none'; }
+    private grouped = (): boolean => { return this.columnList().some(column=>scalarText(column.group)); }
+    private selected = (): boolean => { return this.normalizedSelectionMode() !== 'none'; }
     private sticky(index:number): boolean { return index < Math.max(0,Math.round(finite(this.stickyColumns,0))); }
     private stickyIndex(index:number): number { return index+(this.selected()?1:0); }
     private stickyStyle(index:number): string { return `--table-sticky-offset:${this.offsets[0]().get(index) ?? 0}px`; }
-    private columnGroups(): readonly {label:string;span:number;index:number}[] {
+    private columnGroups = (): readonly {label:string;span:number;index:number}[] => {
         const columns=this.columnList(),groups:{label:string;span:number;index:number}[]=[];
         for(let index=0;index<columns.length;) {
             const label=scalarText(columns[index]?.group); let span=1;
@@ -90,7 +90,7 @@ export class Table extends TableBase {
             groups.push({label,span,index}); index+=span;
         } return groups;
     }
-    private tableStyle(): string {
+    private tableStyle = (): string => {
         const columns=this.columnList(), selection=this.selected()?selectionColumnWidth:0;
         const minimum=Math.max(320,selection+columns.reduce((sum,column)=>sum+pixels(column.minWidth ?? column.width,defaultColumnWidth),0));
         const width=columns.every(column=>this.columnWidths.has(column.id)) ? `inline-size:max(100%,${Math.ceil(columns.reduce((sum,column)=>sum+(this.columnWidths.get(column.id) ?? 0),selection))}px)` : '';
@@ -106,25 +106,25 @@ export class Table extends TableBase {
             <header part="header"><slot name="header" part="header-slot"></slot></header>
             <div part="viewport" ref="viewport" tabindex="0" aria-label=${() => this.accessibleName() || null}>
                 ${when(() => bool(this.loading), () => html`<div part="loading state"><cb-skeleton part="loading-skeleton" variant="table"
-                    rows=${() => Math.max(1,Math.round(finite(this.loadingRows,5)))} columns=${() => Math.max(1,this.columnList().length)} animated accessible-label=${() => this.loadingLabel}></cb-skeleton></div>`,
-                    () => when(() => !this.itemList().length || !this.columnList().length, () => html`<div part="empty state" role="status"><slot name="empty" part="empty-slot">${() => this.emptyLabel}</slot></div>`,
-                    () => html`<table part="table" style=${() => this.tableStyle()}><caption part="caption">${() => this.accessibleName()}</caption>
-                        <colgroup part="column-group">${when(() => this.selected(),()=>html`<col part="selection-column" style="width:44px">`)}
-                            ${repeat(()=>this.columnList(),column=>html`<col part="column" data-column-id=${column.id} style=${()=>`width:${this.columnWidths.has(column.id)?`${this.columnWidths.get(column.id)}px`:cssSize(column.width ?? column.minWidth,'160px')}`}>`,{key:column=>column.id})}
+                    rows=${() => Math.max(1,Math.round(finite(this.loadingRows,5)))} columns=${() => Math.max(1,this.columnList().length)} animated accessible-label=${this.props.loadingLabel}></cb-skeleton></div>`,
+                    () => when(() => !this.itemList().length || !this.columnList().length, () => html`<div part="empty state" role="status"><slot name="empty" part="empty-slot">${this.props.emptyLabel}</slot></div>`,
+                    () => html`<table part="table" style=${this.tableStyle}><caption part="caption">${this.accessibleName}</caption>
+                        <colgroup part="column-group">${when(this.selected,()=>html`<col part="selection-column" style="width:44px">`)}
+                            ${repeat(this.columnList,column=>html`<col part="column" data-column-id=${column.id} style=${()=>`width:${this.columnWidths.has(column.id)?`${this.columnWidths.get(column.id)}px`:cssSize(column.width ?? column.minWidth,'160px')}`}>`,{key:column=>column.id})}
                         </colgroup><thead part="head">
-                            ${when(()=>this.grouped(),()=>html`<tr part="header-row group-header-row">
-                                ${when(()=>this.selected(),()=>html`<th part="selection-cell group-header-cell sticky" rowspan="2" data-sticky-index="0" style=${()=>this.stickyStyle(0)}></th>`)}
-                                ${repeat(()=>this.columnGroups(),group=>html`<th part=${()=>`group-header-cell${this.sticky(group.index)?' sticky':''}`}
+                            ${when(this.grouped,()=>html`<tr part="header-row group-header-row">
+                                ${when(this.selected,()=>html`<th part="selection-cell group-header-cell sticky" rowspan="2" data-sticky-index="0" style=${()=>this.stickyStyle(0)}></th>`)}
+                                ${repeat(this.columnGroups,group=>html`<th part=${()=>`group-header-cell${this.sticky(group.index)?' sticky':''}`}
                                     scope=${group.label?'colgroup':'col'} colspan=${group.label?group.span:null} rowspan=${group.label?null:2}
                                     data-sticky-index=${()=>this.sticky(group.index)?this.stickyIndex(group.index):null} style=${()=>this.stickyStyle(this.stickyIndex(group.index))}>${group.label}</th>`,{key:group=>group.index})}
                             </tr>`)}
-                            <tr part="header-row">${when(()=>this.selected(),()=>html`<th part="header-cell selection-cell sticky" scope="col" hidden=${()=>this.grouped()} data-sticky-index="0" style=${()=>this.stickyStyle(0)}>
-                                ${when(()=>this.normalizedSelectionMode()==='multiple',()=>html`<input part="selection-control" type="checkbox" checked=${()=>this.allVisibleSelected()} indeterminate=${()=>this.someVisibleSelected()}
+                            <tr part="header-row">${when(this.selected,()=>html`<th part="header-cell selection-cell sticky" scope="col" hidden=${this.grouped} data-sticky-index="0" style=${()=>this.stickyStyle(0)}>
+                                ${when(()=>this.normalizedSelectionMode()==='multiple',()=>html`<input part="selection-control" type="checkbox" checked=${this.allVisibleSelected} indeterminate=${this.someVisibleSelected}
                                     disabled=${()=>this.unavailable || !this.selectableRows().length} aria-label=${()=>scalarText(this.allVisibleSelected()?this.deselectAllLabel:this.selectAllLabel)||this.accessibleName()}
                                     onclick=${(event:Event)=>event.stopPropagation()} onchange=${(event:Event)=>{event.stopPropagation();this.toggleAllRows(event);}}>`)}
                             </th>`)}
-                            ${repeat(()=>this.columnList(),(column,index)=>this.headerTemplate(column,index),{key:column=>column.id})}
-                            </tr></thead><tbody part="body">${repeat(()=>this.groupedRows(),group=>html`
+                            ${repeat(this.columnList,(column,index)=>this.headerTemplate(column,index),{key:column=>column.id})}
+                            </tr></thead><tbody part="body">${repeat(this.groupedRows,group=>html`
                                 ${when(()=>Boolean(group.key),()=>html`<tr part="group-row"><th part="group-cell" colspan=${()=>this.columnList().length+(this.selected()?1:0)}>
                                     <div part="group-content">${this.iconAction('group-button',()=>this.collapsedGroupKeySet().has(group.key)?'right':'down',
                                         ()=>scalarText(this.collapsedGroupKeySet().has(group.key)?this.expandGroupLabel:this.collapseGroupLabel).replaceAll('{group}',group.label)||group.label,event=>this.toggleGroup(group.key,event))}
@@ -156,12 +156,12 @@ export class Table extends TableBase {
             aria-current=${()=>scalarText(this.activeKey)===row.key?true:null} tabindex=${()=>bool(this.rowActivation)&&!this.unavailable?0:null}
             onclick=${(event:Event)=>{if(bool(this.rowActivation)&&!this.unavailable&&event.currentTarget instanceof HTMLTableRowElement&&!this.isInteractiveEvent(event,event.currentTarget))this.activateRow(row,index,event);}}
             onkeydown=${(event:KeyboardEvent)=>{if(bool(this.rowActivation)&&!this.unavailable&&event.target===event.currentTarget&&['Enter',' '].includes(event.key)){event.preventDefault();this.activateRow(row,index,event);}}}>
-            ${when(()=>this.selected(),()=>html`<td part="cell selection-cell sticky" data-sticky-index="0" style=${()=>this.stickyStyle(0)}>
+            ${when(this.selected,()=>html`<td part="cell selection-cell sticky" data-sticky-index="0" style=${()=>this.stickyStyle(0)}>
                 <input part="selection-control" type=${()=>this.normalizedSelectionMode()==='single'?'radio':'checkbox'} name=${()=>this.normalizedSelectionMode()==='single'?this.radioName:null}
                     checked=${()=>this.selectedKeySet().has(row.key)} disabled=${()=>this.unavailable||!this.isSelectable(row.item)}
                     aria-label=${()=>this.rowLabel(this.selectedKeySet().has(row.key)?this.deselectRowLabel:this.selectRowLabel,row)}
                     onclick=${(event:Event)=>event.stopPropagation()} onchange=${(event:Event)=>{event.stopPropagation();this.toggleRowSelection(row,event);}}></td>`)}
-            ${repeat(()=>this.columnList(),(column,columnIndex)=>html`<td part=${()=>`cell${columnIndex===0?' primary-cell':''}${this.sticky(columnIndex)?' sticky':''}`}
+            ${repeat(this.columnList,(column,columnIndex)=>html`<td part=${()=>`cell${columnIndex===0?' primary-cell':''}${this.sticky(columnIndex)?' sticky':''}`}
                 data-align=${column.align??'start'} data-column-id=${column.id} data-variant=${()=>this.cellVariant(column,row,index)} data-wrap=${()=>bool(column.wrap)?'':null}
                 data-sticky-index=${()=>this.sticky(columnIndex)?this.stickyIndex(columnIndex):null} style=${()=>this.stickyStyle(this.stickyIndex(columnIndex))}>
                 ${columnIndex===0?html`<div part="tree-cell">${when(()=>row.depth>0,()=>html`<span part="tree-indent" aria-hidden="true" style=${`--table-depth:${row.depth}`}></span>`)}

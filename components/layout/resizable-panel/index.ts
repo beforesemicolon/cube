@@ -17,21 +17,21 @@ export class ResizablePanel extends ResizablePanelBase {
     private startX = 0;
     private startSize = 0;
     render(): Template {
-        return html`<style part="styles">${css}</style><section part="panel" aria-label=${() => this.accessibleName()}>
-            <header part="header"><slot name="heading" part="heading">${() => this.label}</slot></header>
+        return html`<style part="styles">${css}</style><section part="panel" aria-label=${this.accessibleName}>
+            <header part="header"><slot name="heading" part="heading">${this.props.label}</slot></header>
             <slot part="content"></slot>
         </section><div part="resize-handle" ref="handle" role="separator" aria-orientation="vertical"
             tabindex=${() => this.unavailable ? -1 : 0} aria-label=${() => scalarText(this.resizeLabel)}
             aria-valuemin=${() => finite(this.min,180)} aria-valuemax=${() => finite(this.max,640)}
-            aria-valuenow=${() => this.currentSize()}
-            onpointerdown=${(event: PointerEvent) => this.beginResize(event)}
-            onkeydown=${(event: KeyboardEvent) => this.handleKey(event)}></div>`;
+            aria-valuenow=${this.currentSize}
+            onpointerdown=${this.beginResize}
+            onkeydown=${this.handleKey}></div>`;
     }
     protected syncView(): void {
         this.style.setProperty('--component-resizable-panel-size', `${this.currentSize()}px`);
         this.dataset.placement = this.placement === 'start' ? 'start' : 'end';
     }
-    private beginResize(event: PointerEvent): void {
+    private beginResize = (event: PointerEvent): void => {
         if (this.unavailable || !this.handle)
             return;
         this.startX = event.clientX;
@@ -53,7 +53,7 @@ export class ResizablePanel extends ResizablePanelBase {
         this.handle.addEventListener('pointerup', end);
         this.handle.addEventListener('pointercancel', end);
     }
-    private handleKey(event: KeyboardEvent): void {
+    private handleKey = (event: KeyboardEvent): void => {
         const amount = event.shiftKey ? finite(this.step, 16) * 4 : finite(this.step, 16);
         const direction = this.placement === 'start' ? 1 : -1;
         let next: number | undefined;

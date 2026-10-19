@@ -45,8 +45,8 @@ export abstract class TimelineBase extends Component<TimelineProps> {
     keyframeLabel = ''
     timeLabel = ''
 
-    protected timelineDuration(): number { return Math.max(.01, finite(this.duration, 4)) }
-    protected timelineTime(value = this.currentTime): number { return clamp(finite(value), 0, this.timelineDuration()) }
+    protected timelineDuration = (): number => { return Math.max(.01, finite(this.duration, 4)) }
+    protected timelineTime = (value = this.currentTime): number => clamp(finite(value), 0, this.timelineDuration())
     protected timelineTracks(): readonly TimelineTrack[] {
         if (!Array.isArray(this.tracks)) return []
         const normalized: TimelineTrack[] = []

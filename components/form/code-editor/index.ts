@@ -52,14 +52,14 @@ export class CodeEditor extends CodeEditorBase {
                 <div part="editing-layer">
                     <pre ref="highlight" part="highlight" aria-hidden="true">${() => highlighted().language === 'plaintext' ? this.sourceText() + '\n' : unsafeHTML(highlighted().html + '\n')}</pre>
                     <textarea ref="control" part="control" spellcheck="false" autocapitalize="off" autocomplete="off"
-                        value="${() => this.sourceText()}" placeholder="${this.props.placeholder}" disabled="${() => this.unavailable}"
+                        value="${this.sourceText}" placeholder="${this.props.placeholder}" disabled="${() => this.unavailable}"
                         readonly="${() => bool(this.readOnly)}" required="${() => bool(this.required) && !bool(this.readOnly)}"
-                        aria-label="${() => this.accessibleName()}" aria-invalid="${() => error() ? 'true' : null}"
-                        aria-description="${() => [scalarText(this.description), error() ? this.validationMessage : ''].filter(Boolean).join(' ') || null}" style="--code-tab-size:${() => this.normalizedTabSize()}"
+                        aria-label="${this.accessibleName}" aria-invalid="${() => error() ? 'true' : null}"
+                        aria-description="${() => [scalarText(this.description), error() ? this.validationMessage : ''].filter(Boolean).join(' ') || null}" style="--code-tab-size:${this.normalizedTabSize}"
                         oninput="${(event: Event) => { if (!this.setValue(this.control?.value ?? '', event) && this.control) this.control.value = this.sourceText() }}"
                         onkeydown="${(event: KeyboardEvent) => { if (!this.editJson(event) && !this.indent(event)) this.submit(event) }}"
-                        onscroll="${() => this.syncScroll()}" onselect="${() => this.syncPosition()}"
-                        onkeyup="${() => this.syncPosition()}" onclick="${() => this.syncPosition()}"></textarea>
+                        onscroll="${this.syncScroll}" onselect="${this.syncPosition}"
+                        onkeyup="${this.syncPosition}" onclick="${this.syncPosition}"></textarea>
                 </div>
             </div>
         </div>`.onUpdate(() => { this.syncPosition(); this.syncScroll() })
@@ -85,7 +85,7 @@ export class CodeEditor extends CodeEditorBase {
         this.syncPosition()
         this.syncScroll()
     }
-    private syncPosition(): void {
+    private syncPosition = (): void => {
         const control = this.control
         if (!control) return
         const before = control.value.slice(0, control.selectionStart).split('\n')
@@ -93,7 +93,7 @@ export class CodeEditor extends CodeEditorBase {
         const current = this.cursor[0]()
         if (current.line !== next.line || current.column !== next.column) this.cursor[1](next)
     }
-    private syncScroll(): void {
+    private syncScroll = (): void => {
         const control = this.control, highlight = this.highlight, gutter = this.gutter
         if (!control || !highlight || !gutter) return
         highlight.scrollTop = control.scrollTop

@@ -38,12 +38,12 @@ export class Rulers extends RulersBase {
         return html`<style part="styles">${css}</style><div part="root rulers">
             <span part="corner"></span><div part="horizontal ruler" ref="horizontal">${ticks('x')}</div><div part="vertical ruler" ref="vertical">${ticks('y')}</div>
             <div part="surface canvas control" ref="surface" role="region" tabindex=${() => this.unavailable ? -1 : 0}
-                aria-label=${() => this.accessibleName()} aria-disabled=${() => this.unavailable || null}
+                aria-label=${this.accessibleName} aria-disabled=${() => this.unavailable || null}
                 style=${() => `--cb-cursor-x:${(finite(this.cursorX)-finite(this.originX))*this.scale()}px;--cb-cursor-y:${(finite(this.cursorY)-finite(this.originY))*this.scale()}px`}
                 onpointermove=${(event: PointerEvent) => this.trackPointer(event,false)}
-                onpointerdown=${(event: PointerEvent) => this.trackPointer(event,true)} onkeydown=${(event: KeyboardEvent) => this.onKeydown(event)}>
+                onpointerdown=${(event: PointerEvent) => this.trackPointer(event,true)} onkeydown=${this.onKeydown}>
                 <slot part="content"></slot><span part="guide-x" hidden=${() => !this.cursorVisible()}></span><span part="guide-y" hidden=${() => !this.cursorVisible()}></span>
-                <output part="cursor" hidden=${() => !this.cursorVisible() || !this.coordinateText()}>${() => this.coordinateText()}</output>
+                <output part="cursor" hidden=${() => !this.cursorVisible() || !this.coordinateText()}>${this.coordinateText}</output>
             </div></div>`;
     }
     protected mount(): void {
@@ -70,7 +70,7 @@ export class Rulers extends RulersBase {
         const y = finite(this.originY) + (event.clientY - rect.top) / this.scale();
         this.setCursor(x, y, event, commit);
     }
-    private onKeydown(event: KeyboardEvent): void {
+    private onKeydown = (event: KeyboardEvent): void => {
         const amount = event.shiftKey ? 10 : 1;
         const deltas: Readonly<Record<string, readonly [
             number,

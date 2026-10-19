@@ -23,8 +23,8 @@ const css = editorCSS + `
 export class DeviceFrame extends DeviceFrameBase {
     render(): Template {
         return html`<style part="styles">${css}</style><div part="root canvas">
-            <div part="device frame" data-device=${() => this.preset()}
-                data-chrome=${() => String(this.chromeVisible())} style=${() => this.deviceStyle()}>
+            <div part="device frame" data-device=${this.preset}
+                data-chrome=${() => String(this.chromeVisible())} style=${this.deviceStyle}>
                 <div part="bezel"><div part="screen control" role="region"
                     tabindex=${() => this.unavailable ? -1 : 0}
                     aria-label=${() => this.text('screenLabel') || this.accessibleName()}
@@ -37,7 +37,7 @@ export class DeviceFrame extends DeviceFrameBase {
                 onaction=${(event: Event) => { event.stopPropagation(); this.toggleOrientation(event); }}></cb-button>
         </div>`;
     }
-    private deviceStyle(): string {
+    private deviceStyle = (): string => {
         const [width, height] = this.frameSize(), preset = this.preset();
         return `--cb-device-display-width:${preset === 'mobile' ? 260 : preset === 'tablet' ? 390 : 660}px;
             --cb-device-ratio:${width} / ${height};

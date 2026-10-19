@@ -86,7 +86,7 @@ export class ColorPicker extends ColorPickerBase {
     private get addSwatchButton(): HTMLElement | undefined { return this.node('addSwatch'); }
     private popupController?: PopupController;
     private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))); }
-    private descriptionText(): string | null { return [text(this.description),this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null; }
+    private descriptionText = (): string | null => { return [text(this.description),this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null; }
     private readonly channelLabel = (name: ChannelName): string => ({
         hue:this.hueLabel,saturation:this.saturationLabel,value:this.valueLabel,alpha:this.alphaLabel,red:this.redLabel,green:this.greenLabel,blue:this.blueLabel
     })[name];
@@ -94,7 +94,7 @@ export class ColorPicker extends ColorPickerBase {
         const color=this.color(),rgba=hsvaToRgba(color);
         return {hue:Math.round(color.hue),saturation:Math.round(color.saturation),value:Math.round(color.value),alpha:Math.round(color.alpha*100),red:rgba.red,green:rgba.green,blue:rgba.blue}[name];
     }
-    private paletteColors(): readonly string[] { return [...(bool(this.allowAlpha) ? ['#00000000'] : []),...this.palette()].filter((color,index,colors) => colors.indexOf(color)===index); }
+    private paletteColors = (): readonly string[] => { return [...(bool(this.allowAlpha) ? ['#00000000'] : []),...this.palette()].filter((color,index,colors) => colors.indexOf(color)===index); }
     private removable(color: string): boolean { return color !== '#00000000' && this.palette().includes(color); }
     render(): Template {
         const blocked=(): boolean => this.unavailable || bool(this.readOnly);
@@ -107,46 +107,46 @@ export class ColorPicker extends ColorPickerBase {
             </label>`,{key:definition=>definition.name})}`;
         return html`<style part="styles">${css}</style><div part="root">
             <cb-button part="trigger control" exportparts="control:trigger-control,label:trigger-label,button-label:trigger-label,icon:trigger-icon,description:trigger-description,control:control-control,label:control-label,button-label:control-label,icon:control-icon,description:control-description" ref="trigger" data-bare data-semantic-host id=${this.pickerId}
-                disabled=${blocked} hidden=${() => bool(this.native)} accessible-label=${() => this.accessibleName()}
+                disabled=${blocked} hidden=${() => bool(this.native)} accessible-label=${this.accessibleName}
                 aria-haspopup="dialog" aria-controls=${`${this.pickerId}-popup`} aria-expanded=${() => bool(this.open) && !bool(this.native)}
-                aria-description=${() => this.descriptionText()} aria-invalid=${() => this.validationError() || null}
+                aria-description=${this.descriptionText} aria-invalid=${() => this.validationError() || null}
                 onaction=${(event: Event) => { event.stopPropagation(); this.setOpen(!bool(this.open),event); }}>
                 <span part="trigger-swatch" style=${() => `--cb-selected-color:${colorToHex(this.color())}`}></span>
             </cb-button>
             <input part="native control" ref="native" type="color" id=${`${this.pickerId}-native`}
                 value=${() => colorToHex(this.color(),false)} disabled=${blocked} required=${() => bool(this.required) && !bool(this.readOnly)}
-                hidden=${() => !bool(this.native)} aria-label=${() => this.accessibleName()} aria-description=${() => this.descriptionText()} aria-invalid=${() => this.validationError() || null}
+                hidden=${() => !bool(this.native)} aria-label=${this.accessibleName} aria-description=${this.descriptionText} aria-invalid=${() => this.validationError() || null}
                 oninput=${(event: Event) => { const color=parseHexColor(this.nativeControl?.value ?? ''); if(color) this.changeColor(color,event); }}
                 onblur=${() => { this.validationShown=true; }}>
-            <section part="popup" ref="popup" id=${`${this.pickerId}-popup`} role="dialog" tabindex="-1" hidden aria-label=${() => this.accessibleName()}
+            <section part="popup" ref="popup" id=${`${this.pickerId}-popup`} role="dialog" tabindex="-1" hidden aria-label=${this.accessibleName}
                 style=${() => { const color=this.color(); return `--cb-hue-color:hsl(${color.hue},100%,50%);--cb-solid-color:${colorToHex({...color,alpha:1},false)};--cb-saturation-position:${color.saturation}%;--cb-value-position:${100-color.value}%`; }}>
                 <cb-button part="plane" exportparts="control:plane-control,label:plane-label,button-label:plane-label,icon:plane-icon,description:plane-description" ref="plane" data-bare data-semantic-host accessible-label=${() => this.planeLabel || this.accessibleName()} disabled=${blocked}
                     onpointerdown=${(event: PointerEvent) => { if(blocked()) return; this.plane?.setPointerCapture(event.pointerId); this.updateFromPlane(event,false); }}
                     onpointermove=${(event: PointerEvent) => { if(this.plane?.hasPointerCapture(event.pointerId)) this.updateFromPlane(event,false); }}
                     onpointerup=${(event: PointerEvent) => { if(this.plane?.hasPointerCapture(event.pointerId)) { this.plane.releasePointerCapture(event.pointerId); this.updateFromPlane(event,true); } }}
-                    onkeydown=${(event: KeyboardEvent) => this.handlePlaneKey(event)}><span part="marker"></span></cb-button>
+                    onkeydown=${this.handlePlaneKey}><span part="marker"></span></cb-button>
                 <div part="slider-field hue-slider-field"><input part="slider hue-slider control" ref="hue" type="range" min="0" max="360" step="1"
-                    value=${() => Math.round(this.color().hue)} aria-label=${() => this.hueLabel} disabled=${blocked}
+                    value=${() => Math.round(this.color().hue)} aria-label=${this.props.hueLabel} disabled=${blocked}
                     oninput=${(event: Event) => this.updateHue(false,event)}></div>
                 <div part="slider-field alpha-slider-field" hidden=${() => !bool(this.allowAlpha)}>
                     <input part="slider alpha-slider control" ref="alpha" type="range" min="0" max="100" step="1"
-                        value=${() => Math.round(this.color().alpha*100)} aria-label=${() => this.alphaLabel} disabled=${blocked}
+                        value=${() => Math.round(this.color().alpha*100)} aria-label=${this.props.alphaLabel} disabled=${blocked}
                         oninput=${(event: Event) => this.updateAlpha(false,event)}></div>
-                <div part="toolbar"><label part="hex-field"><span part="channel-label">${() => this.hexLabel}</span>
+                <div part="toolbar"><label part="hex-field"><span part="channel-label">${this.props.hexLabel}</span>
                     <input part="hex-input control" ref="hex" type="text" autocomplete="off" spellcheck="false" disabled=${blocked}
-                        aria-label=${() => this.hexLabel} value=${() => this.hexDraft[0]() ?? colorToHex(this.color())}
+                        aria-label=${this.props.hexLabel} value=${() => this.hexDraft[0]() ?? colorToHex(this.color())}
                         oninput=${(event: Event) => { this.hexDraft[1](this.hexInput?.value ?? ''); this.updateFromHex(false,event); }}
                         onblur=${() => this.hexDraft[1](null)}></label>
-                    <cb-button part="sampler" exportparts="control:sampler-control,label:sampler-label,button-label:sampler-label,icon:sampler-icon,description:sampler-description" icon-only icon="eye" variant="ghost" size="sm" accessible-label=${() => this.samplerLabel}
+                    <cb-button part="sampler" exportparts="control:sampler-control,label:sampler-label,button-label:sampler-label,icon:sampler-icon,description:sampler-description" icon-only icon="eye" variant="ghost" size="sm" accessible-label=${this.props.samplerLabel}
                         hidden=${() => !bool(this.allowSampler) || !this.samplerLabel || !this.samplerAvailable()} disabled=${blocked}
                         onaction=${(event: Event) => { event.stopPropagation(); void this.sample(event); }}></cb-button>
-                    <cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" icon-only icon="close" variant="ghost" size="sm" accessible-label=${() => this.closeLabel} hidden=${() => !this.closeLabel}
+                    <cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" icon-only icon="close" variant="ghost" size="sm" accessible-label=${this.props.closeLabel} hidden=${() => !this.closeLabel}
                         onaction=${(event: Event) => { event.stopPropagation(); if(this.setOpen(false,event)) this.trigger?.focus(); }}></cb-button>
                 </div><div part="channels hsv-channels">${channelFields(false)}</div><div part="channels rgb-channels">${channelFields(true)}</div>
                 <div part="palette-group" hidden=${() => !this.paletteColors().length && !this.addSwatchLabel}>
-                    <span part="palette-label label" hidden=${() => !this.swatchesLabel}>${() => this.swatchesLabel}</span>
+                    <span part="palette-label label" hidden=${() => !this.swatchesLabel}>${this.props.swatchesLabel}</span>
                     <div part="palette" ref="palette" role="group" aria-label=${() => this.swatchesLabel || null}>
-                        ${repeat(() => this.paletteColors(), color => html`<cb-button part="swatch" exportparts="control:swatch-control,label:swatch-label,button-label:swatch-label,icon:swatch-icon,description:swatch-description" data-bare data-semantic-host data-color=${color}
+                        ${repeat(this.paletteColors, color => html`<cb-button part="swatch" exportparts="control:swatch-control,label:swatch-label,button-label:swatch-label,icon:swatch-icon,description:swatch-description" data-bare data-semantic-host data-color=${color}
                             aria-pressed=${() => color === this.normalizedValue()} disabled=${blocked} data-removable=${() => this.removable(color) ? '' : null}
                             accessible-label=${() => { const label=color === '#00000000' ? this.transparentLabel || color : color; return this.swatchesLabel ? `${this.swatchesLabel}: ${label}` : label; }}
                             title=${() => color === '#00000000' ? this.transparentLabel || color : color}
@@ -159,7 +159,7 @@ export class ColorPicker extends ColorPickerBase {
                                 if(this.removeSwatch(color,event)) { event.preventDefault(); queueMicrotask(() => this.focusPaletteItem(Math.max(0,index))); }
                             }}><span part="swatch-preview"><span part="swatch-color" style=${`--cb-swatch-color:${color}`}></span></span></cb-button>`,{key:color=>color})}
                         <cb-button part="add-swatch" exportparts="control:add-swatch-control,label:add-swatch-label,button-label:add-swatch-label,icon:add-swatch-icon,description:add-swatch-description" ref="addSwatch" icon-only icon="plus" variant="outline" size="sm"
-                            accessible-label=${() => this.addSwatchLabel} hidden=${() => !this.addSwatchLabel} disabled=${blocked}
+                            accessible-label=${this.props.addSwatchLabel} hidden=${() => !this.addSwatchLabel} disabled=${blocked}
                             onpointerdown=${(event: PointerEvent) => event.preventDefault()}
                             onaction=${(event: Event) => { event.stopPropagation(); const value=this.normalizedValue(); if(this.addSwatch(value,event)) queueMicrotask(() => this.focusSwatch(value)); }}></cb-button>
                     </div></div>
@@ -193,7 +193,7 @@ export class ColorPicker extends ColorPickerBase {
         else
             this.inputColor(next, event);
     }
-    private handlePlaneKey(event: KeyboardEvent): void {
+    private handlePlaneKey = (event: KeyboardEvent): void => {
         const amount = event.shiftKey ? 10 : 1, color = this.color();
         let next: HSVAColor | null = null;
         if (event.key === 'ArrowLeft')

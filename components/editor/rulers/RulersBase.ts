@@ -38,7 +38,7 @@ export abstract class RulersBase extends Component<RulersProps> {
     protected step(): number { return Math.max(1, finite(this.majorStep, 100)) }
     protected divisions(): number { return Math.max(1, Math.round(finite(this.minorDivisions, 10))) }
     protected cursorVisible(): boolean { return bool(this.showCursor, true) }
-    protected coordinateText(): string {
+    protected coordinateText = (): string => {
         return scalarText(this.coordinateLabel)
             .replace('{x}', String(Math.round(finite(this.cursorX) * 100) / 100))
             .replace('{y}', String(Math.round(finite(this.cursorY) * 100) / 100))

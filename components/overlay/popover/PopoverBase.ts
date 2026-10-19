@@ -14,7 +14,7 @@ export abstract class PopoverBase<P extends PopoverProps = PopoverProps> extends
     protected isOpen(): boolean { return this.hasAttribute('open') || bool(this.open) }
     show(originalEvent?: Event): boolean { return this.setOpen(true, originalEvent) }
     close(originalEvent?: Event): boolean { return this.setOpen(false, originalEvent) }
-    toggle(originalEvent?: Event): boolean { return this.setOpen(!this.isOpen(), originalEvent) }
+    toggle = (originalEvent?: Event): boolean => { return this.setOpen(!this.isOpen(), originalEvent) }
     private setOpen(open: boolean, originalEvent?: Event): boolean {
         if (this.unavailable || this.isOpen() === open) return !this.unavailable
         const detail = { open, originalEvent }

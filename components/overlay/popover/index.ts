@@ -11,10 +11,10 @@ export class Popover extends PopoverBase {
     render(): Template {
         return html`<style part="styles">${css}</style>
             <span ref="anchor" part="anchor"
-                onclick="${(event: Event) => this.toggle(event)}">
-                <slot ref="trigger" name="trigger" part="trigger" onslotchange="${() => this.syncTrigger()}"></slot>
+                onclick="${this.toggle}">
+                <slot ref="trigger" name="trigger" part="trigger" onslotchange="${this.syncTrigger}"></slot>
             </span>
-            <section ref="panel" part="popover panel" hidden role="dialog" aria-label="${() => this.accessibleName()}">
+            <section ref="panel" part="popover panel" hidden role="dialog" aria-label="${this.accessibleName}">
                 <slot part="content"></slot>
             </section>`
     }
@@ -28,7 +28,7 @@ export class Popover extends PopoverBase {
     protected unmount(): void { this.popup?.dispose(); this.popup = undefined }
     protected syncView(): void { if (this.isOpen()) this.popup?.show(); else this.popup?.hide(); this.syncTrigger() }
     private validPlacement(): PopupPlacement { return ['bottom-start', 'bottom-end', 'top-start', 'top-end'].includes(this.placement) ? this.placement : 'bottom-start' }
-    private syncTrigger(): void {
+    private syncTrigger = (): void => {
         const slot = this.refs.trigger?.[0]
         if (!(slot instanceof HTMLSlotElement)) return
         for (const element of slot.assignedElements()) {

@@ -13,32 +13,32 @@ export class DatePicker extends DatePickerBase {
     private get trigger(): HTMLElement | undefined { const node = this.refs.trigger?.[0]; return node instanceof HTMLElement ? node : undefined }
     private get popup(): HTMLElement | undefined { const node = this.refs.popup?.[0]; return node instanceof HTMLElement ? node : undefined }
     private get nativeControl(): HTMLInputElement | undefined { const node = this.refs.native?.[0]; return node instanceof HTMLInputElement ? node : undefined }
-    private displayValue(): string {
+    private displayValue = (): string => {
         const selected = this.value ? new Date(this.value + 'T12:00:00') : undefined
         return selected && !Number.isNaN(selected.valueOf()) ? new Intl.DateTimeFormat(this.documentLanguage(), { dateStyle: 'medium' }).format(selected) : text(this.placeholder)
     }
     private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))) }
-    private descriptionText(): string | null { return [text(this.description), this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null }
+    private descriptionText = (): string | null => { return [text(this.description), this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null }
     render(): Template {
         return html`<style part="styles">${css}</style><div part="root" onkeydown="${(event: KeyboardEvent) => { if (event.key === 'Escape') { this.setOpen(false, event); this.trigger?.focus() } }}">
             <cb-button ref="trigger" part="trigger control" exportparts="control:trigger-control,button-label:trigger-label" data-bare data-semantic-host
                 id="${this.controlId}" hidden="${() => bool(this.native)}" disabled="${() => this.unavailable || bool(this.readOnly)}"
                 accessible-label="${() => [this.accessibleName(), this.displayValue()].filter(Boolean).join(': ')}"
                 aria-haspopup="dialog" aria-controls="${this.controlId}-popup" aria-expanded="${() => String(bool(this.open))}"
-                aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${() => this.descriptionText()}"
+                aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
                 onaction="${(event: Event) => { event.stopPropagation(); this.setOpen(!this.open, event) }}">
-                <span part="value">${() => this.displayValue()}</span><cb-icon part="icon" name="calendar" decorative="true"></cb-icon>
+                <span part="value">${this.displayValue}</span><cb-icon part="icon" name="calendar" decorative="true"></cb-icon>
             </cb-button>
-            <div ref="popup" part="popup" role="dialog" id="${this.controlId}-popup" aria-label="${() => this.accessibleName()}" hidden>
-                <cb-calendar value="${() => this.value}" min="${() => this.min}" max="${() => this.max}"
-                    previous-label="${() => this.previousLabel}" next-label="${() => this.nextLabel}"
-                    disabled="${() => this.unavailable || bool(this.readOnly)}" accessible-label="${() => this.accessibleName()}"
+            <div ref="popup" part="popup" role="dialog" id="${this.controlId}-popup" aria-label="${this.accessibleName}" hidden>
+                <cb-calendar value="${this.props.value}" min="${this.props.min}" max="${this.props.max}"
+                    previous-label="${this.props.previousLabel}" next-label="${this.props.nextLabel}"
+                    disabled="${() => this.unavailable || bool(this.readOnly)}" accessible-label="${this.accessibleName}"
                     onchange="${(event: CustomEvent<{ value: string }>) => { event.stopPropagation(); this.setValue(event.detail.value, event); this.trigger?.focus() }}"></cb-calendar>
             </div>
             <input ref="native" part="native control" type="date" id="${this.controlId}-native" hidden="${() => !bool(this.native)}"
-                value="${() => this.value}" min="${() => this.min}" max="${() => this.max}"
+                value="${this.props.value}" min="${this.props.min}" max="${this.props.max}"
                 disabled="${() => this.unavailable}" readonly="${() => bool(this.readOnly)}" required="${() => bool(this.required)}"
-                aria-label="${() => this.accessibleName()}" aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${() => this.descriptionText()}"
+                aria-label="${this.accessibleName}" aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
                 oninput="${(event: Event) => { const input = event.currentTarget; if (input instanceof HTMLInputElement && !this.setValue(input.value, event)) input.value = this.value }}"
                 onblur="${() => { this.validationShown = true }}">
         </div>`

@@ -11,7 +11,7 @@ const css = editorCSS + `
 export class GuideOverlay extends GuideOverlayBase {
     render(): Template {
         return html`<style part="styles">${css}</style><div part="guides">
-            ${repeat(() => this.normalizedGuides(), guide => html`
+            ${repeat(this.normalizedGuides, guide => html`
                 <span part=${() => `line ${guide.type}-guide`} data-axis=${() => guide.axis}
                     data-type=${() => guide.type ?? 'snap'} data-id=${() => guide.id}
                     style=${() => this.guideStyle(guide)}></span>

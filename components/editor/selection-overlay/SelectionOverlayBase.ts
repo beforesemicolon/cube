@@ -83,7 +83,7 @@ export abstract class SelectionOverlayBase<P extends SelectionOverlayProps = Sel
     protected handleLabel(handle: SelectionHandle): string {
         return scalarText(this.resizeLabel).replaceAll('{handle}', scalarText(this.handleLabels[handle], handle))
     }
-    protected allHandles(): readonly SelectionHandle[] { return handles }
+    protected allHandles = (): readonly SelectionHandle[] => { return handles }
     protected normalizedStep(multiplier = 1): number { return Math.max(.1, finite(this.moveStep, 1)) * multiplier }
 
     private commitRect(rect: EditorRect, reason: 'move' | 'resize', originalEvent?: Event, handle?: SelectionHandle): boolean {

@@ -67,7 +67,7 @@ export abstract class BezierBase extends Component<BezierProps> {
             x2: clamp(finite(this.x2, defaultCurve.x2), 0, 1), y2: clamp(finite(this.y2, defaultCurve.y2), -1, 2),
         }
     }
-    protected cssValue(curve = this.curve()): string { return `cubic-bezier(${tidy(curve.x1)}, ${tidy(curve.y1)}, ${tidy(curve.x2)}, ${tidy(curve.y2)})` }
+    protected cssValue = (curve = this.curve()): string => `cubic-bezier(${tidy(curve.x1)}, ${tidy(curve.y1)}, ${tidy(curve.x2)}, ${tidy(curve.y2)})`
     protected text(name: 'curveLabel'|'previewLabel'|'playLabel'|'pauseLabel'|'resetLabel'|'x1Label'|'y1Label'|'x2Label'|'y2Label'): string { return scalarText(this[name]) }
 
     setPoint(point: 1 | 2, x: number, y: number, originalEvent?: Event, commit = true): boolean {

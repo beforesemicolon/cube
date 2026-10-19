@@ -63,7 +63,7 @@ export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValue
 
     setFirst(value: number, originalEvent?: Event): boolean { return this.change('first', value, originalEvent) }
     setSecond(value: number, originalEvent?: Event): boolean { return this.change('second', value, originalEvent) }
-    protected toggleLabel(): string { return scalarText(bool(this.linked) ? this.unlinkLabel : this.linkLabel) }
+    protected toggleLabel = (): string => { return scalarText(bool(this.linked) ? this.unlinkLabel : this.linkLabel) }
 
     protected syncFormValues(): void {
         const data = new FormData()

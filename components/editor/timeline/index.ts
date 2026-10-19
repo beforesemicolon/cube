@@ -44,7 +44,7 @@ export class Timeline extends TimelineBase {
     private keyframe(trackId:string,id:string): TimelineKeyframe { return this.track(trackId).keyframes.find(frame=>frame.id===id) ?? {id,time:0}; }
     private divisions(): number { return Math.min(20,Math.max(4,Math.ceil(this.timelineDuration()*2))); }
     render(): Template {
-        return html`<style part="styles">${css}</style><section part="root editor" aria-label=${() => this.accessibleName()}>
+        return html`<style part="styles">${css}</style><section part="root editor" aria-label=${this.accessibleName}>
             <div part="toolbar" role="toolbar">
                 <cb-button part="rewind" exportparts="control:rewind-control,label:rewind-label,button-label:rewind-label,icon:rewind-icon,description:rewind-description" icon-only icon="reset" variant="ghost" size="sm" accessible-label=${() => this.text('rewindLabel')} disabled=${() => this.unavailable || this.timelineTime()<=0}
                     onaction=${(event: Event) => { event.stopPropagation(); this.seek(0,event); }}></cb-button>
@@ -58,11 +58,11 @@ export class Timeline extends TimelineBase {
             </div><div part="editor" style=${() => `--cb-playhead:${this.timelineTime()/this.timelineDuration()};--cb-duration:${Math.max(1,Math.ceil(this.timelineDuration()))}`}>
                 <div part="ruler-row"><span part="ruler-label"></span>
                     <div part="ruler" ref="ruler" role="slider" tabindex=${() => this.unavailable ? -1 : 0}
-                        aria-label=${() => this.text('playheadLabel')} aria-valuemin="0" aria-valuemax=${() => this.timelineDuration()}
-                        aria-valuenow=${() => this.timelineTime()} aria-valuetext=${() => this.formatTime(this.timelineTime())}
+                        aria-label=${() => this.text('playheadLabel')} aria-valuemin="0" aria-valuemax=${this.timelineDuration}
+                        aria-valuenow=${this.timelineTime} aria-valuetext=${() => this.formatTime(this.timelineTime())}
                         onpointerdown=${(event: PointerEvent) => this.scrub(event,true)}
                         onpointermove=${(event: PointerEvent) => { if(event.buttons===1) this.scrub(event,false); }}
-                        onkeydown=${(event: KeyboardEvent) => this.keyScrub(event)}>
+                        onkeydown=${this.keyScrub}>
                         ${repeat(() => Array.from({length:this.divisions()+1},(_,index)=>index),index => html`<span part="tick" style=${() => `inset-inline-start:${index/this.divisions()*100}%`}></span>
                             <span part="tick-label" style=${() => `inset-inline-start:${index/this.divisions()*100}%`}>${() => this.formatTime(index/this.divisions()*this.timelineDuration())}</span>`)}
                     </div></div><span part="playhead"></span>
@@ -83,8 +83,8 @@ export class Timeline extends TimelineBase {
                                 if(button.disabled || !lane) return;
                                 event.stopPropagation(); this.drag={trackId,keyframeId:id,pointerId:event.pointerId,lane,button}; button.setPointerCapture(event.pointerId);
                             }}
-                            onpointermove=${(event: PointerEvent) => this.moveDrag(event)} onpointerup=${(event: PointerEvent) => this.endDrag(event)}
-                            onpointercancel=${(event: PointerEvent) => this.endDrag(event)}
+                            onpointermove=${this.moveDrag} onpointerup=${this.endDrag}
+                            onpointercancel=${this.endDrag}
                             onkeydown=${(event: KeyboardEvent) => this.keyKeyframe(trackId,this.keyframe(trackId,id),event)}></cb-button>`,{key:id=>id})}
                     </div></div>`,{key:id=>id})}
             </div></section>`;
@@ -99,7 +99,7 @@ export class Timeline extends TimelineBase {
         const rect = lane.getBoundingClientRect();
         this.seek((event.clientX - rect.left) / rect.width * this.timelineDuration(), event, commit);
     }
-    private keyScrub(event: KeyboardEvent): void {
+    private keyScrub = (event: KeyboardEvent): void => {
         if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key) || this.unavailable)
             return;
         event.preventDefault();
@@ -110,13 +110,13 @@ export class Timeline extends TimelineBase {
         else
             this.seek(this.timelineTime() + (event.key === 'ArrowRight' ? 1 : -1) * (event.shiftKey ? 1 : Math.max(.001, finite(this.snap, .1))), event);
     }
-    private moveDrag(event: PointerEvent): void {
+    private moveDrag = (event: PointerEvent): void => {
         if (!this.drag || event.pointerId !== this.drag.pointerId)
             return;
         const rect = this.drag.lane.getBoundingClientRect();
         this.moveKeyframe(this.drag.trackId, this.drag.keyframeId, (event.clientX - rect.left) / rect.width * this.timelineDuration(), event, false);
     }
-    private endDrag(event: PointerEvent): void {
+    private endDrag = (event: PointerEvent): void => {
         if (!this.drag || event.pointerId !== this.drag.pointerId)
             return;
         const drag = this.drag;

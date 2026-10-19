@@ -32,39 +32,39 @@ export class Select extends SelectBase {
     private get nativeControl(): HTMLSelectElement | undefined { const node = this.refs.native?.[0]; return node instanceof HTMLSelectElement ? node : undefined }
     private get searchInput(): HTMLInputElement | undefined { const node = this.refs.search?.[0]; return node instanceof HTMLInputElement ? node : undefined }
     private get listbox(): HTMLElement | undefined { const node = this.refs.listbox?.[0]; return node instanceof HTMLElement ? node : undefined }
-    private visibleOptions() {
+    private visibleOptions = () => {
         const query = this.query[0]().trim().toLowerCase()
         return query ? this.normalizedOptions.filter(option => (option.label + ' ' + option.value).toLowerCase().includes(query)) : this.normalizedOptions
     }
-    private selectedLabels(): string[] { return this.normalizedOptions.filter(option => this.selection.includes(option.value)).map(option => option.label) }
-    private displayValue(): string { return this.selectedLabels().join(', ') || text(this.placeholder) }
+    private selectedLabels = (): string[] => { return this.normalizedOptions.filter(option => this.selection.includes(option.value)).map(option => option.label) }
+    private displayValue = (): string => { return this.selectedLabels().join(', ') || text(this.placeholder) }
     private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))) }
-    private descriptionText(): string | null { return [text(this.description), this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null }
+    private descriptionText = (): string | null => { return [text(this.description), this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null }
     render(): Template {
         return html`<style part="styles">${css}</style><div part="root">
             <cb-button ref="trigger" part="trigger control" exportparts="control:trigger-control,button-label:trigger-label" data-bare data-semantic-host
                 hidden="${() => bool(this.native)}" disabled="${() => this.unavailable || bool(this.readOnly)}" data-multi="${() => bool(this.multi) ? '' : null}"
                 accessible-label="${() => this.displayValue() && this.displayValue() !== this.accessibleName() ? this.accessibleName() + ': ' + this.displayValue() : this.accessibleName()}"
                 aria-haspopup="listbox" aria-controls="${this.controlId}-listbox" aria-expanded="${() => String(bool(this.open))}"
-                aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${() => this.descriptionText()}"
-                onkeydown="${(event: KeyboardEvent) => this.handleKey(event)}"
+                aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
+                onkeydown="${this.handleKey}"
                 onaction="${(event: Event) => { event.stopPropagation(); const opening = !bool(this.open); if (this.setOpen(opening, event) && opening && this.searchEnabled) this.searchInput?.focus() }}">
                 <span part="value" data-placeholder="${() => this.selection.length ? null : ''}">
                     ${when(() => bool(this.multi) && this.selectedLabels().length > 0,
-                        repeat(() => this.selectedLabels(), (label, index) => html`<span part="value-item">${label}${() => index < this.selectedLabels().length - 1 ? ',' : ''}</span>`, { key: label => label }),
-                        () => this.displayValue())}
+                        repeat(this.selectedLabels, (label, index) => html`<span part="value-item">${label}${() => index < this.selectedLabels().length - 1 ? ',' : ''}</span>`, { key: label => label }),
+                        this.displayValue)}
                 </span><cb-icon part="icon indicator" name="down" decorative="true"></cb-icon>
             </cb-button>
             <div ref="popup" part="popup" hidden
-                onkeydown="${(event: KeyboardEvent) => this.handleKey(event)}">
+                onkeydown="${this.handleKey}">
                 <div part="search-wrap" hidden="${() => !this.searchEnabled || bool(this.native)}">
                     <input ref="search" part="search" type="search" id="${this.controlId}-search" value="${this.query[0]}"
                         placeholder="${() => text(this.searchPlaceholder)}" aria-label="${() => text(this.searchLabel) || text(this.searchPlaceholder) || this.accessibleName()}"
                         role="combobox" aria-autocomplete="list" aria-controls="${this.controlId}-listbox" aria-expanded="${() => String(bool(this.open))}"
                         oninput="${(event: Event) => { const input = event.currentTarget; if (input instanceof HTMLInputElement) this.query[1](input.value) }}">
-                </div><div ref="listbox" part="listbox" id="${this.controlId}-listbox" role="listbox" aria-label="${() => this.accessibleName()}"
+                </div><div ref="listbox" part="listbox" id="${this.controlId}-listbox" role="listbox" aria-label="${this.accessibleName}"
                     aria-multiselectable="${() => bool(this.multi) ? 'true' : null}">
-                ${repeat(() => this.visibleOptions(), option => html`<cb-button part="option" exportparts="control:option-control,button-label:option-label" data-bare data-semantic-host
+                ${repeat(this.visibleOptions, option => html`<cb-button part="option" exportparts="control:option-control,button-label:option-label" data-bare data-semantic-host
                     data-value="${option.value}" role="option" accessible-label="${option.label}" disabled="${() => option.disabled || this.unavailable}"
                     aria-selected="${() => String(this.selection.includes(option.value))}"
                     onaction="${(event: Event) => { event.stopPropagation(); this.choose(option.value, event); if (!bool(this.multi)) this.setOpen(false, event); else queueMicrotask(() => this.optionNodes().find(node => node.dataset.value === option.value)?.focus()) }}">
@@ -75,7 +75,7 @@ export class Select extends SelectBase {
             </div>
             <select ref="native" part="native control" id="${this.controlId}-native" hidden="${() => !bool(this.native)}"
                 multiple="${() => bool(this.multi)}" disabled="${() => this.unavailable || bool(this.readOnly)}" required="${() => bool(this.required) && !bool(this.readOnly)}"
-                aria-label="${() => this.accessibleName()}" aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${() => this.descriptionText()}"
+                aria-label="${this.accessibleName}" aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
                 onchange="${(event: Event) => { const select = event.currentTarget; if (select instanceof HTMLSelectElement) this.choose(bool(this.multi) ? [...select.selectedOptions].map(option => option.value) : select.value, event) }}"
                 onblur="${() => { this.validationShown = true }}">
                 ${when(() => !bool(this.multi) && !this.normalizedOptions.some(option => option.value === ''), html`<option part="option" value="" selected="${() => !this.selection.length}">${() => text(this.placeholder)}</option>`)}
@@ -103,7 +103,7 @@ export class Select extends SelectBase {
     }
     focus(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.trigger)?.focus(options) }
     private optionNodes(): Button[] { return [...(this.listbox?.querySelectorAll<Button>('cb-button:not([disabled])') ?? [])] }
-    private handleKey(event: KeyboardEvent): void {
+    private handleKey = (event: KeyboardEvent): void => {
         if (event.key === 'Escape') {
             event.preventDefault();
             this.setOpen(false, event);

@@ -20,7 +20,7 @@ const css = editorCSS + `
 `;
 export class RadioGroup extends RadioGroupBase {
     private readonly internalName = uid('cb-radio-group')
-    private validationError(): string { return (this.validationShown || text(this.errorText)) ? this.validationMessage || text(this.errorText) : '' }
+    private validationError = (): string => { return (this.validationShown || text(this.errorText)) ? this.validationMessage || text(this.errorText) : '' }
     render(): Template {
         return html`<style part="styles">${css}</style><div part="field">
             <span part="label" id="${this.internalName}-label" hidden="${() => !text(this.label)}">${() => text(this.label)}</span>
@@ -39,7 +39,7 @@ export class RadioGroup extends RadioGroupBase {
                 </label>`, { key: option => option.value })}
             </div>
             <p part="description" id="${this.internalName}-description" hidden="${() => !text(this.description)}">${() => text(this.description)}</p>
-            <p part="error" role="alert" id="${this.internalName}-error" hidden="${() => !this.validationError()}">${() => this.validationError()}</p>
+            <p part="error" role="alert" id="${this.internalName}-error" hidden="${() => !this.validationError()}">${this.validationError}</p>
         </div>`
     }
     protected fieldElement(): HTMLInputElement | undefined {

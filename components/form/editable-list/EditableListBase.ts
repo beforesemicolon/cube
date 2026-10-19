@@ -62,7 +62,7 @@ export abstract class EditableListBase<P extends EditableListProps = EditableLis
     maximumItemsError = ''
     private sequence = 0
 
-    normalizedItems(): readonly EditableListItem[] { return normalizedItems(this.items) }
+    normalizedItems = (): readonly EditableListItem[] => { return normalizedItems(this.items) }
     protected fieldElement(): undefined { return undefined }
     protected captureValue(): readonly EditableListItem[] { return this.normalizedItems().map(item => ({ ...item })) }
     protected restoreValue(value: readonly EditableListItem[] | FormRestoreValue): void {

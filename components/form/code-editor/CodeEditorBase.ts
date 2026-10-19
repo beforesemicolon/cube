@@ -50,7 +50,7 @@ export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps
 
     protected abstract editorElement(): HTMLTextAreaElement | undefined
     protected fieldElement(): HTMLTextAreaElement | undefined { return this.editorElement() }
-    protected sourceText(): string {
+    protected sourceText = (): string => {
         if (typeof this.value === 'string') return this.value
         if (this.value === null || typeof this.value === 'number' || typeof this.value === 'boolean') return scalarText(this.value)
         try { return JSON.stringify(this.value, null, 2) } catch { return '' }
@@ -60,7 +60,7 @@ export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps
     protected restoreValue(value: unknown): void {
         this.sourceValue.set(value instanceof FormData ? scalarText(value.get(this.name)) : scalarText(value), false)
     }
-    protected normalizedTabSize(): number { return Math.min(8, Math.max(1, Math.trunc(finite(this.tabSize, 2)))) }
+    protected normalizedTabSize = (): number => { return Math.min(8, Math.max(1, Math.trunc(finite(this.tabSize, 2)))) }
     protected normalizedMinLines(): number { return Math.max(2, Math.trunc(finite(this.minLines, 8))) }
     protected normalizedMaxLines(): number { return Math.max(this.normalizedMinLines(), Math.trunc(finite(this.maxLines, 32))) }
     protected mount(): void { this.sourceValue.mount(); super.mount() }

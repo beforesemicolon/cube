@@ -15,12 +15,12 @@ export class Artboard extends ArtboardBase {
     render(): Template {
         return html`<style part="styles">${css}</style>
             <div part="frame canvas canvas-marker control" role="region" tabindex="${() => this.canSelect() ? 0 : -1}"
-                aria-label="${() => this.accessibleName()}" aria-disabled="${() => this.unavailable ? 'true' : null}"
+                aria-label="${this.accessibleName}" aria-disabled="${() => this.unavailable ? 'true' : null}"
                 aria-current="${() => this.canSelect() && bool(this.selected) ? 'true' : null}"
                 onclick="${(event: Event) => this.select(true, event)}"
                 onkeydown="${(event: KeyboardEvent) => { if ((event.key === 'Enter' || event.key === ' ') && this.canSelect()) { event.preventDefault(); this.select(true, event) } }}">
                 <slot part="content"></slot>
-                <output part="dimensions" hidden="${() => !bool(this.showDimensions, true) || !this.dimensionsText()}">${() => this.dimensionsText()}</output>
+                <output part="dimensions" hidden="${() => !bool(this.showDimensions, true) || !this.dimensionsText()}">${this.dimensionsText}</output>
             </div>`
     }
     protected syncView(): void {

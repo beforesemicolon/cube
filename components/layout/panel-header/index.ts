@@ -18,8 +18,8 @@ export class PanelHeader extends PanelHeaderBase {
                 <div part="actions"><slot name="actions" part="action-content"></slot>
                     <cb-button part="toggle" exportparts="control:toggle-control" variant="ghost" icon="down" icon-only="true"
                         hidden="${() => !this.isCollapsible()}" disabled="${() => this.unavailable}"
-                        aria-expanded="${() => String(this.isExpanded())}" accessible-label="${() => this.toggleText()}"
-                        onaction="${(event: Event) => this.toggleExpanded(event)}"></cb-button>
+                        aria-expanded="${() => String(this.isExpanded())}" accessible-label="${this.toggleText}"
+                        onaction="${this.toggleExpanded}"></cb-button>
                 </div>
             </header>`
     }

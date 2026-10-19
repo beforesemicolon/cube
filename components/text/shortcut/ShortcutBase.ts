@@ -8,5 +8,5 @@ export abstract class ShortcutBase<P extends ShortcutProps = ShortcutProps> exte
     static observedAttributes = [...Component.observedAttributes, 'keys', 'accessible-label']
     keys = ''
     accessibleLabel = ''
-    protected keyList(): string[] { return scalarText(this.keys).split('+').map(key => key.trim()).filter(Boolean).slice(0, 8) }
+    protected keyList = (): string[] => { return scalarText(this.keys).split('+').map(key => key.trim()).filter(Boolean).slice(0, 8) }
 }

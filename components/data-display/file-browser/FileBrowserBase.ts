@@ -107,7 +107,7 @@ export abstract class FileBrowserBase<P extends FileBrowserProps = FileBrowserPr
     sortDescendingLabel = ''
 
     normalizedEntries(): readonly FileBrowserEntry[] { return normalizeEntries(this.entries) }
-    visibleEntries(): readonly FileBrowserEntry[] {
+    visibleEntries = (): readonly FileBrowserEntry[] => {
         const query = scalarText(this.query).trim().toLocaleLowerCase()
         const entries = this.normalizedEntries().filter(entry => scalarText(entry.parentId) === scalarText(this.currentFolderId))
             .filter(entry => !query || `${entry.name} ${entry.description ?? ''} ${entry.mime ?? ''}`.toLocaleLowerCase().includes(query))

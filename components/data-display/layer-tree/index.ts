@@ -21,10 +21,10 @@ export class LayerTree extends LayerTreeBase {
     private draggingId='';
     private get tree(): HTMLElement | undefined {const node=this.refs.tree?.[0];return node instanceof HTMLElement?node:undefined;}
     render(): Template {
-        return html`<style part="styles">${css}</style><div part="tree" ref="tree" role="tree" aria-label=${()=>this.accessibleName()}
-            aria-multiselectable=${()=>bool(this.multiple)?true:null} onkeydown=${(event:KeyboardEvent)=>this.handleKey(event)}>
-            ${when(()=>!this.normalizedItems().length,()=>html`<div part="empty" role="status">${()=>this.emptyLabel}</div>`)}
-            ${this.itemsTemplate(()=>this.normalizedItems(),1)}</div>`;
+        return html`<style part="styles">${css}</style><div part="tree" ref="tree" role="tree" aria-label=${this.accessibleName}
+            aria-multiselectable=${()=>bool(this.multiple)?true:null} onkeydown=${this.handleKey}>
+            ${when(()=>!this.normalizedItems().length,()=>html`<div part="empty" role="status">${this.props.emptyLabel}</div>`)}
+            ${this.itemsTemplate(this.normalizedItems,1)}</div>`;
     }
     private beginEdit(item:LayerTreeItem): void {
         this.draft[1](item.label);this.editingId=item.id;
@@ -52,8 +52,8 @@ export class LayerTree extends LayerTreeBase {
                 value=${this.draft[0]} accessible-label=${()=>this.itemLabel(this.renameLabel,item)}
                 onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();this.draft[1](event.detail.value);}}
                 onkeydown=${(event:KeyboardEvent)=>{if(event.key==='Enter'){event.preventDefault();this.commitRename(item,event);}else if(event.key==='Escape'){event.preventDefault();this.editingId='';}}}></cb-text-input>
-                <cb-button part="save" exportparts="control:save-control,label:save-label,button-label:save-label,icon:save-icon,description:save-description" variant="ghost" size="sm" label=${()=>this.saveLabel} onaction=${(event:Event)=>{event.stopPropagation();this.commitRename(item,event);}}></cb-button>
-                <cb-button part="cancel" exportparts="control:cancel-control,label:cancel-label,button-label:cancel-label,icon:cancel-icon,description:cancel-description" variant="ghost" size="sm" label=${()=>this.cancelLabel} onaction=${(event:Event)=>{event.stopPropagation();this.editingId='';}}></cb-button></span>`,
+                <cb-button part="save" exportparts="control:save-control,label:save-label,button-label:save-label,icon:save-icon,description:save-description" variant="ghost" size="sm" label=${this.props.saveLabel} onaction=${(event:Event)=>{event.stopPropagation();this.commitRename(item,event);}}></cb-button>
+                <cb-button part="cancel" exportparts="control:cancel-control,label:cancel-label,button-label:cancel-label,icon:cancel-icon,description:cancel-description" variant="ghost" size="sm" label=${this.props.cancelLabel} onaction=${(event:Event)=>{event.stopPropagation();this.editingId='';}}></cb-button></span>`,
                 ()=>html`<span part="copy"><span part="label">${item.label}</span><span part="description" hidden=${!item.description}>${item.description??''}</span></span><span part="actions">
                     ${when(()=>bool(this.showVisibility),()=>this.actionTemplate('action visibility',()=>bool(item.hidden)?'eyeOff':'eye',()=>this.itemLabel(bool(item.hidden)?this.showLabel:this.hideLabel,item),event=>this.toggleVisibility(item.id,event)))}
                     ${when(()=>bool(this.showLock),()=>this.actionTemplate('action lock',()=>bool(item.locked)?'lock':'unlock',()=>this.itemLabel(bool(item.locked)?this.unlockLabel:this.lockLabel,item),event=>this.toggleLock(item.id,event)))}
@@ -70,7 +70,7 @@ export class LayerTree extends LayerTreeBase {
         for(const item of items){if(item.id===id)return item;const child=this.findItem(item.children??[],id);if(child)return child;}return undefined;
     }
     private rowNodes(): HTMLElement[] { return [...(this.tree?.querySelectorAll<HTMLElement>('[role=treeitem]') ?? [])]; }
-    private handleKey(event: KeyboardEvent): void {
+    private handleKey = (event: KeyboardEvent): void => {
         const rows = this.rowNodes();
         const current = event.composedPath().find(node => node instanceof HTMLElement && node.getAttribute('role') === 'treeitem') as HTMLElement | undefined;
         if (!current || event.composedPath().some(node => node !== current && node instanceof Element && (node.matches('button,input') || node.localName.startsWith('cb-'))))

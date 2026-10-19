@@ -28,7 +28,7 @@ export class Viewport extends ViewportBase {
     private pan?: PanState;
     render(): Template {
         return html`<style part="styles">${css}</style><div part="viewport canvas control" ref="surface" role="region"
-            tabindex=${() => this.unavailable ? -1 : 0} aria-label=${() => this.accessibleName()}
+            tabindex=${() => this.unavailable ? -1 : 0} aria-label=${this.accessibleName}
             aria-disabled=${() => this.unavailable || null} data-grid=${() => this.gridVisible() ? '' : null}
             onwheel=${(event: WheelEvent) => {
                 if(this.unavailable) return;
@@ -36,11 +36,11 @@ export class Viewport extends ViewportBase {
                 if(event.ctrlKey || event.metaKey) this.zoomBy((event.deltaY < 0 ? 1 : -1)*Math.abs(finite(this.zoomStep,10)),event,false);
                 else this.panBy(-event.deltaX,-event.deltaY,event,false);
             }}
-            onpointerdown=${(event: PointerEvent) => this.beginPan(event)}
-            onpointermove=${(event: PointerEvent) => this.movePan(event)}
-            onpointerup=${(event: PointerEvent) => this.endPan(event)}
-            onpointercancel=${(event: PointerEvent) => this.endPan(event)}
-            onkeydown=${(event: KeyboardEvent) => this.onKeydown(event)}>
+            onpointerdown=${this.beginPan}
+            onpointermove=${this.movePan}
+            onpointerup=${this.endPan}
+            onpointercancel=${this.endPan}
+            onkeydown=${this.onKeydown}>
             <div part="world" style=${() => { const value=this.viewportState(); return `--cb-zoom:${value.zoom/100};--cb-pan-x:${value.x}px;--cb-pan-y:${value.y}px`; }}><slot part="content"></slot></div>
             <div part="controls" hidden=${() => !this.controlsVisible()}>
                 <cb-button part="zoom-out" exportparts="control:zoom-out-control,label:zoom-out-label,button-label:zoom-out-label,icon:zoom-out-icon,description:zoom-out-description" icon-only icon="minus" variant="ghost" accessible-label=${() => this.text('zoomOutLabel')}
@@ -52,14 +52,14 @@ export class Viewport extends ViewportBase {
                 <cb-button part="zoom-in" exportparts="control:zoom-in-control,label:zoom-in-label,button-label:zoom-in-label,icon:zoom-in-icon,description:zoom-in-description" icon-only icon="plus" variant="ghost" accessible-label=${() => this.text('zoomInLabel')}
                     disabled=${() => this.unavailable || this.viewportState().zoom >= this.normalizedZoom(this.maxZoom)}
                     onaction=${(event: Event) => { event.stopPropagation(); this.zoomBy(Math.abs(finite(this.zoomStep,10)),event); }}></cb-button>
-            </div><output part="position" hidden=${() => !this.positionText()}>${() => this.positionText()}</output>
+            </div><output part="position" hidden=${() => !this.positionText()}>${this.positionText}</output>
         </div>`;
     }
-    private positionText(): string {
+    private positionText = (): string => {
         const value=this.viewportState();
         return this.text('positionLabel').replace('{x}',String(Math.round(value.x))).replace('{y}',String(Math.round(value.y)));
     }
-    private beginPan(event: PointerEvent): void {
+    private beginPan = (event: PointerEvent): void => {
         if (!this.surface || !this.canPan() || event.button !== 0)
             return;
         const interactive = event.composedPath().some(node => node instanceof HTMLElement && (node.matches('button,input,select,textarea,a') || node.localName.startsWith('cb-') && node !== this));
@@ -69,7 +69,7 @@ export class Viewport extends ViewportBase {
         this.surface.setPointerCapture(event.pointerId);
         this.surface.toggleAttribute('data-panning', true);
     }
-    private movePan(event: PointerEvent): void {
+    private movePan = (event: PointerEvent): void => {
         if (!this.pan || event.pointerId !== this.pan.pointerId)
             return;
         const x = this.pan.originX + event.clientX - this.pan.startX;
@@ -77,7 +77,7 @@ export class Viewport extends ViewportBase {
         this.pan.moved = this.pan.moved || Math.abs(x - this.pan.originX) > 1 || Math.abs(y - this.pan.originY) > 1;
         this.setViewport(this.normalizedZoom(), x, y, event, false);
     }
-    private endPan(event: PointerEvent): void {
+    private endPan = (event: PointerEvent): void => {
         if (!this.pan || event.pointerId !== this.pan.pointerId)
             return;
         const pan = this.pan;
@@ -86,7 +86,7 @@ export class Viewport extends ViewportBase {
         if (pan.moved)
             this.setViewport(this.normalizedZoom(), finite(this.x), finite(this.y), event);
     }
-    private onKeydown(event: KeyboardEvent): void {
+    private onKeydown = (event: KeyboardEvent): void => {
         const amount = event.shiftKey ? 20 : 5;
         const direction: Readonly<Record<string, readonly [
             number,

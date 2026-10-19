@@ -50,7 +50,7 @@ export abstract class CalendarBase<P extends CalendarProps = CalendarProps> exte
     protected minimumDate(): Date | undefined { return validDate(scalarText(this.min)) }
     protected maximumDate(): Date | undefined { return validDate(scalarText(this.max)) }
     protected weekStart(): number { return Math.min(6, Math.max(0, Math.trunc(finite(this.firstDayOfWeek)))) }
-    protected dateValue(date: Date): string {
+    protected dateValue = (date: Date): string => {
         const year = date.getFullYear()
         const month = String(date.getMonth() + 1).padStart(2, '0')
         const day = String(date.getDate()).padStart(2, '0')

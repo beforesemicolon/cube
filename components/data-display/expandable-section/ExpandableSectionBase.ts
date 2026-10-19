@@ -31,11 +31,11 @@ export abstract class ExpandableSectionBase extends Component<ExpandableSectionP
 
     protected abstract syncView(): void
 
-    resolvedVariant(): ExpandableSectionVariant {
+    resolvedVariant = (): ExpandableSectionVariant => {
         return this.variant === 'container' || this.variant === 'footer' ? this.variant : 'default'
     }
 
-    resolvedHeadingLevel(): number {
+    resolvedHeadingLevel = (): number => {
         return Math.min(6, Math.max(1, Math.round(finite(this.headingLevel, 2))))
     }
 

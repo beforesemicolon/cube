@@ -113,7 +113,7 @@ export abstract class LayerTreeBase<P extends LayerTreeProps = LayerTreeProps> e
     cancelLabel = ''
     moveLabel = ''
 
-    normalizedItems(): readonly LayerTreeItem[] { return normalizeTree(this.items) }
+    normalizedItems = (): readonly LayerTreeItem[] => { return normalizeTree(this.items) }
     flattenedItems(): readonly LayerTreeItem[] { return flatten(this.normalizedItems()) }
 
     toggleExpanded(id: string, originalEvent?: Event): boolean {

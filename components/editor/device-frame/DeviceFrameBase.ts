@@ -35,7 +35,7 @@ export abstract class DeviceFrameBase extends Component<DeviceFrameProps> {
     orientationLabel = ''
     screenLabel = ''
 
-    protected preset(): DevicePreset { return ['desktop','tablet','mobile','custom'].includes(this.device) ? this.device : 'desktop' }
+    protected preset = (): DevicePreset => { return ['desktop','tablet','mobile','custom'].includes(this.device) ? this.device : 'desktop' }
     protected frameSize(): readonly [number, number] {
         const preset = this.preset()
         let size: readonly [number, number] = preset === 'custom' ? [Math.max(1, finite(this.width, 1280)), Math.max(1, finite(this.height, 720))] : presetSizes[preset]

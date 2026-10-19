@@ -10,7 +10,7 @@ export abstract class GuideOverlayBase<P extends GuideOverlayProps = GuideOverla
     static observedAttributes = [...Component.observedAttributes, 'guides', 'zoom']
     guides: readonly EditorGuide[] = []
     zoom = 1
-    protected normalizedGuides(): readonly EditorGuide[] {
+    protected normalizedGuides = (): readonly EditorGuide[] => {
         const ids = new Set<string>()
         return Array.isArray(this.guides) ? this.guides.flatMap((guide, index) => {
             if (!guide || typeof guide !== 'object') return []

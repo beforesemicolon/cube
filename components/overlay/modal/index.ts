@@ -6,7 +6,7 @@ export class Modal extends ModalBase {
     static observedAttributes = [...ModalBase.observedAttributes, 'cancel-label', 'show-cancel']
     private view?: ModalView
     render(): Template {
-        const actions = html`<cb-button part="cancel" exportparts="control:cancel-control,label:cancel-label,button-label:cancel-label,icon:cancel-icon,description:cancel-description" variant="secondary" label="${() => this.cancelText()}"
+        const actions = html`<cb-button part="cancel" exportparts="control:cancel-control,label:cancel-label,button-label:cancel-label,icon:cancel-icon,description:cancel-description" variant="secondary" label="${this.cancelText}"
             hidden="${() => !bool(this.dismissible) || !bool(this.showCancel) || !this.cancelText()}"
             onaction="${(event: Event) => { event.stopPropagation(); this.cancel(event) }}"></cb-button>
             `

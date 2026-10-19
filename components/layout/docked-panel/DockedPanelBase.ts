@@ -17,8 +17,8 @@ export abstract class DockedPanelBase<P extends DockedPanelProps = DockedPanelPr
     placement: 'start' | 'end' | 'bottom' = 'end'
     expandLabel = ''
     collapseLabel = ''
-    protected isExpanded(): boolean { return bool(this.expanded) }
-    protected isCollapsible(): boolean { return bool(this.collapsible) }
+    protected isExpanded = (): boolean => { return bool(this.expanded) }
+    protected isCollapsible = (): boolean => { return bool(this.collapsible) }
     protected togglePanel(originalEvent?: Event): boolean {
         if (!this.isCollapsible() || this.unavailable) return false
         const expanded = !this.isExpanded()

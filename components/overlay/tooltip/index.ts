@@ -14,7 +14,7 @@ export class Tooltip extends TooltipBase {
         return html`<style part="styles">${css}</style>
             <span part="trigger" onpointerenter="${() => this.schedule(true)}" onpointerleave="${() => this.schedule(false)}"
                 onfocus="${[() => this.schedule(true), true]}" onblur="${[() => this.schedule(false), true]}">
-                <slot ref="trigger" part="trigger-content" onslotchange="${() => this.linkTrigger()}"></slot>
+                <slot ref="trigger" part="trigger-content" onslotchange="${this.linkTrigger}"></slot>
             </span>
             <span ref="bubble" id="${this.tooltipId}" part="tooltip" role="tooltip"
                 hidden="${() => !scalarText(this.content) && !this.slottedContent[0]()}">
@@ -30,7 +30,7 @@ export class Tooltip extends TooltipBase {
         super.unmount();
         this.restoreDescriptions();
     }
-    private linkTrigger(): void {
+    private linkTrigger = (): void => {
         if (!this.triggerSlot || !this.bubble)
             return;
         const assigned = new Set(this.triggerSlot.assignedElements());

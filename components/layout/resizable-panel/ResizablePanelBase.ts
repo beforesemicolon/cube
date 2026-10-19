@@ -20,7 +20,7 @@ export abstract class ResizablePanelBase<P extends ResizablePanelProps = Resizab
     placement: 'start' | 'end' = 'end'
     resizeLabel = ''
 
-    protected currentSize(): number { return clamp(finite(this.value, 320), finite(this.min, 180), finite(this.max, 640)) }
+    protected currentSize = (): number => { return clamp(finite(this.value, 320), finite(this.min, 180), finite(this.max, 640)) }
     protected resize(value: number, originalEvent?: Event): boolean {
         const next = clamp(value, finite(this.min, 180), finite(this.max, 640))
         if (this.unavailable || next === this.currentSize()) return false

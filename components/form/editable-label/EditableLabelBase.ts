@@ -36,9 +36,9 @@ export abstract class EditableLabelBase<P extends EditableLabelProps = EditableL
 
     protected captureValue(): string { return scalarText(this.value) }
     protected restoreValue(value: string | FormRestoreValue): void { this.value = value instanceof FormData ? scalarText(value.get(this.name)) : scalarText(value); this.draft = this.value }
-    protected displayValue(): string { return scalarText(this.value) || scalarText(this.emptyLabel) || scalarText(this.placeholder) }
+    protected displayValue = (): string => { return scalarText(this.value) || scalarText(this.emptyLabel) || scalarText(this.placeholder) }
 
-    startEditing(originalEvent?: Event): boolean {
+    startEditing = (originalEvent?: Event): boolean => {
         if (this.unavailable || bool(this.readOnly) || bool(this.editing)) return false
         const detail = { value: scalarText(this.value), originalEvent }
         if (!this.request('beforeedit', detail)) return false
@@ -68,7 +68,7 @@ export abstract class EditableLabelBase<P extends EditableLabelProps = EditableL
         return this.commitValue(next,originalEvent,{},changed=>{this.value=changed;this.draft=changed})
     }
 
-    cancelEditing(originalEvent?: Event): boolean {
+    cancelEditing = (originalEvent?: Event): boolean => {
         if (!bool(this.editing)) return false
         const detail = { value: this.editStartValue, draft: this.draft, originalEvent }
         if (!this.request('beforeeditcancel', detail)) return false

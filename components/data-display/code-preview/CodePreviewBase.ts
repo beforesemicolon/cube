@@ -25,6 +25,6 @@ export abstract class CodePreviewBase extends Component<CodePreviewProps> {
         const value = Array.isArray(this.value) ? this.value.join(', ') : scalarText(this.value)
         return scalarText(this.code) || value
     }
-    copyText(): string { return scalarText(this.copyLabel) }
+    copyText = (): string => { return scalarText(this.copyLabel) }
     copiedText(): string { return scalarText(this.copiedLabel) }
 }

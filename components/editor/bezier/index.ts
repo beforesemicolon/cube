@@ -39,7 +39,7 @@ export class Bezier extends BezierBase {
         const coordinate = (point: 1 | 2,axis: 'x' | 'y'): number => { const value=this.curve(); return point === 1 ? axis === 'x' ? value.x1 : value.y1 : axis === 'x' ? value.x2 : value.y2; };
         const position = (point: 1 | 2): {x:number;y:number} => this.point(coordinate(point,'x'),coordinate(point,'y'));
         return html`<style part="styles">${css}</style><section part="root editor"><header part="header">
-            <span part="label" hidden=${() => !this.displayLabel()}>${() => this.displayLabel()}</span><div part="actions">
+            <span part="label" hidden=${() => !this.displayLabel()}>${this.displayLabel}</span><div part="actions">
                 <cb-button part="play" exportparts="control:play-control,label:play-label,button-label:play-label,icon:play-icon,description:play-description" icon-only icon=${() => this.playing ? 'pause' : 'play'} variant="ghost" size="sm"
                     accessible-label=${() => this.text(this.playing ? 'pauseLabel' : 'playLabel')} disabled=${() => this.unavailable}
                     onaction=${(event: Event) => { event.stopPropagation(); this.setPlaying(!this.playing,event); }}></cb-button>
@@ -47,7 +47,7 @@ export class Bezier extends BezierBase {
                     onaction=${(event: Event) => { event.stopPropagation(); this.reset(event); }}></cb-button></div></header>
             <div part="workspace"><svg part="graph control" ref="graph" viewBox="0 0 320 240" role="group"
                 tabindex=${() => this.unavailable ? -1 : 0} aria-label=${() => this.text('curveLabel') || this.accessibleName()} aria-disabled=${() => this.unavailable || null}
-                onpointermove=${(event: PointerEvent) => this.moveHandle(event)} onpointerup=${(event: PointerEvent) => this.endHandle(event)} onpointercancel=${(event: PointerEvent) => this.endHandle(event)}>
+                onpointermove=${this.moveHandle} onpointerup=${this.endHandle} onpointercancel=${this.endHandle}>
                 <line part="grid-line" x1="28" x2="28" y1="28" y2="212"></line><line part="grid-line" x1="28" x2="292" y1="28" y2="28"></line>
 <line part="grid-line" x1="94" x2="94" y1="28" y2="212"></line><line part="grid-line" x1="28" x2="292" y1="74" y2="74"></line>
 <line part="grid-line" x1="160" x2="160" y1="28" y2="212"></line><line part="grid-line" x1="28" x2="292" y1="120" y2="120"></line>
@@ -84,13 +84,13 @@ export class Bezier extends BezierBase {
                                 event.stopPropagation(); const value=Number(event.detail.value);
                                 this.setPoint(field.point,field.axis === 'x' ? value : coordinate(field.point,'x'),field.axis === 'y' ? value : coordinate(field.point,'y'),event);
                             }}></cb-number-input></label>`,{key:field=>field.key})}
-                <output part="value" tabindex="0">${() => this.cssValue()}</output>
+                <output part="value" tabindex="0">${this.cssValue}</output>
                 <div part="preview" role="img" aria-label=${() => this.text('previewLabel')} data-playing=${() => this.playing ? '' : null}
                     style=${() => `--cb-duration:${Math.max(50,finite(this.duration,1000))}ms;--cb-easing:${this.cssValue()}`}><span part="preview-dot"></span></div>
             </div></div></section>`;
     }
     protected syncView(): void { this.value=this.cssValue(); }
-    private moveHandle(event: PointerEvent): void {
+    private moveHandle = (event: PointerEvent): void => {
         if (!this.drag || event.pointerId !== this.drag.pointerId || !this.graph)
             return;
         const rect = this.graph.getBoundingClientRect();
@@ -98,7 +98,7 @@ export class Bezier extends BezierBase {
         const y = (event.clientY - rect.top) * 240 / rect.height;
         this.setPoint(this.drag.point, (x - 28) / 264, (166 - y) / 138, event, false);
     }
-    private endHandle(event: PointerEvent): void {
+    private endHandle = (event: PointerEvent): void => {
         if (!this.drag || event.pointerId !== this.drag.pointerId)
             return;
         const point = this.drag.point;

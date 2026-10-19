@@ -50,13 +50,13 @@ export class ChartView {
     private reduced?:MediaQueryList;
     private windowChange=()=>this.refresh();
     private zoomRange:[number,number]=[0,100];
-    private statusText():string {
+    private statusText = ():string => {
         const model=this.model;
         return this.owner.status==='error'||this.failure?this.owner.errorText:this.owner.status==='loading'||this.loadingEngine?this.owner.loadingText:model?.empty?this.owner.emptyText:model?.noMatch?this.owner.noMatchText:'';
     }
     private unavailable():boolean{return Boolean(this.statusText())||!this.model?.points.some(point=>point.y!==null);}
     private zoomVisible():boolean{return !this.model?.pie&&bool(this.owner.zoomable)&&!this.statusText();}
-    private detailsText():string {
+    private detailsText = ():string => {
         const point=this.model?this.owner.selected(this.model):undefined;
         return point?`${this.owner.pinned&&this.owner.pinnedText?this.owner.pinnedText+': ':''}${this.owner.pointText(point)}`:'';
     }
@@ -78,7 +78,7 @@ export class ChartView {
                 </cb-button>`,{key:item=>item.id})}
             </div><div part="plot" ref="plot" aria-hidden="true" hidden=${()=>Boolean(this.statusText())}
                 style=${()=>typeof owner.height==='number'&&Number.isFinite(owner.height)?`height:${clamp(owner.height,160,1200)}px`:null}></div>
-            <p part="status" role="status" hidden=${()=>!this.statusText()}>${()=>this.statusText()}</p>
+            <p part="status" role="status" hidden=${()=>!this.statusText()}>${this.statusText}</p>
             <div part="actions">
                 <cb-button part="navigator" exportparts="control:navigator-control,label:navigator-label,button-label:navigator-label,icon:navigator-icon,description:navigator-description" variant="ghost" size="sm" pressed=${()=>owner.pinned} label=${()=>owner.navigateLabel}
                     accessible-label=${()=>{const selected=this.model?owner.selected(this.model):undefined;return selected?`${owner.navigateLabel}: ${owner.pointText(selected)}`:owner.navigateLabel;}}
@@ -98,7 +98,7 @@ export class ChartView {
                 ${button('zoom-out',()=>owner.zoomOutLabel,()=>this.zoom(1.25),()=>!this.zoomVisible(),'minus')}
                 ${button('reset-zoom',()=>owner.resetZoomLabel,()=>this.zoom(0),()=>!this.zoomVisible(),'reset')}
             </div><p part="instructions" id=${`${id}-keys`} hidden=${()=>this.unavailable()||!this.keyboardActive}>${()=>owner.instructionsText}</p>
-            <p part="details" role="status" hidden=${()=>Boolean(this.statusText())||!(owner.pinned||this.keyboardActive||this.hoverActive)}>${()=>this.detailsText()}</p>
+            <p part="details" role="status" hidden=${()=>Boolean(this.statusText())||!(owner.pinned||this.keyboardActive||this.hoverActive)}>${this.detailsText}</p>
             <cb-expandable-section part="data" exportparts="trigger:data-trigger,label:data-label,counter:data-counter,panel:data-panel,content:data-content"
                 variant="default" heading-level="2" disable-content-padding label=${()=>owner.tableLabel}
                 counter=${()=>this.model?.points.length?String(this.model.points.length):''} hidden=${()=>!this.model?.points.length}>

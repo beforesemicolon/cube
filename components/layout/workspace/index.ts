@@ -44,9 +44,9 @@ export class Workspace extends WorkspaceBase {
             <slot name="header" part="header-content" onslotchange=${(event: Event) => {
                 if(event.currentTarget instanceof HTMLSlotElement) this.headerVisible[1](event.currentTarget.assignedNodes({flatten:true}).length>0);
             }}></slot></header>
-            ${this.panelTemplate('start')}<main part="main" aria-label=${() => this.accessibleName()}><slot part="main-content"></slot></main>
+            ${this.panelTemplate('start')}<main part="main" aria-label=${this.accessibleName}><slot part="main-content"></slot></main>
             ${this.panelTemplate('end')}${this.panelTemplate('bottom')}
-            <cb-button part="backdrop" exportparts="control:backdrop-control,label:backdrop-label,button-label:backdrop-label,icon:backdrop-icon,description:backdrop-description" data-bare data-semantic-host accessible-label=${() => this.closeMobileLabel}
+            <cb-button part="backdrop" exportparts="control:backdrop-control,label:backdrop-label,button-label:backdrop-label,icon:backdrop-icon,description:backdrop-description" data-bare data-semantic-host accessible-label=${this.props.closeMobileLabel}
                 onaction=${(event: Event) => { event.stopPropagation(); if(this.mobilePanel) this.togglePanel(this.mobilePanel,false,event); }}></cb-button>`;
     }
     private panelTemplate(panel: WorkspacePanel): Template {

@@ -78,7 +78,7 @@ export abstract class AccordionBase extends Component<AccordionProps> {
 
     private initializedWithItems = false
 
-    itemList(): readonly AccordionItem[] {
+    itemList = (): readonly AccordionItem[] => {
         if (!Array.isArray(this.items)) return []
         const seen = new Set<string>()
         return this.items.filter(item => {
@@ -110,8 +110,8 @@ export abstract class AccordionBase extends Component<AccordionProps> {
 
     itemExpanded(id: string): boolean { return this.expansionSet().has(id) }
     itemDisabled(item: AccordionItem): boolean { return this.unavailable || bool(item.disabled) }
-    resolvedVariant(): AccordionVariant { return this.variant === 'container' ? 'container' : 'simple' }
-    resolvedHeadingLevel(): number { return Math.min(6, Math.max(1, Math.round(finite(this.headingLevel, 2)))) }
+    resolvedVariant = (): AccordionVariant => { return this.variant === 'container' ? 'container' : 'simple' }
+    resolvedHeadingLevel = (): number => { return Math.min(6, Math.max(1, Math.round(finite(this.headingLevel, 2)))) }
 
     expand(id: string, originalEvent?: Event): boolean { return this.changeExpansion(id, true, originalEvent) }
     collapse(id: string, originalEvent?: Event): boolean { return this.changeExpansion(id, false, originalEvent) }

@@ -23,7 +23,7 @@ export function createMenuView(host: MenuBase, onActivate: (item: MenuBase['norm
     const controls = () => [...(root.refs.menu?.[0]?.querySelectorAll<HTMLElement>('[data-menu-role]:not([data-disabled])') ?? [])]
     const roving = new RovingFocus(controls, () => 'vertical')
     const root = html`<style part="styles">${menuCSS}</style>
-        <div ref="menu" part="menu" role="menu" aria-label="${() => host.resolvedMenuLabel()}"
+        <div ref="menu" part="menu" role="menu" aria-label="${host.resolvedMenuLabel}"
             onkeydown="${(event: KeyboardEvent) => roving.keydown(event)}">
             ${repeat(() => host.normalizedItems, item => {
                 if (item.separator) return html`<div part="separator"></div>`

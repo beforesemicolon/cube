@@ -19,30 +19,30 @@ export class Combobox extends ComboboxBase {
     private get popup(): HTMLElement | undefined { const node = this.refs.popup?.[0]; return node instanceof HTMLElement ? node : undefined }
     private readonly completion = state<{ query: string; label: string } | null>(null)
     private get input(): HTMLInputElement | undefined { const node = this.refs.input?.[0]; return node instanceof HTMLInputElement ? node : undefined }
-    private displayValue(): string {
+    private displayValue = (): string => {
         const completion = this.completion[0]()
         return completion && completion.query === this.value && this.autocomplete === 'both' ? completion.label : this.normalizedOptions.find(option => option.value === this.value)?.label ?? this.value
     }
     private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))) }
-    private descriptionText(): string | null { return [text(this.description), this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null }
+    private descriptionText = (): string | null => { return [text(this.description), this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null }
     render(): Template {
         return html`<style part="styles">${css}</style><div part="root">
             <div ref="trigger" part="input-shell control"><cb-icon part="icon prefix" name="search" decorative="true"></cb-icon>
-                <input ref="input" part="input" type="text" id="${this.controlId}" value="${() => this.displayValue()}" placeholder="${() => text(this.placeholder)}"
+                <input ref="input" part="input" type="text" id="${this.controlId}" value="${this.displayValue}" placeholder="${() => text(this.placeholder)}"
                     disabled="${() => this.unavailable}" readonly="${() => bool(this.readOnly)}" required="${() => bool(this.required)}"
-                    aria-label="${() => this.accessibleName()}" role="combobox" aria-autocomplete="${() => this.autocomplete ?? 'list'}"
+                    aria-label="${this.accessibleName}" role="combobox" aria-autocomplete="${() => this.autocomplete ?? 'list'}"
                     aria-controls="${this.controlId}-listbox" aria-expanded="${() => String(bool(this.open))}"
-                    aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${() => this.descriptionText()}"
-                    oninput="${(event: Event) => this.handleInput(event)}" onfocus="${(event: Event) => this.setOpen(true, event)}"
-                    onkeydown="${(event: KeyboardEvent) => this.handleKey(event)}">
+                    aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
+                    oninput="${this.handleInput}" onfocus="${(event: Event) => this.setOpen(true, event)}"
+                    onkeydown="${this.handleKey}">
                 <cb-button part="toggle" exportparts="control:toggle-control,label:toggle-label,button-label:toggle-label,icon:toggle-icon,description:toggle-description" variant="ghost" icon="down" icon-only="true" accessible-label="${() => text(this.toggleLabel) || this.accessibleName()}"
                     disabled="${() => this.unavailable || bool(this.readOnly)}" aria-haspopup="listbox" aria-controls="${this.controlId}-listbox" aria-expanded="${() => String(bool(this.open))}"
                     onaction="${(event: Event) => { event.stopPropagation(); this.setOpen(!this.open, event); this.input?.focus() }}"></cb-button>
             </div>
-            <div ref="popup" part="popup listbox" hidden role="listbox" id="${this.controlId}-listbox" aria-label="${() => this.accessibleName()}"
-                onkeydown="${(event: KeyboardEvent) => this.handleKey(event)}">
+            <div ref="popup" part="popup listbox" hidden role="listbox" id="${this.controlId}-listbox" aria-label="${this.accessibleName}"
+                onkeydown="${this.handleKey}">
 
-                ${repeat(() => this.filteredOptions(), option => html`<cb-button part="option" exportparts="control:option-control,button-label:option-label" data-bare data-semantic-host
+                ${repeat(this.filteredOptions, option => html`<cb-button part="option" exportparts="control:option-control,button-label:option-label" data-bare data-semantic-host
                     data-value="${option.value}" role="option" accessible-label="${option.label}" disabled="${() => option.disabled || this.unavailable}"
                     aria-selected="${() => String(option.value === this.value)}"
                     onaction="${(event: Event) => { event.stopPropagation(); this.setValue(option.value, event); this.setOpen(false, event); this.input?.focus() }}">
@@ -72,7 +72,7 @@ export class Combobox extends ComboboxBase {
         else this.popupController?.show()
         if (!this.popupController) this.popup.hidden = !bool(this.open)
     }
-    private handleInput(event: Event): void {
+    private handleInput = (event: Event): void => {
         const input = this.input
         if (!input) return
         const query = input.value
@@ -82,7 +82,7 @@ export class Combobox extends ComboboxBase {
         this.completion[1](match ? { query, label: match.label } : null)
         if (match) queueMicrotask(() => input.setSelectionRange(query.length, match.label.length))
     }
-    private handleKey(event: KeyboardEvent): void {
+    private handleKey = (event: KeyboardEvent): void => {
         if (event.key === 'Escape') {
             event.preventDefault();
             this.setOpen(false, event);

@@ -10,10 +10,10 @@ const css = editorCSS + `
 export class MaskedInput extends MaskedInputBase {
     render(): Template {
         return html`<style part="styles">${css}</style>
-            <input ref="input" part="control input" type="text" value="${() => this.formattedValue()}" placeholder="${() => this.maskGuide()}"
+            <input ref="input" part="control input" type="text" value="${this.formattedValue}" placeholder="${this.maskGuide}"
                 disabled="${() => this.unavailable}" readonly="${() => bool(this.readOnly)}" required="${() => bool(this.required)}"
                 inputmode="${() => scalarText(this.inputMode, 'text')}" autocomplete="${() => scalarText(this.autocomplete, 'off')}"
-                aria-label="${() => this.accessibleName()}" aria-description="${() => scalarText(this.description) || null}"
+                aria-label="${this.accessibleName}" aria-description="${() => scalarText(this.description) || null}"
                 aria-invalid="${() => (this.validationShown ? this.validationMessage : scalarText(this.errorText)) ? 'true' : null}"
                 oninput="${(event: Event) => {
                     const input = event.currentTarget

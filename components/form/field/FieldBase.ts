@@ -28,11 +28,11 @@ export abstract class FieldBase<P extends FieldProps = FieldProps> extends Compo
     invalid = false
     success = false
 
-    protected fieldLabel(): string { return scalarText(this.label) }
-    protected fieldHelp(): string { return scalarText(this.helpText) }
-    protected fieldDetails(): string { return scalarText(this.details) }
-    protected fieldError(): string { return scalarText(this.errorText) }
-    protected fieldSuccess(): string { return scalarText(this.successText) }
+    protected fieldLabel = (): string => { return scalarText(this.label) }
+    protected fieldHelp = (): string => { return scalarText(this.helpText) }
+    protected fieldDetails = (): string => { return scalarText(this.details) }
+    protected fieldError = (): string => { return scalarText(this.errorText) }
+    protected fieldSuccess = (): string => { return scalarText(this.successText) }
     protected isInvalid(): boolean { return bool(this.invalid) || Boolean(this.fieldError()) }
     protected isSuccess(): boolean { return !this.isInvalid() && (bool(this.success) || Boolean(this.fieldSuccess())) }
 }

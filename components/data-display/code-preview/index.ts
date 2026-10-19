@@ -32,10 +32,10 @@ export class CodePreview extends CodePreviewBase {
         return html`<style part="styles">${css}</style>
             <figure part="root code-preview"><figcaption part="toolbar row">
                 <span part="language">${() => highlighted().language}</span>
-                <cb-button part="copy" exportparts="control:copy-control,label:copy-label,button-label:copy-label,icon:copy-icon,description:copy-description" variant="ghost" label="${() => this.copyText()}" disabled="${() => this.unavailable || !this.source()}"
+                <cb-button part="copy" exportparts="control:copy-control,label:copy-label,button-label:copy-label,icon:copy-icon,description:copy-description" variant="ghost" label="${this.copyText}" disabled="${() => this.unavailable || !this.source()}"
                     onaction="${(event: Event) => { event.stopPropagation(); void this.copySource() }}"></cb-button>
             </figcaption>
-            <pre part="pre" tabindex="0" role="region" aria-label="${() => this.accessibleName()}"><code part="code" class="${() => 'language-' + highlighted().language}">${() => highlighted().language === 'plaintext' ? this.source() : unsafeHTML(highlighted().html)}</code></pre>
+            <pre part="pre" tabindex="0" role="region" aria-label="${this.accessibleName}"><code part="code" class="${() => 'language-' + highlighted().language}">${() => highlighted().language === 'plaintext' ? this.source() : unsafeHTML(highlighted().html)}</code></pre>
             <span part="status sr-only" role="status" aria-live="polite">${this.copyStatus[0]}</span></figure>`
     }
     private async copySource(): Promise<void> {

@@ -29,11 +29,11 @@ export abstract class MaskedInputBase<P extends MaskedInputProps = MaskedInputPr
 
     protected captureValue(): string { return scalarText(this.value) }
     protected restoreValue(value: unknown): void { this.value = formatMaskedValue(scalarText(value), this.mask) }
-    protected formattedValue(): string { return formatMaskedValue(this.value, this.mask) }
+    protected formattedValue = (): string => { return formatMaskedValue(this.value, this.mask) }
     get rawValue(): string { return unmaskValue(this.value, this.mask) }
     protected submittedValue(): string { return bool(this.unmask) ? unmaskValue(this.value, this.mask) : this.formattedValue() }
     protected serializedValue():string{return this.submittedValue()}
-    protected maskGuide(): string {
+    protected maskGuide = (): string => {
         if (!bool(this.guide)) return scalarText(this.placeholder)
         const placeholder = scalarText(this.maskPlaceholder, '_').charAt(0) || '_'
         return maskSlotsFor(this.mask).map(slot => slot.literal ?? placeholder).join('') || scalarText(this.placeholder)

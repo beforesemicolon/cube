@@ -19,7 +19,7 @@ export abstract class PanelHeaderBase<P extends PanelHeaderProps = PanelHeaderPr
     protected isExpanded(): boolean { return bool(this.expanded) }
     protected isCollapsible(): boolean { return bool(this.collapsible) }
 
-    protected toggleExpanded(originalEvent?: Event): boolean {
+    protected toggleExpanded = (originalEvent?: Event): boolean => {
         if (!this.isCollapsible() || this.unavailable) return false
         const expanded = !this.isExpanded()
         const detail = { expanded, originalEvent }
@@ -31,7 +31,7 @@ export abstract class PanelHeaderBase<P extends PanelHeaderProps = PanelHeaderPr
         return true
     }
 
-    protected toggleText(): string {
+    protected toggleText = (): string => {
         return scalarText(this.isExpanded() ? this.collapseLabel : this.expandLabel)
     }
 }

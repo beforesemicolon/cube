@@ -10,11 +10,11 @@ const css = editorCSS + `
 export class DockedPanel extends DockedPanelBase {
     render(): Template {
         return html`<style part="styles">${css}</style>
-            <section part="panel docked-panel" aria-label="${() => this.accessibleName()}">
+            <section part="panel docked-panel" aria-label="${this.accessibleName}">
                 <cb-panel-header part="header" exportparts="header:header,heading:heading,actions:actions,toggle:toggle,toggle-control:toggle-control"
-                    label="${() => this.label}" description="${() => this.description}"
-                    collapsible="${() => this.isCollapsible()}" expanded="${() => this.isExpanded()}"
-                    expand-label="${() => this.expandLabel}" collapse-label="${() => this.collapseLabel}" disabled="${() => this.unavailable}"
+                    label="${this.props.label}" description="${this.props.description}"
+                    collapsible="${this.isCollapsible}" expanded="${this.isExpanded}"
+                    expand-label="${this.props.expandLabel}" collapse-label="${this.props.collapseLabel}" disabled="${() => this.unavailable}"
                     ontoggle="${(event: Event) => { event.stopPropagation(); this.togglePanel(event) }}"></cb-panel-header>
                 <div part="content" hidden="${() => !this.isExpanded()}"><slot part="content-slot"></slot></div>
             </section>`

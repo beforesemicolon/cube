@@ -30,7 +30,7 @@ export abstract class ArtboardBase extends Component<ArtboardProps> {
     protected artboardWidth(): number { return Math.max(1, finite(this.width, 640)) }
     protected artboardHeight(): number { return Math.max(1, finite(this.height, 400)) }
     protected canSelect(): boolean { return !this.unavailable && bool(this.selectable, true) }
-    protected dimensionsText(): string {
+    protected dimensionsText = (): string => {
         return scalarText(this.dimensionsLabel).replace('{width}', String(Math.round(this.artboardWidth()))).replace('{height}', String(Math.round(this.artboardHeight())))
     }
 

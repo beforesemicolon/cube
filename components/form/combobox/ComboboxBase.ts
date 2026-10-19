@@ -25,7 +25,7 @@ export abstract class ComboboxBase<P extends ComboboxProps = ComboboxProps> exte
     popupMaxWidth: PopupLength = '360px'
     popupMaxHeight: PopupLength = '240px'
     get normalizedOptions() { return normalizeOptions(this.options) }
-    protected filteredOptions() {
+    protected filteredOptions = () => {
         const query = scalarText(this.value).trim().toLocaleLowerCase()
         return query ? this.normalizedOptions.filter(option => option.label.toLocaleLowerCase().includes(query)) : this.normalizedOptions
     }
