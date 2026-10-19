@@ -6,15 +6,13 @@ export interface CollectionProps extends ComponentProps {
     items?: readonly StudioItem[]
     emptyLabel?: string
     multiple?: boolean
-    orientation?: 'horizontal' | 'vertical'
 }
 
 /** Item, selection, and empty-state behavior shared by simple collections. */
 export abstract class CollectionBase<P extends CollectionProps = CollectionProps> extends Component<P> {
-    static observedAttributes = [...Component.observedAttributes, 'value', 'items', 'empty-label', 'multiple', 'orientation']
+    static observedAttributes = [...Component.observedAttributes, 'value', 'items', 'empty-label', 'multiple']
     value: StudioValue = ''
     items: readonly StudioItem[] = []
     emptyLabel = ''
     multiple = false
-    orientation: 'horizontal' | 'vertical' = 'vertical'
 }

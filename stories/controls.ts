@@ -35,7 +35,7 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 const booleanProperties = new Set([
     'allowAlpha', 'allowReorder', 'allowSampler', 'animated', 'autoplay', 'bottomOpen', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'dirty', 'disabled', 'dismissible',
     'controls', 'disableContentPadding', 'expanded', 'formNoValidate', 'grid', 'iconOnly', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
-    'editable', 'editing', 'endOpen', 'guide', 'inline', 'lineNumbers', 'linked', 'mixed', 'movable', 'open', 'patterns', 'pinned', 'pressed', 'readOnly', 'reorderable', 'required', 'resizable', 'returnFocus', 'reverse', 'rotatable', 'rowActivation',
+    'editable', 'editing', 'endOpen', 'guide', 'inline', 'lineNumbers', 'linked', 'mixed', 'movable', 'open', 'patterns', 'pinned', 'pressed', 'readOnly', 'reorderable', 'required', 'resizable', 'returnFocus', 'reverse', 'rotatable', 'rowActivation', 'stacked',
     'pannable', 'playing', 'searchable', 'selectable', 'selected', 'selectOnEdit', 'showCancel', 'showChrome', 'showCursor', 'showDimensions', 'showLock', 'showOrientationControl', 'showSize', 'showVisibility', 'startOpen', 'stickyHeader', 'striped', 'submitOnBlur', 'success', 'unmask', 'wrap', 'zoomable',
 ])
 
@@ -61,7 +61,6 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
     crossOrigin: ['', 'anonymous', 'use-credentials'],
     justify: ['start', 'center', 'end', 'space-between', 'space-around', 'space-evenly', 'stretch'],
     modalSize: ['sm', 'md', 'lg', 'full', 'page'],
-    orientation: ['horizontal', 'vertical'],
     placement: ['bottom-start', 'bottom-end', 'top-start', 'top-end'],
     position: ['top-start', 'top-end', 'bottom-start', 'bottom-end'],
     preload: ['none', 'metadata', 'auto'],
@@ -159,6 +158,7 @@ const descriptions: Readonly<Record<string, string>> = {
     closeOnBackdrop: 'Allows a backdrop click to dismiss the dialog.',
     cancelLabel: 'Localized label for the modal-owned cancel action.',
     showCancel: 'Displays the modal-owned cancel action when the modal is dismissible.',
+    stacked: 'Stacks the component’s controls vertically instead of arranging them in a row.',
     code: 'Source code displayed by the preview.',
     codeLanguage: 'Syntax language passed to the highlighter.',
     description: 'Supporting text associated with the component.',
@@ -311,7 +311,7 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     expanded: 'false', firstDayOfWeek: '0', height: 'auto', initials: "''", invalid: 'false', items: '[]',
     loading: 'false', loop: 'false', max: '100', maxRecent: '8', maxVisible: '4', messages: '[]', min: '0',
     modalSize: 'md', multi: 'false', multiple: 'false', muted: 'false', native: 'false', open: 'false', options: '[]', overflowLabel: "''",
-    orientation: 'horizontal', patterns: 'false', placement: 'bottom-start', playbackRate: '1', position: 'top-end',
+    orientation: 'landscape', patterns: 'false', placement: 'bottom-start', playbackRate: '1', position: 'top-end', stacked: 'false',
     preload: 'metadata', pressed: 'undefined', progress: '0', readOnly: 'false', required: 'false', reverse: 'false', searchable: 'auto', searchThreshold: '10', seekStep: '10',
     recentColors: '[]', series: '[]', size: 'sm', src: "''", status: 'finished', statusLabel: "''", step: '1', stops: '[]', summary: "''", swatches: '[]', theme: 'null', tracks: '[]', units: '[]', value: "''",
     visibleSegments: 'null', visibleSeries: 'null', wrap: 'false', xAxis: '{}', yAxis: '{}', zoomable: 'false',
@@ -335,7 +335,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     href: '', icon: '', iconOnly: false, initials: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
     keys: '', label: '', loading: false, loop: false, margin: '', max: 100, maxBlockSize: '', maxInlineSize: '',
     majorStep: 100, maxItems: 4, maxRecent: 8, maxVisible: 4, maxZoom: 400, mediaTitle: '', min: 0, minorDivisions: 10, minZoom: 25, minBlockSize: '', minInlineSize: '',
-    modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal', originX: 0, originY: 0, overflowLabel: '',
+    modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'landscape', originX: 0, originY: 0, overflowLabel: '',
     overflow: '', padding: '', page: 1, patterns: false, placement: 'bottom-start', placeholder: '', playbackRate: 1,
     position: 'top-end', poster: '', preload: 'metadata', searchLabel: '', searchable: 'auto', searchPlaceholder: '', searchThreshold: 10,
     pannable: true, playing: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
@@ -345,7 +345,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     animated: true, allowReorder: true, bottomOpen: false, dirty: false, editable: true, editing: false, endOpen: true, guide: true, headingLevel: 2, inline: false,
     lineNumbers: true, linked: false, lines: 3, loadingRows: 5, maxLines: 32, minItems: 0, minLines: 8, mixed: false,
     mobileBreakpoint: 860, mobilePanel: '', movable: true, moveStep: 1, pinned: false, reorderable: true, resizeStep: 16,
-    resizable: true, returnFocus: true, rotatable: false, rowActivation: false, selectionMode: 'none', success: false, successText: '',
+    resizable: true, returnFocus: true, rotatable: false, rowActivation: false, selectionMode: 'none', stacked: false, success: false, successText: '',
     selectOnEdit: true, showLock: true, showSize: true, showVisibility: true, startOpen: true, submitOnBlur: true, tabSize: 2, threshold: 3, unmask: false,
     sortDirection: 'asc', stickyColumns: 0, stickyHeader: false, striped: false, density: 'comfortable',
 }

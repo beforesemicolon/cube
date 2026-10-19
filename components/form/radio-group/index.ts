@@ -6,8 +6,8 @@ import { RadioGroupBase } from './RadioGroupBase.js'
 const css = editorCSS + `
 :host{display:inline-block;inline-size:var(--component-radio-group-width,auto)}
 [part~=field]{display:grid;gap:var(--spacing-xs,4px)}
-[part~=group]{display:flex;flex-direction:column;align-items:flex-start;gap:var(--spacing-sm,8px)}
-[part~=group][data-orientation=horizontal]{flex-direction:row;flex-wrap:wrap;gap:var(--spacing-md,12px)}
+[part~=group]{display:flex;flex-flow:row wrap;align-items:flex-start;gap:var(--spacing-md,12px)}
+[part~=group][data-stacked]{flex-direction:column;flex-wrap:nowrap;gap:var(--spacing-sm,8px)}
 [part~=option]{display:inline-flex;align-items:center;gap:var(--spacing-sm,8px);min-block-size:var(--cb-height);cursor:pointer}
 [part~=radio]{appearance:none;display:grid;place-items:center;flex:none;inline-size:var(--component-radio-size,18px);block-size:var(--component-radio-size,18px);min-inline-size:var(--component-radio-size,18px);min-block-size:var(--component-radio-size,18px);padding:0;margin:0;border:1px solid var(--color-border);border-radius:50%;background:var(--color-surface);cursor:inherit}
 [part~=radio]::before{content:'';inline-size:var(--component-radio-dot-size,8px);block-size:var(--component-radio-dot-size,8px);border-radius:50%;background:var(--color-primary);scale:0;transition:scale var(--motion-duration-fast) ease-out}
@@ -49,7 +49,7 @@ export class RadioGroup extends RadioGroupBase {
         const selected = this.selection
         this.inputs = []
         this.group.replaceChildren()
-        this.group.dataset.orientation = this.orientation === 'horizontal' ? 'horizontal' : 'vertical'
+        this.group.toggleAttribute('data-stacked', bool(this.stacked))
 
         for (const option of this.normalizedOptions) {
             const wrapper = el('label', 'option')

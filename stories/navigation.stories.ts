@@ -7,9 +7,9 @@ export default meta
 type Story = StoryObj
 const items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]
 
-export const SegmentedControl: Story = componentStory('cb-segmented-control', { label: 'View', value: 'one', items, orientation: 'horizontal' })
+export const SegmentedControl: Story = componentStory('cb-segmented-control', { label: 'View', value: 'one', items, stacked: false })
 
-export const Tabs: Story = componentStory('cb-tabs', { label: 'Workspace', value: 'one', items, orientation: 'horizontal', activation: 'automatic' })
+export const Tabs: Story = componentStory('cb-tabs', { label: 'Workspace', value: 'one', items, stacked: false, activation: 'automatic' })
 
 export const Breadcrumb: Story = componentStory('cb-breadcrumb', { label: 'Breadcrumb', items, maxItems: 4, expandLabel: 'Show all breadcrumbs' })
 

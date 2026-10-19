@@ -18,17 +18,17 @@ export class Slider extends SliderBase {
 [part=control]::-moz-range-progress{block-size:var(--component-slider-track-height,4px);background:var(--color-primary,#2563EB)}
 [part=control]::-moz-range-thumb{inline-size:var(--component-slider-thumb-size,12px);block-size:var(--component-slider-thumb-size,12px);border-radius:50%;background:var(--color-surface,#fff);border:2px solid var(--color-primary,#2563EB)}
 [part=control]:disabled{cursor:not-allowed;opacity:var(--component-disabled-opacity,.5)}
-:host([data-orientation=vertical]){min-inline-size:var(--cb-height);inline-size:var(--cb-height)}
-:host([data-orientation=vertical]) [part=control]{writing-mode:vertical-lr;direction:rtl;block-size:var(--cb-height);inline-size:160px}
+:host([data-stacked]){min-inline-size:var(--cb-height);inline-size:var(--cb-height)}
+:host([data-stacked]) [part=control]{writing-mode:vertical-lr;direction:rtl;block-size:var(--cb-height);inline-size:160px}
 `),this.control)
     }
     protected fieldElement(){return this.control}
     protected syncView():void{
         if(!this.control)return
-        const range=this.range;this.dataset.orientation=this.orientation==='vertical'?'vertical':'horizontal'
+        const range=this.range;const stacked=bool(this.stacked);this.toggleAttribute('data-stacked',stacked)
         this.control.min=String(range.min);this.control.max=String(range.max);this.control.step=String(range.step)
         this.control.value=String(range.value);this.control.disabled=this.unavailable;this.control.style.setProperty('--cb-slider-fill',range.percent+'%')
-        this.control.setAttribute('aria-label',this.accessibleName());this.control.setAttribute('aria-orientation',this.dataset.orientation)
+        this.control.setAttribute('aria-label',this.accessibleName());this.control.setAttribute('aria-orientation',stacked?'vertical':'horizontal')
         aria(this.control,'aria-valuetext',text(this.valueText)||null);aria(this.control,'aria-readonly',bool(this.readOnly)?true:null)
         this.syncForm(String(range.value));const error=!!this.validationMessage&&(this.validationShown||!!text(this.errorText))
         aria(this.control,'aria-invalid',error?true:null)

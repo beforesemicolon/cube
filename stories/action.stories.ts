@@ -14,7 +14,3 @@ export const ButtonIcon: Story = componentStory('cb-button', { label: 'Settings'
 export const SplitButton: Story = componentStory('cb-split-button', { label: 'Split button', value: 'create', items, open: false, placement: 'bottom-start', loading: false })
 
 export const ButtonGroup: Story = componentStory('cb-button-group', { label: 'Clipboard actions', variant: 'secondary', items: [{ id: 'copy', label: 'Copy' }, { id: 'paste', label: 'Paste' }, { id: 'duplicate', label: 'Duplicate' }] })
-
-export const Toolbar: Story = componentStory('cb-toolbar', { label: 'Toolbar' })
-
-export const ActionBar: Story = componentStory('cb-action-bar', { label: 'Action bar' })

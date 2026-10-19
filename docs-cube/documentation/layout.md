@@ -19,6 +19,8 @@ order: 23
 | Resizable panel | `<cb-resizable-panel>` | `@beforesemicolon/cube/layout/resizable-panel` |
 | Docked panel | `<cb-docked-panel>` | `@beforesemicolon/cube/layout/docked-panel` |
 | Panel header | `<cb-panel-header>` | `@beforesemicolon/cube/layout/panel-header` |
+| Toolbar | `<cb-toolbar>` | `@beforesemicolon/cube/layout/toolbar` |
+| Action bar | `<cb-action-bar>` | `@beforesemicolon/cube/layout/action-bar` |
 | Divider | `<cb-divider>` | `@beforesemicolon/cube/layout/divider` |
 | Box | `<cb-box>` | `@beforesemicolon/cube/layout/box` |
 | Row | `<cb-row>` | `@beforesemicolon/cube/layout/row` |

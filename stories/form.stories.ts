@@ -19,7 +19,7 @@ export const Combobox: Story = componentStory('cb-combobox', { label: 'Font fami
 
 export const Checkbox: Story = componentStory('cb-checkbox', { label: 'Checkbox', checked: true })
 
-export const RadioGroup: Story = componentStory('cb-radio-group', { label: 'Publishing access', value: 'team', orientation: 'vertical', options: [{ value: 'private', label: 'Only me' }, { value: 'team', label: 'Project members' }, { value: 'public', label: 'Anyone with the link' }] })
+export const RadioGroup: Story = componentStory('cb-radio-group', { label: 'Publishing access', value: 'team', stacked: true, options: [{ value: 'private', label: 'Only me' }, { value: 'team', label: 'Project members' }, { value: 'public', label: 'Anyone with the link' }] })
 
 export const Switch: Story = componentStory('cb-switch', { label: 'Switch', checked: true })
 
@@ -47,7 +47,7 @@ export const MaskedInput: Story = componentStory('cb-masked-input', {
 
 export const Select: Story = componentStory('cb-select', { label: 'Select', value: 'desktop', placeholder: 'Choose a device', native: false, open: false, multi: false, searchable: 'auto', searchThreshold: 10, searchLabel: 'Filter options', searchPlaceholder: 'Search options', emptyLabel: 'No matching options', options: [{ value: 'desktop', label: 'Desktop' }, { value: 'tablet', label: 'Tablet' }, { value: 'mobile', label: 'Mobile' }, { value: 'watch', label: 'Watch' }, { value: 'television', label: 'Television' }, { value: 'laptop', label: 'Laptop' }, { value: 'desktop-wide', label: 'Wide desktop' }, { value: 'tablet-landscape', label: 'Landscape tablet' }, { value: 'phone-small', label: 'Small phone' }, { value: 'phone-large', label: 'Large phone' }, { value: 'kiosk', label: 'Kiosk' }] })
 
-export const Slider: Story = componentStory('cb-slider', { label: 'Opacity', value: 64, min: 0, max: 100, step: 1, valueText: '64%', orientation: 'horizontal' })
+export const Slider: Story = componentStory('cb-slider', { label: 'Opacity', value: 64, min: 0, max: 100, step: 1, valueText: '64%', stacked: false })
 
 export const Calendar: Story = componentStory('cb-calendar', { label: 'Calendar', value: '2026-10-18', firstDayOfWeek: 0, min: '', max: '', previousLabel: 'Previous month', nextLabel: 'Next month' })
 

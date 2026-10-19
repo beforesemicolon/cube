@@ -35,7 +35,7 @@ export const componentCategoryTitles = {
 }
 
 const actionComponents = new Set([
-    'button', 'link-button', 'split-button', 'button-group', 'toolbar', 'action-bar',
+    'button', 'link-button', 'split-button', 'toggle-button', 'button-group',
     'floating-toolbar', 'undo-redo', 'shortcuts',
 ])
 const textComponents = new Set(['heading', 'shortcut'])
@@ -56,6 +56,7 @@ const dataDisplayComponents = new Set([
     'activity-log',
 ])
 const layoutComponents = new Set([
+    'toolbar', 'action-bar',
     'inspector', 'sidebar', 'resizable-panel', 'docked-panel', 'panel-header', 'top-bar', 'inspector-sidebar',
     'asset-sidebar', 'status-bar',
 ])
@@ -67,6 +68,7 @@ export function resolveComponentCategory(sourceCategory, name) {
     if (textComponents.has(name)) return 'text'
     if (sourceCategory === 'actions') {
         if (actionComponents.has(name)) return 'action'
+        if (layoutComponents.has(name)) return 'layout'
         if (navigationComponents.has(name)) return 'navigation'
         if (overlayComponents.has(name)) return 'overlay'
     }

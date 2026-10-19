@@ -39,7 +39,6 @@ export interface StudioViewSource extends HTMLElement {
     invalid?: boolean
     error?: string
     expanded?: boolean
-    orientation?: 'horizontal' | 'vertical'
     emit(name: string, detail?: object): void
     setControlValue?(value:StudioValue,originalEvent?:Event):boolean
     setFiles?(files: readonly File[], originalEvent?: Event): boolean
@@ -55,7 +54,6 @@ class StudioViewAdapter {
     get dataset(): DOMStringMap { return this.source.dataset }
     get label(): string { return this.source.label }
     get actionLabel(): string { return scalarText(this.source.actionLabel) }
-    get orientation(): 'horizontal' | 'vertical' { return this.source.orientation === 'vertical' ? 'vertical' : 'horizontal' }
     get value(): StudioValue | undefined { return this.source.value }
     emit(name: string, detail?: object): void { this.source.emit(name, detail) }
     toggleAttribute(name: string, force?: boolean): boolean { return this.source.toggleAttribute(name, force) }
@@ -774,7 +772,6 @@ export function createStudioView(source: StudioViewSource): StudioView {
 
     const update = (): void => {
         host.dataset.kind = host.componentKind
-        host.dataset.orientation = host.orientation === 'vertical' ? 'vertical' : 'horizontal'
         host.toggleAttribute('data-invalid', host.studioInvalid())
         label.textContent = host.studioLabel()
         label.hidden = fieldControl || ['choice','display','panel','editor','shell'].includes(host.componentKind) || !host.label

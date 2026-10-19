@@ -8,7 +8,7 @@ async function start(page: Page): Promise<void> {
 
 test('all action tags register and expose a headless-safe default', async ({ page }) => {
     await start(page)
-    const names = ['split-button', 'button-group', 'segmented-control', 'tabs', 'breadcrumb', 'menu', 'context-menu', 'dropdown', 'command-palette', 'toolbar', 'action-bar', 'pagination', 'tooltip', 'shortcut']
+    const names = ['split-button', 'button-group', 'segmented-control', 'tabs', 'breadcrumb', 'menu', 'context-menu', 'dropdown', 'command-palette', 'pagination', 'tooltip', 'shortcut']
     expect(await page.evaluate(values => values.every(name => Boolean(customElements.get(`cb-${name}`))), names)).toBe(true)
     await page.evaluate(values => { for (const name of values) document.querySelector('#fixture')?.append(document.createElement(`cb-${name}`)) }, names)
     expect(await page.evaluate(() => Array.from(document.querySelectorAll('#fixture > *')).every(node => node.shadowRoot?.querySelector('[part]')))).toBe(true)
@@ -16,10 +16,10 @@ test('all action tags register and expose a headless-safe default', async ({ pag
 test('segmented control and tabs support selection and keyboard roving focus', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
-        const segmented = document.createElement('cb-segmented-control') as HTMLElement & { items: Array<{ id: string; label: string }>; value: string; accessibleLabel: string }
+        const segmented = document.createElement('cb-segmented-control') as HTMLElement & { items: Array<{ id: string; label: string }>; value: string; accessibleLabel: string; stacked: boolean }
         segmented.items = [{ id: 'design', label: 'Design' }, { id: 'preview', label: 'Preview' }, { id: 'code', label: 'Code' }]
         segmented.value = 'design'; segmented.accessibleLabel = 'Editor view'
-        const tabs = document.createElement('cb-tabs') as HTMLElement & { items: Array<{ id: string; label: string }>; value: string; accessibleLabel: string }
+        const tabs = document.createElement('cb-tabs') as HTMLElement & { items: Array<{ id: string; label: string }>; value: string; accessibleLabel: string; stacked: boolean }
         tabs.items = segmented.items; tabs.value = 'design'; tabs.accessibleLabel = 'Inspector sections'
         document.querySelector('#fixture')?.append(segmented, tabs)
     })
@@ -27,6 +27,10 @@ test('segmented control and tabs support selection and keyboard roving focus', a
     await expect(page.getByRole('radio', { name: 'Preview' })).toHaveAttribute('aria-checked', 'true')
     const tab = page.getByRole('tab', { name: 'Design' }); await tab.focus(); await page.keyboard.press('ArrowRight')
     await expect(page.getByRole('tab', { name: 'Preview' })).toHaveAttribute('aria-selected', 'true')
+    await page.locator('cb-tabs').evaluate((element: HTMLElement & { stacked: boolean }) => { element.stacked = true })
+    await expect(page.getByRole('tablist')).toHaveAttribute('aria-orientation', 'vertical')
+    await page.getByRole('tab', { name: 'Preview' }).focus(); await page.keyboard.press('ArrowDown')
+    await expect(page.getByRole('tab', { name: 'Code' })).toHaveAttribute('aria-selected', 'true')
 })
 
 test('button only becomes a toggle when pressed is defined and preserves every variant', async ({ page }) => {
@@ -114,32 +118,6 @@ test('button group owns its buttons and renders one continuous control', async (
     const rtlGeometry = await group.getByRole('button').evaluateAll(buttons => buttons.map(button => button.getBoundingClientRect().left))
     expect(rtlGeometry[0]).toBeGreaterThan(rtlGeometry[1] ?? 0)
     const audit = await new AxeBuilder({ page }).include('cb-button-group').analyze()
-    expect(audit.violations).toEqual([])
-})
-
-test('action bar places named start content before its default actions', async ({ page }) => {
-    await start(page)
-    await page.evaluate(() => {
-        const bar = document.createElement('cb-action-bar') as HTMLElement & { accessibleLabel: string }
-        bar.accessibleLabel = 'Selection actions'
-        const back = document.createElement('cb-button') as HTMLElement & { label: string; variant: string }
-        back.label = 'Back'
-        back.variant = 'ghost'
-        back.slot = 'start'
-        const group = document.createElement('cb-button') as HTMLElement & { label: string }
-        group.label = 'Group'
-        bar.append(back, group)
-        document.querySelector('#fixture')?.append(bar)
-    })
-
-    const bar = page.locator('cb-action-bar')
-    await expect(bar.getByRole('button', { name: 'Back' })).toBeVisible()
-    await expect(bar.getByRole('button', { name: 'Group' })).toBeVisible()
-    const slots = await bar.evaluate(element => Array.from(element.children).map(child => child.getAttribute('slot') ?? 'default'))
-    expect(slots).toEqual(['start', 'default'])
-    const geometry = await bar.getByRole('button').evaluateAll(buttons => buttons.map(button => button.getBoundingClientRect().left))
-    expect(geometry[0]).toBeLessThan(geometry[1] ?? 0)
-    const audit = await new AxeBuilder({ page }).include('cb-action-bar').analyze()
     expect(audit.violations).toEqual([])
 })
 

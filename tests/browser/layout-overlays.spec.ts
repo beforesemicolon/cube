@@ -31,6 +31,38 @@ test('layout primitives remain wrapper-free and expose semantic divider behavior
     await expect(grid).toHaveCSS('row-gap', '12px')
     await expect(page.locator('cb-divider')).toHaveAttribute('role', 'separator')
     await expect(page.locator('cb-divider')).toHaveAttribute('aria-orientation', 'horizontal')
+    await page.locator('cb-divider').evaluate((divider: HTMLElement & { stacked: boolean }) => { divider.stacked = true })
+    await expect(page.locator('cb-divider')).toHaveAttribute('aria-orientation', 'vertical')
+})
+
+test('layout toolbars register and action bar places named start content before default actions', async ({ page }) => {
+    await start(page)
+    expect(await page.evaluate(() => ['toolbar', 'action-bar'].every(name => Boolean(customElements.get(`cb-${name}`))))).toBe(true)
+    await page.evaluate(() => {
+        const toolbar = document.createElement('cb-toolbar') as HTMLElement & { accessibleLabel: string }
+        toolbar.accessibleLabel = 'Formatting tools'
+        const bar = document.createElement('cb-action-bar') as HTMLElement & { accessibleLabel: string }
+        bar.accessibleLabel = 'Selection actions'
+        const back = document.createElement('cb-button') as HTMLElement & { label: string; variant: string }
+        back.label = 'Back'
+        back.variant = 'ghost'
+        back.slot = 'start'
+        const group = document.createElement('cb-button') as HTMLElement & { label: string }
+        group.label = 'Group'
+        bar.append(back, group)
+        document.querySelector('#fixture')?.append(toolbar, bar)
+    })
+
+    await expect(page.locator('cb-toolbar').getByRole('toolbar', { name: 'Formatting tools' })).toBeVisible()
+    const bar = page.locator('cb-action-bar')
+    await expect(bar.getByRole('button', { name: 'Back' })).toBeVisible()
+    await expect(bar.getByRole('button', { name: 'Group' })).toBeVisible()
+    const slots = await bar.evaluate(element => Array.from(element.children).map(child => child.getAttribute('slot') ?? 'default'))
+    expect(slots).toEqual(['start', 'default'])
+    const geometry = await bar.getByRole('button').evaluateAll(buttons => buttons.map(button => button.getBoundingClientRect().left))
+    expect(geometry[0]).toBeLessThan(geometry[1] ?? 0)
+    const audit = await new AxeBuilder({ page }).include('cb-toolbar, cb-action-bar').analyze()
+    expect(audit.violations).toEqual([])
 })
 
 test('panel components expose real disclosure and keyboard resize behavior', async ({ page }) => {

@@ -13,7 +13,11 @@ export const DockedPanel: Story = componentStory('cb-docked-panel', { label: 'In
 
 export const PanelHeader: Story = componentStory('cb-panel-header', { label: 'Typography', description: 'Text properties', collapsible: true, expanded: true, expandLabel: 'Expand typography', collapseLabel: 'Collapse typography' })
 
-export const Divider: Story = componentStory('cb-divider', { orientation: 'horizontal', decorative: false })
+export const Toolbar: Story = componentStory('cb-toolbar', { label: 'Toolbar' })
+
+export const ActionBar: Story = componentStory('cb-action-bar', { label: 'Action bar' })
+
+export const Divider: Story = componentStory('cb-divider', { stacked: false, decorative: false })
 
 export const Box: Story = componentStory('cb-box', { inlineSize: '100%', padding: '16px', background: 'var(--color-surface-muted)', radius: '8px' })
 

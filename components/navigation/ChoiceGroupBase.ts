@@ -1,19 +1,20 @@
 import { Component, type ComponentProps } from '../core/Component.js'
 import { normalizeItems, type ActionItem, type NormalizedItem } from '../core/items.js'
-import { scalarText } from '../core/value.js'
+import { bool, scalarText } from '../core/value.js'
 
 export interface ChoiceGroupProps extends ComponentProps {
     items?: ActionItem[]
     value?: string
-    orientation?: 'horizontal' | 'vertical'
+    stacked?: boolean
 }
 
 /** Single-selection behavior shared by segmented controls and tabs. */
 export abstract class ChoiceGroupBase<P extends ChoiceGroupProps = ChoiceGroupProps> extends Component<P> {
-    static observedAttributes = [...Component.observedAttributes, 'items', 'value', 'orientation']
+    static observedAttributes = [...Component.observedAttributes, 'items', 'value', 'stacked']
     items: ActionItem[] = []
     value = ''
-    orientation: ChoiceGroupProps['orientation'] = 'horizontal'
+    stacked = false
+    protected get navigationAxis(): 'horizontal' | 'vertical' { return bool(this.stacked) ? 'vertical' : 'horizontal' }
     protected get choices(): NormalizedItem[] { return normalizeItems(this.items).filter(item => !item.separator) }
 
     protected choose(item: NormalizedItem, originalEvent: Event): void {

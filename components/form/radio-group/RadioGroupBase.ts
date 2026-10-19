@@ -5,15 +5,15 @@ import { normalizeOptions, type SelectOption } from '../model.js'
 export interface RadioGroupProps extends FieldControlProps {
     options?: SelectOption[]
     value?: string
-    orientation?: 'horizontal' | 'vertical'
+    stacked?: boolean
 }
 
 /** Headless single-selection behavior shared by radio-group renderers. */
 export abstract class RadioGroupBase extends FieldControlBase<RadioGroupProps> {
-    static observedAttributes = [...FieldControlBase.observedAttributes, 'options', 'value', 'orientation']
+    static observedAttributes = [...FieldControlBase.observedAttributes, 'options', 'value', 'stacked']
     options: SelectOption[] = []
     value = ''
-    orientation: 'horizontal' | 'vertical' = 'vertical'
+    stacked = false
 
     get normalizedOptions(): ReadonlyArray<Required<SelectOption>> { return normalizeOptions(this.options) }
     get selection(): string { return this.normalizedOptions.some(option => option.value === scalarText(this.value)) ? scalarText(this.value) : '' }

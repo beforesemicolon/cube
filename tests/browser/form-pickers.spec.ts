@@ -101,12 +101,14 @@ test('radio group owns its options, keyboard selection and form value', async ({
             name: string
             value: string
             required: boolean
+            stacked: boolean
             options: Array<{ value: string; label: string; disabled?: boolean }>
         }
         group.label = 'Contact method'
         group.name = 'contact'
         group.value = 'email'
         group.required = true
+        group.stacked = true
         group.options = [
             { value: 'email', label: 'Email' },
             { value: 'sms', label: 'Text message' },
@@ -118,6 +120,7 @@ test('radio group owns its options, keyboard selection and form value', async ({
 
     const group = page.locator('cb-radio-group')
     await expect(group.getByRole('radiogroup', { name: 'Contact method' })).toBeVisible()
+    await expect(group.getByRole('radiogroup')).toHaveCSS('flex-direction', 'column')
     const email = group.getByRole('radio', { name: 'Email' })
     const sms = group.getByRole('radio', { name: 'Text message' })
     await expect(email).toBeChecked()
