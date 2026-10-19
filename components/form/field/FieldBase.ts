@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
 
-export interface FieldProps extends UIProps {
+export interface FieldProps extends ComponentProps {
     helpText?: string
     details?: string
     detailsLabel?: string
@@ -14,9 +14,9 @@ export interface FieldProps extends UIProps {
 }
 
 /** Shared field anatomy for controls that need label, help, details and validation copy. */
-export abstract class FieldBase<P extends FieldProps = FieldProps> extends UIComponent<P> {
+export abstract class FieldBase<P extends FieldProps = FieldProps> extends Component<P> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'help-text', 'details', 'details-label', 'error-text', 'success-text', 'required', 'optional-label', 'invalid', 'success',
+        ...Component.observedAttributes, 'help-text', 'details', 'details-label', 'error-text', 'success-text', 'required', 'optional-label', 'invalid', 'success',
     ]
     helpText = ''
     details = ''

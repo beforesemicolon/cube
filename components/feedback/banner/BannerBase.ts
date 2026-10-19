@@ -1,10 +1,10 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { MessageBase, type MessageProps } from '../MessageBase.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface BannerProps extends StudioProps {}
+export interface BannerProps extends MessageProps {}
 
 /** Headless behavior for the Banner component. */
-export abstract class BannerBase extends StudioComponentBase<BannerProps> {
+export abstract class BannerBase extends MessageBase<BannerProps> {
     readonly componentName = 'banner'
     readonly componentKind: StudioKind = 'status'
 }

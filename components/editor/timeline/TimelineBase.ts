@@ -1,9 +1,9 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
 
 export interface TimelineKeyframe { readonly id: string; readonly time: number; readonly label?: string; readonly disabled?: boolean }
 export interface TimelineTrack { readonly id: string; readonly label: string; readonly keyframes: readonly TimelineKeyframe[]; readonly disabled?: boolean }
-export interface TimelineProps extends UIProps {
+export interface TimelineProps extends ComponentProps {
     tracks?: readonly TimelineTrack[]
     duration?: number
     currentTime?: number
@@ -24,9 +24,9 @@ export interface TimelineTimeDetail { readonly currentTime: number; readonly dur
 export interface TimelineKeyframeDetail { readonly trackId: string; readonly keyframe: TimelineKeyframe; readonly originalEvent?: Event }
 
 /** Headless timeline playback, scrubbing, selection, and keyframe editing behavior. */
-export abstract class TimelineBase extends UIComponent<TimelineProps> {
+export abstract class TimelineBase extends Component<TimelineProps> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'tracks', 'duration', 'current-time', 'playing', 'loop', 'snap', 'selected-keyframe-id',
+        ...Component.observedAttributes, 'tracks', 'duration', 'current-time', 'playing', 'loop', 'snap', 'selected-keyframe-id',
         'play-label', 'pause-label', 'rewind-label', 'add-keyframe-label', 'playhead-label', 'keyframe-label', 'time-label',
     ]
 

@@ -1,14 +1,14 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { NumericInputBase, type NumericInputProps } from '../NumericInputBase.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface StepperProps extends StudioProps {
+export interface StepperProps extends NumericInputProps {
     decrementLabel?: string
     incrementLabel?: string
 }
 
 /** Headless behavior for the Stepper component. */
-export abstract class StepperBase extends StudioComponentBase<StepperProps> {
-    static observedAttributes = [...StudioComponentBase.observedAttributes, 'decrement-label', 'increment-label']
+export abstract class StepperBase extends NumericInputBase<StepperProps> {
+    static observedAttributes = [...NumericInputBase.observedAttributes, 'decrement-label', 'increment-label']
     decrementLabel = ''
     incrementLabel = ''
     readonly componentName = 'stepper'

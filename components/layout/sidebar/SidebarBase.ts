@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
 
-export interface SidebarProps extends UIProps {
+export interface SidebarProps extends ComponentProps {
     collapsible?: boolean
     expanded?: boolean
     placement?: 'start' | 'end'
@@ -10,8 +10,8 @@ export interface SidebarProps extends UIProps {
 }
 
 /** Sidebar disclosure behavior without prescribing its rendered navigation. */
-export abstract class SidebarBase<P extends SidebarProps = SidebarProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'collapsible', 'expanded', 'placement', 'expand-label', 'collapse-label']
+export abstract class SidebarBase<P extends SidebarProps = SidebarProps> extends Component<P> {
+    static observedAttributes = [...Component.observedAttributes, 'collapsible', 'expanded', 'placement', 'expand-label', 'collapse-label']
     collapsible = false
     expanded = true
     placement: 'start' | 'end' = 'start'

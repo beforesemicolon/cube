@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { clamp, finite } from '../../core/value.js'
 
-export interface ResizablePanelProps extends UIProps {
+export interface ResizablePanelProps extends ComponentProps {
     value?: number
     min?: number
     max?: number
@@ -11,8 +11,8 @@ export interface ResizablePanelProps extends UIProps {
 }
 
 /** Pointer and keyboard resizing behavior without prescribing panel content. */
-export abstract class ResizablePanelBase<P extends ResizablePanelProps = ResizablePanelProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'value', 'min', 'max', 'step', 'placement', 'resize-label']
+export abstract class ResizablePanelBase<P extends ResizablePanelProps = ResizablePanelProps> extends Component<P> {
+    static observedAttributes = [...Component.observedAttributes, 'value', 'min', 'max', 'step', 'placement', 'resize-label']
     value = 320
     min = 180
     max = 640

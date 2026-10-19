@@ -1,19 +1,20 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { NumericInputBase, type NumericInputProps } from '../NumericInputBase.js'
+import type { StudioKind } from '../../studio/types.js'
 import { normalizeOptions, type SelectOption } from '../model.js'
 import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength } from '../../core/popup.js'
+import { bool } from '../../core/value.js'
 
 export type UnitOption = string | SelectOption
 
-export interface UnitInputProps extends StudioProps, PopupConstraintProps {
+export interface UnitInputProps extends NumericInputProps, PopupConstraintProps {
     unit?: string
     units?: readonly UnitOption[]
     unitLabel?: string
 }
 
 /** Headless behavior for the Unit input component. */
-export abstract class UnitInputBase extends StudioComponentBase<UnitInputProps> {
-    static observedAttributes = [...StudioComponentBase.observedAttributes, 'unit', 'units', 'unit-label', ...popupConstraintAttributes]
+export abstract class UnitInputBase extends NumericInputBase<UnitInputProps> {
+    static observedAttributes = [...NumericInputBase.observedAttributes, 'unit', 'units', 'unit-label', ...popupConstraintAttributes]
     unit = ''
     units: readonly UnitOption[] = []
     unitLabel = ''
@@ -33,7 +34,7 @@ export abstract class UnitInputBase extends StudioComponentBase<UnitInputProps> 
     }
 
     chooseUnit(unit: string, originalEvent?: Event): boolean {
-        if (this.studioDisabled() || this.studioReadOnly()) return false
+        if (this.unavailable || bool(this.readOnly)) return false
         const selected = String(unit ?? '')
         const options = this.normalizedUnits
         if (options.length && !options.some(option => option.value === selected && !option.disabled)) return false

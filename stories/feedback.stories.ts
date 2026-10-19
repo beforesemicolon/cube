@@ -15,7 +15,7 @@ export const Skeleton: Story = componentStory('cb-skeleton', { variant: 'text', 
 
 export const Progress: Story = componentStory('cb-progress', { label: 'Progress', progress: 64, max: 100, status: '64%' })
 
-export const Spinner: Story = componentStory('cb-spinner', { label: 'Spinner', progress: 64, max: 100, status: '64%' })
+export const Spinner: Story = componentStory('cb-spinner', { label: 'Spinner', status: 'Loading' })
 
 export const Toast: Story = componentStory('cb-toast', { label: 'Toast', value: 'Ready', status: 'Updated' })
 

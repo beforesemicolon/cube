@@ -1,9 +1,9 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 
-export interface ToolbarProps extends UIProps { orientation?: 'horizontal' | 'vertical' }
+export interface ToolbarProps extends ComponentProps { orientation?: 'horizontal' | 'vertical' }
 
 /** Toolbar semantics independent of the actions slotted into it. */
-export abstract class ToolbarBase<P extends ToolbarProps = ToolbarProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'orientation']
+export abstract class ToolbarBase<P extends ToolbarProps = ToolbarProps> extends Component<P> {
+    static observedAttributes = [...Component.observedAttributes, 'orientation']
     orientation: ToolbarProps['orientation'] = 'horizontal'
 }

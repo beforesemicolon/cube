@@ -1,8 +1,9 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { scalarText } from '../../core/value.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import type { StudioKind, StudioValue } from '../../studio/types.js'
 
-export interface CodePreviewProps extends StudioProps {
+export interface CodePreviewProps extends ComponentProps {
+    value?: StudioValue
     code?: string
     codeLanguage?: string
     copyLabel?: string
@@ -10,16 +11,20 @@ export interface CodePreviewProps extends StudioProps {
 }
 
 /** Headless behavior for the Code preview component. */
-export abstract class CodePreviewBase extends StudioComponentBase<CodePreviewProps> {
-    static observedAttributes = [...StudioComponentBase.observedAttributes, 'code', 'code-language', 'copy-label', 'copied-label']
+export abstract class CodePreviewBase extends Component<CodePreviewProps> {
+    static observedAttributes = [...Component.observedAttributes, 'value', 'code', 'code-language', 'copy-label', 'copied-label']
     readonly componentName = 'code-preview'
     readonly componentKind: StudioKind = 'display'
     code = ''
     codeLanguage = 'plaintext'
     copyLabel = ''
     copiedLabel = ''
+    value: StudioValue = ''
 
-    source(): string { return scalarText(this.code) || this.studioTextValue() }
+    source(): string {
+        const value = Array.isArray(this.value) ? this.value.join(', ') : scalarText(this.value)
+        return scalarText(this.code) || value
+    }
     copyText(): string { return scalarText(this.copyLabel) }
     copiedText(): string { return scalarText(this.copiedLabel) }
 }

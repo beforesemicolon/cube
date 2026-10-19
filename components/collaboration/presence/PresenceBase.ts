@@ -1,4 +1,4 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { finite, scalarText } from '../../core/value.js'
 import type { AvatarStatus } from '../../data-display/avatar/AvatarBase.js'
 
@@ -15,7 +15,7 @@ export interface PresenceItem {
     disabled?: boolean
 }
 
-export interface PresenceProps extends UIProps {
+export interface PresenceProps extends ComponentProps {
     items?: readonly PresenceItem[]
     maxVisible?: number
     summary?: string
@@ -24,9 +24,9 @@ export interface PresenceProps extends UIProps {
 }
 
 /** Headless collaborator-list behavior shared by Presence renderers. */
-export abstract class PresenceBase extends UIComponent<PresenceProps> {
+export abstract class PresenceBase extends Component<PresenceProps> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes,
+        ...Component.observedAttributes,
         'items', 'max-visible', 'summary', 'overflow-label', 'empty-label',
     ]
 

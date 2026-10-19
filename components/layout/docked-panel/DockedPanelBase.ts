@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool } from '../../core/value.js'
 
-export interface DockedPanelProps extends UIProps {
+export interface DockedPanelProps extends ComponentProps {
     expanded?: boolean
     collapsible?: boolean
     placement?: 'start' | 'end' | 'bottom'
@@ -10,8 +10,8 @@ export interface DockedPanelProps extends UIProps {
 }
 
 /** Docked panel disclosure behavior without prescribing its contents. */
-export abstract class DockedPanelBase<P extends DockedPanelProps = DockedPanelProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'expanded', 'collapsible', 'placement', 'expand-label', 'collapse-label']
+export abstract class DockedPanelBase<P extends DockedPanelProps = DockedPanelProps> extends Component<P> {
+    static observedAttributes = [...Component.observedAttributes, 'expanded', 'collapsible', 'placement', 'expand-label', 'collapse-label']
     expanded = true
     collapsible = true
     placement: 'start' | 'end' | 'bottom' = 'end'

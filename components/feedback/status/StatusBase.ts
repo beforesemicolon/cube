@@ -1,10 +1,10 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { MessageBase, type MessageProps } from '../MessageBase.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface StatusProps extends StudioProps {}
+export interface StatusProps extends MessageProps {}
 
 /** Headless behavior for the Status component. */
-export abstract class StatusBase extends StudioComponentBase<StatusProps> {
+export abstract class StatusBase extends MessageBase<StatusProps> {
     readonly componentName = 'status'
     readonly componentKind: StudioKind = 'status'
 }

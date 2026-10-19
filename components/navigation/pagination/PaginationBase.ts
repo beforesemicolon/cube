@@ -1,12 +1,12 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { pageRange } from '../../core/items.js'
 import { finite } from '../../core/value.js'
 
-export interface PaginationProps extends UIProps { page?: number; totalPages?: number; siblings?: number; previousLabel?: string; nextLabel?: string; pageLabel?: string }
+export interface PaginationProps extends ComponentProps { page?: number; totalPages?: number; siblings?: number; previousLabel?: string; nextLabel?: string; pageLabel?: string }
 
 /** Page-range calculation and cancelable selection behavior. */
-export abstract class PaginationBase<P extends PaginationProps = PaginationProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'page', 'total-pages', 'siblings', 'previous-label', 'next-label', 'page-label']
+export abstract class PaginationBase<P extends PaginationProps = PaginationProps> extends Component<P> {
+    static observedAttributes = [...Component.observedAttributes, 'page', 'total-pages', 'siblings', 'previous-label', 'next-label', 'page-label']
     page = 1
     totalPages = 1
     siblings = 1

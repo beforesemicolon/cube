@@ -1,4 +1,7 @@
 export * from './slider/index.js'
+export * from './InputBase.js'
+export * from './NumericInputBase.js'
+export * from './ChoiceControlBase.js'
 export * from './select/index.js'
 export * from './radio-group/index.js'
 export * from './calendar/index.js'

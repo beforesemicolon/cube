@@ -1,10 +1,10 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 
 export type DevicePreset = 'desktop' | 'tablet' | 'mobile' | 'custom'
 export type DeviceOrientation = 'portrait' | 'landscape'
 
-export interface DeviceFrameProps extends UIProps {
+export interface DeviceFrameProps extends ComponentProps {
     device?: DevicePreset
     orientation?: DeviceOrientation
     width?: number
@@ -20,9 +20,9 @@ const presetSizes: Readonly<Record<Exclude<DevicePreset, 'custom'>, readonly [nu
 }
 
 /** Headless device sizing and orientation behavior. */
-export abstract class DeviceFrameBase extends UIComponent<DeviceFrameProps> {
+export abstract class DeviceFrameBase extends Component<DeviceFrameProps> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'device', 'orientation', 'width', 'height', 'show-chrome', 'show-orientation-control',
+        ...Component.observedAttributes, 'device', 'orientation', 'width', 'height', 'show-chrome', 'show-orientation-control',
         'orientation-label', 'screen-label',
     ]
 

@@ -1,11 +1,11 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { normalizeItems, type ActionItem, type NormalizedItem } from '../../core/items.js'
 
-export interface MenuProps extends UIProps { items?: ActionItem[]; loop?: boolean }
+export interface MenuProps extends ComponentProps { items?: ActionItem[]; loop?: boolean }
 
 /** Menu item normalization and activation without choosing popup or inline rendering. */
-export abstract class MenuBase<P extends MenuProps = MenuProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'items', 'loop']
+export abstract class MenuBase<P extends MenuProps = MenuProps> extends Component<P> {
+    static observedAttributes = [...Component.observedAttributes, 'items', 'loop']
     items: ActionItem[] = []
     loop = true
     get normalizedItems(): NormalizedItem[] { return normalizeItems(this.items) }

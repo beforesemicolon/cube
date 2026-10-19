@@ -1,8 +1,8 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
 
 export type WorkspacePanel = 'start' | 'end' | 'bottom'
-export interface WorkspaceProps extends UIProps {
+export interface WorkspaceProps extends ComponentProps {
     startOpen?: boolean
     endOpen?: boolean
     bottomOpen?: boolean
@@ -41,9 +41,9 @@ interface PersistedWorkspaceState {
 }
 
 /** Coordinated panel state, resizing and responsive behavior for application workspaces. */
-export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> extends UIComponent<P> {
+export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> extends Component<P> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'start-open', 'end-open', 'bottom-open', 'start-size', 'end-size', 'bottom-size',
+        ...Component.observedAttributes, 'start-open', 'end-open', 'bottom-open', 'start-size', 'end-size', 'bottom-size',
         'min-start-size', 'max-start-size', 'min-end-size', 'max-end-size', 'min-bottom-size', 'max-bottom-size',
         'resize-step', 'mobile-breakpoint', 'mobile-panel', 'persist-key', 'start-label', 'end-label', 'bottom-label',
         'open-start-label', 'close-start-label', 'open-end-label', 'close-end-label', 'open-bottom-label',

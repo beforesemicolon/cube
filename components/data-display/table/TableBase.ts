@@ -1,4 +1,4 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
 
 export type TablePrimitive = string | number | boolean | null | undefined
@@ -52,7 +52,7 @@ export interface TableGroupModel {
     readonly rows: readonly TableRowModel[]
 }
 
-export interface TableProps<TItem extends object = TableRecord> extends UIProps {
+export interface TableProps<TItem extends object = TableRecord> extends ComponentProps {
     items?: readonly TItem[]
     columns?: readonly TableColumn<TItem>[]
     loading?: boolean
@@ -138,9 +138,9 @@ function template(text: string, values: Readonly<Record<string, string | number>
 }
 
 /** Renderer-independent table behavior: sorting, selection, grouping and tree expansion. */
-export abstract class TableBase extends UIComponent<TableProps> {
+export abstract class TableBase extends Component<TableProps> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes,
+        ...Component.observedAttributes,
         'items', 'columns', 'loading', 'loading-rows', 'selection-mode', 'selected-keys', 'active-key', 'item-key',
         'selectable-field', 'sort-by', 'sort-direction', 'row-activation', 'group-by', 'group-label-by', 'parent-by',
         'children-by', 'expanded-keys', 'collapsed-group-keys', 'resizable', 'sticky-header', 'sticky-columns', 'striped',

@@ -1,4 +1,4 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 import type { ButtonVariant } from '../../action/button/ButtonBase.js'
 
@@ -49,7 +49,7 @@ export interface AccordionBulkExpansionDetail {
 
 export type AccordionExpansionChangeDetail = AccordionExpansionDetail | AccordionBulkExpansionDetail
 
-export interface AccordionProps extends UIProps {
+export interface AccordionProps extends ComponentProps {
     items?: readonly AccordionItem[]
     expandedIds?: readonly string[]
     multiple?: boolean
@@ -61,9 +61,9 @@ export interface AccordionProps extends UIProps {
 }
 
 /** Renderer-independent accordion behavior, including expansion policy and public controls. */
-export abstract class AccordionBase extends UIComponent<AccordionProps> {
+export abstract class AccordionBase extends Component<AccordionProps> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes,
+        ...Component.observedAttributes,
         'items', 'expanded-ids', 'multiple', 'collapsible', 'animated', 'variant', 'heading-level', 'empty-label',
     ]
 

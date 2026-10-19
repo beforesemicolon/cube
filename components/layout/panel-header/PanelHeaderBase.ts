@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
 
-export interface PanelHeaderProps extends UIProps {
+export interface PanelHeaderProps extends ComponentProps {
     collapsible?: boolean
     expanded?: boolean
     expandLabel?: string
@@ -9,8 +9,8 @@ export interface PanelHeaderProps extends UIProps {
 }
 
 /** Disclosure behavior for a panel heading, independent from its renderer. */
-export abstract class PanelHeaderBase<P extends PanelHeaderProps = PanelHeaderProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'collapsible', 'expanded', 'expand-label', 'collapse-label']
+export abstract class PanelHeaderBase<P extends PanelHeaderProps = PanelHeaderProps> extends Component<P> {
+    static observedAttributes = [...Component.observedAttributes, 'collapsible', 'expanded', 'expand-label', 'collapse-label']
     collapsible = false
     expanded = true
     expandLabel = ''

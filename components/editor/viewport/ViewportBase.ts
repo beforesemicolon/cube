@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
 
-export interface ViewportProps extends UIProps {
+export interface ViewportProps extends ComponentProps {
     zoom?: number
     minZoom?: number
     maxZoom?: number
@@ -25,9 +25,9 @@ export interface ViewportChangeDetail {
 }
 
 /** Headless pan and zoom behavior for an editor workspace. */
-export abstract class ViewportBase extends UIComponent<ViewportProps> {
+export abstract class ViewportBase extends Component<ViewportProps> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'zoom', 'min-zoom', 'max-zoom', 'zoom-step', 'x', 'y', 'pannable', 'grid', 'controls',
+        ...Component.observedAttributes, 'zoom', 'min-zoom', 'max-zoom', 'zoom-step', 'x', 'y', 'pannable', 'grid', 'controls',
         'zoom-in-label', 'zoom-out-label', 'reset-label', 'position-label',
     ]
 

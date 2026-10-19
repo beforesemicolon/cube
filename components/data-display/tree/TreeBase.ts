@@ -1,10 +1,10 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { CollectionBase, type CollectionProps } from '../CollectionBase.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface TreeProps extends StudioProps {}
+export interface TreeProps extends CollectionProps {}
 
 /** Headless behavior for the Tree component. */
-export abstract class TreeBase extends StudioComponentBase<TreeProps> {
+export abstract class TreeBase extends CollectionBase<TreeProps> {
     readonly componentName = 'tree'
     readonly componentKind: StudioKind = 'collection'
 }

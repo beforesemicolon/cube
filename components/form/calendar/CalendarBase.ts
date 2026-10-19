@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { finite, scalarText } from '../../core/value.js'
 
-export interface CalendarProps extends UIProps {
+export interface CalendarProps extends ComponentProps {
     value?: string
     min?: string
     max?: string
@@ -22,8 +22,8 @@ function validDate(value: string): Date | undefined {
     return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : undefined
 }
 
-export abstract class CalendarBase<P extends CalendarProps = CalendarProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'value', 'min', 'max', 'first-day-of-week', 'previous-label', 'next-label']
+export abstract class CalendarBase<P extends CalendarProps = CalendarProps> extends Component<P> {
+    static observedAttributes = [...Component.observedAttributes, 'value', 'min', 'max', 'first-day-of-week', 'previous-label', 'next-label']
     value = ''
     min = ''
     max = ''

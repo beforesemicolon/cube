@@ -1,4 +1,5 @@
 export * from './badge/index.js'
+export * from './CollectionBase.js'
 export * from './avatar/index.js'
 export * from './card/index.js'
 export * from './list/index.js'

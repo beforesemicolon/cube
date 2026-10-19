@@ -1,4 +1,6 @@
 export * from './flashbar/index.js'
+export * from './MessageBase.js'
+export * from './ProgressIndicatorBase.js'
 export * from './status/index.js'
 export * from './empty-state/index.js'
 export * from './skeleton/index.js'

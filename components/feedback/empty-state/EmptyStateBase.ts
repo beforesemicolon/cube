@@ -1,10 +1,10 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { MessageBase, type MessageProps } from '../MessageBase.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface EmptyStateProps extends StudioProps {}
+export interface EmptyStateProps extends MessageProps {}
 
 /** Headless behavior for the Empty state component. */
-export abstract class EmptyStateBase extends StudioComponentBase<EmptyStateProps> {
+export abstract class EmptyStateBase extends MessageBase<EmptyStateProps> {
     readonly componentName = 'empty-state'
     readonly componentKind: StudioKind = 'status'
 }

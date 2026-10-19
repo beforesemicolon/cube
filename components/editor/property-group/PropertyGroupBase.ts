@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
 
-export interface PropertyGroupProps extends UIProps {
+export interface PropertyGroupProps extends ComponentProps {
     expanded?: boolean
     collapsible?: boolean
     dirty?: boolean
@@ -13,9 +13,9 @@ export interface PropertyGroupProps extends UIProps {
 }
 
 /** Inspector group disclosure and reset behavior, independent from its property controls. */
-export abstract class PropertyGroupBase<P extends PropertyGroupProps = PropertyGroupProps> extends UIComponent<P> {
+export abstract class PropertyGroupBase<P extends PropertyGroupProps = PropertyGroupProps> extends Component<P> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'expanded', 'collapsible', 'dirty', 'mixed', 'reset-label', 'mixed-label', 'expand-label', 'collapse-label',
+        ...Component.observedAttributes, 'expanded', 'collapsible', 'dirty', 'mixed', 'reset-label', 'mixed-label', 'expand-label', 'collapse-label',
     ]
     expanded = true
     collapsible = true

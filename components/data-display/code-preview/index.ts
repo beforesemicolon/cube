@@ -58,9 +58,9 @@ export class CodePreview extends CodePreviewBase {
         const language = highlighted.language
         const source = this.source()
         this.languageNode.textContent = language
-        aria(this.preNode, 'aria-label', this.studioAccessibleName())
+        aria(this.preNode, 'aria-label', this.accessibleName())
         actionLabel(this.copyButton, this.copyText())
-        this.copyButton.disabled = this.studioDisabled() || !source
+        this.copyButton.disabled = this.unavailable || !source
         this.codeNode.className = `language-${language}`
         if (language === 'plaintext') this.codeNode.textContent = source
         else this.codeNode.innerHTML = highlighted.html
@@ -68,7 +68,7 @@ export class CodePreview extends CodePreviewBase {
 
     private async copySource(): Promise<void> {
         const source = this.source()
-        if (!source || this.studioDisabled()) return
+        if (!source || this.unavailable) return
         try {
             await navigator.clipboard.writeText(source)
             if (this.statusNode) this.statusNode.textContent = this.copiedText()

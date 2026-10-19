@@ -1,12 +1,12 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool } from '../../core/value.js'
 import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength, type PopupPlacement } from '../../core/popup.js'
 
-export interface PopoverProps extends UIProps, PopupConstraintProps { open?: boolean; placement?: PopupPlacement }
+export interface PopoverProps extends ComponentProps, PopupConstraintProps { open?: boolean; placement?: PopupPlacement }
 
 /** Anchored disclosure state without prescribing trigger or panel content. */
-export abstract class PopoverBase<P extends PopoverProps = PopoverProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'open', 'placement', ...popupConstraintAttributes]
+export abstract class PopoverBase<P extends PopoverProps = PopoverProps> extends Component<P> {
+    static observedAttributes = [...Component.observedAttributes, 'open', 'placement', ...popupConstraintAttributes]
     open = false
     placement: PopupPlacement = 'bottom-start'
     popupMaxWidth: PopupLength = '360px'

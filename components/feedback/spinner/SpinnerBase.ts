@@ -1,10 +1,12 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface SpinnerProps extends StudioProps {}
+export interface SpinnerProps extends ComponentProps { status?: string }
 
 /** Headless behavior for the Spinner component. */
-export abstract class SpinnerBase extends StudioComponentBase<SpinnerProps> {
+export abstract class SpinnerBase extends Component<SpinnerProps> {
+    static observedAttributes = [...Component.observedAttributes, 'status']
+    status = ''
     readonly componentName = 'spinner'
     readonly componentKind: StudioKind = 'progress'
 }

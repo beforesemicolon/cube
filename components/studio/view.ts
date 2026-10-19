@@ -1,12 +1,11 @@
 import { aria, editorCSS, el, fragment, sheet, slot, uid } from '../core/editor-dom.js'
-import { scalarText } from '../core/value.js'
+import { bool, finite, scalarText } from '../core/value.js'
 import { createIcon } from '../icons/paths.js'
 import { actionLabel, createButton, createIconButton } from '../action/create.js'
 import type { Button } from '../action/button/index.js'
 import type { Select } from '../form/select/index.js'
 import type { UnitInputBase } from '../form/unit-input/UnitInputBase.js'
 import { normalizeRange } from '../form/model.js'
-import type { StudioComponentBase } from './StudioComponentBase.js'
 import type { StudioItem, StudioValue } from './types.js'
 
 export interface StudioView {
@@ -15,7 +14,99 @@ export interface StudioView {
     update(): void
 }
 
-const fieldControlKinds: ReadonlySet<StudioComponentBase['componentKind']> = new Set([
+export interface StudioViewSource extends HTMLElement {
+    readonly componentName: string
+    readonly componentKind: import('./types.js').StudioKind
+    label: string
+    accessibleLabel: string
+    description: string
+    disabled: boolean
+    value?: StudioValue
+    items?: readonly StudioItem[]
+    placeholder?: string
+    status?: string
+    actionLabel?: string
+    emptyLabel?: string
+    min?: number
+    max?: number
+    step?: number
+    progress?: number
+    checked?: boolean
+    open?: boolean
+    multiple?: boolean
+    required?: boolean
+    readOnly?: boolean
+    invalid?: boolean
+    error?: string
+    expanded?: boolean
+    orientation?: 'horizontal' | 'vertical'
+    emit(name: string, detail?: object): void
+}
+
+class StudioViewAdapter {
+    private refreshView: () => void = () => undefined
+    constructor(readonly source: StudioViewSource) {}
+    setRefresh(refresh: () => void): void { this.refreshView = refresh }
+    get componentName(): string { return this.source.componentName }
+    get componentKind(): StudioViewSource['componentKind'] { return this.source.componentKind }
+    get dataset(): DOMStringMap { return this.source.dataset }
+    get label(): string { return this.source.label }
+    get actionLabel(): string { return scalarText(this.source.actionLabel) }
+    get orientation(): 'horizontal' | 'vertical' { return this.source.orientation === 'vertical' ? 'vertical' : 'horizontal' }
+    get value(): StudioValue | undefined { return this.source.value }
+    emit(name: string, detail?: object): void { this.source.emit(name, detail) }
+    toggleAttribute(name: string, force?: boolean): boolean { return this.source.toggleAttribute(name, force) }
+    studioLabel(): string { return scalarText(this.source.label) }
+    studioAccessibleName(): string { return scalarText(this.source.accessibleLabel) || this.studioLabel() }
+    studioDescription(): string { return scalarText(this.source.description) }
+    studioPlaceholder(): string { return scalarText(this.source.placeholder) }
+    studioStatus(): string { return scalarText(this.source.status) }
+    studioEmptyLabel(): string { return scalarText(this.source.emptyLabel) }
+    studioActionLabel(): string { return scalarText(this.source.actionLabel) }
+    studioItems(): readonly StudioItem[] { return Array.isArray(this.source.items) ? this.source.items : [] }
+    studioDisabled(): boolean { return bool(this.source.disabled) }
+    studioReadOnly(): boolean { return bool(this.source.readOnly) }
+    studioChecked(): boolean { return bool(this.source.checked) }
+    studioOpen(): boolean { return bool(this.source.open) }
+    studioExpanded(): boolean { return bool(this.source.expanded) }
+    studioRequired(): boolean { return bool(this.source.required) }
+    studioInvalid(): boolean { return bool(this.source.invalid) || this.source.hasAttribute('data-field-invalid') }
+    studioError(): string { return scalarText(this.source.error) }
+    studioMultiple(): boolean { return bool(this.source.multiple) }
+    studioNumber(name: 'min' | 'max' | 'step' | 'progress'): number {
+        const fallback = name === 'max' ? 100 : name === 'step' ? 1 : 0
+        return finite(this.source[name], fallback)
+    }
+    studioTextValue(): string {
+        const value = this.source.value
+        if (Array.isArray(value)) return value.join(', ')
+        return typeof value === 'string' || typeof value === 'number' ? String(value) : ''
+    }
+    setValue(value: StudioValue, originalEvent?: Event): boolean {
+        if (this.studioDisabled() || this.studioReadOnly()) return false
+        const detail = { value, originalEvent }
+        if (!this.request('cb-before-change', detail)) return false
+        this.source.value = value
+        if (typeof value === 'boolean' && 'checked' in this.source) this.source.checked = value
+        this.refreshView()
+        this.emit('cb-change', detail)
+        return true
+    }
+    activate(item?: StudioItem, originalEvent?: Event): boolean {
+        if (this.studioDisabled() || item?.disabled) return false
+        const detail = { item: item ?? null, value: item?.value ?? item?.id ?? this.source.value, originalEvent }
+        if (!this.request('cb-before-action', detail)) return false
+        if (item) this.source.value = item.value ?? item.id
+        this.refreshView()
+        this.emit('cb-action', detail)
+        return true
+    }
+    private request(name: string, detail: object): boolean {
+        return this.source.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }))
+    }
+}
+
+const fieldControlKinds: ReadonlySet<StudioViewSource['componentKind']> = new Set([
     'text', 'textarea', 'number', 'search', 'select', 'range', 'file', 'color', 'tokens',
 ])
 
@@ -129,7 +220,7 @@ cb-button[part~=token]{border:0;padding:0;background:transparent}cb-button[part~
 @container (max-width:360px){[part~=label-row],[part~=panel-header]{align-items:stretch;flex-direction:column}[part~=action]{inline-size:100%}}
 `
 
-function selected(host: StudioComponentBase, item: StudioItem): boolean {
+function selected(host: StudioViewAdapter, item: StudioItem): boolean {
     if (Array.isArray(host.value)) return host.value.includes(item.id)
     return String(host.value ?? '') === String(item.value ?? item.id) || item.selected === true
 }
@@ -167,18 +258,18 @@ function iconFor(name: string, itemId: string): string {
 }
 
 type StudioTextKey = 'nameLabel' | 'metadataLabel' | 'unitLabel' | 'decrementLabel' | 'incrementLabel' | 'fileLabel' | 'fileRequirements'
-function componentText(host: StudioComponentBase, key: StudioTextKey): string {
-    return scalarText((host as StudioComponentBase & Partial<Record<StudioTextKey, string>>)[key])
+function componentText(host: StudioViewAdapter, key: StudioTextKey): string {
+    return scalarText((host.source as StudioViewSource & Partial<Record<StudioTextKey, string>>)[key])
 }
 
-function studioAction(host: StudioComponentBase, part: string, label: string, item?: StudioItem): Button {
+function studioAction(host: StudioViewAdapter, part: string, label: string, item?: StudioItem): Button {
     const control = createButton(part, event => host.activate(item, event))
     actionLabel(control, label)
     control.disabled = host.studioDisabled() || item?.disabled === true
     return control
 }
 
-function listView(host: StudioComponentBase, role: 'listbox' | 'tree' = 'listbox'): { node: HTMLElement; update: () => void } {
+function listView(host: StudioViewAdapter, role: 'listbox' | 'tree' = 'listbox'): { node: HTMLElement; update: () => void } {
     const node = el('div', 'list collection')
     node.setAttribute('role', role)
     const layout = collectionLayout(host.componentName)
@@ -244,7 +335,7 @@ function editorField(label: string, value: string): HTMLElement {
     return field
 }
 
-function createEditorContent(host: StudioComponentBase): HTMLElement {
+function createEditorContent(host: StudioViewAdapter): HTMLElement {
     const content = el('div', 'editor-content')
     if (host.componentName === 'gradient-editor') {
         const preview = el('div', 'preview-block gradient-preview', host.studioTextValue())
@@ -260,7 +351,7 @@ function createEditorContent(host: StudioComponentBase): HTMLElement {
     return content
 }
 
-function displayContent(host: StudioComponentBase): HTMLElement {
+function displayContent(host: StudioViewAdapter): HTMLElement {
     const content = el('div', 'display-content')
     const value = host.studioTextValue() || host.studioLabel()
     if (host.componentName === 'badge') {
@@ -281,7 +372,7 @@ function displayContent(host: StudioComponentBase): HTMLElement {
     return content
 }
 
-function shellContent(host: StudioComponentBase): HTMLElement {
+function shellContent(host: StudioViewAdapter): HTMLElement {
     const bar = el('div', 'shell-bar')
     const primary = el('div', 'shell-group')
     const secondary = el('div', 'shell-group')
@@ -300,7 +391,7 @@ function shellContent(host: StudioComponentBase): HTMLElement {
     return bar
 }
 
-function panelContent(host: StudioComponentBase): HTMLElement {
+function panelContent(host: StudioViewAdapter): HTMLElement {
     const content = el('div', 'panel-content')
     const items = host.studioItems()
     if (host.componentName === 'floating-toolbar') {
@@ -322,7 +413,8 @@ function panelContent(host: StudioComponentBase): HTMLElement {
     return content
 }
 
-export function createStudioView(host: StudioComponentBase): StudioView {
+export function createStudioView(source: StudioViewSource): StudioView {
+    const host = new StudioViewAdapter(source)
     const fieldControl = fieldControlKinds.has(host.componentKind)
     const root = el('div', 'root')
     root.dataset.component = host.componentName
@@ -358,7 +450,7 @@ export function createStudioView(host: StudioComponentBase): StudioView {
             node.setAttribute('aria-label', host.studioAccessibleName())
         }
         if (host.componentName === 'unit-input') {
-            const unitHost = host as UnitInputBase
+            const unitHost = source as UnitInputBase
             const shell = el('div', 'field-shell')
             const unit = el('span', 'field-affix unit unit-static')
             unit.setAttribute('aria-hidden', 'true')
@@ -386,8 +478,8 @@ export function createStudioView(host: StudioComponentBase): StudioView {
                 unitSelect.options = [...options]
                 unitSelect.value = selectedUnit
                 unitSelect.accessibleLabel = componentText(host, 'unitLabel')
-                unitSelect.disabled = unitHost.studioDisabled()
-                unitSelect.readOnly = unitHost.studioReadOnly()
+                unitSelect.disabled = host.studioDisabled()
+                unitSelect.readOnly = host.studioReadOnly()
                 unitSelect.popupMaxWidth = unitHost.popupMaxWidth
                 unitSelect.popupMaxHeight = unitHost.popupMaxHeight
                 if (visibleUnit && node instanceof HTMLInputElement) node.setAttribute('aria-valuetext', `${node.value} ${visibleUnit}`)
@@ -692,6 +784,7 @@ export function createStudioView(host: StudioComponentBase): StudioView {
             if (host.componentKind === 'collection' || host.componentKind === 'collaboration') aria(control, 'aria-label', host.studioAccessibleName())
         }
     }
+    host.setRefresh(update)
     return { root: fragment(sheet(studioCSS), root), control, update }
 }
 

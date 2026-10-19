@@ -1,16 +1,16 @@
-import { UIComponent, type UIProps } from '../core/UIComponent.js'
+import { Component, type ComponentProps } from '../core/Component.js'
 import { normalizeItems, type ActionItem, type NormalizedItem } from '../core/items.js'
 import { scalarText } from '../core/value.js'
 
-export interface ChoiceGroupProps extends UIProps {
+export interface ChoiceGroupProps extends ComponentProps {
     items?: ActionItem[]
     value?: string
     orientation?: 'horizontal' | 'vertical'
 }
 
 /** Single-selection behavior shared by segmented controls and tabs. */
-export abstract class ChoiceGroupBase<P extends ChoiceGroupProps = ChoiceGroupProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'items', 'value', 'orientation']
+export abstract class ChoiceGroupBase<P extends ChoiceGroupProps = ChoiceGroupProps> extends Component<P> {
+    static observedAttributes = [...Component.observedAttributes, 'items', 'value', 'orientation']
     items: ActionItem[] = []
     value = ''
     orientation: ChoiceGroupProps['orientation'] = 'horizontal'

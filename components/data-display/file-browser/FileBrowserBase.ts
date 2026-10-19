@@ -1,4 +1,4 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
 
 export type FileBrowserView = 'grid' | 'table'
@@ -18,7 +18,7 @@ export interface FileBrowserEntry {
     disabled?: boolean
 }
 export interface FileBrowserPathItem { id: string; label: string }
-export interface FileBrowserProps extends UIProps {
+export interface FileBrowserProps extends ComponentProps {
     entries?: readonly FileBrowserEntry[]
     currentFolderId?: string
     query?: string
@@ -68,9 +68,9 @@ function normalizeEntries(entries: readonly FileBrowserEntry[]): FileBrowserEntr
 }
 
 /** Navigation, filtering, sorting and selection behavior for files and folders. */
-export abstract class FileBrowserBase<P extends FileBrowserProps = FileBrowserProps> extends UIComponent<P> {
+export abstract class FileBrowserBase<P extends FileBrowserProps = FileBrowserProps> extends Component<P> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'entries', 'current-folder-id', 'query', 'view', 'sort-by', 'sort-direction',
+        ...Component.observedAttributes, 'entries', 'current-folder-id', 'query', 'view', 'sort-by', 'sort-direction',
         'selection-mode', 'selected-ids', 'searchable', 'loading', 'search-label', 'search-placeholder', 'grid-view-label',
         'table-view-label', 'breadcrumb-label', 'expand-path-label', 'root-label', 'name-label', 'type-label', 'size-label',
         'modified-label', 'empty-label', 'no-match-label', 'loading-label', 'open-entry-label', 'select-entry-label', 'deselect-entry-label',

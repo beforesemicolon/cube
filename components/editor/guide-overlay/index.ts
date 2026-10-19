@@ -14,7 +14,7 @@ export class GuideOverlay extends GuideOverlayBase {
     render(): Node { this.surface = el('div', 'guides'); return fragment(sheet(css), this.surface) }
     protected mount(): void { this.syncView() }
     protected update(): void { this.syncView() }
-    private syncView(): void {
+    protected syncView(): void {
         if (!this.surface) return
         const scale = Math.max(.01, finite(this.zoom, 1))
         this.surface.replaceChildren(...this.normalizedGuides().flatMap(guide => {

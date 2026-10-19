@@ -1,9 +1,9 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
 
 export type AvatarStatus = 'none' | 'online' | 'idle' | 'busy' | 'offline'
 
-export interface AvatarProps extends UIProps {
+export interface AvatarProps extends ComponentProps {
     name?: string
     src?: string
     initials?: string
@@ -33,9 +33,9 @@ function safeImageSource(value: string, base: string): string {
 }
 
 /** Headless identity, fallback and presence-state behavior shared by Avatar renderers. */
-export abstract class AvatarBase extends UIComponent<AvatarProps> {
+export abstract class AvatarBase extends Component<AvatarProps> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes,
+        ...Component.observedAttributes,
         'name', 'src', 'initials', 'color', 'status', 'status-label', 'decorative',
     ]
 

@@ -1,13 +1,13 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import type { ActionItem } from '../../core/items.js'
 import { PopupController, popupConstraintAttributes, type PopupConstraintProps, type PopupLength, type PopupPlacement } from '../../core/popup.js'
 import { bool } from '../../core/value.js'
 
-export interface DropdownProps extends UIProps, PopupConstraintProps { items?: ActionItem[]; open?: boolean; placement?: PopupPlacement; icon?: string }
+export interface DropdownProps extends ComponentProps, PopupConstraintProps { items?: ActionItem[]; open?: boolean; placement?: PopupPlacement; icon?: string }
 
 /** Trigger, popup positioning and open-state behavior without choosing either renderer. */
-export abstract class DropdownBase<P extends DropdownProps = DropdownProps> extends UIComponent<P> {
-    static observedAttributes = [...UIComponent.observedAttributes, 'items', 'open', 'placement', 'icon', ...popupConstraintAttributes]
+export abstract class DropdownBase<P extends DropdownProps = DropdownProps> extends Component<P> {
+    static observedAttributes = [...Component.observedAttributes, 'items', 'open', 'placement', 'icon', ...popupConstraintAttributes]
     items: ActionItem[] = []
     open = false
     placement: PopupPlacement = 'bottom-start'

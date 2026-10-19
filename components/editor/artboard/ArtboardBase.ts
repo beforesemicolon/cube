@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 
-export interface ArtboardProps extends UIProps {
+export interface ArtboardProps extends ComponentProps {
     width?: number
     height?: number
     background?: string
@@ -14,9 +14,9 @@ export interface ArtboardProps extends UIProps {
 export interface ArtboardSelectDetail { readonly selected: boolean; readonly originalEvent?: Event }
 
 /** Headless behavior for a bounded, selectable document surface. */
-export abstract class ArtboardBase extends UIComponent<ArtboardProps> {
+export abstract class ArtboardBase extends Component<ArtboardProps> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'width', 'height', 'background', 'selected', 'selectable', 'show-dimensions', 'dimensions-label',
+        ...Component.observedAttributes, 'width', 'height', 'background', 'selected', 'selectable', 'show-dimensions', 'dimensions-label',
     ]
 
     width = 640

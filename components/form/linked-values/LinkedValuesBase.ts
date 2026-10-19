@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
 
-export interface LinkedValuesProps extends UIProps {
+export interface LinkedValuesProps extends ComponentProps {
     firstValue?: number
     secondValue?: number
     firstName?: string
@@ -17,10 +17,10 @@ export interface LinkedValuesProps extends UIProps {
 }
 
 /** Coupled numeric-value behavior for dimensions, offsets and other paired properties. */
-export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValuesProps> extends UIComponent<P> {
+export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValuesProps> extends Component<P> {
     static formAssociated = true
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'first-value', 'second-value', 'first-name', 'second-name', 'first-label', 'second-label',
+        ...Component.observedAttributes, 'first-value', 'second-value', 'first-name', 'second-name', 'first-label', 'second-label',
         'linked', 'min', 'max', 'step', 'link-label', 'unlink-label',
     ]
     firstValue = 0

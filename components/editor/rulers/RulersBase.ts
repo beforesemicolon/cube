@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 
-export interface RulersProps extends UIProps {
+export interface RulersProps extends ComponentProps {
     zoom?: number
     originX?: number
     originY?: number
@@ -17,9 +17,9 @@ export interface RulersProps extends UIProps {
 export interface RulerCursorDetail { readonly x: number; readonly y: number; readonly originalEvent?: Event }
 
 /** Headless measurement and cursor behavior for editor rulers. */
-export abstract class RulersBase extends UIComponent<RulersProps> {
+export abstract class RulersBase extends Component<RulersProps> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'zoom', 'origin-x', 'origin-y', 'major-step', 'minor-divisions', 'cursor-x', 'cursor-y',
+        ...Component.observedAttributes, 'zoom', 'origin-x', 'origin-y', 'major-step', 'minor-divisions', 'cursor-x', 'cursor-y',
         'show-cursor', 'unit', 'coordinate-label',
     ]
 

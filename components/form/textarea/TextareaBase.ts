@@ -1,10 +1,10 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { InputBase, type InputProps } from '../InputBase.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface TextareaProps extends StudioProps {}
+export interface TextareaProps extends InputProps {}
 
 /** Headless behavior for the Textarea component. */
-export abstract class TextareaBase extends StudioComponentBase<TextareaProps> {
+export abstract class TextareaBase extends InputBase<TextareaProps> {
     readonly componentName = 'textarea'
     readonly componentKind: StudioKind = 'textarea'
 }

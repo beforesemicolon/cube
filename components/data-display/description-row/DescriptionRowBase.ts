@@ -1,10 +1,12 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
+import type { StudioKind, StudioValue } from '../../studio/types.js'
 
-export interface DescriptionRowProps extends StudioProps {}
+export interface DescriptionRowProps extends ComponentProps { value?: StudioValue }
 
 /** Headless behavior for the Description row component. */
-export abstract class DescriptionRowBase extends StudioComponentBase<DescriptionRowProps> {
+export abstract class DescriptionRowBase extends Component<DescriptionRowProps> {
+    static observedAttributes = [...Component.observedAttributes, 'value']
+    value: StudioValue = ''
     readonly componentName = 'description-row'
     readonly componentKind: StudioKind = 'display'
 }

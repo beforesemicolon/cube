@@ -1,10 +1,10 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { MessageBase, type MessageProps } from '../MessageBase.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface ToastProps extends StudioProps {}
+export interface ToastProps extends MessageProps {}
 
 /** Headless behavior for the Toast component. */
-export abstract class ToastBase extends StudioComponentBase<ToastProps> {
+export abstract class ToastBase extends MessageBase<ToastProps> {
     readonly componentName = 'toast'
     readonly componentKind: StudioKind = 'status'
 }

@@ -1,14 +1,14 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
 export type ButtonVariant = 'primary'|'secondary'|'outline'|'ghost'|'destructive'
-export interface ButtonProps extends UIProps {
+export interface ButtonProps extends ComponentProps {
     variant?: ButtonVariant; loading?:boolean; icon?:string; pressed?:boolean
     type?:'button'|'submit'|'reset'; name?:string; value?:string; formNoValidate?:boolean
     popupType?: 'menu'|'listbox'|'tree'|'grid'|'dialog'|''; popupExpanded?:boolean; popupControls?:string
 }
-export abstract class ButtonBase<P extends ButtonProps = ButtonProps> extends UIComponent<P> {
+export abstract class ButtonBase<P extends ButtonProps = ButtonProps> extends Component<P> {
     static formAssociated=true
-    static observedAttributes=[...UIComponent.observedAttributes,'variant','loading','icon','pressed','type','name','value','form-no-validate','popup-type','popup-expanded','popup-controls']
+    static observedAttributes=[...Component.observedAttributes,'variant','loading','icon','pressed','type','name','value','form-no-validate','popup-type','popup-expanded','popup-controls']
     variant:ButtonProps['variant']='secondary';loading=false;icon='';pressed:boolean|undefined=undefined;type:ButtonProps['type']='button';name='';value='';formNoValidate=false
     popupType:ButtonProps['popupType']='';popupExpanded=false;popupControls=''
     protected abstract actionElement(): HTMLElement | undefined

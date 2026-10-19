@@ -1,10 +1,10 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { NumericInputBase, type NumericInputProps } from '../NumericInputBase.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface NumberInputProps extends StudioProps {}
+export interface NumberInputProps extends NumericInputProps {}
 
 /** Headless behavior for the Number input component. */
-export abstract class NumberInputBase extends StudioComponentBase<NumberInputProps> {
+export abstract class NumberInputBase extends NumericInputBase<NumberInputProps> {
     readonly componentName = 'number-input'
     readonly componentKind: StudioKind = 'number'
 }

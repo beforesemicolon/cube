@@ -1,4 +1,5 @@
 import type { StoryObj } from '@storybook/web-components-vite'
+import { Component } from '../components/core/Component.js'
 import { iconPaths } from '../components/icons/paths.js'
 import { fieldControlTags, preview } from './helpers.js'
 
@@ -48,22 +49,6 @@ const objectProperties = new Set([
     'collapsedGroupKeys', 'entries', 'expandedIds', 'expandedKeys', 'guides', 'handleLabels', 'items', 'messages', 'options', 'recentColors', 'rect', 'selectedIds', 'selectedKeys', 'series', 'swatches', 'targets', 'theme', 'tracks',
     'units', 'visibleSegments', 'visibleSeries',
     'stops', 'xAxis', 'yAxis',
-])
-
-const stateProperties = new Set([
-    'busy', 'checked', 'disabled', 'expanded', 'invalid', 'loading', 'multi', 'multiple', 'native', 'open', 'pressed',
-    'readOnly', 'required', 'status', 'success', 'startOpen', 'endOpen', 'bottomOpen', 'mobilePanel',
-])
-
-const layoutProperties = new Set([
-    'align', 'alignContent', 'alignItems', 'alignSelf', 'area', 'autoColumns', 'autoCols', 'autoFlow', 'autoRows', 'background', 'bg', 'blockSize', 'border', 'collapseAt', 'columnGap', 'columns', 'gap', 'height', 'inline', 'inlineSize',
-    'justify', 'justifyContent', 'margin', 'maxBlockSize', 'maxHeight', 'maxInlineSize', 'maxWidth', 'minBlockSize', 'minHeight', 'minInlineSize', 'minWidth', 'orientation', 'popupMaxHeight', 'popupMaxWidth',
-    'overflow', 'padding', 'radius', 'reverse', 'rowGap', 'rows', 'shadow', 'size', 'template', 'templateAreas', 'templateColumns', 'templateCols', 'templateRows', 'variant', 'width', 'wrap',
-])
-
-const dataProperties = new Set([
-    'collapsedGroupKeys', 'entries', 'expandedIds', 'expandedKeys', 'guides', 'handleLabels', 'items', 'messages', 'options', 'recentColors', 'rect', 'selectedIds', 'selectedKeys', 'series', 'swatches', 'targets', 'theme', 'tracks', 'units', 'value', 'visibleSegments',
-    'stops', 'visibleSeries', 'xAxis', 'yAxis',
 ])
 
 const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
@@ -436,15 +421,6 @@ function descriptionFor(tag: string, property: string): string {
     return descriptions[property] ?? `Controls the ${humanize(property)} property.`
 }
 
-function categoryFor(tag: string, property: string): string {
-    if (tag === 'cb-table' && property === 'columns') return 'Data'
-    if (property === 'accessibleLabel' || property === 'searchLabel' || property === 'unitLabel' || property.endsWith('Label')) return 'Accessibility'
-    if (stateProperties.has(property)) return 'State'
-    if (layoutProperties.has(property)) return 'Layout'
-    if (dataProperties.has(property)) return 'Data'
-    return 'Content and behavior'
-}
-
 function numberControl(property: string): NumberControl {
     return numberControls[property] ?? { type: 'number' }
 }
@@ -498,7 +474,7 @@ function typeSummary(tag: string, property: string, control: StoryControl['contr
     return 'string'
 }
 
-function definitionFor(tag: string, property: string): StoryControl {
+function definitionFor(tag: string, property: string, category: string): StoryControl {
     const options = property === 'valueFormatter' ? Object.keys(formatterMapping) : optionsFor(tag, property)
     const control = controlFor(tag, property)
     const taggedDefault = taggedDefaults[tag]?.[property]
@@ -511,11 +487,55 @@ function definitionFor(tag: string, property: string): StoryControl {
         ...(property === 'valueFormatter' ? { mapping: formatterMapping } : {}),
         description: descriptionFor(tag, property),
         table: {
-            category: categoryFor(tag, property),
+            category,
             type: { summary: typeSummary(tag, property, control, options) },
             defaultValue: { summary: defaultSummary },
         },
     }
+}
+
+interface ControlLayer {
+    readonly category: string
+    readonly attributes: readonly string[]
+}
+
+function componentTitle(tag: string): string {
+    const words = tag.replace(/^cb-/, '').split('-')
+    return words.map((word, index) => index === 0 ? `${word.charAt(0).toUpperCase()}${word.slice(1)}` : word).join(' ')
+}
+
+function familyTitle(constructor: ObservedElementConstructor): string {
+    return `${constructor.name.replace(/Base$/, '').replace(/([a-z])([A-Z])/g, '$1 $2')} family`
+}
+
+function parentConstructor(constructor: ObservedElementConstructor): ObservedElementConstructor | null {
+    return Object.getPrototypeOf(constructor) as ObservedElementConstructor | null
+}
+
+function controlLayers(tag: string, constructor: ObservedElementConstructor, wrapper = false): readonly ControlLayer[] {
+    const layers: ControlLayer[] = []
+    const componentBase = parentConstructor(constructor)
+    let current: ObservedElementConstructor | null = constructor
+    while (current && current !== Function.prototype) {
+        const parent = parentConstructor(current)
+        if (Object.hasOwn(current, 'observedAttributes')) {
+            const inherited = new Set(parent?.observedAttributes ?? [])
+            const attributes = (current.observedAttributes ?? []).filter(attribute => !inherited.has(attribute))
+            if (attributes.length) {
+                const category = current === Component
+                    ? 'Component'
+                    : wrapper
+                        ? 'Field wrapper'
+                        : current === componentBase || current === constructor
+                            ? componentTitle(tag)
+                            : familyTitle(current)
+                layers.push({ category, attributes })
+            }
+        }
+        if (current === Component) break
+        current = parent
+    }
+    return layers
 }
 
 function objectDefault(tag: string, property: string): object | null | undefined {
@@ -559,10 +579,17 @@ export function controlsFor(tag: string): StoryArgTypes {
     if (!constructor) throw new Error(`Cannot create Storybook controls before ${tag} is registered`)
     const fieldConstructor = fieldControlTags.has(tag) ? customElements.get('cb-field') as ObservedElementConstructor | undefined : undefined
     const controls: StoryArgTypes = {}
-    const attributes = new Set([...(constructor.observedAttributes ?? []), ...(fieldConstructor?.observedAttributes ?? [])])
-    for (const attribute of attributes) {
-        const property = attributeToProperty(attribute)
-        controls[property] = definitionFor(tag, property)
+    const layers = [
+        ...controlLayers(tag, constructor).filter(layer => layer.category !== 'Component'),
+        ...(fieldConstructor ? controlLayers('cb-field', fieldConstructor, true).filter(layer => layer.category !== 'Component') : []),
+        ...controlLayers(tag, constructor).filter(layer => layer.category === 'Component'),
+    ]
+    for (const layer of layers) {
+        for (const attribute of layer.attributes) {
+            const property = attributeToProperty(attribute)
+            if (controls[property]) continue
+            controls[property] = definitionFor(tag, property, layer.category)
+        }
     }
     return controls
 }

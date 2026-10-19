@@ -1,4 +1,4 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
 
 export interface LayerTreeItem {
@@ -14,7 +14,7 @@ export interface LayerTreeItem {
     draggable?: boolean
 }
 export type LayerDropPosition = 'before' | 'after' | 'inside'
-export interface LayerTreeProps extends UIProps {
+export interface LayerTreeProps extends ComponentProps {
     items?: readonly LayerTreeItem[]
     selectedIds?: readonly string[]
     expandedIds?: readonly string[]
@@ -87,9 +87,9 @@ function insertNode(items: readonly LayerTreeItem[], targetId: string, position:
 }
 
 /** Accessible hierarchical selection, disclosure, editing and reorder behavior. */
-export abstract class LayerTreeBase<P extends LayerTreeProps = LayerTreeProps> extends UIComponent<P> {
+export abstract class LayerTreeBase<P extends LayerTreeProps = LayerTreeProps> extends Component<P> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'items', 'selected-ids', 'expanded-ids', 'multiple', 'editable', 'reorderable',
+        ...Component.observedAttributes, 'items', 'selected-ids', 'expanded-ids', 'multiple', 'editable', 'reorderable',
         'show-visibility', 'show-lock', 'empty-label', 'expand-label', 'collapse-label', 'show-label', 'hide-label',
         'lock-label', 'unlock-label', 'rename-label', 'save-label', 'cancel-label', 'move-label',
     ]

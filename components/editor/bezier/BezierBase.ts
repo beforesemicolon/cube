@@ -1,7 +1,7 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
 
-export interface BezierProps extends UIProps {
+export interface BezierProps extends ComponentProps {
     value?: string
     x1?: number
     y1?: number
@@ -36,9 +36,9 @@ function parseCurve(value: string): BezierValue | null {
 function tidy(value: number): string { return String(Math.round(value * 1000) / 1000) }
 
 /** Headless cubic-bezier parsing, editing, and preview state. */
-export abstract class BezierBase extends UIComponent<BezierProps> {
+export abstract class BezierBase extends Component<BezierProps> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'value', 'x1', 'y1', 'x2', 'y2', 'duration', 'playing', 'curve-label', 'preview-label',
+        ...Component.observedAttributes, 'value', 'x1', 'y1', 'x2', 'y2', 'duration', 'playing', 'curve-label', 'preview-label',
         'play-label', 'pause-label', 'reset-label', 'x1-label', 'y1-label', 'x2-label', 'y2-label',
     ]
 

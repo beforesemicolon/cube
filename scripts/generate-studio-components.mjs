@@ -138,11 +138,12 @@ const studioBoardItems = [
 ]
 const existingCategoryExports = {
     action: ["export * from './button/index.js'", "export * from './split-button/index.js'", "export * from './button-group/index.js'", "export * from './toolbar/index.js'", "export * from './action-bar/index.js'", "export * from './shortcut/index.js'"],
-    form: ["export * from './slider/index.js'", "export * from './select/index.js'", "export * from './radio-group/index.js'", "export * from './calendar/index.js'", "export { normalizeRange, normalizeOptions } from './model.js'"],
+    form: ["export * from './InputBase.js'", "export * from './NumericInputBase.js'", "export * from './ChoiceControlBase.js'", "export * from './slider/index.js'", "export * from './select/index.js'", "export * from './radio-group/index.js'", "export * from './calendar/index.js'", "export { normalizeRange, normalizeOptions } from './model.js'"],
     layout: ["export * from './box/index.js'", "export * from './row/index.js'", "export * from './col/index.js'", "export * from './grid/index.js'", "export * from './divider/index.js'"],
     navigation: ["export * from './link/index.js'", "export * from './segmented-control/index.js'", "export * from './tabs/index.js'", "export * from './breadcrumb/index.js'", "export * from './menu/index.js'", "export * from './pagination/index.js'"],
     overlay: ["export * from './context-menu/index.js'", "export * from './dropdown/index.js'", "export * from './command-palette/index.js'", "export * from './tooltip/index.js'", "export * from './modal/index.js'", "export * from './alert-dialog/index.js'"],
-    feedback: ["export * from './flashbar/index.js'"],
+    feedback: ["export * from './MessageBase.js'", "export * from './ProgressIndicatorBase.js'", "export * from './flashbar/index.js'"],
+    'data-display': ["export * from './CollectionBase.js'"],
     media: ["export * from './audio-player/index.js'", "export * from './video-player/index.js'"],
 }
 const documentationKeys = {
@@ -159,12 +160,6 @@ const catalog = `import type { StudioBoardItem, StudioDefinition } from './types
 await mkdir(resolve('components/studio'), { recursive: true })
 await writeFile(resolve('components/studio/catalog.ts'), catalog)
 
-const handBuiltComponents = new Set(['avatar', 'code-preview', 'combobox', 'date-picker', 'presence', 'time-picker', 'unit-input'])
-const componentTextProps = {
-    stepper: [['decrementLabel', 'decrement-label'], ['incrementLabel', 'increment-label']],
-    'file-picker': [['fileLabel', 'file-label'], ['fileRequirements', 'file-requirements']],
-    table: [['nameLabel', 'name-label'], ['metadataLabel', 'metadata-label']],
-}
 for (const [category, entries] of definitionGroups) {
     const categoryDir = resolve('components', category)
     await mkdir(categoryDir, { recursive: true })
@@ -172,18 +167,6 @@ for (const [category, entries] of definitionGroups) {
     for (const {name, title, kind, className} of entries) {
         const dir = resolve(categoryDir, name)
         await mkdir(dir, { recursive: true })
-        if (handBuiltComponents.has(name)) {
-            exports.push(`export * from './${name}/index.js'`)
-            continue
-        }
-        const textProps = componentTextProps[name] ?? []
-        const propTypes = textProps.map(([property]) => `\n    ${property}?: string`).join('')
-        const propsDeclaration = textProps.length ? `{${propTypes}\n}` : '{}'
-        const observed = textProps.length ? `\n    static observedAttributes = [...StudioComponentBase.observedAttributes, ${textProps.map(([,attribute]) => quote(attribute)).join(', ')}]` : ''
-        const defaults = textProps.map(([property]) => `\n    ${property} = ''`).join('')
-        await writeFile(resolve(dir, `${className}Base.ts`), `import { StudioComponentBase } from '../../studio/StudioComponentBase.js'\nimport type { StudioKind, StudioProps } from '../../studio/types.js'\n\nexport interface ${className}Props extends StudioProps ${propsDeclaration}\n\n/** Headless behavior for the ${title} component. */\nexport abstract class ${className}Base extends StudioComponentBase<${className}Props> {${observed}${defaults}\n    readonly componentName = '${name}'\n    readonly componentKind: StudioKind = '${kind}'\n}\n`)
-        await writeFile(resolve(dir, 'base.ts'), `export { ${className}Base } from './${className}Base.js'\nexport type { ${className}Props } from './${className}Base.js'\n`)
-        await writeFile(resolve(dir, 'index.ts'), `import { register } from '../../core/Component.js'\nimport { createStudioView, type StudioView } from '../../studio/view.js'\nimport { ${className}Base } from './${className}Base.js'\n\nexport class ${className} extends ${className}Base {\n    private view?: StudioView\n    render(): Node { this.view = createStudioView(this); return this.view.root }\n    protected syncView(): void { this.view?.update() }\n}\n\nregister('cb-${name}', ${className})\nexport { ${className}Base }\nexport type { ${className}Props } from './${className}Base.js'\n`)
         exports.push(`export * from './${name}/index.js'`)
     }
     await writeFile(resolve(categoryDir, 'index.ts'), exports.join('\n') + '\n')
@@ -203,11 +186,11 @@ const sampleByKind = {
     file: `{ label: '${'${title}'}' }`,
     color: `{ label: '${'${title}'}', value: '#2563eb' }`,
     tokens: `{ label: '${'${title}'}', items }`,
-    display: `{ label: '${'${title}'}', value: 'Example', status: 'Ready' }`,
+    display: `{ label: '${'${title}'}', value: 'Example' }`,
     collection: `{ label: '${'${title}'}', value: 'one', items, emptyLabel: 'No items' }`,
     status: `{ label: '${'${title}'}', value: 'Ready', status: 'Updated' }`,
     progress: `{ label: '${'${title}'}', progress: 64, max: 100, status: '64%' }`,
-    panel: `{ label: '${'${title}'}', actionLabel: 'Open', expanded: true }`,
+    panel: `{ label: '${'${title}'}', actionLabel: 'Open' }`,
     canvas: `{ label: '${'${title}'}', accessibleLabel: '${'${title}'} canvas' }`,
     editor: `{ label: '${'${title}'}', actionLabel: 'Edit', value: '12 px' }`,
     shell: `{ label: '${'${title}'}', actionLabel: 'Open' }`,

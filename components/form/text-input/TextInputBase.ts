@@ -1,10 +1,10 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { InputBase, type InputProps } from '../InputBase.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface TextInputProps extends StudioProps {}
+export interface TextInputProps extends InputProps {}
 
 /** Headless behavior for the Text input component. */
-export abstract class TextInputBase extends StudioComponentBase<TextInputProps> {
+export abstract class TextInputBase extends InputBase<TextInputProps> {
     readonly componentName = 'text-input'
     readonly componentKind: StudioKind = 'text'
 }

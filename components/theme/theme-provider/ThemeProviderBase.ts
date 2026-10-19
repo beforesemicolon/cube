@@ -5,7 +5,7 @@ export interface ThemeProviderProps extends CommonProps { src?: string; theme?: 
 export abstract class ThemeProviderBase extends Component<ThemeProviderProps> {
     static observedAttributes = [...Component.observedAttributes, 'src', 'theme', 'appearance']
     src = ''; theme: ThemeDefinition | null = null; appearance: Appearance = 'system'
-    private request?: AbortController
+    private loadController?: AbortController
     private revision = 0
     private loaded: unknown = cubeTheme
     private original = new Map<string, [string, string]>()
@@ -16,7 +16,7 @@ export abstract class ThemeProviderBase extends Component<ThemeProviderProps> {
         this.load()
     }
     protected update(name: string): void { if (name === 'src' || name === 'theme') this.load(); else this.apply() }
-    protected unmount(): void { this.revision++; this.request?.abort(); this.restore() }
+    protected unmount(): void { this.revision++; this.loadController?.abort(); this.restore() }
     private restore(): void {
         for (const [name, [value, priority]] of this.original) {
             if (value) this.style.setProperty(name, value, priority); else this.style.removeProperty(name)
@@ -40,11 +40,11 @@ export abstract class ThemeProviderBase extends Component<ThemeProviderProps> {
     }
     private load(): void {
         const rev = ++this.revision
-        this.request?.abort()
+        this.loadController?.abort()
         const src = text(this.src).trim()
         if (!src) { this.loaded = this.theme ?? cubeTheme; this.apply(); return }
-        this.request = new AbortController()
-        const signal = this.request.signal
+        this.loadController = new AbortController()
+        const signal = this.loadController.signal
         void (async () => {
             const url = new URL(src, this.baseURI)
             if (!['https:', 'http:', 'blob:'].includes(url.protocol)) throw new TypeError('Unsupported theme URL')

@@ -1,5 +1,3 @@
-import type { UIProps } from '../core/UIComponent.js'
-
 export type StudioKind =
     | 'text' | 'textarea' | 'number' | 'search' | 'select' | 'choice' | 'range' | 'file' | 'color'
     | 'tokens' | 'display' | 'collection' | 'status' | 'progress' | 'panel' | 'canvas' | 'editor'
@@ -14,28 +12,6 @@ export interface StudioItem {
     disabled?: boolean
     selected?: boolean
     value?: string | number
-}
-
-export interface StudioProps extends UIProps {
-    value?: StudioValue
-    items?: readonly StudioItem[]
-    placeholder?: string
-    status?: string
-    actionLabel?: string
-    emptyLabel?: string
-    min?: number
-    max?: number
-    step?: number
-    progress?: number
-    checked?: boolean
-    open?: boolean
-    multiple?: boolean
-    required?: boolean
-    readOnly?: boolean
-    invalid?: boolean
-    error?: string
-    expanded?: boolean
-    orientation?: 'horizontal' | 'vertical'
 }
 
 export interface StudioDefinition {

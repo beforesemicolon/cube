@@ -1,9 +1,9 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
 
 export interface EditorRect { x: number; y: number; width: number; height: number }
 export type SelectionHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
-export interface SelectionOverlayProps extends UIProps {
+export interface SelectionOverlayProps extends ComponentProps {
     rect?: EditorRect
     rotation?: number
     movable?: boolean
@@ -28,9 +28,9 @@ function normalizedRect(rect: EditorRect | undefined): EditorRect {
 }
 
 /** Controlled move, resize and rotation behavior for a selected editor object. */
-export abstract class SelectionOverlayBase<P extends SelectionOverlayProps = SelectionOverlayProps> extends UIComponent<P> {
+export abstract class SelectionOverlayBase<P extends SelectionOverlayProps = SelectionOverlayProps> extends Component<P> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes, 'rect', 'rotation', 'movable', 'resizable', 'rotatable', 'move-step', 'min-width',
+        ...Component.observedAttributes, 'rect', 'rotation', 'movable', 'resizable', 'rotatable', 'move-step', 'min-width',
         'min-height', 'show-size', 'move-label', 'resize-label', 'rotate-label', 'size-label', 'handle-labels',
     ]
     rect: EditorRect = { x: 0, y: 0, width: 120, height: 80 }

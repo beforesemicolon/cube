@@ -29,6 +29,8 @@ test('every public component exposes controls and initialized args for every rea
         const splitArgs = storyArgsFor('cb-split-button', { items: [{ id: 'save', label: 'Save' }] })
         const maskedControls = controlsFor('cb-masked-input')
         const maskedArgs = storyArgsFor('cb-masked-input', {})
+        const cardControls = controlsFor('cb-card')
+        const badgeControls = controlsFor('cb-badge')
         const fieldProperties = ['helpText', 'details', 'detailsLabel', 'optionalLabel', 'invalid', 'success', 'successText']
         return {
             missingControls,
@@ -37,6 +39,9 @@ test('every public component exposes controls and initialized args for every rea
             splitItems: splitArgs.items,
             missingMaskedFieldControls: fieldProperties.filter(property => !(property in maskedControls)),
             missingMaskedFieldArgs: fieldProperties.filter(property => !(property in maskedArgs)),
+            cardProperties: Object.keys(cardControls),
+            cardCategories: Object.fromEntries(Object.entries(cardControls).map(([property, definition]) => [property, definition.table.category])),
+            badgeHasStatus: 'status' in badgeControls,
         }
     })
     expect(audit.missingControls).toEqual([])
@@ -45,4 +50,16 @@ test('every public component exposes controls and initialized args for every rea
     expect(audit.splitItems).toEqual([{ id: 'save', label: 'Save' }])
     expect(audit.missingMaskedFieldControls).toEqual([])
     expect(audit.missingMaskedFieldArgs).toEqual([])
+    expect(audit.cardProperties).toEqual(['value', 'items', 'actionLabel', 'label', 'accessibleLabel', 'description', 'disabled', 'size'])
+    expect(audit.cardCategories).toEqual({
+        value: 'Card',
+        items: 'Card',
+        actionLabel: 'Card',
+        label: 'Component',
+        accessibleLabel: 'Component',
+        description: 'Component',
+        disabled: 'Component',
+        size: 'Component',
+    })
+    expect(audit.badgeHasStatus).toBe(false)
 })

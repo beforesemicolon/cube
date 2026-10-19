@@ -1,10 +1,10 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { ProgressIndicatorBase, type ProgressIndicatorProps } from '../ProgressIndicatorBase.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface ProgressProps extends StudioProps {}
+export interface ProgressProps extends ProgressIndicatorProps {}
 
 /** Headless behavior for the Progress component. */
-export abstract class ProgressBase extends StudioComponentBase<ProgressProps> {
+export abstract class ProgressBase extends ProgressIndicatorBase<ProgressProps> {
     readonly componentName = 'progress'
     readonly componentKind: StudioKind = 'progress'
 }

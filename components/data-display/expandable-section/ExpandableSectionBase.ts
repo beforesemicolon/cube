@@ -1,9 +1,9 @@
-import { UIComponent, type UIProps } from '../../core/UIComponent.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, finite } from '../../core/value.js'
 
 export type ExpandableSectionVariant = 'default' | 'container' | 'footer'
 
-export interface ExpandableSectionProps extends UIProps {
+export interface ExpandableSectionProps extends ComponentProps {
     expanded?: boolean
     variant?: ExpandableSectionVariant
     headingLevel?: number
@@ -17,9 +17,9 @@ export interface ExpandableSectionChangeDetail {
 }
 
 /** Renderer-independent disclosure state and cancelable expansion behavior. */
-export abstract class ExpandableSectionBase extends UIComponent<ExpandableSectionProps> {
+export abstract class ExpandableSectionBase extends Component<ExpandableSectionProps> {
     static observedAttributes = [
-        ...UIComponent.observedAttributes,
+        ...Component.observedAttributes,
         'expanded', 'variant', 'heading-level', 'counter', 'disable-content-padding',
     ]
 

@@ -207,6 +207,21 @@ test('built Storybook: readiness components expose their complete prop surfaces'
     }
 })
 
+test('built Storybook: controls follow component, family, and global ownership', async ({ page }) => {
+    await page.goto('http://127.0.0.1:6006/?path=/story/data-display--card&addonPanel=storybook/controls/panel')
+    const panel = page.getByRole('tabpanel', { name: /Controls/ })
+    const cardGroup = panel.getByText('Card', { exact: true }).first()
+    const componentGroup = panel.getByText('Component', { exact: true }).first()
+    await expect(cardGroup).toBeVisible({ timeout: 20_000 })
+    await expect(componentGroup).toBeVisible()
+    const [cardBox, componentBox] = await Promise.all([cardGroup.boundingBox(), componentGroup.boundingBox()])
+    expect(cardBox?.y).toBeLessThan(componentBox?.y ?? 0)
+    await expect(panel.getByText('status', { exact: true })).toHaveCount(0)
+    for (const property of ['value', 'items', 'actionLabel', 'label', 'accessibleLabel', 'description', 'disabled', 'size']) {
+        await expect(panel.getByText(property, { exact: true }).first()).toBeVisible()
+    }
+})
+
 test('built Storybook: every component category inherits the global appearance', async ({ page }) => {
     const categoryStories = [
         ['action--button', 'cb-button'],

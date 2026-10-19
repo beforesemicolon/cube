@@ -1,10 +1,10 @@
-import { StudioComponentBase } from '../../studio/StudioComponentBase.js'
-import type { StudioKind, StudioProps } from '../../studio/types.js'
+import { Component, type ComponentProps } from '../../core/Component.js'
+import type { StudioKind } from '../../studio/types.js'
 
-export interface CommentPinProps extends StudioProps {}
+export interface CommentPinProps extends ComponentProps {}
 
 /** Headless behavior for the Comment pin component. */
-export abstract class CommentPinBase extends StudioComponentBase<CommentPinProps> {
+export abstract class CommentPinBase extends Component<CommentPinProps> {
     readonly componentName = 'comment-pin'
     readonly componentKind: StudioKind = 'canvas'
 }
