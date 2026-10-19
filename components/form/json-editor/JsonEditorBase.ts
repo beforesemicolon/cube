@@ -89,15 +89,14 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
         } catch (cause) { return { error: cause instanceof Error ? cause.message : scalarText(this.invalidLabel) } }
     }
 
-    setValue(value: string, originalEvent?: Event, commit = false): boolean {
+    setValue(value: string, originalEvent?: Event): boolean {
         if (this.unavailable || bool(this.readOnly)) return false
         const next = scalarText(value)
         const detail = { value: next, originalEvent }
         if (!this.request('cb-before-change', detail)) { this.syncView(); return false }
         this.sourceValue.set(next, false)
-        this.validationShown = commit
         this.syncView()
-        this.emit(commit ? 'cb-change' : 'cb-input', detail)
+        this.emit('cb-change', detail)
         return true
     }
 
@@ -105,7 +104,7 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
         const parsed = this.parse()
         if (parsed.error || parsed.value === undefined) { this.validationShown = true; this.syncView(); return false }
         const next = JSON.stringify(parsed.value, null, this.normalizedIndent())
-        if (!this.setValue(next, originalEvent, true)) return false
+        if (!this.setValue(next, originalEvent)) return false
         this.emit('cb-format', { value: next, originalEvent })
         return true
     }

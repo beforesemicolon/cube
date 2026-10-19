@@ -27,13 +27,9 @@ export class JsonEditor extends JsonEditorBase {
         this.editor = document.createElement('cb-code-editor') as CodeEditor
         this.editor.setAttribute('part', 'editor')
         this.editor.addEventListener('cb-before-change', event => event.stopPropagation())
-        this.editor.addEventListener('cb-input', event => {
-            event.stopPropagation()
-            this.setValue(scalarText((event as CustomEvent<{ value: string }>).detail.value), event)
-        })
         this.editor.addEventListener('cb-change', event => {
             event.stopPropagation()
-            this.setValue(scalarText((event as CustomEvent<{ value: string }>).detail.value), event, true)
+            this.setValue(scalarText((event as CustomEvent<{ value: string }>).detail.value), event)
         })
         root.append(toolbar, this.editor)
         return fragment(sheet(css), root)

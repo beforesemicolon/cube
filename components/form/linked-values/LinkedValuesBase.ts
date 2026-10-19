@@ -1,7 +1,7 @@
-import { Component, type ComponentProps } from '../../core/Component.js'
+import { FormControlBase, type FormControlProps, type FormRestoreValue } from '../FormControlBase.js'
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
 
-export interface LinkedValuesProps extends ComponentProps {
+export interface LinkedValuesProps extends FormControlProps {
     firstValue?: number
     secondValue?: number
     firstName?: string
@@ -17,10 +17,9 @@ export interface LinkedValuesProps extends ComponentProps {
 }
 
 /** Coupled numeric-value behavior for dimensions, offsets and other paired properties. */
-export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValuesProps> extends Component<P> {
-    static formAssociated = true
+export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValuesProps> extends FormControlBase<P, readonly [number, number]> {
     static observedAttributes = [
-        ...Component.observedAttributes, 'first-value', 'second-value', 'first-name', 'second-name', 'first-label', 'second-label',
+        ...FormControlBase.observedAttributes, 'first-value', 'second-value', 'first-name', 'second-name', 'first-label', 'second-label',
         'linked', 'min', 'max', 'step', 'link-label', 'unlink-label',
     ]
     firstValue = 0
@@ -36,22 +35,19 @@ export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValue
     linkLabel = ''
     unlinkLabel = ''
     private ratio = 1
-    private initialValues?: readonly [number, number]
-
-    protected get unavailable(): boolean { return super.unavailable || this.matches(':disabled') }
-    get form(): HTMLFormElement | null { return this.internals?.form ?? null }
-    formDisabledCallback(): void { if (this.mounted) { this.syncCommon(); this.syncView() } }
+    protected fieldElement(): undefined { return undefined }
+    protected captureValue(): readonly [number, number] { return [finite(this.firstValue), finite(this.secondValue)] }
+    protected restoreValue(value: readonly [number, number] | FormRestoreValue): void {
+        if (Array.isArray(value)) [this.firstValue, this.secondValue] = value
+        else if (value instanceof FormData) {
+            this.firstValue = finite(Number(value.get(this.firstName)), this.firstValue)
+            this.secondValue = finite(Number(value.get(this.secondName)), this.secondValue)
+        }
+        this.captureRatio()
+    }
     protected mount(): void {
-        this.initialValues ??= [finite(this.firstValue), finite(this.secondValue)]
         this.captureRatio()
         super.mount()
-    }
-    formResetCallback(): void {
-        const [firstValue, secondValue] = this.initialValues ?? [0, 0]
-        this.firstValue = firstValue
-        this.secondValue = secondValue
-        this.captureRatio()
-        this.syncView()
     }
 
     setLinked(linked: boolean, originalEvent?: Event): boolean {
@@ -75,6 +71,7 @@ export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValue
         if (this.secondName) data.append(this.secondName, String(this.secondValue))
         this.internals?.setFormValue(this.unavailable ? null : data, data)
     }
+    protected syncFormValue(): void { this.syncFormValues() }
 
     private change(source: 'first' | 'second', value: number, originalEvent?: Event): boolean {
         if (this.unavailable) return false

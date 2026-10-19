@@ -1,22 +1,30 @@
 import { Component, type ComponentProps } from '../core/Component.js'
 import { bool, text, scalarText } from '../core/value.js'
 export interface FormControlProps extends ComponentProps { name?:string; required?:boolean; readOnly?:boolean; errorText?:string }
+export type FormRestoreValue = string | File | FormData | null
 /** Form association, validation, reset, and fieldset disabling shared by form controls. */
-export abstract class FormControlBase<P extends FormControlProps=FormControlProps> extends Component<P> {
+export abstract class FormControlBase<P extends FormControlProps=FormControlProps, S=string> extends Component<P> {
     static formAssociated=true
     static observedAttributes=[...Component.observedAttributes,'name','required','read-only','error-text']
     name='';required=false;readOnly=false;errorText=''
-    private initialized=false;private initialValue:unknown
+    private initialized=false
+    private initialValue?:{readonly value:S}
+    private disabledByForm=false
     protected validationShown=false
     protected abstract fieldElement():HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement|undefined
-    protected abstract captureValue():unknown
-    protected abstract restoreValue(value:unknown):void
-    protected get unavailable():boolean{return super.unavailable||this.matches(':disabled')}
+    protected abstract captureValue():S
+    protected abstract restoreValue(value:S|FormRestoreValue):void
+    protected syncFormValue():void{}
+    protected get unavailable():boolean{return super.unavailable||this.disabledByForm}
+    controlUnavailable():boolean{return this.unavailable}
     get form():HTMLFormElement|null{return this.internals?.form??null}
+    get labels():NodeList|undefined{return this.internals?.labels}
+    get willValidate():boolean{return this.internals?.willValidate??false}
     get validity():ValidityState|undefined{return this.internals?.validity}
     get validationMessage():string{return this.internals?.validationMessage??''}
-    protected mount():void{if(!this.initialized){this.initialized=true;this.initialValue=this.captureValue()}super.mount()}
-    protected syncForm(value:string|FormData|null):void {
+    protected mount():void{if(!this.initialized){this.initialized=true;this.initialValue={value:this.captureValue()}}super.mount();this.syncFormValue()}
+    protected update(name:string):void{super.update(name);this.syncFormValue()}
+    protected syncForm(value:string|File|FormData|null):void {
         // The native successful-control algorithm reads the attribute, not a custom JS property.
         const name=scalarText(this.name)
         if(name){if(this.getAttribute('name')!==name)this.setAttribute('name',name)}else if(this.hasAttribute('name'))this.removeAttribute('name')
@@ -29,8 +37,10 @@ export abstract class FormControlBase<P extends FormControlProps=FormControlProp
     }
     checkValidity():boolean{return this.internals?.checkValidity()??true}
     reportValidity():boolean{this.validationShown=true;this.syncView();return this.internals?.reportValidity()??true}
-    formDisabledCallback(_disabled:boolean):void{if(this.mounted){this.syncCommon();this.syncView()}}
-    formResetCallback():void{this.validationShown=false;this.restoreValue(this.initialValue);if(this.mounted)this.syncView()}
-    formStateRestoreCallback(value:string|File|FormData|null):void{this.restoreValue(value);if(this.mounted)this.syncView()}
+    setCustomValidity(message:string):void{this.errorText=message;if(this.mounted){this.syncView();this.syncFormValue()}}
+    formAssociatedCallback(_form:HTMLFormElement|null):void{if(this.mounted)this.syncFormValue()}
+    formDisabledCallback(disabled:boolean):void{this.disabledByForm=disabled;if(this.mounted){this.syncCommon();this.syncView();this.syncFormValue()}}
+    formResetCallback():void{this.validationShown=false;if(this.initialValue)this.restoreValue(this.initialValue.value);if(this.mounted){this.syncView();this.syncFormValue()}}
+    formStateRestoreCallback(value:FormRestoreValue):void{this.restoreValue(value);if(this.mounted){this.syncView();this.syncFormValue()}}
     focus(options?:FocusOptions):void{const control=this.fieldElement();if(control)control.focus(options);else super.focus(options)}
 }

@@ -38,8 +38,7 @@ export class EditableLabel extends EditableLabelBase {
         this.input.type = 'text'
         this.input.addEventListener('input', event => {
             if (!this.input) return
-            this.draft = this.input.value
-            this.emit('cb-input', { value: this.draft, originalEvent: event })
+            this.changeDraft(this.input.value, event)
         })
         this.input.addEventListener('keydown', event => {
             if (event.key === 'Enter') { event.preventDefault(); this.commitEditing(this.input?.value, event) }

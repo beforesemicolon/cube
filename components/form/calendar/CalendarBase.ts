@@ -1,7 +1,7 @@
-import { Component, type ComponentProps } from '../../core/Component.js'
-import { finite, scalarText } from '../../core/value.js'
+import { finite, scalarText, bool } from '../../core/value.js'
+import { FormControlBase, type FormControlProps, type FormRestoreValue } from '../FormControlBase.js'
 
-export interface CalendarProps extends ComponentProps {
+export interface CalendarProps extends FormControlProps {
     value?: string
     min?: string
     max?: string
@@ -22,8 +22,8 @@ function validDate(value: string): Date | undefined {
     return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : undefined
 }
 
-export abstract class CalendarBase<P extends CalendarProps = CalendarProps> extends Component<P> {
-    static observedAttributes = [...Component.observedAttributes, 'value', 'min', 'max', 'first-day-of-week', 'previous-label', 'next-label']
+export abstract class CalendarBase<P extends CalendarProps = CalendarProps> extends FormControlBase<P> {
+    static observedAttributes = [...FormControlBase.observedAttributes, 'value', 'min', 'max', 'first-day-of-week', 'previous-label', 'next-label']
     value = ''
     min = ''
     max = ''
@@ -31,6 +31,14 @@ export abstract class CalendarBase<P extends CalendarProps = CalendarProps> exte
     previousLabel = ''
     nextLabel = ''
     visibleMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+    protected fieldElement(): undefined { return undefined }
+    protected captureValue(): string { return this.value }
+    protected restoreValue(value: string | FormRestoreValue): void { this.value = typeof value === 'string' ? value : value instanceof FormData ? scalarText(value.get(this.name)) : '' }
+    protected syncFormValue(): void {
+        this.syncForm(this.value)
+        const message = scalarText(this.errorText) || (bool(this.required) && !this.value ? 'Please select a date.' : '')
+        this.internals?.setValidity(message ? { customError: true } : {}, message)
+    }
 
     protected mount(): void { this.syncMonth(); super.mount() }
     protected update(name: string): void { if (name === 'value') this.syncMonth(); super.update(name) }
@@ -49,13 +57,14 @@ export abstract class CalendarBase<P extends CalendarProps = CalendarProps> exte
         const value = this.dateValue(date)
         const minimum = this.minimumDate()
         const maximum = this.maximumDate()
-        return this.unavailable
+        return this.unavailable || bool(this.readOnly)
             || Boolean(minimum && value < this.dateValue(minimum))
             || Boolean(maximum && value > this.dateValue(maximum))
     }
     protected chooseDate(date: Date, originalEvent?: Event): boolean {
         if (this.isUnavailable(date)) return false
         const value = this.dateValue(date)
+        if (value === this.value) return false
         if (!this.request('cb-before-change', { value, date, originalEvent })) return false
         this.value = value
         this.visibleMonth = new Date(date.getFullYear(), date.getMonth(), 1)

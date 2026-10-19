@@ -103,7 +103,6 @@ export class GradientEditor extends GradientEditorBase {
         this.angleInput.step = '1'
         this.angleInput.inputMode = 'decimal'
         this.angleInput.addEventListener('input', event => this.changeAngle(this.angleInput?.valueAsNumber ?? this.angle, event, false))
-        this.angleInput.addEventListener('change', event => this.changeAngle(this.angleInput?.valueAsNumber ?? this.angle, event))
         this.angleField.append(this.angleLabelNode, this.angleInput)
 
         this.radialControls = el('div', 'radial-controls')
@@ -154,13 +153,9 @@ export class GradientEditor extends GradientEditorBase {
         this.colorPicker = document.createElement('cb-color-picker') as ColorPicker
         this.colorPicker.setAttribute('part', 'stop-color')
         this.colorPicker.setAttribute('exportparts', 'root:stop-color-root,trigger:stop-color-trigger,trigger-swatch:stop-color-swatch,popup:stop-color-popup')
-        this.colorPicker.addEventListener('cb-input', event => {
-            event.stopPropagation()
-            this.changeStopColor(this.selectedStopId(), (event as CustomEvent<{ value: string }>).detail.value, event, false)
-        })
         this.colorPicker.addEventListener('cb-change', event => {
             event.stopPropagation()
-            this.changeStopColor(this.selectedStopId(), (event as CustomEvent<{ value: string }>).detail.value, event)
+            this.changeStopColor(this.selectedStopId(), (event as CustomEvent<{ value: string }>).detail.value, event, false)
         })
         this.colorPicker.addEventListener('cb-close', event => {
             const originalEvent = (event as CustomEvent<{ originalEvent?: Event }>).detail.originalEvent

@@ -38,15 +38,15 @@ export abstract class MaskedInputBase<P extends MaskedInputProps = MaskedInputPr
         return maskSlotsFor(this.mask).map(slot => slot.literal ?? placeholder).join('') || scalarText(this.placeholder)
     }
 
-    setValue(value: string, originalEvent?: Event, commit = false): boolean {
+    setValue(value: string, originalEvent?: Event): boolean {
         if (this.unavailable || bool(this.readOnly)) return false
         const next = formatMaskedValue(value, this.mask)
         const detail = { value: next, rawValue: unmaskValue(next, this.mask), originalEvent }
-        if (!this.request(commit ? 'cb-before-change' : 'cb-before-input', detail)) return false
+        if (next === scalarText(this.value)) return false
+        if (!this.request('cb-before-change', detail)) return false
         this.value = next
-        if (commit) this.validationShown = true
         this.syncView()
-        this.emit(commit ? 'cb-change' : 'cb-input', detail)
+        this.emit('cb-change', detail)
         return true
     }
 }

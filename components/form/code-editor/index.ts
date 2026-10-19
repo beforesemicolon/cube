@@ -49,7 +49,6 @@ export class CodeEditor extends CodeEditorBase {
         this.control.autocapitalize = 'off'
         this.control.autocomplete = 'off'
         this.control.addEventListener('input', event => this.setValue(this.control?.value ?? '', event))
-        this.control.addEventListener('change', event => this.setValue(this.control?.value ?? '', event, true))
         this.control.addEventListener('keydown', event => {
             if (!this.editJson(event) && !this.indent(event)) this.submit(event)
         })

@@ -19,7 +19,6 @@ export class MaskedInput extends MaskedInputBase {
             const accepted = this.setValue(this.input.value, event)
             if (accepted) queueMicrotask(() => { if (this.input) this.input.setSelectionRange(this.input.value.length, this.input.value.length) })
         })
-        this.input.addEventListener('change', event => { if (this.input) this.setValue(this.input.value, event, true) })
         return fragment(sheet(css), this.input)
     }
     protected fieldElement(): HTMLInputElement | undefined { return this.input }

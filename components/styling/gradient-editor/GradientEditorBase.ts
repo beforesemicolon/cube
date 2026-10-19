@@ -191,28 +191,28 @@ export abstract class GradientEditorBase extends FormControlBase<GradientEditorP
         return this.change({ ...model, stops }, originalEvent)
     }
 
-    protected moveStop(id: string, position: number, originalEvent?: Event, commit = false): boolean {
+    protected moveStop(id: string, position: number, originalEvent?: Event, _commit = false): boolean {
         if (this.unavailable || bool(this.readOnly)) return false
         const model = this.model()
         if (!model.stops.some(stop => stop.id === id)) return false
         const stops = model.stops.map(stop => stop.id === id ? { ...stop, position: Math.round(clamp(position, 0, 100) * 10) / 10 } : stop)
         this.selectedId = id
-        return commit ? this.change({ ...model, stops }, originalEvent) : this.input({ ...model, stops }, originalEvent)
+        return this.change({ ...model, stops }, originalEvent)
     }
 
-    protected changeStopColor(id: string, color: string, originalEvent?: Event, commit = true): boolean {
+    protected changeStopColor(id: string, color: string, originalEvent?: Event, _commit = true): boolean {
         if (this.unavailable || bool(this.readOnly) || !parseHexColor(color)) return false
         const model = this.model()
         if (!model.stops.some(stop => stop.id === id)) return false
         const stops = model.stops.map(stop => stop.id === id ? { ...stop, color: normalizeColor(color) } : stop)
         this.selectedId = id
-        return commit ? this.change({ ...model, stops }, originalEvent) : this.input({ ...model, stops }, originalEvent)
+        return this.change({ ...model, stops }, originalEvent)
     }
 
     protected changeType(type: GradientType, originalEvent?: Event): boolean { return this.change({ ...this.model(), type }, originalEvent) }
-    protected changeAngle(angle: number, originalEvent?: Event, commit = true): boolean {
+    protected changeAngle(angle: number, originalEvent?: Event, _commit = true): boolean {
         const model = { ...this.model(), angle: finite(angle, this.angle) }
-        return commit ? this.change(model, originalEvent) : this.input(model, originalEvent)
+        return this.change(model, originalEvent)
     }
     protected changeShape(shape: GradientShape, originalEvent?: Event): boolean { return this.change({ ...this.model(), shape }, originalEvent) }
     protected changeExtent(extent: GradientExtent, originalEvent?: Event): boolean { return this.change({ ...this.model(), extent }, originalEvent) }
@@ -222,13 +222,13 @@ export abstract class GradientEditorBase extends FormControlBase<GradientEditorP
         return scalarText(this.stopLabel).replaceAll('{index}', String(index + 1)).replaceAll('{position}', `${Math.round(position * 10) / 10}%`)
     }
 
-    private input(model: GradientModel, originalEvent?: Event): boolean { return this.apply(model, 'input', originalEvent) }
-    private change(model: GradientModel, originalEvent?: Event): boolean { return this.apply(model, 'change', originalEvent) }
-    private apply(source: GradientModel, phase: 'input' | 'change', originalEvent?: Event): boolean {
+    private change(model: GradientModel, originalEvent?: Event): boolean { return this.apply(model, originalEvent) }
+    private apply(source: GradientModel, originalEvent?: Event): boolean {
         const model = normalizeGradientModel(source)
         const value = serializeGradient(model)
+        if (value === this.cssValue()) return false
         const detail: GradientChangeDetail = { ...model, value, selectedStopId: this.selectedId, originalEvent }
-        if (!this.request(phase === 'input' ? 'cb-before-input' : 'cb-before-change', detail)) return false
+        if (!this.request('cb-before-change', detail)) return false
         this.type = model.type
         this.angle = model.angle
         this.shape = model.shape
@@ -238,7 +238,7 @@ export abstract class GradientEditorBase extends FormControlBase<GradientEditorP
         this.value = value
         this.ensureSelectedStop()
         this.syncView()
-        this.emit(phase === 'input' ? 'cb-input' : 'cb-change', detail)
+        this.emit('cb-change', detail)
         return true
     }
 

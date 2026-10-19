@@ -38,7 +38,7 @@ export class TimePicker extends TimePickerBase {
         this.trigger.addEventListener('click', event => this.setOpen(!this.open, event))
         this.trigger.addEventListener('keydown', event => this.handleKey(event))
         this.popup.addEventListener('keydown', event => this.handleKey(event))
-        this.nativeControl.addEventListener('change', event => this.setValue(this.nativeControl!.value, event))
+        this.nativeControl.addEventListener('input', event => this.setValue(this.nativeControl!.value, event))
         this.nativeControl.addEventListener('blur', () => { this.validationShown = true; this.syncView() })
         root.append(this.trigger, this.popup, this.nativeControl)
         return fragment(sheet(css), root)

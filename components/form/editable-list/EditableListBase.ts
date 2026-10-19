@@ -1,4 +1,4 @@
-import { FormControlBase, type FormControlProps } from '../FormControlBase.js'
+import { FormControlBase, type FormControlProps, type FormRestoreValue } from '../FormControlBase.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 
 export interface EditableListItem { id: string; label: string; value: string; description?: string; disabled?: boolean }
@@ -38,7 +38,7 @@ function normalizedItems(value: readonly EditableListItem[]): EditableListItem[]
 }
 
 /** Editable collection behavior with form submission, validation and reorder operations. */
-export abstract class EditableListBase<P extends EditableListProps = EditableListProps> extends FormControlBase<P> {
+export abstract class EditableListBase<P extends EditableListProps = EditableListProps> extends FormControlBase<P, readonly EditableListItem[]> {
     static observedAttributes = [
         ...FormControlBase.observedAttributes, 'items', 'min-items', 'max-items', 'allow-reorder', 'placeholder', 'add-label',
         'edit-label', 'save-label', 'cancel-label', 'remove-label', 'move-up-label', 'move-down-label', 'empty-label',
@@ -65,7 +65,7 @@ export abstract class EditableListBase<P extends EditableListProps = EditableLis
     normalizedItems(): readonly EditableListItem[] { return normalizedItems(this.items) }
     protected fieldElement(): undefined { return undefined }
     protected captureValue(): readonly EditableListItem[] { return this.normalizedItems().map(item => ({ ...item })) }
-    protected restoreValue(value: unknown): void {
+    protected restoreValue(value: readonly EditableListItem[] | FormRestoreValue): void {
         if (Array.isArray(value)) {
             this.items = normalizedItems(value.filter((item): item is EditableListItem => Boolean(item) && typeof item === 'object' && 'label' in item))
             return
@@ -132,7 +132,7 @@ export abstract class EditableListBase<P extends EditableListProps = EditableLis
         this.items = items
         this.validationShown = true
         this.syncView()
-        this.emit('cb-items-change', detail)
+        this.emit('cb-change', { ...detail, value: items.map(item => item.value) })
         return true
     }
 }

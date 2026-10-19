@@ -6,8 +6,7 @@ export class Slider extends SliderBase {
     private control?:HTMLInputElement
     render():Node{
         this.control=el('input','control');this.control.type='range'
-        this.control.addEventListener('input',e=>this.setValue(this.control!.valueAsNumber,'input',e))
-        this.control.addEventListener('change',e=>this.setValue(this.control!.valueAsNumber,'change',e))
+        this.control.addEventListener('input',e=>this.setValue(this.control!.valueAsNumber,e))
         this.control.addEventListener('pointerdown',()=>this.pointerActive=true)
         this.control.addEventListener('blur',()=>this.pointerActive=false)
         return fragment(sheet(editorCSS+`

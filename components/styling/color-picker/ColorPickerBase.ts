@@ -101,19 +101,13 @@ export abstract class ColorPickerBase extends FormControlBase<ColorPickerProps> 
     }
 
     inputColor(color: HSVAColor, originalEvent?: Event): boolean {
-        if (this.unavailable || bool(this.readOnly)) return false
-        const next = colorToHex({ ...color, alpha: bool(this.allowAlpha) ? color.alpha : 1 })
-        const detail: ColorPickerChangeDetail = { value: next, color: parseHexColor(next) ?? color, originalEvent }
-        if (!this.request('cb-before-input', detail)) return false
-        this.value = next
-        this.syncView()
-        this.emit('cb-input', detail)
-        return true
+        return this.changeColor(color, originalEvent)
     }
 
     changeColor(color: HSVAColor, originalEvent?: Event): boolean {
         if (this.unavailable || bool(this.readOnly)) return false
         const next = colorToHex({ ...color, alpha: bool(this.allowAlpha) ? color.alpha : 1 })
+        if (next === this.normalizedValue()) return false
         const detail: ColorPickerChangeDetail = { value: next, color: parseHexColor(next) ?? color, originalEvent }
         if (!this.request('cb-before-change', detail)) return false
         this.value = next

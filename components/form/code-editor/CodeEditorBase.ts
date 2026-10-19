@@ -71,14 +71,15 @@ export abstract class CodeEditorBase<P extends CodeEditorProps = CodeEditorProps
         super.update(name)
     }
 
-    setValue(value: string, originalEvent?: Event, commit = false): boolean {
+    setValue(value: string, originalEvent?: Event): boolean {
         if (this.unavailable || bool(this.readOnly)) return false
         const next = scalarText(value)
+        if (next === this.sourceText()) return false
         const detail = { value: next, originalEvent }
         if (!this.request('cb-before-change', detail)) { this.syncView(); return false }
         this.sourceValue.set(next, false)
         this.syncView()
-        this.emit(commit ? 'cb-change' : 'cb-input', detail)
+        this.emit('cb-change', detail)
         return true
     }
 

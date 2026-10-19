@@ -1,7 +1,7 @@
 import { aria, editorCSS, el, fragment, sheet, slot, uid } from '../core/editor-dom.js'
 import { bool, finite, scalarText } from '../core/value.js'
 import { createIcon } from '../icons/paths.js'
-import { actionLabel, createButton, createIconButton } from '../action/create.js'
+import { actionLabel, createButton, createIconButton, createPressedButton } from '../action/create.js'
 import type { Button } from '../action/button/index.js'
 import type { Select } from '../form/select/index.js'
 import type { UnitInputBase } from '../form/unit-input/UnitInputBase.js'
@@ -41,6 +41,8 @@ export interface StudioViewSource extends HTMLElement {
     expanded?: boolean
     orientation?: 'horizontal' | 'vertical'
     emit(name: string, detail?: object): void
+    setFiles?(files: readonly File[], originalEvent?: Event): boolean
+    controlUnavailable?(): boolean
 }
 
 class StudioViewAdapter {
@@ -64,7 +66,7 @@ class StudioViewAdapter {
     studioEmptyLabel(): string { return scalarText(this.source.emptyLabel) }
     studioActionLabel(): string { return scalarText(this.source.actionLabel) }
     studioItems(): readonly StudioItem[] { return Array.isArray(this.source.items) ? this.source.items : [] }
-    studioDisabled(): boolean { return bool(this.source.disabled) }
+    studioDisabled(): boolean { return this.source.controlUnavailable?.() ?? bool(this.source.disabled) }
     studioReadOnly(): boolean { return bool(this.source.readOnly) }
     studioChecked(): boolean { return bool(this.source.checked) }
     studioOpen(): boolean { return bool(this.source.open) }
@@ -84,10 +86,12 @@ class StudioViewAdapter {
     }
     setValue(value: StudioValue, originalEvent?: Event): boolean {
         if (this.studioDisabled() || this.studioReadOnly()) return false
+        const current = typeof value === 'boolean' && 'checked' in this.source ? this.source.checked : this.source.value
+        if (Object.is(current, value)) return false
         const detail = { value, originalEvent }
         if (!this.request('cb-before-change', detail)) return false
-        this.source.value = value
         if (typeof value === 'boolean' && 'checked' in this.source) this.source.checked = value
+        else this.source.value = value
         this.refreshView()
         this.emit('cb-change', detail)
         return true
@@ -100,6 +104,12 @@ class StudioViewAdapter {
         this.refreshView()
         this.emit('cb-action', detail)
         return true
+    }
+    toggleToken(item: StudioItem, originalEvent?: Event): boolean {
+        const itemValue = String(item.value ?? item.id)
+        const current = Array.isArray(this.source.value) ? [...this.source.value] : scalarText(this.source.value) ? [scalarText(this.source.value)] : []
+        const value = current.includes(itemValue) ? current.filter(entry => entry !== itemValue) : [...current, itemValue]
+        return this.setValue(value, originalEvent)
     }
     private request(name: string, detail: object): boolean {
         return this.source.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }))
@@ -439,7 +449,7 @@ export function createStudioView(source: StudioViewSource): StudioView {
         control = node
         const id = uid(`cb-${host.componentName}`)
         node.id = id
-        node.addEventListener('change', event => host.setValue(node instanceof HTMLInputElement && node.type === 'number' ? node.valueAsNumber : node.value, event))
+        node.addEventListener('input', event => host.setValue(node instanceof HTMLInputElement && node.type === 'number' ? node.valueAsNumber : node.value, event))
         updateBody = (): void => {
             const value = host.studioTextValue()
             if (node.value !== value) node.value = value
@@ -613,7 +623,11 @@ export function createStudioView(source: StudioViewSource): StudioView {
         const input = el('input', 'control file')
         input.type = 'file'
         control = input
-        input.addEventListener('change', event => host.setValue(input.files?.[0]?.name ?? '', event))
+        input.addEventListener('change', event => {
+            const files = [...(input.files ?? [])]
+            if (source.setFiles) source.setFiles(files, event)
+            else host.setValue(files.length > 1 ? files.map(file => file.name) : files[0]?.name ?? '', event)
+        })
         updateBody = (): void => { input.disabled = host.studioDisabled() || host.studioReadOnly(); input.required = host.studioRequired(); input.multiple = host.studioMultiple(); input.setAttribute('aria-label', host.studioAccessibleName()) }
         input.hidden = true
         const dropzone = el('label', 'dropzone control')
@@ -625,7 +639,7 @@ export function createStudioView(source: StudioViewSource): StudioView {
         const input = el('input', 'control color-value')
         input.type = host.componentName === 'color-picker' ? 'color' : 'text'
         control = input
-        input.addEventListener('change', event => host.setValue(input.value, event))
+        input.addEventListener('input', event => host.setValue(input.value, event))
         updateBody = (): void => {
             const value = host.studioTextValue() || '#2563eb'
             if (input.type !== 'color' || /^#[\da-f]{6}$/i.test(value)) input.value = value
@@ -641,7 +655,10 @@ export function createStudioView(source: StudioViewSource): StudioView {
         updateBody = (): void => {
             list.replaceChildren()
             for (const item of host.studioItems()) {
-                const token = studioAction(host, 'token', item.label, item)
+                const token = createPressedButton('token', event => host.toggleToken(item, event))
+                actionLabel(token, item.label)
+                token.disabled = host.studioDisabled() || host.studioReadOnly() || item.disabled === true
+                token.pressed = selected(host, item)
                 token.setAttribute('part', 'token item')
                 list.append(token)
             }

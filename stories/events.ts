@@ -40,6 +40,9 @@ class CubeStoryEvents extends HTMLElement {
     connectedCallback(): void {
         if (this.listeners.size > 0) return
         for (const name of cubeEventNames) {
+            // `cb-before-*` events are cancellable lifecycle hooks, not a second
+            // user outcome. Logging both makes one interaction look duplicated.
+            if (name.startsWith('cb-before-')) continue
             const listener: EventListener = event => {
                 loggerFor(name)({
                     component: event.target instanceof Element ? event.target.localName : '',

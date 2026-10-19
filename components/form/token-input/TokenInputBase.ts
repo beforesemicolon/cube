@@ -1,7 +1,8 @@
-import { Component, type ComponentProps } from '../../core/Component.js'
+import { scalarText } from '../../core/value.js'
+import { FormControlBase, type FormControlProps, type FormRestoreValue } from '../FormControlBase.js'
 import type { StudioItem, StudioKind, StudioValue } from '../../studio/types.js'
 
-export interface TokenInputProps extends ComponentProps {
+export interface TokenInputProps extends FormControlProps {
     value?: StudioValue
     items?: readonly StudioItem[]
     emptyLabel?: string
@@ -9,12 +10,26 @@ export interface TokenInputProps extends ComponentProps {
 }
 
 /** Headless behavior for the Token input component. */
-export abstract class TokenInputBase extends Component<TokenInputProps> {
-    static observedAttributes = [...Component.observedAttributes, 'value', 'items', 'empty-label', 'read-only']
+export abstract class TokenInputBase extends FormControlBase<TokenInputProps, StudioValue> {
+    static observedAttributes = [...FormControlBase.observedAttributes, 'value', 'items', 'empty-label']
     value: StudioValue = ''
     items: readonly StudioItem[] = []
     emptyLabel = ''
-    readOnly = false
     readonly componentName = 'token-input'
     readonly componentKind: StudioKind = 'tokens'
+    protected fieldElement(): undefined { return undefined }
+    protected captureValue(): StudioValue { return Array.isArray(this.value) ? [...this.value] : this.value }
+    protected restoreValue(value: StudioValue | FormRestoreValue): void {
+        if (value instanceof FormData) {
+            this.value = value.getAll(this.name).filter((item): item is string => typeof item === 'string')
+        } else this.value = value instanceof File ? value.name : value
+    }
+    protected syncFormValue(): void {
+        const values = Array.isArray(this.value) ? this.value : scalarText(this.value) ? [scalarText(this.value)] : []
+        const data = new FormData()
+        if (this.name) for (const value of values) data.append(this.name, value)
+        this.syncForm(data)
+        const message = scalarText(this.errorText) || (this.required && values.length === 0 ? 'Please select at least one value.' : '')
+        this.internals?.setValidity(message ? { customError: true } : {}, message)
+    }
 }

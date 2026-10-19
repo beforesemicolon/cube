@@ -110,7 +110,6 @@ export class ColorPicker extends ColorPickerBase {
             const wrapper = el('label', `channel-field ${definition.name}-field`), label = el('span', 'channel-label'), input = el('input', `channel-input ${definition.name}-input control`)
             input.type = 'number'; input.min = String(definition.min); input.max = String(definition.max); input.step = String(definition.step); input.inputMode = 'decimal'
             input.addEventListener('input', event => this.updateFromChannel(definition.name, input.valueAsNumber, false, event))
-            input.addEventListener('change', event => this.updateFromChannel(definition.name, input.valueAsNumber, true, event))
             wrapper.append(label, input)
             const target = definition.name === 'red' || definition.name === 'green' || definition.name === 'blue' ? rgbChannels : hsvChannels
             target.append(wrapper)
@@ -129,11 +128,10 @@ export class ColorPicker extends ColorPickerBase {
         this.plane.addEventListener('pointermove', event => { if (this.plane?.hasPointerCapture(event.pointerId)) this.updateFromPlane(event, false) })
         this.plane.addEventListener('pointerup', event => { this.plane?.releasePointerCapture(event.pointerId); this.updateFromPlane(event, true) })
         this.plane.addEventListener('keydown', event => this.handlePlaneKey(event))
-        this.hueSlider.addEventListener('input', event => this.updateHue(false, event)); this.hueSlider.addEventListener('change', event => this.updateHue(true, event))
-        this.alphaSlider.addEventListener('input', event => this.updateAlpha(false, event)); this.alphaSlider.addEventListener('change', event => this.updateAlpha(true, event))
-        this.hexInput.addEventListener('input', event => this.updateFromHex(false, event)); this.hexInput.addEventListener('change', event => this.updateFromHex(true, event))
-        this.nativeControl.addEventListener('input', event => { const color = parseHexColor(this.nativeControl?.value ?? ''); if (color) this.inputColor(color, event) })
-        this.nativeControl.addEventListener('change', event => { const color = parseHexColor(this.nativeControl?.value ?? ''); if (color) this.changeColor(color, event) })
+        this.hueSlider.addEventListener('input', event => this.updateHue(false, event))
+        this.alphaSlider.addEventListener('input', event => this.updateAlpha(false, event))
+        this.hexInput.addEventListener('input', event => this.updateFromHex(false, event))
+        this.nativeControl.addEventListener('input', event => { const color = parseHexColor(this.nativeControl?.value ?? ''); if (color) this.changeColor(color, event) })
         this.nativeControl.addEventListener('blur', () => { this.validationShown = true; this.syncView() })
         root.append(this.trigger, this.nativeControl, this.popup)
         return fragment(sheet(css), root)

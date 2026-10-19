@@ -60,13 +60,26 @@ test('Storybook exposes Actions and records Cube event detail payloads',async({p
     await expect(item).toBeVisible()
     await expect(async()=>{
         await item.click()
-        await expect(panel).toContainText('cb-before-action',{timeout:1000})
+        await expect(panel).toContainText('cb-action',{timeout:1000})
     }).toPass({timeout:15000})
-    await expect(panel).toContainText('cb-action')
+    await expect(panel).not.toContainText('cb-before-action')
     await expect(panel).toContainText('cb-list')
     await panel.getByRole('treeitem',{name:/detail: Object/}).last().click()
     await expect(panel).toContainText(/value:\s*"two"/)
     await expect(panel.getByRole('button',{name:'Clear'})).toBeVisible()
+})
+
+test('Storybook records one outcome for one live form edit',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/?path=/story/form--text-input')
+    const story=page.frameLocator('#storybook-preview-iframe')
+    const actionsTab=page.getByRole('tab',{name:/Actions/})
+    await expect(actionsTab).toBeVisible({timeout:20000});await actionsTab.click()
+    const panel=page.getByRole('tabpanel',{name:/Actions/})
+    const clear=panel.getByRole('button',{name:'Clear'});if(await clear.isVisible())await clear.click()
+    await story.getByRole('textbox').fill('one edit')
+    await expect(panel.getByText(/^cb-change:/)).toHaveCount(1)
+    await expect(panel).not.toContainText('cb-before-change')
+    await expect(panel).not.toContainText('cb-input')
 })
 
 test('built Storybook: layout panel stories expose working controls',async({page})=>{
