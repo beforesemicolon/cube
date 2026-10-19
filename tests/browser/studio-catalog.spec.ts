@@ -91,9 +91,15 @@ test('generated data displays only render containers that belong to the componen
         const description = document.createElement('cb-description-row') as HTMLElement & { label: string; value: string }
         description.label = 'Owner'
         description.value = 'Maya Chen'
+        const tree = document.createElement('cb-tree') as HTMLElement & {
+            label: string
+            items: ReadonlyArray<{ id: string; label: string }>
+        }
+        tree.label = 'Project pages'
+        tree.items = [{ id: 'home', label: 'Home' }, { id: 'pricing', label: 'Pricing' }]
         const card = document.createElement('cb-card') as HTMLElement & { label: string }
         card.label = 'Project summary'
-        document.querySelector('#fixture')?.append(list, badge, description, card)
+        document.querySelector('#fixture')?.append(list, badge, description, tree, card)
     })
 
     const list = page.locator('cb-list')
@@ -103,8 +109,18 @@ test('generated data displays only render containers that belong to the componen
     await expect(root).toHaveCSS('border-top-width', '0px')
     await expect(list.locator('[part~="list"]')).toHaveCSS('border-top-width', '1px')
 
+    const badge = page.locator('cb-badge').locator('[part~="display"]')
+    const description = page.locator('cb-description-row').locator('[part~="display"]')
+    const tree = page.locator('cb-tree').locator('[part~="list"]')
     await expect(page.locator('cb-badge').locator('[part~="panel"]')).toHaveCount(0)
     await expect(page.locator('cb-description-row').locator('[part~="panel"]')).toHaveCount(0)
+    await expect(badge).toHaveCSS('border-top-width', '0px')
+    await expect(badge).toHaveCSS('padding-top', '0px')
+    await expect(description).toHaveCSS('border-top-width', '0px')
+    await expect(description).toHaveCSS('padding-top', '0px')
+    await expect(tree).toHaveCSS('border-top-width', '0px')
+    await expect(tree).toHaveCSS('padding-top', '0px')
+    await expect(tree).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
     await expect(page.locator('cb-card').locator('[part~="panel"]')).toHaveCount(1)
 })
 

@@ -57,12 +57,14 @@ input[type=range][part~=control]:disabled{cursor:not-allowed;opacity:var(--compo
 [part~=list][data-layout=table]{padding:0;gap:0;border-radius:var(--radius-sm);overflow:hidden}
 [part~=table-header],[part~=list][data-layout=table] [part~=item]{display:grid;grid-template-columns:minmax(100px,1fr) minmax(120px,1.2fr);gap:12px;min-block-size:30px;align-items:center;padding:4px 10px;border:0;border-block-end:1px solid var(--color-separator);border-radius:0}
 [part~=table-header]{background:var(--color-surface-muted);font-size:11px;font-weight:650;color:var(--color-muted-foreground)}
+[part~=list][data-layout=tree]{padding:0;border:0;border-radius:0;background:transparent;max-block-size:none;overflow:visible}
 [part~=list][data-layout=tree] [part~=item]{justify-content:flex-start}
 [part~=list][data-layout=tree] [part~=item]:nth-of-type(n+3){padding-inline-start:28px}
 [part~=list][data-layout=grid]{grid-template-columns:repeat(3,minmax(72px,1fr));gap:8px;padding:8px;max-block-size:none}
 [part~=list][data-layout=grid] [part~=item]{display:grid;justify-items:start;gap:8px;min-block-size:82px;padding:10px;border-color:var(--color-separator);background:var(--color-surface-muted)}
 [part~=list][data-layout=grid] [part~=item-icon]{inline-size:28px;block-size:28px;color:var(--color-primary)}
-[part~=panel],[part~=shell],[part~=canvas],[part~=display],[part~=editor],[part~=collaboration]{border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);padding:var(--spacing-md,12px);min-inline-size:0}
+[part~=panel],[part~=shell],[part~=canvas],[part~=editor],[part~=collaboration]{border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);padding:var(--spacing-md,12px);min-inline-size:0}
+[part~=display]{min-inline-size:0}
 [part~=panel-header]{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-sm,8px);padding-block-end:var(--spacing-sm,8px);border-block-end:1px solid var(--color-separator)}
 [part~=content]{display:block;min-block-size:var(--cb-height);padding-block:var(--spacing-sm,8px)}
 [part~=canvas]{position:relative;display:grid;place-items:center;aspect-ratio:var(--component-canvas-aspect-ratio,16/9);overflow:hidden;background-color:var(--color-surface-muted);background-image:linear-gradient(var(--color-separator) 1px,transparent 1px),linear-gradient(90deg,var(--color-separator) 1px,transparent 1px);background-size:16px 16px}
