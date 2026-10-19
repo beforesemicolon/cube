@@ -2,13 +2,13 @@ import { register } from '../../core/Component.js'
 import { editorCSS, el, fragment, sheet, slot } from '../../core/editor-dom.js'
 import { bool, scalarText } from '../../core/value.js'
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { PanelHeaderBase } from './PanelHeaderBase.js'
 
 export class PanelHeader extends PanelHeaderBase {
     private heading?: HTMLSlotElement
     private descriptionNode?: HTMLElement
-    private toggleButton?: IconButton
+    private toggleButton?: Button
 
     render(): Node {
         const header = el('header', 'header')

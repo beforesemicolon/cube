@@ -3,7 +3,7 @@ name: '{{t.cube.categoryDataDisplay}}'
 title: '{{t.cube.categoryDataDisplay}}'
 path: /documentation/data-display
 layout: document
-order: 26
+order: 27
 ---
 
 # {{t.cube.categoryDataDisplay}}

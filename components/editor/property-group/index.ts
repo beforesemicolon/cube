@@ -1,7 +1,7 @@
 import '../../data-display/expandable-section/index.js'
 import type { ExpandableSection } from '../../data-display/expandable-section/index.js'
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { register } from '../../core/Component.js'
 import { editorCSS, el, fragment, sheet, slot } from '../../core/editor-dom.js'
 import { bool, scalarText } from '../../core/value.js'
@@ -15,7 +15,7 @@ const css = editorCSS + `
 export class PropertyGroup extends PropertyGroupBase {
     private section?: ExpandableSection
     private mixedNode?: HTMLElement
-    private resetButton?: IconButton
+    private resetButton?: Button
     render(): Node {
         this.section = document.createElement('cb-expandable-section') as ExpandableSection
         this.section.setAttribute('part', 'section')

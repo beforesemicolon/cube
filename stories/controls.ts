@@ -35,13 +35,13 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 const booleanProperties = new Set([
     'allowAlpha', 'allowReorder', 'allowSampler', 'animated', 'autoplay', 'bottomOpen', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'dirty', 'disabled', 'dismissible',
     'controls', 'disableContentPadding', 'expanded', 'formNoValidate', 'grid', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
-    'editable', 'editing', 'endOpen', 'guide', 'inline', 'lineNumbers', 'linked', 'mixed', 'movable', 'open', 'patterns', 'pinned', 'popupExpanded', 'pressed', 'readOnly', 'reorderable', 'required', 'resizable', 'returnFocus', 'reverse', 'rotatable', 'rowActivation',
+    'editable', 'editing', 'endOpen', 'guide', 'inline', 'lineNumbers', 'linked', 'mixed', 'movable', 'open', 'patterns', 'pinned', 'pressed', 'readOnly', 'reorderable', 'required', 'resizable', 'returnFocus', 'reverse', 'rotatable', 'rowActivation',
     'pannable', 'playing', 'searchable', 'selectable', 'selected', 'selectOnEdit', 'showCancel', 'showChrome', 'showCursor', 'showDimensions', 'showLock', 'showOrientationControl', 'showSize', 'showVisibility', 'startOpen', 'stickyHeader', 'striped', 'submitOnBlur', 'success', 'unmask', 'wrap', 'zoomable',
 ])
 
 const numberProperties = new Set([
     'angle', 'bottomSize', 'currentTime', 'cursorX', 'cursorY', 'delay', 'duration', 'endSize', 'firstDayOfWeek', 'firstValue', 'headingLevel', 'height', 'indent', 'lines', 'majorStep', 'max', 'maxBottomSize', 'maxEndSize', 'maxItems', 'maxLines', 'maxRecent', 'maxStartSize', 'maxVisible', 'maxZoom', 'min', 'minBottomSize', 'minEndSize', 'minHeight', 'minItems', 'minLines', 'minStartSize', 'minWidth', 'minorDivisions', 'minZoom', 'mobileBreakpoint', 'moveStep', 'originX', 'originY', 'page', 'playbackRate',
-    'loadingRows', 'progress', 'searchThreshold', 'seekStep', 'selectionCount', 'siblings', 'step', 'stickyColumns',
+    'loadingRows', 'progress', 'searchThreshold', 'seekStep', 'siblings', 'step', 'stickyColumns',
     'resizeStep', 'rotation', 'secondValue', 'snap', 'startSize', 'tabSize', 'threshold', 'totalPages', 'width', 'x', 'x1', 'x2', 'y', 'y1', 'y2', 'zoom', 'zoomStep',
 ])
 
@@ -63,7 +63,6 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
     modalSize: ['sm', 'md', 'lg', 'full', 'page'],
     orientation: ['horizontal', 'vertical'],
     placement: ['bottom-start', 'bottom-end', 'top-start', 'top-end'],
-    popupType: ['', 'menu', 'listbox', 'tree', 'grid', 'dialog'],
     position: ['top-start', 'top-end', 'bottom-start', 'bottom-end'],
     preload: ['none', 'metadata', 'auto'],
     searchable: ['auto', true, false],
@@ -74,9 +73,9 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
 
 const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly ControlOption[]>>>> = {
     'cb-avatar': { status: ['none', 'online', 'idle', 'busy', 'offline'] },
-    'cb-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
-    'cb-icon-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
-    'cb-button-group': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
+    'cb-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive', 'icon'] },
+    'cb-button-group': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive', 'icon'] },
+    'cb-heading': { variant: ['h2', 'h3', 'h4', 'h5', 'h6'] },
     'cb-link': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-cartesian-chart': { status: ['finished', 'loading', 'error'], stacking: [false, 'normal'] },
     'cb-pie-chart': { status: ['finished', 'loading', 'error'], variant: ['pie', 'donut'] },
@@ -146,7 +145,6 @@ const numberControls: Readonly<Record<string, NumberControl>> = {
     progress: { type: 'number', min: 0, max: 100, step: 1 },
     seekStep: { type: 'number', min: 1, max: 60, step: 1 },
     searchThreshold: { type: 'number', min: 0, step: 1 },
-    selectionCount: { type: 'number', min: 0, step: 1 },
     siblings: { type: 'number', min: 0, max: 5, step: 1 },
     stickyColumns: { type: 'number', min: 0, max: 10, step: 1 },
     totalPages: { type: 'number', min: 1, step: 1 },
@@ -155,7 +153,6 @@ const numberControls: Readonly<Record<string, NumberControl>> = {
 const descriptions: Readonly<Record<string, string>> = {
     accessibleLabel: 'Screen-reader label used when the visible label is absent or insufficient.',
     actionLabel: 'Localized label for the component’s primary action.',
-    actionValue: 'Value emitted when the split button’s primary action is activated.',
     appearance: 'Selects the light, dark, or system theme appearance.',
     autocomplete: 'Controls list suggestions and inline completion behavior.',
     closeLabel: 'Accessible text for the close button.',
@@ -191,7 +188,6 @@ const descriptions: Readonly<Record<string, string>> = {
     summary: 'Localized participant summary displayed beside the avatar group.',
     overflowLabel: 'Localized accessible label for hidden participants. Supports {count}.',
     label: 'Visible component label.',
-    menuLabel: 'Accessible label for the split button menu trigger.',
     messages: 'Editable Flashbar notification queue.',
     allowAlpha: 'Enables transparency editing and eight-digit HEX values.',
     allowSampler: 'Shows the screen color sampler when the browser supports it.',
@@ -329,7 +325,7 @@ const defaultSummaries: Readonly<Record<string, string>> = {
 }
 
 const primitiveDefaults: Readonly<Record<string, string | number | boolean | null>> = {
-    accessibleLabel: '', actionLabel: '', actionValue: '', activation: 'automatic', align: 'stretch', allowAlpha: true, allowSampler: true, appearance: 'system',
+    accessibleLabel: '', actionLabel: '', activation: 'automatic', align: 'stretch', allowAlpha: true, allowSampler: true, appearance: 'system',
     angle: 90, autoFlow: 'row', autocomplete: 'list', autoplay: false, background: '', blockSize: '', border: '', busy: false, controls: true, currentTime: 0, cursorX: 0, cursorY: 0,
     cancelLabel: '', checked: false, closeLabel: '', closeOnBackdrop: true, code: '', codeLanguage: 'html', collapsible: false, collapseAt: '', columns: '',
     color: '', confirmLabel: '', content: '', copiedLabel: '', copyLabel: '', crossOrigin: '', decorative: false, delay: 0,
@@ -337,12 +333,12 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     device: 'desktop', duration: 4, errorText: '', expanded: false, extent: 'farthest-corner', firstDayOfWeek: 0, formNoValidate: false, gap: '', grid: true, heading: '', height: 320,
     href: '', icon: '', initials: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
     keys: '', label: '', loading: false, loop: false, margin: '', max: 100, maxBlockSize: '', maxInlineSize: '',
-    majorStep: 100, maxItems: 4, maxRecent: 8, maxVisible: 4, maxZoom: 400, mediaTitle: '', menuLabel: '', min: 0, minorDivisions: 10, minZoom: 25, minBlockSize: '', minInlineSize: '',
+    majorStep: 100, maxItems: 4, maxRecent: 8, maxVisible: 4, maxZoom: 400, mediaTitle: '', min: 0, minorDivisions: 10, minZoom: 25, minBlockSize: '', minInlineSize: '',
     modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'horizontal', originX: 0, originY: 0, overflowLabel: '',
     overflow: '', padding: '', page: 1, patterns: false, placement: 'bottom-start', placeholder: '', playbackRate: 1,
-    popupControls: '', popupExpanded: false, popupType: '', position: 'top-end', poster: '', preload: 'metadata', searchLabel: '', searchable: 'auto', searchPlaceholder: '', searchThreshold: 10,
+    position: 'top-end', poster: '', preload: 'metadata', searchLabel: '', searchable: 'auto', searchPlaceholder: '', searchThreshold: 10,
     pannable: true, playing: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
-    seekStep: 10, selectionCount: 0, shape: 'circle', siblings: 1, size: 'sm', src: '', status: '', statusLabel: '', step: 1, summary: '', target: '_self',
+    seekStep: 10, shape: 'circle', siblings: 1, size: 'sm', src: '', status: '', statusLabel: '', step: 1, summary: '', target: '_self',
     selectable: true, selected: false, showCancel: true, showChrome: true, showCursor: true, showDimensions: true, showOrientationControl: true, snap: .1,
     totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', width: 640, wrap: false, x: 0, x1: .25, x2: .25, y: 0, y1: .1, y2: 1, zoom: 100, zoomStep: 10, zoomable: false,
     animated: true, allowReorder: true, bottomOpen: false, dirty: false, editable: true, editing: false, endOpen: true, guide: true, headingLevel: 2, inline: false,
@@ -361,6 +357,7 @@ const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue
     'cb-device-frame': { device: 'desktop', orientation: 'landscape' },
     'cb-presence': { maxVisible: 2 },
     'cb-button': { variant: 'secondary' },
+    'cb-heading': { variant: 'h2' },
     'cb-button-group': { variant: 'secondary' },
     'cb-split-button': { popupMaxWidth: '320px', popupMaxHeight: '360px' },
     'cb-link': { variant: 'secondary' },

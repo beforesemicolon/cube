@@ -1,20 +1,19 @@
-import { Component, type ComponentProps } from '../../core/Component.js'
+import { FormControlBase, type FormControlProps, type FormRestoreValue } from '../../form/FormControlBase.js'
 import { bool, scalarText } from '../../core/value.js'
-export type ButtonVariant = 'primary'|'secondary'|'outline'|'ghost'|'destructive'
-export interface ButtonProps extends ComponentProps {
+export type ButtonVariant = 'primary'|'secondary'|'outline'|'ghost'|'destructive'|'icon'
+export interface ButtonProps extends FormControlProps<string> {
     variant?: ButtonVariant; loading?:boolean; icon?:string; pressed?:boolean
-    type?:'button'|'submit'|'reset'; name?:string; value?:string; formNoValidate?:boolean
-    popupType?: 'menu'|'listbox'|'tree'|'grid'|'dialog'|''; popupExpanded?:boolean; popupControls?:string
+    type?:'button'|'submit'|'reset'
 }
-export abstract class ButtonBase<P extends ButtonProps = ButtonProps> extends Component<P> {
-    static formAssociated=true
-    static observedAttributes=[...Component.observedAttributes,'variant','loading','icon','pressed','type','name','value','form-no-validate','popup-type','popup-expanded','popup-controls']
-    variant:ButtonProps['variant']='secondary';loading=false;icon='';pressed:boolean|undefined=undefined;type:ButtonProps['type']='button';name='';value='';formNoValidate=false
-    popupType:ButtonProps['popupType']='';popupExpanded=false;popupControls=''
-    protected abstract actionElement(): HTMLElement | undefined
+export abstract class ButtonBase<P extends ButtonProps = ButtonProps> extends FormControlBase<P> {
+    static observedAttributes=[...FormControlBase.observedAttributes,'variant','loading','icon','pressed','type','aria-haspopup','aria-expanded','aria-controls']
+    variant:ButtonProps['variant']='secondary';loading=false;icon='';pressed:boolean|undefined=undefined;type:ButtonProps['type']='button';value=''
+    protected abstract actionElement(): HTMLButtonElement | HTMLAnchorElement | undefined
+    protected fieldElement(): HTMLButtonElement | undefined { const control=this.actionElement();return control instanceof HTMLButtonElement?control:undefined }
+    protected captureValue(): string { return scalarText(this.value) }
+    protected restoreValue(value: string | FormRestoreValue): void { this.value = value instanceof FormData ? scalarText(value.get(this.name)) : scalarText(value) }
+    protected syncFormValue(): void { this.syncForm(null) }
     protected get unavailable():boolean { return super.unavailable||bool(this.loading)||this.matches(':disabled') }
-    formDisabledCallback(_disabled:boolean):void { if(this.mounted){this.syncCommon();this.syncView()} }
-    get form():HTMLFormElement|null { return this.internals?.form??null }
     focus(options?:FocusOptions):void { const control=this.actionElement();if(control)control.focus(options);else super.focus(options) }
     click():void { if(!this.unavailable)this.actionElement()?.click() }
     toggle():void { if(this.pressed!==undefined&&!this.unavailable)this.actionElement()?.click() }

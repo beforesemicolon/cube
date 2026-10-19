@@ -3,7 +3,7 @@ name: '{{t.cube.categoryForm}}'
 title: '{{t.cube.categoryForm}}'
 path: /documentation/form
 layout: document
-order: 21
+order: 22
 ---
 
 # {{t.cube.categoryForm}}

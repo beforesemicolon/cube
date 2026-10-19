@@ -357,7 +357,7 @@ export const ResourceTable: Story = {
             },
             { id: 'owner', header: 'Owner', field: 'owner', sortable: true, minWidth: 160 },
             { id: 'updated', header: 'Updated', field: 'updated', sortable: true, minWidth: 140 },
-            { id: 'actions', header: 'Actions', ariaLabel: 'Resource actions', width: 88, align: 'center', cell: ({ item }) => component('cb-icon-button', { icon: 'more', label: `Actions for ${String(item.name ?? '')}`, accessibleLabel: `Actions for ${String(item.name ?? '')}`, variant: 'ghost' }) },
+            { id: 'actions', header: 'Actions', ariaLabel: 'Resource actions', width: 88, align: 'center', cell: ({ item }) => component('cb-button', { icon: 'more', label: `Actions for ${String(item.name ?? '')}`, accessibleLabel: `Actions for ${String(item.name ?? '')}`, variant: 'icon' }) },
         ]
         const table = document.createElement('cb-table') as HTMLElement & {
             items: readonly TableRecord[]
@@ -428,7 +428,7 @@ export const CanvasSelection: Story = {
     name: 'Editor / Canvas selection',
     render: () => wideSurface(
         component('cb-artboard', { label: 'Homepage artboard', accessibleLabel: 'Homepage artboard' }),
-        fill(component('cb-action-bar', { status: '3 layers selected', items: [{ id: 'group', label: 'Group' }, { id: 'duplicate', label: 'Duplicate' }, { id: 'delete', label: 'Delete' }] })),
+        fill(component('cb-action-bar')),
     ),
 }
 

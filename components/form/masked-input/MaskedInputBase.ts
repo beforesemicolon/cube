@@ -1,8 +1,8 @@
-import { FormControlBase, type FormControlProps } from '../FormControlBase.js'
+import { FieldControlBase, type FieldControlProps } from '../FormControlBase.js'
 import { bool, scalarText } from '../../core/value.js'
 import { formatMaskedValue, maskSlotsFor, unmaskValue } from './mask.js'
 
-export interface MaskedInputProps extends FormControlProps {
+export interface MaskedInputProps extends FieldControlProps {
     value?: string
     mask?: string
     placeholder?: string
@@ -14,9 +14,9 @@ export interface MaskedInputProps extends FormControlProps {
 }
 
 /** Deterministic input-mask behavior. Tokens are 9 (digit), A (letter), and * (alphanumeric). */
-export abstract class MaskedInputBase<P extends MaskedInputProps = MaskedInputProps> extends FormControlBase<P> {
+export abstract class MaskedInputBase<P extends MaskedInputProps = MaskedInputProps> extends FieldControlBase<P> {
     static observedAttributes = [
-        ...FormControlBase.observedAttributes, 'value', 'mask', 'placeholder', 'mask-placeholder', 'guide', 'unmask', 'input-mode', 'autocomplete',
+        ...FieldControlBase.observedAttributes, 'value', 'mask', 'placeholder', 'mask-placeholder', 'guide', 'unmask', 'input-mode', 'autocomplete',
     ]
     value = ''
     mask = ''

@@ -3,7 +3,7 @@ name: '{{t.cube.categoryFeedback}}'
 title: '{{t.cube.categoryFeedback}}'
 path: /documentation/feedback
 layout: document
-order: 25
+order: 26
 ---
 
 # {{t.cube.categoryFeedback}}

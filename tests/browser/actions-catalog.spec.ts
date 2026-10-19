@@ -70,6 +70,19 @@ test('button only becomes a toggle when pressed is defined and preserves every v
     expect(audit.violations).toEqual([])
 })
 
+test('button icon variant replaces the separate icon-button element', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const button = document.createElement('cb-button') as HTMLElement & { label: string; icon: string; variant: string }
+        Object.assign(button, { label: 'Settings', icon: 'settings', variant: 'icon' })
+        document.querySelector('#fixture')?.append(button)
+    })
+    const button = page.getByRole('button', { name: 'Settings' })
+    await expect(button).toBeVisible()
+    await expect(page.locator('cb-button')).toHaveAttribute('data-variant', 'icon')
+    await expect(page.locator('cb-icon-button')).toHaveCount(0)
+})
+
 test('button group owns its buttons and renders one continuous control', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
@@ -96,15 +109,9 @@ test('button group owns its buttons and renders one continuous control', async (
     expect(geometry[1]?.left).toBeLessThanOrEqual((geometry[0]?.right ?? 0) + 0.1)
     expect(geometry[0]?.startEnd).toBe('0px')
     expect(geometry[1]?.startStart).toBe('0px')
-    await page.locator('cb-button-group').evaluate(element => { (element as HTMLElement & { orientation: string }).orientation = 'vertical' })
-    const verticalGeometry = await group.getByRole('button').evaluateAll(buttons => buttons.map(button => {
-        const style = getComputedStyle(button)
-        const box = button.getBoundingClientRect()
-        return { top: box.top, bottom: box.bottom, startStart: style.borderStartStartRadius, endStart: style.borderEndStartRadius }
-    }))
-    expect(verticalGeometry[1]?.top).toBeLessThanOrEqual((verticalGeometry[0]?.bottom ?? 0) + 0.1)
-    expect(verticalGeometry[0]?.endStart).toBe('0px')
-    expect(verticalGeometry[1]?.startStart).toBe('0px')
+    await page.locator('cb-button-group').evaluate(element => { element.dir = 'rtl' })
+    const rtlGeometry = await group.getByRole('button').evaluateAll(buttons => buttons.map(button => button.getBoundingClientRect().left))
+    expect(rtlGeometry[0]).toBeGreaterThan(rtlGeometry[1] ?? 0)
     const audit = await new AxeBuilder({ page }).include('cb-button-group').analyze()
     expect(audit.violations).toEqual([])
 })
@@ -112,9 +119,8 @@ test('button group owns its buttons and renders one continuous control', async (
 test('action bar places named start content before its default actions', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
-        const bar = document.createElement('cb-action-bar') as HTMLElement & { accessibleLabel: string; status: string }
+        const bar = document.createElement('cb-action-bar') as HTMLElement & { accessibleLabel: string }
         bar.accessibleLabel = 'Selection actions'
-        bar.status = '3 layers selected'
         const back = document.createElement('cb-button') as HTMLElement & { label: string; variant: string }
         back.label = 'Back'
         back.variant = 'ghost'
@@ -127,7 +133,6 @@ test('action bar places named start content before its default actions', async (
 
     const bar = page.locator('cb-action-bar')
     await expect(bar.getByRole('button', { name: 'Back' })).toBeVisible()
-    await expect(bar.getByText('3 layers selected')).toBeVisible()
     await expect(bar.getByRole('button', { name: 'Group' })).toBeVisible()
     const slots = await bar.evaluate(element => Array.from(element.children).map(child => child.getAttribute('slot') ?? 'default'))
     expect(slots).toEqual(['start', 'default'])
@@ -140,9 +145,9 @@ test('action bar places named start content before its default actions', async (
 test('split button joins its primary and menu trigger into one control', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
-        const split = document.createElement('cb-split-button') as HTMLElement & { label: string; menuLabel: string; items: Array<{ id: string; label: string }> }
-        split.label = 'Create'; split.menuLabel = 'More create actions'; split.items = [{ id: 'page', label: 'Page' }]
-        split.addEventListener('action', () => { split.dataset.actionCount = String(Number(split.dataset.actionCount ?? 0) + 1) })
+        const split = document.createElement('cb-split-button') as HTMLElement & { label: string; value: string; items: Array<{ id: string; label: string }> }
+        split.label = 'Create'; split.value = 'create'; split.items = [{ id: 'page', label: 'Page' }]
+        split.addEventListener('change', () => { split.dataset.changeCount = String(Number(split.dataset.changeCount ?? 0) + 1) })
         document.querySelector('#fixture')?.append(split)
     })
     const buttons = page.locator('cb-split-button').getByRole('button')
@@ -156,7 +161,7 @@ test('split button joins its primary and menu trigger into one control', async (
     expect(geometry[0]?.startEnd).toBe('0px')
     expect(geometry[1]?.startStart).toBe('0px')
     await buttons.first().click()
-    await expect(page.locator('cb-split-button')).toHaveAttribute('data-action-count', '1')
+    await expect(page.locator('cb-split-button')).toHaveAttribute('data-change-count', '1')
     const audit = await new AxeBuilder({ page }).include('cb-split-button').analyze()
     expect(audit.violations).toEqual([])
 })
@@ -164,8 +169,9 @@ test('split button joins its primary and menu trigger into one control', async (
 test('dropdown, menu, pagination and tooltip expose canonical accessible interactions', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
-        const dropdown = document.createElement('cb-dropdown') as HTMLElement & { label: string; items: Array<{ id: string; label: string }> }
+        const dropdown = document.createElement('cb-dropdown') as HTMLElement & { label: string; value: string; items: Array<{ id: string; label: string }> }
         dropdown.label = 'Add element'; dropdown.items = [{ id: 'text', label: 'Text' }, { id: 'image', label: 'Image' }]
+        dropdown.addEventListener('change', event => { dropdown.dataset.changedValue = String((event as CustomEvent<{ value: string }>).detail.value) })
         const pagination = document.createElement('cb-pagination') as HTMLElement & { page: number; totalPages: number; accessibleLabel: string; previousLabel: string; nextLabel: string; pageLabel: string }
         pagination.page = 2; pagination.totalPages = 12; pagination.accessibleLabel = 'Results pages'; pagination.previousLabel = 'Previous page'; pagination.nextLabel = 'Next page'; pagination.pageLabel = 'Page {page}'
         const tooltip = document.createElement('cb-tooltip') as HTMLElement & { content: string }
@@ -174,6 +180,7 @@ test('dropdown, menu, pagination and tooltip expose canonical accessible interac
     })
     const trigger = page.getByRole('button', { name: 'Add element' }); await trigger.click(); await expect(trigger).toHaveAttribute('aria-expanded', 'true')
     await page.getByRole('menuitem', { name: 'Text' }).click(); await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.locator('cb-dropdown')).toHaveAttribute('data-changed-value', 'text')
     await page.getByRole('button', { name: 'Page 3' }).click(); await expect(page.getByRole('button', { name: 'Page 3' })).toHaveAttribute('aria-current', 'page')
     await page.getByRole('button', { name: 'Duplicate' }).hover(); await expect(page.getByRole('tooltip')).toBeVisible()
     const audit = await new AxeBuilder({ page }).include('#fixture').analyze(); expect(audit.violations).toEqual([])

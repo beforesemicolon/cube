@@ -3,7 +3,7 @@ name: '{{t.cube.categoryMedia}}'
 title: '{{t.cube.categoryMedia}}'
 path: /documentation/media
 layout: document
-order: 27
+order: 28
 ---
 
 # {{t.cube.categoryMedia}}

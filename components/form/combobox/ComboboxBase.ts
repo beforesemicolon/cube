@@ -1,9 +1,9 @@
-import { FormControlBase, type FormControlProps } from '../FormControlBase.js'
+import { FieldControlBase, type FieldControlProps } from '../FormControlBase.js'
 import { normalizeOptions, type SelectOption } from '../model.js'
 import { scalarText } from '../../core/value.js'
 import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength } from '../../core/popup.js'
 
-export interface ComboboxProps extends FormControlProps, PopupConstraintProps {
+export interface ComboboxProps extends FieldControlProps, PopupConstraintProps {
     options?: SelectOption[]
     value?: string
     placeholder?: string
@@ -13,8 +13,8 @@ export interface ComboboxProps extends FormControlProps, PopupConstraintProps {
     autocomplete?: 'none' | 'list' | 'both'
 }
 
-export abstract class ComboboxBase<P extends ComboboxProps = ComboboxProps> extends FormControlBase<P> {
-    static observedAttributes = [...FormControlBase.observedAttributes, 'options', 'value', 'placeholder', 'toggle-label', 'empty-label', 'open', 'autocomplete', ...popupConstraintAttributes]
+export abstract class ComboboxBase<P extends ComboboxProps = ComboboxProps> extends FieldControlBase<P> {
+    static observedAttributes = [...FieldControlBase.observedAttributes, 'options', 'value', 'placeholder', 'toggle-label', 'empty-label', 'open', 'autocomplete', ...popupConstraintAttributes]
     options: SelectOption[] = []
     value = ''
     placeholder = ''

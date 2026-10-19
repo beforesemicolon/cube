@@ -1,5 +1,5 @@
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import '../../form/number-input/index.js'
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
@@ -55,8 +55,8 @@ export class Bezier extends BezierBase {
     private fieldLabels: readonly HTMLElement[] = []
     private valueNode?: HTMLOutputElement
     private preview?: HTMLElement
-    private playButton?: IconButton
-    private resetButton?: IconButton
+    private playButton?: Button
+    private resetButton?: Button
     private drag?: DragState
 
     render(): Node {

@@ -1,5 +1,5 @@
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import type { Select } from '../../form/select/index.js'
 import '../../form/select/index.js'
 import type { SegmentedControl } from '../../navigation/segmented-control/index.js'
@@ -74,11 +74,11 @@ export class GradientEditor extends GradientEditorBase {
     private extentLabelNode?: HTMLElement
     private positionLabelNode?: HTMLElement
     private stopsLabelNode?: HTMLElement
-    private addButton?: IconButton
+    private addButton?: Button
     private track?: HTMLElement
     private trackColor?: HTMLElement
     private colorPicker?: ColorPicker
-    private removeButton?: IconButton
+    private removeButton?: Button
     private formControl?: HTMLInputElement
     private drag?: DragState
     private readonly handles = new Map<string, HTMLButtonElement>()

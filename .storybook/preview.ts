@@ -19,7 +19,7 @@ const preview: Preview = {
         a11y: { test: 'error' },
         layout: 'padded',
         options: { storySort: { order: [
-            'Action', 'Form', 'Layout', 'Navigation', 'Overlay', 'Feedback', 'Data display', 'Media', 'Charts',
+            'Action', 'Text', 'Form', 'Layout', 'Navigation', 'Overlay', 'Feedback', 'Data display', 'Media', 'Charts',
             'Styling', 'Editor', 'Collaboration', 'Icons', 'Theme', 'Design references', 'Examples',
         ] } },
     },

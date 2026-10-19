@@ -1,7 +1,7 @@
 import '../../form/text-input/index.js'
 import type { TextInput } from '../../form/text-input/index.js'
 import { actionLabel, createButton, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { createIcon, iconPaths } from '../../icons/paths.js'
@@ -92,7 +92,7 @@ export class LayerTree extends LayerTreeBase {
         return actions
     }
 
-    private itemAction(part: string, icon: string, label: string, handler: (event: CustomEvent) => void): IconButton {
+    private itemAction(part: string, icon: string, label: string, handler: (event: CustomEvent) => void): Button {
         const button = createIconButton(`action ${part}`, icon, handler); actionLabel(button, label); button.size = 'xs'; button.disabled = this.unavailable; return button
     }
 

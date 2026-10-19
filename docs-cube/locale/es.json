@@ -38,6 +38,7 @@
     "pieBody": "Un componente para gráficos circulares y de anillo, con filtros, detalles y centro opcional. ECharts solo se carga al montar un gráfico con datos.",
     "figma": "Los paneles Studio de design/figma-layers son la referencia visual; Storybook proporciona la referencia ejecutable de los componentes.",
     "categoryAction": "Acciones",
+    "categoryText": "Texto",
     "categoryForm": "Formularios",
     "formNative": "Select, DatePicker y TimePicker usan el renderizado coherente de Cube de forma predeterminada. Añade la bandera native solo cuando prefieras el selector nativo del navegador. Combobox ofrece los comportamientos de lista y autocompletado mediante la propiedad autocomplete, y Calendar también está disponible como componente independiente.",
     "popupConstraintsBody": "Los menús y selectores anclados adaptan su tamaño al contenido y permanecen dentro de la ventana. Usa popupMaxWidth y popupMaxHeight con una longitud CSS o un valor numérico en píxeles para reemplazar los valores predeterminados; el contenido limitado se desplaza dentro del menú emergente.",

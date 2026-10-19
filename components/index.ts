@@ -33,7 +33,8 @@ export type { Toolbar } from './action/toolbar/index.js'
 export type { ActionBar } from './action/action-bar/index.js'
 export type { Pagination } from './navigation/pagination/index.js'
 export type { Tooltip } from './overlay/tooltip/index.js'
-export type { Shortcut } from './action/shortcut/index.js'
+export type { Heading } from './text/heading/index.js'
+export type { Shortcut } from './text/shortcut/index.js'
 /** SSR-safe to import; mounting/registration requires the browser's DOM. */
 export async function loadComponent(name: ComponentName): Promise<CustomElementConstructor> {
     if (typeof customElements === 'undefined') throw new Error('Cube element loading requires a DOM; import pure utilities on the server')

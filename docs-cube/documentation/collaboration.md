@@ -3,7 +3,7 @@ name: '{{t.cube.categoryCollaboration}}'
 title: '{{t.cube.categoryCollaboration}}'
 path: /documentation/collaboration
 layout: document
-order: 30
+order: 31
 ---
 
 # {{t.cube.categoryCollaboration}}

@@ -3,7 +3,7 @@ name: '{{t.cube.categoryEditor}}'
 title: '{{t.cube.categoryEditor}}'
 path: /documentation/editor
 layout: document
-order: 29
+order: 30
 ---
 
 # {{t.cube.categoryEditor}}

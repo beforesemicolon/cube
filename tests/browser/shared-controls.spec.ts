@@ -4,7 +4,7 @@ async function start(page:import('@playwright/test').Page){await page.goto('/tes
 test('shared controls accept application-supplied names and report no component errors',async({page})=>{
     await start(page)
     await page.evaluate(()=>{(window as any).componentErrors=[];document.addEventListener('error',e=>(window as any).componentErrors.push(String((e as CustomEvent).detail.error)));const values=[['button',{accessibleLabel:'Action'}],['slider',{accessibleLabel:'Value'}],['select',{accessibleLabel:'Choose an option'}],['calendar',{accessibleLabel:'Calendar',previousLabel:'Previous month',nextLabel:'Next month'}],['icon',{label:'Icon'}]] as const;for(const [name,props] of values){const element=document.createElement('cb-'+name);Object.assign(element,props);document.querySelector('#fixture')!.append(element)}})
-    await expect(page.locator('cb-button').getByRole('button')).toHaveAccessibleName('Action')
+    await expect(page.locator('#fixture > cb-button').getByRole('button')).toHaveAccessibleName('Action')
     await expect(page.locator('cb-slider').getByRole('slider')).toHaveAccessibleName('Value')
     await expect(page.locator('cb-select').getByRole('button')).toHaveAccessibleName('Choose an option')
     expect(await page.evaluate(()=>(window as any).componentErrors)).toEqual([])

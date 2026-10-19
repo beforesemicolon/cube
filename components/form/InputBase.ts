@@ -1,16 +1,16 @@
 import { scalarText } from '../core/value.js'
-import { FormControlBase, type FormControlProps, type FormRestoreValue } from './FormControlBase.js'
+import { FieldControlBase, type FieldControlProps, type FormRestoreValue } from './FormControlBase.js'
 import type { StudioValue } from '../studio/types.js'
 
-export interface InputProps extends FormControlProps {
+export interface InputProps extends FieldControlProps<StudioValue> {
     value?: StudioValue
     placeholder?: string
     readOnly?: boolean
 }
 
 /** Value and editing behavior shared by primitive input controls. */
-export abstract class InputBase<P extends InputProps = InputProps> extends FormControlBase<P, StudioValue> {
-    static observedAttributes = [...FormControlBase.observedAttributes, 'value', 'placeholder']
+export abstract class InputBase<P extends InputProps = InputProps> extends FieldControlBase<P, StudioValue> {
+    static observedAttributes = [...FieldControlBase.observedAttributes, 'value', 'placeholder']
     value: StudioValue = ''
     placeholder = ''
     protected fieldElement(): HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | undefined {

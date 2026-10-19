@@ -1,6 +1,6 @@
-import '../../action/icon-button/index.js'
+import '../../action/button/index.js'
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet, slot } from '../../core/editor-dom.js'
 import { finite, scalarText } from '../../core/value.js'
@@ -9,8 +9,8 @@ import { WorkspaceBase, type WorkspacePanel } from './WorkspaceBase.js'
 interface PanelView {
     panel: HTMLElement
     rail: HTMLElement
-    close: IconButton
-    open: IconButton
+    close: Button
+    open: Button
     handle: HTMLElement
 }
 

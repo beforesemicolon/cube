@@ -1,8 +1,8 @@
 import { scalarText } from '../../core/value.js'
-import { FormControlBase, type FormControlProps, type FormRestoreValue } from '../FormControlBase.js'
+import { FieldControlBase, type FieldControlProps, type FormRestoreValue } from '../FormControlBase.js'
 import type { StudioItem, StudioKind, StudioValue } from '../../studio/types.js'
 
-export interface TokenInputProps extends FormControlProps {
+export interface TokenInputProps extends FieldControlProps<StudioValue> {
     value?: StudioValue
     items?: readonly StudioItem[]
     emptyLabel?: string
@@ -10,8 +10,8 @@ export interface TokenInputProps extends FormControlProps {
 }
 
 /** Headless behavior for the Token input component. */
-export abstract class TokenInputBase extends FormControlBase<TokenInputProps, StudioValue> {
-    static observedAttributes = [...FormControlBase.observedAttributes, 'value', 'items', 'empty-label']
+export abstract class TokenInputBase extends FieldControlBase<TokenInputProps, StudioValue> {
+    static observedAttributes = [...FieldControlBase.observedAttributes, 'value', 'items', 'empty-label']
     value: StudioValue = ''
     items: readonly StudioItem[] = []
     emptyLabel = ''

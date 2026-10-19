@@ -1,7 +1,7 @@
-import { FormControlBase, type FormControlProps, type FormRestoreValue } from '../FormControlBase.js'
+import { FieldControlBase, type FieldControlProps, type FormRestoreValue } from '../FormControlBase.js'
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
 
-export interface LinkedValuesProps extends FormControlProps {
+export interface LinkedValuesProps extends FieldControlProps {
     firstValue?: number
     secondValue?: number
     firstName?: string
@@ -17,9 +17,9 @@ export interface LinkedValuesProps extends FormControlProps {
 }
 
 /** Coupled numeric-value behavior for dimensions, offsets and other paired properties. */
-export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValuesProps> extends FormControlBase<P, readonly [number, number]> {
+export abstract class LinkedValuesBase<P extends LinkedValuesProps = LinkedValuesProps> extends FieldControlBase<P, readonly [number, number]> {
     static observedAttributes = [
-        ...FormControlBase.observedAttributes, 'first-value', 'second-value', 'first-name', 'second-name', 'first-label', 'second-label',
+        ...FieldControlBase.observedAttributes, 'first-value', 'second-value', 'first-name', 'second-name', 'first-label', 'second-label',
         'linked', 'min', 'max', 'step', 'link-label', 'unlink-label',
     ]
     firstValue = 0

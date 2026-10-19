@@ -106,10 +106,10 @@ const publicDefinitions = definitions.filter(definition => publicStudioComponent
 const quote = value => `'${value.replaceAll("'", "\\'")}'`
 const reusedBoardItems = {
     actions: [
-        ['button','Button'],['icon-button','Icon button'],['split-button','Split button'],['toggle-button','Toggle button'],['button-group','Button group'],
+        ['button','Button'],['heading','Heading'],['shortcut','Shortcut'],['split-button','Split button'],['toggle-button','Toggle button'],['button-group','Button group'],
         ['segmented-control','Segmented control'],['tabs','Tabs'],['breadcrumb','Breadcrumb'],['menu','Menu'],['context-menu','Context menu'],
         ['dropdown','Dropdown'],['command-palette','Command palette'],['toolbar','Toolbar'],['action-bar','Action bar'],['link','Link'],
-        ['pagination','Pagination'],['tooltip','Tooltip'],['shortcut','Shortcut'],
+        ['pagination','Pagination'],['tooltip','Tooltip'],
     ],
     inputs: [['select','Select'],['slider','Slider']],
     'data-feedback': [['divider','Divider']],
@@ -118,10 +118,10 @@ const reusedBoardItems = {
 }
 const reusedSourceCategories = { actions:'actions', inputs:'inputs', 'data-feedback':'layout', overlays:'overlays', 'app-shell':'assets-structure' }
 const reusedKinds = {
-    button:'text', 'icon-button':'text', 'split-button':'panel', 'toggle-button':'choice', 'button-group':'collection',
+    button:'text', heading:'text', shortcut:'display', 'split-button':'panel', 'toggle-button':'choice', 'button-group':'collection',
     'segmented-control':'collection', tabs:'collection', breadcrumb:'collection', menu:'collection', 'context-menu':'collection',
     dropdown:'collection', 'command-palette':'collection', toolbar:'collection', 'action-bar':'collection', link:'text',
-    pagination:'number', tooltip:'panel', shortcut:'display', select:'select', slider:'range', divider:'display',
+    pagination:'number', tooltip:'panel', select:'select', slider:'range', divider:'display',
     modal:'panel', 'alert-dialog':'panel', 'undo-redo':'editor',
 }
 const reusedDefinitions = Object.entries(reusedBoardItems).flatMap(([board, entries]) => entries.map(([name,title]) => ({
@@ -137,7 +137,8 @@ const studioBoardItems = [
     ...definitions.map(({board,category,name,title}) => ({board,category,name,title})),
 ]
 const existingCategoryExports = {
-    action: ["export * from './button/index.js'", "export * from './split-button/index.js'", "export * from './button-group/index.js'", "export * from './toolbar/index.js'", "export * from './action-bar/index.js'", "export * from './shortcut/index.js'"],
+    action: ["export * from './button/index.js'", "export * from './split-button/index.js'", "export * from './button-group/index.js'", "export * from './toolbar/index.js'", "export * from './action-bar/index.js'"],
+    text: ["export * from './heading/index.js'", "export * from './shortcut/index.js'"],
     form: ["export * from './InputBase.js'", "export * from './NumericInputBase.js'", "export * from './ChoiceControlBase.js'", "export * from './slider/index.js'", "export * from './select/index.js'", "export * from './radio-group/index.js'", "export * from './calendar/index.js'", "export { normalizeRange, normalizeOptions } from './model.js'"],
     layout: ["export * from './box/index.js'", "export * from './row/index.js'", "export * from './col/index.js'", "export * from './grid/index.js'", "export * from './divider/index.js'"],
     navigation: ["export * from './link/index.js'", "export * from './segmented-control/index.js'", "export * from './tabs/index.js'", "export * from './breadcrumb/index.js'", "export * from './menu/index.js'", "export * from './pagination/index.js'"],
@@ -147,7 +148,7 @@ const existingCategoryExports = {
     media: ["export * from './audio-player/index.js'", "export * from './video-player/index.js'"],
 }
 const documentationKeys = {
-    action:'categoryAction', form:'categoryForm', layout:'studioLayout', navigation:'categoryNavigation', overlay:'categoryOverlay',
+    action:'categoryAction', text:'categoryText', form:'categoryForm', layout:'studioLayout', navigation:'categoryNavigation', overlay:'categoryOverlay',
     feedback:'categoryFeedback', 'data-display':'categoryDataDisplay', media:'categoryMedia', styling:'categoryStyling', editor:'categoryEditor',
     assets:'categoryAssets', collaboration:'categoryCollaboration',
 }
@@ -204,10 +205,11 @@ const foundationStoryArgs = {
     'file-picker': `{ label: 'File picker', fileLabel: 'Choose a file', fileRequirements: 'Select a file from your device' }`,
     table: `{ label: 'Table', value: 'one', items, emptyLabel: 'No items', nameLabel: 'Name', metadataLabel: 'Details' }`,
     button: `{ label: 'Button', value: 'add-section', variant: 'primary', icon: 'plus', loading: false }`,
-    'split-button': `{ label: 'Split button', actionValue: 'create', menuLabel: 'More create actions', items, open: false, placement: 'bottom-start', loading: false }`,
-    'button-group': `{ label: 'Clipboard actions', orientation: 'horizontal', variant: 'secondary', items: [{ id: 'copy', label: 'Copy' }, { id: 'paste', label: 'Paste' }, { id: 'duplicate', label: 'Duplicate' }] }`,
-    toolbar: `{ label: 'Toolbar', orientation: 'horizontal' }`,
-    'action-bar': `{ label: 'Action bar', selectionCount: 3, busy: false, status: '3 layers selected' }`,
+    heading: `{ label: 'Design system', description: 'Build consistent interfaces from shared components.', variant: 'h2', size: 'lg' }`,
+    'split-button': `{ label: 'Split button', value: 'create', items, open: false, placement: 'bottom-start', loading: false }`,
+    'button-group': `{ label: 'Clipboard actions', variant: 'secondary', items: [{ id: 'copy', label: 'Copy' }, { id: 'paste', label: 'Paste' }, { id: 'duplicate', label: 'Duplicate' }] }`,
+    toolbar: `{ label: 'Toolbar' }`,
+    'action-bar': `{ label: 'Action bar' }`,
     shortcut: `{ keys: '⌘+Shift+P', accessibleLabel: 'Command Shift P' }`,
     'segmented-control': `{ label: 'View', value: 'one', items, orientation: 'horizontal' }`,
     tabs: `{ label: 'Workspace', value: 'one', items, orientation: 'horizontal', activation: 'automatic' }`,
@@ -249,7 +251,7 @@ const storyExtras = [
     {category:'icons',name:'icon',title:'Icon',kind:'display',className:'Icon'},
     {category:'theme',name:'theme-provider',title:'Theme provider',kind:'panel',className:'ThemeProvider'},
 ]
-const reusedStoryDefinitions = reusedDefinitions.filter(reused => !definitions.some(definition => definition.name === reused.name) && !['icon-button', 'toggle-button'].includes(reused.name))
+const reusedStoryDefinitions = reusedDefinitions.filter(reused => !definitions.some(definition => definition.name === reused.name) && reused.name !== 'toggle-button')
 const storyDefinitions = [...publicDefinitions, ...reusedStoryDefinitions, ...storyExtras]
 const formStoryOrder = ['text-input','textarea','number-input','unit-input','combobox','checkbox','radio-group','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input','select','slider','calendar']
 const orderDefinitions = (category, entries) => category !== 'form' ? entries : [...entries].sort((left, right) => formStoryOrder.indexOf(left.name) - formStoryOrder.indexOf(right.name))

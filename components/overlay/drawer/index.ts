@@ -2,14 +2,14 @@ import { register } from '../../core/Component.js'
 import { editorCSS, el, fragment, sheet, slot, uid } from '../../core/editor-dom.js'
 import { bool, scalarText } from '../../core/value.js'
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { DrawerBase } from './DrawerBase.js'
 
 export class Drawer extends DrawerBase {
     private dialog?: HTMLDialogElement
     private headingNode?: HTMLSlotElement
     private descriptionNode?: HTMLSlotElement
-    private closeButton?: IconButton
+    private closeButton?: Button
     render(): Node {
         this.dialog = el('dialog', 'dialog drawer')
         const headingId = uid('cb-drawer-heading')

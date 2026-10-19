@@ -1,5 +1,6 @@
 export const componentCategoryOrder = [
     'action',
+    'text',
     'form',
     'layout',
     'navigation',
@@ -17,6 +18,7 @@ export const componentCategoryOrder = [
 
 export const componentCategoryTitles = {
     action: 'Action',
+    text: 'Text',
     form: 'Form',
     layout: 'Layout',
     navigation: 'Navigation',
@@ -33,9 +35,10 @@ export const componentCategoryTitles = {
 }
 
 const actionComponents = new Set([
-    'button', 'icon-button', 'link-button', 'split-button', 'button-group', 'toolbar', 'action-bar',
-    'shortcut', 'floating-toolbar', 'undo-redo', 'shortcuts',
+    'button', 'link-button', 'split-button', 'button-group', 'toolbar', 'action-bar',
+    'floating-toolbar', 'undo-redo', 'shortcuts',
 ])
+const textComponents = new Set(['heading', 'shortcut'])
 const navigationComponents = new Set([
     'link', 'segmented-control', 'tabs', 'breadcrumb', 'menu', 'pagination', 'nested-menu', 'panel-tabs',
     'page-navigator', 'breakpoint-navigator', 'workspace-switcher', 'project-picker', 'device-selector', 'selection-trail', 'user-menu',
@@ -61,6 +64,7 @@ const mediaComponents = new Set(['media-preview'])
 
 export function resolveComponentCategory(sourceCategory, name) {
     if (componentCategoryOrder.includes(sourceCategory)) return sourceCategory
+    if (textComponents.has(name)) return 'text'
     if (sourceCategory === 'actions') {
         if (actionComponents.has(name)) return 'action'
         if (navigationComponents.has(name)) return 'navigation'

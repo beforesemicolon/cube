@@ -1,7 +1,7 @@
 import '../number-input/index.js'
-import '../../action/icon-button/index.js'
+import '../../action/button/index.js'
 import type { NumberInput } from '../number-input/index.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { actionLabel } from '../../action/create.js'
 import { register } from '../../core/Component.js'
 import { editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
@@ -20,7 +20,7 @@ export class LinkedValues extends LinkedValuesBase {
     private secondLabelNode?: HTMLElement
     private first?: NumberInput
     private second?: NumberInput
-    private link?: IconButton
+    private link?: Button
     render(): Node {
         this.group = el('div', 'group')
         this.group.setAttribute('role', 'group')
@@ -34,7 +34,7 @@ export class LinkedValues extends LinkedValuesBase {
         this.secondLabelNode.addEventListener('click', () => this.second?.focus())
         firstField.append(this.firstLabelNode, this.first)
         secondField.append(this.secondLabelNode, this.second)
-        this.link = document.createElement('cb-icon-button') as IconButton; this.link.setAttribute('part', 'link')
+        this.link = document.createElement('cb-button') as Button; this.link.setAttribute('part', 'link')
         this.first.addEventListener('change', event => this.setFirst(finite((event as CustomEvent<{ value: number }>).detail.value), event))
         this.second.addEventListener('change', event => this.setSecond(finite((event as CustomEvent<{ value: number }>).detail.value), event))
         this.link.addEventListener('change', event => this.setLinked(bool((event as CustomEvent<{ pressed: boolean }>).detail.pressed), event))
@@ -48,7 +48,7 @@ export class LinkedValues extends LinkedValuesBase {
         this.secondLabelNode.textContent = scalarText(this.secondLabel)
         Object.assign(this.first, { label: scalarText(this.firstLabel), accessibleLabel: scalarText(this.firstLabel), value: finite(this.firstValue), min: this.min, max: this.max, step: this.step, disabled: this.unavailable })
         Object.assign(this.second, { label: scalarText(this.secondLabel), accessibleLabel: scalarText(this.secondLabel), value: finite(this.secondValue), min: this.min, max: this.max, step: this.step, disabled: this.unavailable })
-        Object.assign(this.link, { label: '', accessibleLabel: this.toggleLabel(), pressed: bool(this.linked), icon: bool(this.linked) ? 'link' : 'unlink', disabled: this.unavailable })
+        Object.assign(this.link, { label: '', accessibleLabel: this.toggleLabel(), pressed: bool(this.linked), icon: bool(this.linked) ? 'link' : 'unlink', variant: 'icon', disabled: this.unavailable })
         actionLabel(this.link, this.toggleLabel())
         this.syncFormValues()
     }

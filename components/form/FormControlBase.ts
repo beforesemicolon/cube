@@ -1,12 +1,22 @@
 import { Component, type ComponentProps } from '../core/Component.js'
 import { bool, text, scalarText } from '../core/value.js'
-export interface FormControlProps extends ComponentProps { name?:string; required?:boolean; readOnly?:boolean; errorText?:string }
+export interface FormControlSharedProps extends ComponentProps {
+    name?: string
+    formNoValidate?: boolean
+}
+export interface FormControlProps<Value = string> extends FormControlSharedProps { value?: Value }
+export interface FieldControlSharedProps extends FormControlSharedProps {
+    required?: boolean
+    readOnly?: boolean
+    errorText?: string
+}
+export interface FieldControlProps<Value = string> extends FormControlProps<Value>, FieldControlSharedProps {}
 export type FormRestoreValue = string | File | FormData | null
-/** Form association, validation, reset, and fieldset disabling shared by form controls. */
-export abstract class FormControlBase<P extends FormControlProps=FormControlProps, S=string> extends Component<P> {
+/** Form association, value restoration, reset, and fieldset disabling shared by form controls. */
+export abstract class FormControlBase<P extends FormControlSharedProps=FormControlProps, S=string> extends Component<P> {
     static formAssociated=true
-    static observedAttributes=[...Component.observedAttributes,'name','required','read-only','error-text']
-    name='';required=false;readOnly=false;errorText=''
+    static observedAttributes=[...Component.observedAttributes,'name','value','form-no-validate']
+    name='';formNoValidate=false
     private initialized=false
     private initialValue?:{readonly value:S}
     private disabledByForm=false
@@ -14,7 +24,7 @@ export abstract class FormControlBase<P extends FormControlProps=FormControlProp
         if(event.target!==this)event.stopPropagation()
     }
     protected validationShown=false
-    protected abstract fieldElement():HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement|undefined
+    protected abstract fieldElement():HTMLButtonElement|HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement|undefined
     protected abstract captureValue():S
     protected abstract restoreValue(value:S|FormRestoreValue):void
     protected syncFormValue():void{}
@@ -36,18 +46,27 @@ export abstract class FormControlBase<P extends FormControlProps=FormControlProp
         const name=scalarText(this.name)
         if(name){if(this.getAttribute('name')!==name)this.setAttribute('name',name)}else if(this.hasAttribute('name'))this.removeAttribute('name')
         this.internals?.setFormValue(this.unavailable?null:value,value)
+    }
+    checkValidity():boolean{return this.internals?.checkValidity()??true}
+    reportValidity():boolean{this.validationShown=true;this.syncView();return this.internals?.reportValidity()??true}
+    formAssociatedCallback(_form:HTMLFormElement|null):void{if(this.mounted)this.syncFormValue()}
+    formDisabledCallback(disabled:boolean):void{this.disabledByForm=disabled;if(this.mounted){this.syncCommon();this.syncView();this.syncFormValue()}}
+    formResetCallback():void{this.validationShown=false;if(this.initialValue)this.restoreValue(this.initialValue.value);if(this.mounted){this.syncView();this.syncFormValue()}}
+    formStateRestoreCallback(value:FormRestoreValue):void{this.restoreValue(value);if(this.mounted){this.syncView();this.syncFormValue()}}
+    focus(options?:FocusOptions):void{const control=this.fieldElement();if(control)control.focus(options);else super.focus(options)}
+}
+
+/** Validation state shared by editable fields, without exposing field-only props on buttons. */
+export abstract class FieldControlBase<P extends FieldControlSharedProps=FieldControlProps, S=string> extends FormControlBase<P,S> {
+    static observedAttributes=[...FormControlBase.observedAttributes,'required','read-only','error-text']
+    required=false;readOnly=false;errorText=''
+    protected syncForm(value:string|File|FormData|null):void {
+        super.syncForm(value)
         const control=this.fieldElement();if(!control)return
         control.setCustomValidity(text(this.errorText))
         const flags:ValidityStateFlags={}
         if(!this.unavailable&&!bool(this.readOnly))for(const key of ['badInput','customError','patternMismatch','rangeOverflow','rangeUnderflow','stepMismatch','tooLong','tooShort','typeMismatch','valueMissing'] as const)if(control.validity[key])flags[key]=true
         this.internals?.setValidity(flags,Object.keys(flags).length?control.validationMessage:'',control)
     }
-    checkValidity():boolean{return this.internals?.checkValidity()??true}
-    reportValidity():boolean{this.validationShown=true;this.syncView();return this.internals?.reportValidity()??true}
     setCustomValidity(message:string):void{this.errorText=message;if(this.mounted){this.syncView();this.syncFormValue()}}
-    formAssociatedCallback(_form:HTMLFormElement|null):void{if(this.mounted)this.syncFormValue()}
-    formDisabledCallback(disabled:boolean):void{this.disabledByForm=disabled;if(this.mounted){this.syncCommon();this.syncView();this.syncFormValue()}}
-    formResetCallback():void{this.validationShown=false;if(this.initialValue)this.restoreValue(this.initialValue.value);if(this.mounted){this.syncView();this.syncFormValue()}}
-    formStateRestoreCallback(value:FormRestoreValue):void{this.restoreValue(value);if(this.mounted){this.syncView();this.syncFormValue()}}
-    focus(options?:FocusOptions):void{const control=this.fieldElement();if(control)control.focus(options);else super.focus(options)}
 }

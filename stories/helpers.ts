@@ -81,7 +81,6 @@ function seedPreview(tag: string, node: HTMLElement): void {
     if (value) Object.assign(node, { value })
     if (status) Object.assign(node, { status })
     if (name === 'button') Object.assign(node, { label: 'Add section', variant: 'primary', icon: 'plus' })
-    if (name === 'icon-button') Object.assign(node, { label: 'More actions', accessibleLabel: 'More actions', icon: 'settings', variant: 'ghost' })
     if (name === 'select') Object.assign(node, { options: [
         { value: 'desktop', label: 'Desktop' },
         { value: 'tablet', label: 'Tablet' },
@@ -89,7 +88,6 @@ function seedPreview(tag: string, node: HTMLElement): void {
     ], value: 'desktop' })
     if (tag === 'cb-toolbar') node.append(demoButton('Select', 'ghost'), demoButton('Move', 'ghost'), demoButton('Comment', 'ghost'))
     else if (tag === 'cb-action-bar') {
-        Object.assign(node, { status: '3 layers selected' })
         const back = demoButton('Back', 'ghost'); back.slot = 'start'
         node.append(back)
         node.append(demoButton('Group'), demoButton('Delete', 'destructive'))

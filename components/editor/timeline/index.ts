@@ -1,5 +1,4 @@
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
 import type { Button } from '../../action/button/index.js'
 import '../../action/button/index.js'
 import { register } from '../../core/Component.js'
@@ -40,9 +39,9 @@ export class Timeline extends TimelineBase {
     private ruler?: HTMLElement
     private playhead?: HTMLElement
     private timeNode?: HTMLOutputElement
-    private playButton?: IconButton
-    private rewindButton?: IconButton
-    private addButton?: IconButton
+    private playButton?: Button
+    private rewindButton?: Button
+    private addButton?: Button
     private drag?: DragState
     private animationFrame = 0
     private playbackStartedAt = 0
@@ -139,7 +138,7 @@ export class Timeline extends TimelineBase {
         const button = document.createElement('cb-button') as Button
         button.setAttribute('part', 'keyframe')
         button.setAttribute('exportparts', 'control:keyframe-control,label:keyframe-label')
-        button.variant = 'ghost'
+        button.variant = 'icon'
         button.style.setProperty('--cb-keyframe-position', `calc(7px + (100% - 14px) * ${this.timelineTime(keyframe.time) / duration})`)
         button.pressed = this.selectedKeyframeId === keyframe.id
         button.toggleAttribute('data-selected', button.pressed)

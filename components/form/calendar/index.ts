@@ -1,7 +1,7 @@
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { CalendarBase } from './CalendarBase.js'
 
 const calendarCSS = editorCSS + `
@@ -22,8 +22,8 @@ export class Calendar extends CalendarBase {
     private monthNode?: HTMLElement
     private weekdaysNode?: HTMLElement
     private daysNode?: HTMLElement
-    private previousButton?: IconButton
-    private nextButton?: IconButton
+    private previousButton?: Button
+    private nextButton?: Button
 
     render(): Node {
         const root = el('div', 'calendar')

@@ -1,11 +1,11 @@
-import { FormControlBase, type FormControlProps } from '../FormControlBase.js'
+import { FieldControlBase, type FieldControlProps } from '../FormControlBase.js'
 import { normalizeOptions, type SelectOption } from '../model.js'
 import { bool,finite,text,scalarText } from '../../core/value.js'
 import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength } from '../../core/popup.js'
 export type SelectSearchMode = 'auto' | boolean
-export interface SelectProps extends FormControlProps, PopupConstraintProps { options?:SelectOption[]; value?:string|string[]; multi?:boolean; placeholder?:string; native?:boolean; open?:boolean; searchable?:SelectSearchMode; searchThreshold?:number; searchLabel?:string; searchPlaceholder?:string; emptyLabel?:string }
-export abstract class SelectBase extends FormControlBase<SelectProps, string|string[]> {
-    static observedAttributes=[...FormControlBase.observedAttributes,'options','value','multi','placeholder','native','open','searchable','search-threshold','search-label','search-placeholder','empty-label',...popupConstraintAttributes]
+export interface SelectProps extends FieldControlProps<string|string[]>, PopupConstraintProps { options?:SelectOption[]; value?:string|string[]; multi?:boolean; placeholder?:string; native?:boolean; open?:boolean; searchable?:SelectSearchMode; searchThreshold?:number; searchLabel?:string; searchPlaceholder?:string; emptyLabel?:string }
+export abstract class SelectBase extends FieldControlBase<SelectProps, string|string[]> {
+    static observedAttributes=[...FieldControlBase.observedAttributes,'options','value','multi','placeholder','native','open','searchable','search-threshold','search-label','search-placeholder','empty-label',...popupConstraintAttributes]
     options:SelectOption[]=[];value:string|string[]='';multi=false;placeholder='';native=false;open=false;searchable:SelectSearchMode='auto';searchThreshold=10;searchLabel='';searchPlaceholder='';emptyLabel=''
     popupMaxWidth: PopupLength = '320px'; popupMaxHeight: PopupLength = '280px'
     get normalizedOptions(){return normalizeOptions(this.options)}

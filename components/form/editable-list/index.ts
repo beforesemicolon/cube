@@ -2,7 +2,6 @@ import '../text-input/index.js'
 import type { TextInput } from '../text-input/index.js'
 import { actionLabel, createButton, createIconButton } from '../../action/create.js'
 import type { Button } from '../../action/button/index.js'
-import type { IconButton } from '../../action/icon-button/index.js'
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { bool, scalarText } from '../../core/value.js'
@@ -114,7 +113,7 @@ export class EditableList extends EditableListBase {
         return row
     }
 
-    private iconAction(part: string, icon: string, label: string, handler: (event: CustomEvent) => void): IconButton {
+    private iconAction(part: string, icon: string, label: string, handler: (event: CustomEvent) => void): Button {
         const button = createIconButton(part, icon, handler)
         actionLabel(button, label)
         button.size = 'xs'

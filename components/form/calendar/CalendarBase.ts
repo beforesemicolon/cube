@@ -1,7 +1,7 @@
 import { finite, scalarText, bool } from '../../core/value.js'
-import { FormControlBase, type FormControlProps, type FormRestoreValue } from '../FormControlBase.js'
+import { FieldControlBase, type FieldControlProps, type FormRestoreValue } from '../FormControlBase.js'
 
-export interface CalendarProps extends FormControlProps {
+export interface CalendarProps extends FieldControlProps {
     value?: string
     min?: string
     max?: string
@@ -22,8 +22,8 @@ function validDate(value: string): Date | undefined {
     return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : undefined
 }
 
-export abstract class CalendarBase<P extends CalendarProps = CalendarProps> extends FormControlBase<P> {
-    static observedAttributes = [...FormControlBase.observedAttributes, 'value', 'min', 'max', 'first-day-of-week', 'previous-label', 'next-label']
+export abstract class CalendarBase<P extends CalendarProps = CalendarProps> extends FieldControlBase<P> {
+    static observedAttributes = [...FieldControlBase.observedAttributes, 'value', 'min', 'max', 'first-day-of-week', 'previous-label', 'next-label']
     value = ''
     min = ''
     max = ''

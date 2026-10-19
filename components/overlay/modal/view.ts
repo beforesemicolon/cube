@@ -1,6 +1,6 @@
 import { editorCSS, el, fragment, sheet, slot, uid } from '../../core/editor-dom.js'
 import { createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 
 export interface ModalView {
     root: DocumentFragment
@@ -8,7 +8,7 @@ export interface ModalView {
     header: HTMLElement
     heading: HTMLSlotElement
     description: HTMLSlotElement
-    close: IconButton
+    close: Button
     body: HTMLElement
     footer: HTMLElement
 }

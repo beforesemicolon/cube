@@ -1,14 +1,14 @@
 import { scalarText } from '../core/value.js'
-import { FormControlBase, type FormControlProps, type FormRestoreValue } from './FormControlBase.js'
+import { FieldControlBase, type FieldControlProps, type FormRestoreValue } from './FormControlBase.js'
 
-export interface ChoiceControlProps extends FormControlProps {
+export interface ChoiceControlProps extends FieldControlProps {
     checked?: boolean
     value?: string
 }
 
 /** Binary checked state shared by checkbox-like controls. */
-export abstract class ChoiceControlBase<P extends ChoiceControlProps = ChoiceControlProps> extends FormControlBase<P, boolean> {
-    static observedAttributes = [...FormControlBase.observedAttributes, 'checked', 'value']
+export abstract class ChoiceControlBase<P extends ChoiceControlProps = ChoiceControlProps> extends FieldControlBase<P, boolean> {
+    static observedAttributes = [...FieldControlBase.observedAttributes, 'checked', 'value']
     checked = false
     value = 'on'
     protected fieldElement(): HTMLInputElement | undefined { return this.contentRoot.querySelector<HTMLInputElement>('[part~="control"]') ?? undefined }

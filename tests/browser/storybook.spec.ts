@@ -11,24 +11,26 @@ for(const [id,name]of required)test(`built Storybook: ${name} finishes its inter
 for(const [id,tag]of [['audio','cb-audio-player'],['video','cb-video-player']])test(`built Storybook: ${id} really plays and stops`,async({page})=>{
     await page.goto(`http://127.0.0.1:6006/iframe.html?id=media--${id}&viewMode=story`)
     await expect(page.locator(tag+'[data-story-ready=true]')).toBeVisible({timeout:20000})
-    await expect(page.locator(tag+' cb-icon-button[part=play]').getByRole('button')).toBeEnabled()
+    await expect(page.locator(tag+' cb-button[part=play]').getByRole('button')).toBeEnabled()
 })
 
 test('built Storybook: Split Button exposes its complete interactive API',async({page})=>{
     await page.goto('http://127.0.0.1:6006/?path=/story/action--split-button&addonPanel=storybook/controls/panel')
     const panel=page.getByRole('tabpanel',{name:/Controls/})
     await expect(panel).toContainText('items',{timeout:20000})
-    await expect(panel.getByText('menuLabel',{exact:true})).toBeVisible()
-    await expect(panel.getByText('actionValue',{exact:true})).toBeVisible()
+    await expect(panel.getByText('value',{exact:true})).toBeVisible()
+    await expect(panel.getByText('loading',{exact:true})).toBeVisible()
+    await expect(panel.getByText('menuLabel',{exact:true})).toHaveCount(0)
+    await expect(panel.getByText('actionValue',{exact:true})).toHaveCount(0)
     await expect(panel.locator('button[aria-label="add a new item to the \'items\' array"]')).toBeVisible()
 })
 
-test('built Storybook: Icon Button and Flashbar share the action primitive',async({page})=>{
-    await page.goto('http://127.0.0.1:6006/iframe.html?id=action--icon-button&viewMode=story')
-    await expect(page.locator('cb-icon-button[data-variant=secondary]').getByRole('button',{name:'Settings'})).toBeVisible()
+test('built Storybook: icon-variant Button and Flashbar share the action primitive',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=action--button-icon&viewMode=story')
+    await expect(page.locator('cb-button[data-variant=icon]').getByRole('button',{name:'Settings'})).toBeVisible()
     await page.goto('http://127.0.0.1:6006/iframe.html?id=feedback--flashbar&viewMode=story')
-    const dismiss=page.locator('cb-flashbar cb-icon-button[part=dismiss]')
-    await expect(dismiss).toHaveAttribute('data-variant','secondary')
+    const dismiss=page.locator('cb-flashbar cb-button[part=dismiss]')
+    await expect(dismiss).toHaveAttribute('data-variant','icon')
     await expect(dismiss.getByRole('button',{name:'Dismiss'})).toBeVisible()
 })
 

@@ -1,5 +1,5 @@
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { bool, scalarText } from '../../core/value.js'
@@ -19,8 +19,8 @@ export class EditableLabel extends EditableLabelBase {
     private display?: HTMLButtonElement
     private editor?: HTMLElement
     private input?: HTMLInputElement
-    private save?: IconButton
-    private cancel?: IconButton
+    private save?: Button
+    private cancel?: Button
     private error?: HTMLElement
 
     render(): Node {

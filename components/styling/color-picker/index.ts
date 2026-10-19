@@ -1,5 +1,5 @@
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet, uid } from '../../core/editor-dom.js'
 import { PopupController } from '../../core/popup.js'
@@ -80,9 +80,9 @@ export class ColorPicker extends ColorPickerBase {
     private paletteNode?: HTMLElement
     private paletteGroup?: HTMLElement
     private paletteLabel?: HTMLElement
-    private samplerButton?: IconButton
-    private closeButton?: IconButton
-    private addSwatchButton?: IconButton
+    private samplerButton?: Button
+    private closeButton?: Button
+    private addSwatchButton?: Button
     private popupController?: PopupController
     private readonly channelInputs = new Map<ChannelName, HTMLInputElement>()
     private readonly channelLabels = new Map<ChannelName, HTMLElement>()

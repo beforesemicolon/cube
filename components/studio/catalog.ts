@@ -199,7 +199,7 @@ const allStudioDefinitions = [
 
 const allStudioBoardItems = [
     { board:'actions', category:'action', name:'button', title:'Button' },
-    { board:'actions', category:'action', name:'icon-button', title:'Icon button' },
+    { board:'actions', category:'text', name:'heading', title:'Heading' },
     { board:'actions', category:'action', name:'split-button', title:'Split button' },
     { board:'actions', category:'action', name:'toggle-button', title:'Toggle button' },
     { board:'actions', category:'action', name:'button-group', title:'Button group' },
@@ -215,7 +215,7 @@ const allStudioBoardItems = [
     { board:'actions', category:'navigation', name:'link', title:'Link' },
     { board:'actions', category:'navigation', name:'pagination', title:'Pagination' },
     { board:'actions', category:'overlay', name:'tooltip', title:'Tooltip' },
-    { board:'actions', category:'action', name:'shortcut', title:'Shortcut' },
+    { board:'actions', category:'text', name:'shortcut', title:'Shortcut' },
     { board:'inputs', category:'form', name:'select', title:'Select' },
     { board:'inputs', category:'form', name:'slider', title:'Slider' },
     { board:'data-feedback', category:'layout', name:'divider', title:'Divider' },

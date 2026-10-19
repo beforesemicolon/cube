@@ -1,4 +1,5 @@
 export * from './action/index.js'
+export * from './text/index.js'
 export * from './icons/index.js'
 export * from './form/index.js'
 export * from './media/index.js'

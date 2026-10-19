@@ -2,7 +2,7 @@ import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet, slot, uid } from '../../core/editor-dom.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 import { token as v } from '../../theme/tokens.js'
-import '../../action/icon-button/index.js'
+import '../../action/button/index.js'
 import '../../feedback/skeleton/index.js'
 import { TableBase, type TableCellContent, type TableColumn, type TableRowModel } from './TableBase.js'
 
@@ -70,8 +70,8 @@ interface IconButtonElement extends HTMLElement {
 }
 
 function iconButton(icon: string, label: string, part: string, action: (event: Event) => void): IconButtonElement {
-    const button = document.createElement('cb-icon-button') as IconButtonElement
-    Object.assign(button, { icon, label, accessibleLabel: label, variant: 'ghost', size: 'xs' })
+    const button = document.createElement('cb-button') as IconButtonElement
+    Object.assign(button, { icon, label, accessibleLabel: label, variant: 'icon', size: 'xs' })
     button.setAttribute('part', part)
     button.addEventListener('click', event => event.stopPropagation())
     button.addEventListener('action', event => { event.stopPropagation(); action(event) })
@@ -496,7 +496,7 @@ export class Table extends TableBase {
     private isInteractiveEvent(event: Event, row: HTMLTableRowElement): boolean {
         return event.composedPath().some(target => target !== row && target instanceof Element && (
             target.matches('button,a,input,select,textarea,[role=button],[role=checkbox],[role=radio]') ||
-            ['cb-button', 'cb-icon-button', 'cb-link', 'cb-select', 'cb-checkbox', 'cb-radio-group'].includes(target.localName)
+            ['cb-button', 'cb-button', 'cb-link', 'cb-select', 'cb-checkbox', 'cb-radio-group'].includes(target.localName)
         ))
     }
 }

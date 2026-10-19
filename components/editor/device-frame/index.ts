@@ -1,5 +1,5 @@
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { token as v } from '../../theme/tokens.js'
@@ -27,7 +27,7 @@ const css = editorCSS + `
 export class DeviceFrame extends DeviceFrameBase {
     private deviceNode?: HTMLElement
     private screen?: HTMLElement
-    private orientationButton?: IconButton
+    private orientationButton?: Button
 
     render(): Node {
         const root = el('div', 'root canvas')

@@ -1,9 +1,9 @@
-import { FormControlBase, type FormControlProps } from '../FormControlBase.js'
+import { FieldControlBase, type FieldControlProps } from '../FormControlBase.js'
 import { normalizeRange, type RangeOptions } from '../model.js'
 import { bool, finite } from '../../core/value.js'
-export interface SliderProps extends FormControlProps,RangeOptions { valueText?:string; orientation?:'horizontal'|'vertical' }
-export abstract class SliderBase extends FormControlBase<SliderProps, number> {
-    static observedAttributes=[...FormControlBase.observedAttributes,'min','max','step','value','value-text','orientation']
+export interface SliderProps extends FieldControlProps<number>,RangeOptions { valueText?:string; orientation?:'horizontal'|'vertical' }
+export abstract class SliderBase extends FieldControlBase<SliderProps, number> {
+    static observedAttributes=[...FieldControlBase.observedAttributes,'min','max','step','value','value-text','orientation']
     min=0;max=100;step:number|'any'=1;value=0;valueText='';orientation:'horizontal'|'vertical'='horizontal'
     protected pointerActive=false
     get interacting():boolean{return this.pointerActive}

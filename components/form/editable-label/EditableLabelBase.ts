@@ -1,7 +1,7 @@
-import { FormControlBase, type FormControlProps, type FormRestoreValue } from '../FormControlBase.js'
+import { FieldControlBase, type FieldControlProps, type FormRestoreValue } from '../FormControlBase.js'
 import { bool, scalarText } from '../../core/value.js'
 
-export interface EditableLabelProps extends FormControlProps {
+export interface EditableLabelProps extends FieldControlProps {
     value?: string
     placeholder?: string
     editing?: boolean
@@ -14,9 +14,9 @@ export interface EditableLabelProps extends FormControlProps {
 }
 
 /** Inline-editing behavior with explicit start, commit and cancel transitions. */
-export abstract class EditableLabelBase<P extends EditableLabelProps = EditableLabelProps> extends FormControlBase<P> {
+export abstract class EditableLabelBase<P extends EditableLabelProps = EditableLabelProps> extends FieldControlBase<P> {
     static observedAttributes = [
-        ...FormControlBase.observedAttributes, 'value', 'placeholder', 'editing', 'select-on-edit', 'submit-on-blur',
+        ...FieldControlBase.observedAttributes, 'value', 'placeholder', 'editing', 'select-on-edit', 'submit-on-blur',
         'edit-label', 'save-label', 'cancel-label', 'empty-label',
     ]
     value = ''

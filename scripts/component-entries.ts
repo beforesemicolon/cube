@@ -16,7 +16,8 @@ const foundationEntries = [
     {path:'action/action-bar',name:'action-bar',className:'ActionBar'},
     {path:'navigation/pagination',name:'pagination',className:'Pagination'},
     {path:'overlay/tooltip',name:'tooltip',className:'Tooltip'},
-    {path:'action/shortcut',name:'shortcut',className:'Shortcut'},
+    {path:'text/heading',name:'heading',className:'Heading'},
+    {path:'text/shortcut',name:'shortcut',className:'Shortcut'},
     {path:'icons/icon',name:'icon',className:'Icon'},
     {path:'form/slider',name:'slider',className:'Slider'},
     {path:'form/select',name:'select',className:'Select'},
@@ -49,4 +50,4 @@ const foundationEntries = [
     {path:'feedback/flashbar',name:'flashbar',className:'Flashbar'},
 ] as const
 export const componentEntries = [...foundationEntries, ...studioEntries] as const
-export const componentGroups = ['action','form','layout','navigation','overlay','feedback','data-display','media','charts','styling','editor','collaboration','icons','theme'] as const
+export const componentGroups = ['action','text','form','layout','navigation','overlay','feedback','data-display','media','charts','styling','editor','collaboration','icons','theme'] as const

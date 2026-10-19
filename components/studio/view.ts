@@ -507,8 +507,6 @@ export function createStudioView(source: StudioViewSource): StudioView {
             })
             decrement.setAttribute('part', 'stepper-button decrement-button')
             increment.setAttribute('part', 'stepper-button increment-button')
-            decrement.variant = 'secondary'
-            increment.variant = 'secondary'
             shell.append(decrement, node, increment)
             body.append(shell)
             const originalUpdate = updateBody

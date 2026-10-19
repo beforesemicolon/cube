@@ -3,7 +3,7 @@ name: '{{t.cube.studioLayout}}'
 title: '{{t.cube.studioLayout}}'
 path: /documentation/layout
 layout: document
-order: 22
+order: 23
 ---
 
 # {{t.cube.studioLayout}}

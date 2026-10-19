@@ -38,6 +38,7 @@
     "pieBody": "One component for pie and donut views, with filtering, segment details and optional center content. ECharts is loaded only when a populated chart mounts.",
     "figma": "The Studio boards in design/figma-layers are the visual source of truth; Storybook provides the runnable component reference.",
     "categoryAction": "Action",
+    "categoryText": "Text",
     "categoryForm": "Form",
     "formNative": "Select, DatePicker and TimePicker use consistent Cube rendering by default. Add the native flag only when the host browser’s native picker is preferred. Combobox provides both list and autocomplete behavior through its autocomplete property, and Calendar is available as a standalone component.",
     "popupConstraintsBody": "Anchored menus and pickers size themselves to their content and stay within the viewport. Use popupMaxWidth and popupMaxHeight with a CSS length or a numeric pixel value to override the defaults; constrained content scrolls inside the popup.",

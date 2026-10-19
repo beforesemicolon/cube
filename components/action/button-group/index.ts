@@ -18,16 +18,10 @@ export class ButtonGroup extends ButtonGroupBase {
 [part=item]:first-child{--component-button-radius-start-start:var(--radius-sm,6px);--component-button-radius-end-start:var(--radius-sm,6px)}
 [part=item]:last-child{--component-button-radius-start-end:var(--radius-sm,6px);--component-button-radius-end-end:var(--radius-sm,6px)}
 [part=item]:focus-within{z-index:1}
-:host([data-orientation=vertical]) [part=group]{flex-direction:column}
-:host([data-orientation=vertical]) [part=item]{margin-inline-start:0;margin-block-start:-1px;--component-button-radius-start-start:0;--component-button-radius-start-end:0;--component-button-radius-end-end:0;--component-button-radius-end-start:0}
-:host([data-orientation=vertical]) [part=item]:first-child{margin-block-start:0;--component-button-radius-start-start:var(--radius-sm,6px);--component-button-radius-start-end:var(--radius-sm,6px)}
-:host([data-orientation=vertical]) [part=item]:last-child{--component-button-radius-end-start:var(--radius-sm,6px);--component-button-radius-end-end:var(--radius-sm,6px)}
 `), this.group)
     }
     protected syncView(): void {
         if (!this.group) return
-        const orientation = this.orientation === 'vertical' ? 'vertical' : 'horizontal'
-        this.dataset.orientation = orientation
         const label = scalarText(this.accessibleLabel) || scalarText(this.label)
         if (label) this.group.setAttribute('aria-label', label); else this.group.removeAttribute('aria-label')
         this.group.replaceChildren(...this.actions.map(item => {

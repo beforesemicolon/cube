@@ -1,16 +1,16 @@
 import { bool, scalarText } from '../../core/value.js'
-import { FormControlBase, type FormControlProps } from '../FormControlBase.js'
+import { FieldControlBase, type FieldControlProps } from '../FormControlBase.js'
 import { normalizeOptions, type SelectOption } from '../model.js'
 
-export interface RadioGroupProps extends FormControlProps {
+export interface RadioGroupProps extends FieldControlProps {
     options?: SelectOption[]
     value?: string
     orientation?: 'horizontal' | 'vertical'
 }
 
 /** Headless single-selection behavior shared by radio-group renderers. */
-export abstract class RadioGroupBase extends FormControlBase<RadioGroupProps> {
-    static observedAttributes = [...FormControlBase.observedAttributes, 'options', 'value', 'orientation']
+export abstract class RadioGroupBase extends FieldControlBase<RadioGroupProps> {
+    static observedAttributes = [...FieldControlBase.observedAttributes, 'options', 'value', 'orientation']
     options: SelectOption[] = []
     value = ''
     orientation: 'horizontal' | 'vertical' = 'vertical'

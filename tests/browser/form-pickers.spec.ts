@@ -326,8 +326,8 @@ test('calendar and custom date and time pickers support keyboard-ready themed po
     })
     const calendar = page.locator('#fixture > cb-calendar')
     await expect(page.getByRole('group', { name: 'Publishing calendar' })).toBeVisible()
-    await expect(calendar.locator('cb-icon-button[part="previous"]')).toHaveCount(1)
-    await expect(calendar.locator('cb-icon-button[part="next"]')).toHaveCount(1)
+    await expect(calendar.locator('cb-button[part="previous"]')).toHaveCount(1)
+    await expect(calendar.locator('cb-button[part="next"]')).toHaveCount(1)
     const previous = calendar.getByRole('button', { name: 'Previous month' })
     const previousStyle = await previous.evaluate(element => {
         const style = getComputedStyle(element)

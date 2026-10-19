@@ -37,7 +37,7 @@ interface AuditableOverlayElement extends HTMLElement {
 const boards: Readonly<Record<string, BoardConfig>> = {
     actions: {
         file: '01/Actions.png', width: 3376, height: 5304,
-        components: ['button','icon-button','split-button','toggle-button','button-group','segmented-control','tabs','breadcrumb','menu','context-menu','dropdown','command-palette','toolbar','action-bar','link','pagination','tooltip','shortcut'],
+        components: ['button','heading','shortcut','split-button','toggle-button','button-group','segmented-control','tabs','breadcrumb','menu','context-menu','dropdown','command-palette','toolbar','action-bar','link','pagination','tooltip'],
     },
     inputs: {
         file: '02/Inputs.png', width: 3376, height: 8106,

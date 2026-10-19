@@ -17,7 +17,7 @@ export const BottomSheet: Story = componentStory('cb-bottom-sheet', { heading: '
 
 export const ContextMenu: Story = componentStory('cb-context-menu', { label: 'Context menu', items, open: false, x: 32, y: 32, loop: true })
 
-export const Dropdown: Story = componentStory('cb-dropdown', { label: 'Dropdown', items, open: false, placement: 'bottom-start', icon: 'down' })
+export const Dropdown: Story = componentStory('cb-dropdown', { label: 'Dropdown', value: '', loading: false, items, open: false, placement: 'bottom-start', icon: 'down' })
 
 export const CommandPalette: Story = componentStory('cb-command-palette', { label: 'Command palette', items, open: false, query: '', placeholder: 'Search commands', emptyLabel: 'No commands found' })
 

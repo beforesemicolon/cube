@@ -3,7 +3,7 @@ name: '{{t.cube.categoryStyling}}'
 title: '{{t.cube.categoryStyling}}'
 path: /documentation/styling
 layout: document
-order: 28
+order: 29
 ---
 
 # {{t.cube.categoryStyling}}

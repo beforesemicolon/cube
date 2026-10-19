@@ -3,7 +3,7 @@ name: '{{t.cube.categoryOverlay}}'
 title: '{{t.cube.categoryOverlay}}'
 path: /documentation/overlay
 layout: document
-order: 24
+order: 25
 ---
 
 # {{t.cube.categoryOverlay}}

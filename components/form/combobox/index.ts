@@ -2,7 +2,7 @@ import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet, uid } from '../../core/editor-dom.js'
 import { createIcon } from '../../icons/paths.js'
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { text } from '../../core/value.js'
 import { PopupController } from '../../core/popup.js'
 import { ComboboxBase } from './ComboboxBase.js'
@@ -19,7 +19,7 @@ export class Combobox extends ComboboxBase {
     private inputShell?: HTMLElement
     private popup?: HTMLElement
     private popupController?: PopupController
-    private toggleButton?: IconButton
+    private toggleButton?: Button
     render(): Node {
         const root = el('div', 'root')
         this.inputShell = el('div', 'input-shell control'); this.input = el('input', 'input'); this.input.type = 'text'; this.input.id = uid('cb-combobox')
@@ -56,9 +56,9 @@ export class Combobox extends ComboboxBase {
         this.input.setAttribute('role', 'combobox'); this.input.setAttribute('aria-autocomplete', this.autocomplete ?? 'list'); this.input.setAttribute('aria-controls', this.popup.id); aria(this.input, 'aria-expanded', this.open)
         actionLabel(this.toggleButton, text(this.toggleLabel) || this.accessibleName())
         this.toggleButton.disabled = this.unavailable || this.readOnly
-        this.toggleButton.popupType = 'listbox'
-        this.toggleButton.popupExpanded = this.open
-        this.toggleButton.popupControls = this.popup.id
+        this.toggleButton.setAttribute('aria-haspopup', 'listbox')
+        this.toggleButton.setAttribute('aria-expanded', String(this.open))
+        this.toggleButton.setAttribute('aria-controls', this.popup.id)
         this.popup.replaceChildren(); const options = this.filteredOptions()
         for (const option of options) { const button = el('button', 'option', option.label); button.type = 'button'; button.disabled = option.disabled; button.dataset.value = option.value; button.setAttribute('role', 'option'); aria(button, 'aria-selected', option.value === this.value); button.addEventListener('click', event => { this.setValue(option.value, event); this.setOpen(false, event); this.input?.focus() }); this.popup.append(button) }
         if (!options.length && text(this.emptyLabel)) this.popup.append(el('span', 'empty', text(this.emptyLabel)))

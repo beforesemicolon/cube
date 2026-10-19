@@ -1,5 +1,5 @@
 import { actionLabel, createIconButton } from '../../action/create.js'
-import type { IconButton } from '../../action/icon-button/index.js'
+import type { Button } from '../../action/button/index.js'
 import { register } from '../../core/Component.js'
 import { aria, editorCSS, el, fragment, sheet } from '../../core/editor-dom.js'
 import { finite } from '../../core/value.js'
@@ -27,9 +27,9 @@ export class Viewport extends ViewportBase {
     private controlsNode?: HTMLElement
     private status?: HTMLOutputElement
     private position?: HTMLOutputElement
-    private zoomIn?: IconButton
-    private zoomOut?: IconButton
-    private resetButton?: IconButton
+    private zoomIn?: Button
+    private zoomOut?: Button
+    private resetButton?: Button
     private pan?: PanState
 
     render(): Node {
