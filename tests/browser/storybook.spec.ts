@@ -1,5 +1,7 @@
 import {test,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+// Only visits audited by Playwright disable Storybook's competing automatic scan.
+const externalA11yGlobals = 'a11y.manual:!true'
 const required=[['bar','Bar'],['line','Line'],['mixed-line-and-bar','Mixed line and bar'],['area','Area'],['bubble','Bubble'],['scatter','Scatter'],['pie','Pie'],['donut','Donut']]
 test('feedback stories render their individual components',async({page})=>{
     test.setTimeout(60000)
@@ -429,6 +431,21 @@ test('built Storybook: global modal and flashbar examples demonstrate applicatio
     await expect(notification).toBeHidden()
 })
 
+test('built Storybook: accessibility stays automatic unless a visit is audited externally', async ({ page }) => {
+    const story = 'examples--inspector-panel'
+    const url = `http://127.0.0.1:6006/?path=/story/${story}&addonPanel=storybook/a11y/panel`
+    await page.goto(url)
+    const panel = page.getByRole('tabpanel', { name: /Accessibility/ })
+    await expect(panel.getByText('No accessibility violations found.', { exact: true })).toBeVisible({ timeout: 20_000 })
+
+    await page.goto(`${url}&globals=${externalA11yGlobals}`)
+    const runScan = panel.getByRole('button', { name: 'Run accessibility scan', exact: true })
+    await expect(runScan).toBeVisible()
+    // Manual mode avoids the competing scan without removing accessibility checks.
+    await runScan.click()
+    await expect(panel.getByText('No accessibility violations found.', { exact: true })).toBeVisible({ timeout: 20_000 })
+})
+
 test('built Storybook: composition examples are responsive, interactive, and dismissible', async ({ page }) => {
     await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--dimensions&viewMode=story')
     await expect(page.getByRole('img', { name: 'Live dimensions preview' })).toBeVisible()
@@ -456,7 +473,7 @@ test('built Storybook: composition examples are responsive, interactive, and dis
     await page.getByRole('slider', { name: 'Opacity' }).press('ArrowLeft')
     await expect(appearancePreview).toHaveCSS('opacity', '0.83')
 
-    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--inspector-panel&viewMode=story')
+    await page.goto(`http://127.0.0.1:6006/iframe.html?id=examples--inspector-panel&viewMode=story&globals=${externalA11yGlobals}`)
     await expect(page.getByRole('button', { name: 'Collapse layout inspector' })).toBeVisible()
     const gap = page.getByRole('spinbutton', { name: 'Gap' })
     await gap.press('ArrowUp')
