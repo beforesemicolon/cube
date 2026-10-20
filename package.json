@@ -304,7 +304,7 @@
     "test:exports": "tsx scripts/check-exports.ts",
     "test:pack": "tsx scripts/check-package.ts",
     "audit:runtime": "npm audit --omit=dev",
-    "verify:release": "npm run build:package && npm run test:exports && npm run test:catalog && npm run build:storybook && npm run build:docs && npm run test:browser && npm run audit:runtime && npm run test:pack",
+    "verify:release": "npm run build:package && npm run test:exports && npm run build:storybook && npm run test:catalog && npm run build:docs && npm run test:browser && npm run audit:runtime && npm run test:pack",
     "prepack": "npm run build:package && npm run test:exports",
     "prepublishOnly": "npm run verify:release",
     "build:docs": "tsx scripts/build-docs.ts"
