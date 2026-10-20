@@ -1,0 +1,76 @@
+import type { Meta, StoryObj } from '@storybook/web-components-vite'
+import { componentStory } from './controls.js'
+import './setup.js'
+
+const meta: Meta = { title: 'Styling', tags: ['autodocs'], parameters: { docs: { description: { component: 'Styling components with headless bases, themed parts, category initialization and browser clients.' } } } }
+export default meta
+type Story = StoryObj
+
+export const ColorPicker: Story = componentStory('cb-color-picker', {
+    label: 'Fill color', accessibleLabel: 'Choose fill color', value: '#2563ebcc', native: false, allowAlpha: true, allowSampler: true,
+    swatches: ['#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#16a34a','#0891b2','#111827','#ffffff'], recentColors: [], maxRecent: 8,
+    hueLabel: 'Hue', saturationLabel: 'Saturation', valueLabel: 'Brightness', alphaLabel: 'Alpha', redLabel: 'Red', greenLabel: 'Green', blueLabel: 'Blue', hexLabel: 'HEX', planeLabel: 'Saturation and brightness',
+    samplerLabel: 'Sample color from screen', closeLabel: 'Close color picker', swatchesLabel: 'Saved and recent colors',
+    addSwatchLabel: 'Add current color', removeSwatchLabel: 'Remove {color} with Delete or Backspace', transparentLabel: 'Transparent',
+})
+
+export const GradientEditor: Story = componentStory('cb-gradient-editor', {
+    label: 'Gradient',
+    accessibleLabel: 'Edit gradient',
+    value: 'linear-gradient(120deg, #2563eb 0%, #8b5cf6 52%, #ec4899cc 100%)',
+    type: 'linear',
+    angle: 120,
+    shape: 'circle',
+    extent: 'farthest-corner',
+    position: 'center',
+    stops: [
+        { id: 'blue', color: '#2563eb', position: 0 },
+        { id: 'violet', color: '#8b5cf6', position: 52 },
+        { id: 'pink', color: '#ec4899cc', position: 100 },
+    ],
+    allowAlpha: true,
+    allowSampler: true,
+    swatches: ['#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#16a34a','#0891b2','#111827','#ffffff'],
+    typeLabel: 'Gradient type',
+    linearLabel: 'Linear',
+    radialLabel: 'Radial',
+    angleLabel: 'Angle',
+    shapeLabel: 'Shape',
+    circleLabel: 'Circle',
+    ellipseLabel: 'Ellipse',
+    extentLabel: 'Size',
+    closestSideLabel: 'Closest side',
+    closestCornerLabel: 'Closest corner',
+    farthestSideLabel: 'Farthest side',
+    farthestCornerLabel: 'Farthest corner',
+    positionLabel: 'Origin',
+    topLeftLabel: 'Top left',
+    topLabel: 'Top',
+    topRightLabel: 'Top right',
+    leftLabel: 'Left',
+    centerLabel: 'Center',
+    rightLabel: 'Right',
+    bottomLeftLabel: 'Bottom left',
+    bottomLabel: 'Bottom',
+    bottomRightLabel: 'Bottom right',
+    stopsLabel: 'Color stops',
+    stopLabel: 'Color stop {index} at {position}',
+    addStopLabel: 'Add color stop',
+    removeStopLabel: 'Remove selected color stop',
+    helpText: 'Click the color rail to add a stop. Drag a stop or use the arrow keys to move it. Double-click a stop, or press Enter, to edit its color. Press Delete to remove it.',
+    hueLabel: 'Hue',
+    saturationLabel: 'Saturation',
+    brightnessLabel: 'Brightness',
+    alphaLabel: 'Alpha',
+    redLabel: 'Red',
+    greenLabel: 'Green',
+    blueLabel: 'Blue',
+    hexLabel: 'HEX',
+    planeLabel: 'Saturation and brightness',
+    samplerLabel: 'Sample color from screen',
+    closeLabel: 'Close color picker',
+    swatchesLabel: 'Saved and recent colors',
+    addSwatchLabel: 'Add current color',
+    removeSwatchLabel: 'Remove {color} with Delete or Backspace',
+    transparentLabel: 'Transparent',
+})

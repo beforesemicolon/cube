@@ -1,0 +1,103 @@
+import { test, expect } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
+const mediaText={playLabel:'Play',pauseLabel:'Pause',stopLabel:'Stop',backwardLabel:'Seek backward',forwardLabel:'Seek forward',seekLabel:'Seek',volumeLabel:'Volume',muteLabel:'Mute',unmuteLabel:'Unmute',rateLabel:'Playback speed',captionsLabel:'Captions',captionsOffLabel:'Captions off',fullscreenLabel:'Enter fullscreen',exitFullscreenLabel:'Exit fullscreen',emptyText:'No media source.',errorText:'Unable to play this media.',bufferingText:'Buffering',liveText:'Live'}
+const chartText={accessibleLabel:'Chart',loadingText:'Loading chart',emptyText:'No data available.',noMatchText:'No visible data',errorText:'Unable to load chart.',retryLabel:'Retry',showAllLabel:'Show all',legendLabel:'Legend',tableLabel:'View data table',seriesLabel:'Series',categoryLabel:'Category',valueLabel:'Value',rangeLabel:'Range',sizeLabel:'Size',percentageLabel:'Percentage',missingText:'Not available',navigateLabel:'Explore chart',instructionsText:'Use arrow keys to explore data points. Press Enter to pin and Escape to unpin.',pinnedText:'Pinned',unpinLabel:'Unpin',zoomInLabel:'Zoom in',zoomOutLabel:'Zoom out',resetZoomLabel:'Reset zoom'}
+async function start(page: import('@playwright/test').Page) {
+    await page.goto('/tests/browser/fixture.html')
+    await page.waitForFunction(()=>!!customElements.get('cb-cartesian-chart'))
+}
+test('all four components accept application-supplied accessible copy and tolerate missing data',async({page})=>{
+    const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await start(page)
+    await page.evaluate(({mediaText,chartText})=>{for(const tag of ['cb-audio-player','cb-video-player','cb-cartesian-chart','cb-pie-chart']){const element=document.createElement(tag);Object.assign(element,tag.includes('player')?mediaText:chartText);document.querySelector('#fixture')!.append(element)}},{mediaText,chartText})
+    await expect(page.locator('cb-audio-player').getByRole('button',{name:'Play',exact:true})).toBeDisabled()
+    await expect(page.locator('cb-pie-chart').getByRole('status').first()).toHaveText('No data available.')
+    expect(errors).toEqual([])
+    const a11y=await new AxeBuilder({page}).include('#fixture').analyze()
+    expect(a11y.violations).toEqual([])
+})
+test('actual ECharts SVG, keyboard navigation, pinning and legend filtering',async({page})=>{
+    await start(page)
+    await page.evaluate(({chartText})=>{const c=document.createElement('cb-cartesian-chart');Object.assign(c,chartText,{heading:'Activity',series:[{id:'a',name:'One',data:[1,2,3]},{id:'b',name:'Two',type:'column',data:[4,5,6]}],zoomable:true});document.querySelector('#fixture')!.append(c)},{chartText})
+    const chart=page.locator('cb-cartesian-chart')
+    await expect(chart.locator('[part="plot"] svg')).toBeVisible()
+    const nav=chart.locator('[part="navigator"]').getByRole('button');await nav.focus();await page.keyboard.press('ArrowRight')
+    await expect(chart.locator('[part="details"]')).toContainText('Value: 2')
+    await page.keyboard.press('Enter');await expect(nav).toHaveAttribute('aria-pressed','true')
+    await page.keyboard.press('Escape');await expect(nav).toHaveAttribute('aria-pressed','false')
+    await chart.getByRole('button',{name:'One',exact:true}).click()
+    await expect(chart.getByRole('button',{name:'One',exact:true})).toHaveAttribute('aria-pressed','false')
+    await chart.getByRole('button',{name:'Two',exact:true}).click()
+    await expect(chart.locator('[part="status"]')).toContainText('No visible data')
+    await chart.getByRole('button',{name:'Show all',exact:true}).click();await expect(chart.locator('[part="plot"] svg')).toBeVisible()
+    await chart.getByRole('button',{name:/^View data table/}).click()
+    await expect(chart.locator('cb-table').getByRole('table',{name:'View data table'})).toBeVisible()
+})
+test('donut percentages, safe text rendering, theme inheritance and responsive resize',async({page})=>{
+    await start(page)
+    await page.evaluate(({chartText})=>{const p=document.createElement('cb-pie-chart');Object.assign(p,chartText,{heading:'Sources',variant:'donut',innerTitle:'100',series:{data:[{id:'a',name:'<img src=x onerror=alert(1)>',value:75},{id:'b',name:'Other',value:25}]}});document.querySelector('#fixture')!.append(p)},{chartText})
+    const chart=page.locator('cb-pie-chart');await expect(chart.locator('[part="plot"] svg')).toBeVisible()
+    expect(await chart.locator('img').count()).toBe(0)
+    await chart.getByRole('button',{name:'Other',exact:true}).click();await expect(chart.locator('[part="details"]')).toContainText('100%')
+    await page.locator('#theme').evaluate((n:any)=>n.appearance='dark')
+    await expect(chart.locator('[part="chart"]')).toHaveCSS('background-color','rgb(29, 33, 36)')
+    await page.setViewportSize({width:390,height:844});await expect(chart.locator('[part="plot"] svg')).toBeVisible()
+    expect(await chart.evaluate(n=>n.getBoundingClientRect().width)).toBeLessThan(390)
+})
+test('media node and focus survive translated text changes; rejected play is recoverable',async({page})=>{
+    await start(page)
+    await page.evaluate(({mediaText})=>{const a=document.createElement('cb-audio-player');Object.assign(a,mediaText);document.querySelector('#fixture')!.append(a);Reflect.set(window,'originalMedia',a.shadowRoot?.querySelector('audio'))},{mediaText})
+    const audio=page.locator('cb-audio-player'),mute=audio.getByRole('button',{name:'Mute',exact:true});await mute.focus()
+    await audio.evaluate(a=>{Object.assign(a,{mediaTitle:'Recording',playLabel:'Ouvir',errorText:'Não foi possível reproduzir o conteúdo.'})})
+    await expect(audio.getByRole('button',{name:'Ouvir',exact:true})).toBeVisible()
+    expect(await audio.evaluate((a:any)=>a.shadowRoot.querySelector('audio')===(window as any).originalMedia)).toBe(true)
+    await audio.evaluate(async(a:any)=>{const media=a.shadowRoot.querySelector('audio');media.play=()=>Promise.reject(new Error('Blocked playback'));await a.play()})
+    await expect(audio.locator('[part="status"]')).toHaveText('Não foi possível reproduzir o conteúdo.')
+})
+test('native audio playback, seek and stop work with a real WAV source',async({page})=>{
+    await start(page)
+    await page.evaluate(async(mediaText)=>{
+        const {silentAudio}=await import('/stories/helpers.ts')
+        const a=document.createElement('cb-audio-player');Object.assign(a,{...mediaText,src:silentAudio(8),seekStep:2})
+        document.querySelector('#fixture')!.append(a)
+    },mediaText)
+    const audio=page.locator('cb-audio-player')
+    await expect.poll(()=>audio.locator('audio').evaluate((n:HTMLAudioElement)=>n.duration)).toBe(8)
+    await audio.getByRole('button',{name:'Play',exact:true}).click()
+    await expect(audio.getByRole('button',{name:'Pause',exact:true})).toBeVisible()
+    await audio.getByRole('button',{name:'Seek forward',exact:true}).click()
+    expect(await audio.locator('audio').evaluate((n:HTMLAudioElement)=>n.currentTime)).toBeGreaterThanOrEqual(2)
+    await audio.getByRole('button',{name:'Stop',exact:true}).click()
+    expect(await audio.locator('audio').evaluate((n:HTMLAudioElement)=>n.paused&&n.currentTime===0)).toBe(true)
+})
+test('disconnect during asynchronous engine load cannot initialize detached chart',async({page})=>{
+    await start(page)
+    await page.evaluate(async()=>{
+        const {configureChartEngine}=await import('/components/charts/engine.ts')
+        ;(window as any).initCount=0
+        let resolve!:(v:any)=>void;configureChartEngine(()=>new Promise(r=>resolve=r))
+        const chart:any=document.createElement('cb-pie-chart');chart.series={data:[{id:'a',value:1}]};document.querySelector('#fixture')!.append(chart)
+        await new Promise(r=>setTimeout(r,50));chart.remove()
+        resolve({init(){(window as any).initCount++;throw new Error('Must not initialize detached element')}})
+    })
+    await page.waitForTimeout(100);expect(await page.evaluate(()=>(window as any).initCount)).toBe(0)
+})
+test('classic category CDN bundles use the external runtime and register idempotently',async({page})=>{
+    const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/tests/browser/cdn.html')
+    await expect(page.locator('cb-audio-player').getByRole('button',{name:'Play',exact:true})).toBeVisible()
+    expect(await page.evaluate(()=>typeof (window as any).echarts)).toBe('undefined')
+    expect(errors).toEqual([])
+})
+test('visual references from real renderers',async({page})=>{
+    await page.emulateMedia({reducedMotion:'reduce'})
+    await start(page)
+    await page.evaluate(()=>{
+        for(const tag of ['cb-audio-player','cb-video-player']){const c:any=document.createElement(tag);c.mediaTitle=tag==='cb-audio-player'?'Studio recording':'Studio film';if(tag==='cb-video-player')c.poster='/design/poster.svg';document.querySelector('#fixture')!.append(c)}
+        const cart:any=document.createElement('cb-cartesian-chart');cart.heading='Weekly activity';cart.xAxis={type:'category',categories:['Mon','Tue','Wed','Thu','Fri']};cart.series=[{id:'a',name:'Actual',type:'column',data:[12,18,15,22,25]},{id:'b',name:'Target',data:[15,17,19,21,23]}];document.querySelector('#fixture')!.append(cart)
+        const pie:any=document.createElement('cb-pie-chart');pie.heading='Traffic sources';pie.variant='donut';pie.innerTitle='100';pie.series={data:[{id:'a',name:'Direct',value:48},{id:'b',name:'Search',value:32},{id:'c',name:'Social',value:20}]};document.querySelector('#fixture')!.append(pie)
+    })
+    await expect(page.locator('cb-pie-chart [part="plot"] svg')).toBeVisible()
+    await page.screenshot({path:'test-results/media-charts-light.png',fullPage:true})
+    await page.locator('#theme').evaluate((n:any)=>n.appearance='dark')
+    await expect(page.locator('cb-pie-chart [part="chart"]')).toHaveCSS('background-color','rgb(29, 33, 36)')
+    await page.screenshot({path:'test-results/media-charts-dark.png',fullPage:true})
+})

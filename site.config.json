@@ -1,0 +1,17 @@
+{
+  "schemaVersion":"1.0", "mode":"static", "siteUrl":"https://cube.beforesemicolon.com",
+  "defaultLocale":"en", "locales":["en","pt","es","fr","zh"],
+  "localeDetails": {
+    "en":{"label":"English","selectorLabel":"Choose language"},
+    "pt":{"label":"Português","selectorLabel":"Escolher idioma"},
+    "es":{"label":"Español","selectorLabel":"Elegir idioma"},
+    "fr":{"label":"Français","selectorLabel":"Choisir la langue"},
+    "zh":{"label":"中文","selectorLabel":"选择语言"}
+  },
+  "document":{"scripts":[
+    {"src":"/assets/cube/web-component.js","defer":true},
+    {"src":"/assets/cube/client.js","defer":true},
+    {"src":"/assets/cube/examples.js","defer":true}
+  ]},
+  "docs":{"sourceDir":"docs-cube","outputDir":"website","template":"fading-citrus","generatedFiles":{"llms":true,"llmsFull":true,"netlify":false}}
+}

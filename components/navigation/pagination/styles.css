@@ -1,0 +1,29 @@
+@import "../../theme/editor.css";
+:host {
+  display: inline-block;
+}
+[part=pages] {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+[part=page] {
+  display: grid;
+  place-items: center;
+  min-inline-size: 28px;
+  min-block-size: 28px;
+  padding: 3px 6px;
+  border-color: transparent;
+  background: transparent;
+}
+[part=page][aria-current=page] {
+  color: var(--color-signal-text,#1d50b3);
+  background: var(--color-selection,#eaf1ff);
+  border-color: var(--color-primary,#2563eb);
+}
+[part=ellipsis] {
+  display: grid;
+  place-items: center;
+  min-inline-size: 20px;
+  color: var(--color-muted-foreground,#606b73);
+}

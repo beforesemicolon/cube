@@ -1,0 +1,112 @@
+@import "../../theme/editor.css";
+:host {
+  display: inline-block;
+}
+[part~=control] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm,8px);
+  text-decoration: none;
+  vertical-align: middle;
+  max-inline-size: 100%;
+  font-weight: var(--component-button-font-weight,500);
+  min-inline-size: var(--component-button-min-width,72px);
+  border-start-start-radius: var(--component-button-radius-start-start,var(--radius-sm,6px));
+  border-start-end-radius: var(--component-button-radius-start-end,var(--radius-sm,6px));
+  border-end-end-radius: var(--component-button-radius-end-end,var(--radius-sm,6px));
+  border-end-start-radius: var(--component-button-radius-end-start,var(--radius-sm,6px));
+}
+:host([data-variant=primary]) [part~=control] {
+  background: var(--color-primary,#2563EB);
+  color: var(--color-primary-foreground,#fff);
+  border-color: transparent;
+}
+:host([data-variant=primary]) [part~=control]:hover:not(:disabled):not([aria-disabled=true]) {
+  background: var(--color-primary-hover,#1D50B3);
+}
+:host([data-variant=outline]) [part~=control] {
+  background: transparent;
+}
+:host([data-variant=ghost]) [part~=control] {
+  border-color: transparent;
+  background: transparent;
+}
+:host([data-variant=ghost]) [part~=control]:hover:not(:disabled):not([aria-disabled=true]) {
+  background: var(--color-active,#E8ECEE);
+}
+:host([data-icon-only]) [part~=control] {
+  min-inline-size: var(--cb-height);
+  padding-inline: var(--spacing-xs,4px);
+}
+:host([data-variant=destructive]) [part~=control] {
+  color: var(--color-danger,#B4233C);
+  background: var(--color-danger-soft,#FFF0F2);
+  border-color: var(--color-danger,#B4233C);
+}
+:host([data-variant=secondary]) [part~=control][aria-pressed=true],
+:host([data-variant=outline]) [part~=control][aria-pressed=true] {
+  background: var(--color-selection,#EAF1FF);
+  color: var(--color-signal-text,#1D50B3);
+  border-color: var(--color-primary,#2563EB);
+}
+:host([data-variant=ghost]) [part~=control][aria-pressed=true] {
+  background: var(--color-selection,#EAF1FF);
+  color: var(--color-signal-text,#1D50B3);
+  border-color: transparent;
+}
+:host([data-variant=primary]) [part~=control][aria-pressed=true] {
+  background: var(--color-primary-hover,#1D50B3);
+  color: var(--color-primary-foreground,#fff);
+  border-color: transparent;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, currentColor 38%, transparent);
+}
+:host([data-variant=destructive]) [part~=control][aria-pressed=true] {
+  background: var(--color-danger,#B4233C);
+  color: var(--color-danger-foreground,#fff);
+  border-color: var(--color-danger,#B4233C);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, currentColor 38%, transparent);
+}
+:host([data-bare]) [part~=control] {
+  inline-size: 100%;
+  block-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  white-space: inherit;
+}
+:host([data-bare]) [part~=control]:hover:not(:disabled),
+:host([data-bare]) [part~=control]:active:not(:disabled) {
+  background: transparent;
+}
+:host([data-semantic-host]) [part~=control] {
+  pointer-events: none;
+  opacity: 1;
+}
+[part~=spinner] {
+  inline-size: var(--component-icon-size,16px);
+  block-size: var(--component-icon-size,16px);
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: cb-spin .8s linear infinite;
+}
+[part~=label] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[part~=description] {
+  display: block;
+  margin-block-start: var(--spacing-xs,4px);
+}
+@keyframes cb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

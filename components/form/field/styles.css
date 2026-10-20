@@ -1,0 +1,64 @@
+@import "../../theme/editor.css";
+:host {
+  display: inline-grid;
+  inline-size: var(--component-field-width,fit-content);
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+[part~=field] {
+  display: grid;
+  gap: var(--spacing-xs,4px);
+  inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+[part~=header] {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-sm,8px);
+  min-inline-size: 0;
+}
+[part~=label-wrap] {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs,4px);
+  min-inline-size: 0;
+}
+[part~=label] {
+  font-weight: 600;
+}
+[part~=requirement] {
+  color: var(--color-muted-foreground);
+  font-size: var(--component-caption-font-size,11px);
+}
+[part~=control-container] {
+  display: block;
+  min-inline-size: 0;
+}
+[part~=description],
+[part~=help],
+[part~=error],
+[part~=success] {
+  margin: 0;
+}
+[part~=details] {
+  color: var(--color-muted-foreground);
+  font-size: var(--component-caption-font-size,11px);
+}
+[part~=details-summary] {
+  cursor: pointer;
+  color: var(--color-signal-text);
+}
+[part~=details-copy] {
+  margin-block: var(--spacing-xs,4px) 0;
+}
+[part~=success] {
+  color: var(--color-success);
+}
+:host([data-invalid]) ::slotted(*) {
+  --color-border:var(--color-danger);
+}
+:host([data-success]) ::slotted(*) {
+  --color-border:var(--color-success);
+}

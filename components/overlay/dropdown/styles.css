@@ -1,0 +1,14 @@
+@import "../../theme/editor.css";
+:host {
+  display: inline-block;
+}
+[part=popup] {
+  z-index: var(--z-index-dropdown,40);
+  inline-size: max-content;
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: auto;
+}

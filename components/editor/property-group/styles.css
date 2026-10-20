@@ -1,0 +1,25 @@
+@import "../../theme/editor.css";
+:host {
+  display: block;
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+[part~=section] {
+  display: block;
+}
+[part~=mixed] {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 20px;
+  padding: 1px var(--spacing-xs,4px);
+  border-radius: 999px;
+  background: var(--color-selection);
+  color: var(--color-signal-text);
+  font-size: 10px;
+}
+[part~=reset] {
+  flex: none;
+}
+:host([data-dirty]) [part~=section] {
+  --component-property-group-accent:var(--color-primary);
+}

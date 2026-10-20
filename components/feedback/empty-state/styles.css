@@ -1,0 +1,31 @@
+@import "../../theme/editor.css";
+:host {
+  display: block;
+  inline-size: min(100%, 480px);
+  min-inline-size: 0;
+  text-align: center;
+}
+[part=icon-box] {
+  color: var(--color-primary);
+}
+[part=icon] {
+  inline-size: 32px;
+  block-size: 32px;
+  font-size: 32px;
+  color: var(--color-primary);
+}
+[part=heading] {
+  inline-size: 100%;
+  overflow-wrap: anywhere;
+}
+[part=body] {
+  display: contents;
+}
+::slotted(*) {
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
+}
+::slotted(p) {
+  margin: 0;
+  color: var(--color-muted-foreground);
+}

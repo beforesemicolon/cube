@@ -1,0 +1,10 @@
+@import "../../theme/editor.css";
+:host {
+  display: inline-flex;
+  line-height: 1;
+  font-size: var(--component-icon-size,16px);
+}
+[part=icon] {
+  width: 1em;
+  height: 1em;
+}

@@ -1,483 +1,145 @@
-![cube](https://github.com/beforesemicolon/cube/blob/b72a6bf46a103e5327a0a0e21541f922b7f9b02d/docs/assets/banner.jpg)
+# Cube by Before Semicolon
 
-[![npm](https://img.shields.io/npm/v/%40beforesemicolon%2Fcube)](https://www.npmjs.com/package/@beforesemicolon/cube)
-![npm](https://img.shields.io/npm/l/%40beforesemicolon%2Fcube)
+A TypeScript, headless-first web-component library for visual editors. Current version: **0.3.0-alpha.1** (prerelease).
 
-Cube is a simple and powerful function-oriented framework to create future-proof UI components and web applications.
+The eleven Studio boards contain 216 visual references. The audited component catalog is organized into 15 categories, alongside application-level composition examples. Preview and theme switching are usage contexts for `Switch`; autocomplete is a `Combobox` mode; multi-selection and searchable option lists are modes of `Select`; dimensions, aspect ratio and z-index are examples assembled from form and layout primitives. Categories register their `cb-*` elements explicitly. Components use WebComponent and Markup templates, have headless bases, expose styling parts, and consume site-builder-compatible theme variables.
 
-## Quick Start
+## Develop
 
+Use Node 24.11+ (or Node 22.18+) with npm. The lockfile pins the verified toolchain.
+
+```sh
+npm ci
+npm run build:package
+npm run test:exports
+npm run storybook
+npm run build:docs
+npx playwright install chromium
+npm run test:browser
+npm run test:pack
 ```
-npm install @beforesemicolon/cube
-```
+
+`npm test` covers DOM-independent models and controllers. Browser tests use the actual WebComponent runtime and ECharts, exercise keyboard/ARIA behavior, run axe checks, and produce light/dark reference screenshots. See the PR/CI results for which checks have actually run. Test files and a successful syntax check alone are not accessibility certification.
+
+Every component has a colocated browser contract. `npm run verify:release` runs the full release gate, including an actual tarball installed into an isolated consumer to check ESM, CJS and declarations. `npm pack` rebuilds the package first; `test:pack` writes its inspected archive to `release-artifacts/` without publishing it. The npm payload is limited to compiled modules, declarations, category clients, themes, icons and package documentation.
+
+This prerelease sets `publishConfig` to public access and the `alpha` tag, not `latest`. CI runs the same `verify:release` command as the prepublish hook. See [npm's publishConfig documentation](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#publishconfig) for the publishing configuration. Verification does not publish the package.
+
+## Module usage
 
 ```ts
-import {template, register} from '@beforesemicolon/cube';
+import * as runtime from '@beforesemicolon/web-component'
+import initializeCube from '@beforesemicolon/cube'
 
-const MyButton = (props) => {
-  template`
-    <button type=${props.type}>
-      <slot></slot> 
-    </button>`;
-}
-
-register(MyButton, {
-  // defining props by setting default values
-  type: "button"
-});
+await initializeCube(runtime)
+const chart = document.createElement('cb-cartesian-chart')
+Object.assign(chart, {
+    heading: 'Weekly activity',
+    xAxis: { type: 'category', categories: ['Mon', 'Tue', 'Wed'] },
+    series: [
+        { id: 'actual', name: 'Actual', type: 'column', data: [12, 18, 15] },
+        { id: 'target', name: 'Target', type: 'line', data: [15, 17, 19] },
+    ],
+})
+document.body.append(chart)
 ```
 
-```html
-<my-button>Click me</my-button>
+To initialize selected categories, pass the same runtime to their initializers:
+
+```ts
+import * as runtime from '@beforesemicolon/web-component'
+import initializeAction from '@beforesemicolon/cube/action'
+import initializeForm from '@beforesemicolon/cube/form'
+
+await initializeAction(runtime)
+const { TextInputBase } = await initializeForm(runtime)
 ```
 
-You can also import it directly in the browser
-```html
-<!--insert in the head of the document-->
+The package root and category entrypoints can be imported without a DOM. They export initialization functions and types; the root also exports pure models, controllers and tokens. Initializing components requires a DOM. `loadCategory('form')` is available when module consumers want Cube to load the installed WebComponent package. ESM and CJS builds are provided.
 
-<!-- Grab the latest version -->
+## Browser scripts
+
+Build the package first. These are distribution paths, not a claim that this alpha has been published to a CDN:
+
+```html
+<script src="https://unpkg.com/@beforesemicolon/web-component/dist/client.js"></script>
 <script src="https://unpkg.com/@beforesemicolon/cube/dist/client.js"></script>
-
-<!-- Or a specific version -->
-<script src="https://unpkg.com/@beforesemicolon/cube@0.1.6/dist/client.js"></script>
-```
-Then you would use it as:
-```ts
-const {template, register} = window.BFS.Cube;
+<cb-theme-provider appearance="dark">
+  <cb-audio-player src="/media/recording.mp3" media-title="Recording"></cb-audio-player>
+</cb-theme-provider>
 ```
 
-## Documentation
-
-> ###### Table of Content
-> - [Create a component](#create-a-component)
-> - [Create Elements](#create-elements)
-> - [Props](#props)
-> - [HTMLComponentElement Options](#component-options)
-> - [Lifecycles](#lifecycles)
-> - [State](#state)
-> - [Events](#events)
-> - [Host](#host)
-> - [Conditional Render](#conditional-render)
-> - [Conditional Attributes](#conditional-attributes)
-> - [Repeating/listing content](#repeatinglisting-content)
-> - [Styling](#styling)
-
-### Create a component
-Cube components are simply functions that you register as web components although not every component needs to be
-a web component.
-
-```js
-const MyButton = () => {}; // valid component
-
-register(MyButton)
-```
-
-The name of the function must be two part camel-cased. This is because Cube will turn it into a kebab-cased
-[valid html web component name](https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name). Therefore, the above button can be used like:
+Use `dist/client.js` for the complete catalog or flat category clients:
 
 ```html
-<my-button></my-button>
+<script src="https://unpkg.com/@beforesemicolon/web-component/dist/client.js"></script>
+<script src="https://unpkg.com/@beforesemicolon/cube/dist/action-client.js"></script>
+<script src="https://unpkg.com/@beforesemicolon/cube/dist/form-client.js"></script>
 ```
 
-But it will not render anything because we haven't defined its template body. To do that we use the
-`template` function.
+The public categories are `action`, `text`, `form`, `layout`, `navigation`, `overlay`, `feedback`, `data-display`, `media`, `charts`, `styling`, `editor`, `collaboration`, `icons`, and `theme`. Individual component browser bundles are no longer emitted. Each category registers only its own components. Load the categories used by composed controls at the application level; for example, form steppers use buttons from `action`, and media players use controls from `action` and `form`. Components do not import or register the components they render. Browser exports live in `BFS.CUBE`, including a `ready` promise. Repeated same-version scripts register tags idempotently.
 
-```js
-const MyButton = () => {
-  template`<button>my button</button>`
-};
+`Select`, `DatePicker` and `TimePicker` use consistent Cube-rendered controls by default. Set `native` only when the browser-provided selector is desired. `Calendar` belongs to the form category, while `Combobox` supports list and autocomplete behavior through its `autocomplete` property.
 
-register(MyButton)
-```
+Anchored menus and pickers size themselves to their content and stay within the viewport. Use `popupMaxWidth` and `popupMaxHeight` with a CSS length or a numeric pixel value to override a component’s defaults; constrained content scrolls inside the popup.
 
-Cube template is based on [@bfs/html](https://www.npmjs.com/package/@beforesemicolon/markup) , and it is a powerful
-reactive templating system that does not everything you need for templating. 
+The WebComponent runtime is **external**, not compiled into Cube's browser scripts. Chart scripts also keep ECharts external: load `echarts/dist/echarts.min.js` before mounting a chart, or configure a promise-based loader with `BFS.CUBE.configureChartEngine`. Module consumers lazily import the ECharts dependency on the first chart render. Media-only scripts never load charting code.
 
-Check this amazing [Todo App](https://stackblitz.com/edit/web-platform-lvonxr?file=app.js) built just with this templating library.
-
-### Create Elements
-Cube elements are simply `html` instances. Bellow are valid elements:
-
-```js
-const Button = html`<button>my button</button>`;
-const ButtonFn = (props) => html`<button type="${props.type}">${props.content}</button>`;
-```
-
-They don't need to be registered and can be used by any component or rendered directly in the DOM:
-
-```js
-Button.render(document.body)
-Button({type: "button", content: "click me"}).render(document.body)
-```
-
-To learn more about Cube template check [@bfs/html docs](https://www.npmjs.com/package/@beforesemicolon/markup)
-which Cube is built on.
-
-### Props
-Props are simply attributes that the component tag will receive or that the element will take. The value of
-these props can be anything. 
-
-A component only becomes aware of attributes when you define prop defaults when registering a component.
-
-```ts
-const MyButton = (props) => {
-  template`
-    <button attr.disabled="${props.disabled}">
-      <slot></slot>
-    </button>`;
-};
-
-register(MyButton, {
-    disabled: false,
-})
-```
-
-One thing to keep in mind is the data type, especially when you plan to 
-set these attribute values when using the `.html` file. Bellow is an example
-of how to pass a JSON data to an element in a HTML file using single quotes to wrap the whole thing. 
-
-If this is how you plan to use the tag, JSON string is the most complex data representation you can use.
+## Themes and application-supplied text
 
 ```html
-// index.html
-
-<todo-item data='{"name": "sample", "status": "pending"}'></todo-item>
+<cb-theme-provider src="/themes/brand.json" appearance="system">
+  <cb-video-player
+    src="/media/film.mp4"
+    play-label="Reproduzir"
+    pause-label="Pausar"
+  ></cb-video-player>
+</cb-theme-provider>
 ```
 
-If the component tag will be used only inside other components, it does not matter how the data look like, but
-you should always aim for simple data representations.
+Theme JSON follows site-builder's `schemaVersion: "1.0"`, `name`, `tokens` contract, including mode-aware leaves and uppercase `DEFAULT` scales. Built outputs include `themes/cube.json`, `light.json`, `dark.json` and CSS equivalents. Nested providers scope variables; an explicit inner theme defines its own palette. External theme loads are abortable and stale responses cannot replace a newer theme. Token files reject stylesheet/network injection; use authored stylesheets for fonts, images and `@keyframes`.
+
+Cube is localization-agnostic: it does not own a `locale` attribute, translation catalog, or dependency on `@beforesemicolon/intl`. Applications provide final translated visible and ARIA text through the component’s explicit text properties. Native number, date, and time formatting uses the document’s `lang` as a formatting hint. The documentation itself is available in five languages and uses the `fading-citrus` site-builder theme as Markup. The `:::cube component-name` markdown extension renders a fixed, safe example visualizer; it does not evaluate arbitrary pasted code. Markdown highlighting uses site-builder's existing highlight.js integration.
+
+Every original icon is emitted as an individual SVG, as a combined `dist/icons/sprite.svg`, and through `dist/icons/icons.css` mask classes. The CSS form behaves like an icon font while retaining SVG geometry and `currentColor`: `<span class="cb-icon cb-icon--undo" aria-hidden="true"></span>`. Use `<cb-icon>` when you need the component API and styling parts.
+
+## Media
+
+Simple native media with play/pause, stop, configurable backward/forward seeking, seek and volume sliders, mute and playback rate. Video additionally supports poster, caption tracks and fullscreen when supported. Playback is not autoplaying by default. The native media node and focused controls survive property updates.
 
 ```ts
-const TodoApp = () => {
-    const todos = [];
-    
-    template`
-      <todo-item data="${todos[0]}"></todo-item>
-      <todo-item data="${todos[1]}"></todo-item>
-      <todo-item data="${todos[2]}"></todo-item>
-    `
-}
+player.seekStep = 15
+player.backwardLabel = 'Back 15 seconds'
+player.forwardLabel = 'Ahead 15 seconds'
+player.tracks = [{ src: '/captions/en.vtt', language: 'en', label: 'English', default: true }]
+await player.play() // false on a rejected play attempt; the error event reports the cause
+player.stop()
 ```
 
-Recommended would be to split the data into their primitive values instead like native HTML.
+Back/forward seek within the current media; they are not playlist navigation. Stop pauses and resets to the earliest available seekable time. Unknown duration and live/disjoint seekable ranges are handled without assigning invalid times. Provide captions and a transcript (`slot="transcript"`) when the content requires them. Fullscreen and codecs remain browser capabilities, not emulated guarantees.
 
-```html
-// index.html
+## Charts
 
-<todo-item name="sample" status="pending"></todo-item>
-```
+The two chart components use an independent Apache ECharts adapter inspired by Cloudscape's functional contracts, not its React implementation or Highcharts dependency. See [the parity matrix](design/media-and-charts.md).
 
-### HTMLComponentElement Options
-Web components are rendered with [shadow root](https://developer.mozilla.org/en-US/docs/Web/API/Element/shadowRoot) in 
-[open mode](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/mode). Cube allows you to change these options:
-- [mode](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/mode): 'open', 'closed' or 'none'
-- [delegatesFocus](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/delegatesFocus): 'true' or 'false'
+- Cartesian: mixed line/spline, area, column/bar, scatter/bubble, error ranges and thresholds; category/time/linear/log axes; two value axes; inversion; normal stacking; filtering and zoom.
+- Pie: pie/donut, center text, segment visibility and selection. All-zero data produces an empty state, not equal fake wedges. Percentages describe **visible data**.
+- Both: stable IDs, explicit empty/loading/error/no-match states, DOM legend controls, keyboard point exploration, pinnable details, selectable data table and container resizing. Missing values stay gaps, not zero.
 
-```ts
-register(MyButton, {
-    disabled: false,
-}, {
-  // the none value is valid to Cube only and 
-  // it means to render component without shadow root
-  mode: 'none',
-  delegatesFocus: true
-})
-```
+`visibleSeries` / `visibleSegments` arrays make visibility controlled. Handle `visibilitychange` and assign the proposed `visibleItems` to accept a change. Omit these properties for internal control. Data changes should use a new array/object or call `refresh()` after intentional in-place edits. `select` reports the selected point; `zoomchange` reports zoom bounds.
 
-### Lifecycles
-Cube has few lifecycle functions:
-- `onMount`: Executes when component is added to the DOM
-- `onUpdate`: Executes when component props change either by attributes or property change.
-- `onDestroy`: Executes when component is removed to the DOM
-- `onAdoption` Executes when component is moved from one document to another. For example, from an iframe document to the page document.
+The chart graphic is decorative to assistive technology; Cube owns the textual exploration and table. Keyboard instructions are localized. Rich HTML tooltip rendering is intentionally not exposed, avoiding untrusted HTML interpretation. Chart animation honors reduced motion.
 
-```js
-const MyButton = () => {
-  onMount(() => {
-    console.log('mounted');
-  })
-  
-  // called only after component is mounted
-  // any prop event while component is unmounted is ignored
-  onUpdate((propName, newValue, oldValue) => {
-    console.log('prop updated', propName, newValue, oldValue);
-  })
-  
-  onDestroy(() => {
-    console.log('unmounted');
-  })
-  
-  onAdoption(() => {
-    console.log('mouted on a different document');
-  })
-};
-```
+## Styling and extension
 
-### State
-There is no real concept of state in Cube. Any data used in the template is checked for change
-when there is an update. 
+Reusable component styles live in `.css` files, imported directly into each renderer's `stylesheet` property. Local CSS `@import` rules share normalization and family styles. Vite handles these during development; the package build flattens imports and emits stylesheet text modules for ESM/CJS and browser clients, so consumers do not need a CSS loader or import-assertion support.
 
-By default, any data in the template is considered static data:
+Category initializers return concrete classes and their headless bases, for example `const { MenuBase } = await initializeNavigation(runtime)`. The core initializer returns the shared `Component` base. A custom renderer extends the base, returns an `HtmlTemplate`, and registers its own custom-element tag. Individual class and `/base` module paths require the runtime to have been initialized first and do not register elements.
 
-```ts
-const CounterApp = () => {
-	const count = 0; // static data
-	
-	template`<span>${count}</span>`;
-}
-```
+Action parts include semantic surfaces such as `control`, `trigger`, `popup`, `menu`, `item`, `tab`, `navigation`, `page`, `tooltip`, `shortcut` and `key`. Layout primitives expose `content` or `line`; overlay parts include `dialog`, `header`, `heading`, `description`, `body`, `footer`, `message` and `message-actions`. Media and chart parts retain their documented control and data surfaces. Use `::part` for structural overrides and theme variables for appearance. Third-party engine descendants are not stable Cube parts.
 
-To define dynamic data you should use functions which are called in the template
-whenever there is an update.
+## Scope and status
 
-```ts
-const CounterApp = () => {
-    let count = 0;
-    
-    const countUp = () => {
-        count += 1;
-        temp.update(); // tell the DOM to update to catch the count change
-    }
-    
-    // tell template count will change
-    var temp = template`
-      <span>${() => count}</span>
-      <button onclick="${countUp}">count</button>
-    `;
-}
-```
+This is an alpha increment of the Cube rewrite. The 216-item Studio design-reference inventory is indexed in `components/studio/catalog.ts`; only the audited reusable subset is published as components. Storybook provides interaction-ready component stories plus a separate application-composition gallery, and the localized documentation site provides category-level visualizers. The source boards in `design/figma-layers/Studio` remain the visual acceptance reference. Legacy `src/`, the old `docs/`, and their unused tooling have been removed; current source and documentation live in `components/` and `docs-cube/`.
 
-However, this is quite messy. Therefore, Cube gives you `state` that handles all that for you:
-
-```ts
-const CounterApp = () => {
-    // get a getter and a setter functions for a value
-    let [count, updateCount] = state(0);
-    
-    const countUp = () => {
-      updateCount(count() + 1)
-    }
-        
-    var temp = template`
-      <span>${count}</span>
-      <button onclick="${countUp}">count</button>
-    `;
-}
-```
-
-The `state` will automatically trigger DOM update on changes but, it should not be used for everything.
-You can still keep data as dynamic data and have a state that when changed will trigger DOM update causing 
-everything else to be considered.
-
-### Events
-Cube is event driven and that's why you should not pass function as props. Function as props are just callbacks
-and with Cube, any component should be able to listen to another regardless of hierarchy via events.
-
-To listen to an event, you set an attribute on the element tag itself starting with `on` followed by the
-name of the event all lowercase to match the native HTML pattern. The name of the event can be any
-custom event that particular component dispatches or any [native HTML element events](https://developer.mozilla.org/en-US/docs/Web/Events).
-
-```ts
-const TextInput = () => {
-    const dispatch = eventDispatch();
-    
-    const onChange = (event) => {
-      dispatch('changed', event.target.value)
-    }
-    
-    template`
-      <input value=${props.value} type=${props.type} onchange="${onChange}"/>
-    `;
-}
-```
-
-The `eventDispatch` helper will return a function you can call with the name of the event and data
-you want to pass with this event. All this will trigger a [Customer](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent)
-with correct data details.
-
-### Host
-When you create a web component you get a HTML tag you can use. In case you want to access it for
-any reason, Cube exposes a `host` helper that will provide you with that instance.
-
-```js
-const MyButton = () => {
-  const btn = host(); // returns HTMLElement instance of my-button tag
-};
-```
-
-### Conditional Render
-Again, because everything is function, conditional rendering is as simple as a function with a ternary:
-
-```ts
-const TodoStatus = (props) => {
-    template`
-      ${props.status() === "pending" 
-        ? html`<span class="pending">Pending</span>` 
-        : html`<span class="done">Done</span>`
-      }
-    `
-}
-```
-
-However, you need to remember that such function is called whenever there is a change and will produce
-new instances of the html to be rendered. This might not be what you want as it forces new DOM creation.
-
-To optimal way to do it is to have variable with those elements and swap them on render updates.
-
-```ts
-const TodoStatus = (props) => {
-    const pendingIndicator = html`<span class="pending">Pending</span>`;
-    const comleteIndicator = html`<span class="done">Done</span>`;
-    
-    template`
-      ${props.status() === "pending" 
-        ? pendingIndicator
-        : comleteIndicator
-      }
-    `
-}
-```
-
-But Cube exposes a `when` helper which does all these by default. [Learn more about it](https://www.npmjs.com/package/@beforesemicolon/markup#when)
-
-```ts
-const TodoStatus = (props) => {
-    template`
-      ${when(props.status() === "pending",
-        html`<span class="pending">Pending</span>`,
-        html`<span class="done">Done</span>`
-      )}
-    `
-}
-```
-
-### Conditional Attributes
-Cube handles conditional attributes by prefixing any attributes with `attr` and providing a condition.
-[Learn more](https://www.npmjs.com/package/@beforesemicolon/markup#the-attr-attribute)
-
-```ts
-const MyButton = () => {
-    const ctaButton = () => props.variant() === 'cta';
-
-    template`
-      <button
-        // only adds disabled attribute when disabled value is TRUE
-        attr.disabled="${props.disabled}" 
-        
-        // adds class of 'cta' when variant is 'cta'
-        attr.class.cta="${ctaButton}" 
-        
-        // adds orange background when cta button variant
-        attr.style="background-color: orange, ${ctaButton}"
-        >
-        <slot></slot>
-      </button>
-    `
-}
-```
-### Repeating/listing content
-Cube will already optimally handle any array you put in the template.
-
-```ts
-const TodoApp = () => {
-    const items = ["item-1", "item-2", "item-3"];
-    
-    template`${items}`; // renders item-1item-2item-3
-}
-```
-
-You may also have a list of html instances.
-
-```ts
-const TodoApp = () => {
-    const items = [
-        html`<span>item-1</span>`,
-        html`<span>item-2</span>`,
-        html`<span>item-3</span>`,
-    ];
-    
-    template`${items}`;
-}
-```
-
-But when it comes to composing lists and dynamic data Cube exposes the `repeat` helper
-that handles everything for you. [Learn more](https://www.npmjs.com/package/@beforesemicolon/markup#repeat)
-
-```ts
-const TodoApp = () => {
-    template`${repeat(todos, item => html`<span>${item.name}</span>`)}`;
-}
-```
-
-### Styling
-Cube allows you to attach style to your components when you register them. Style is simply a function
-that returns a CSS string or object. The style is only render once but once Cube understands you use the props
-in your style, it gets updated with every prop change.
-
-```ts
-const MyButtonStyle = (props) => {
-  return {
-    ":host": {
-        button: {
-          all: "unset",
-          background: "#222",
-          color: "#fff",
-          padding: "8px 20px",
-          borderRadius: 3,
-          opacity: props.disabled() ? "0.1" : "1"
-        }
-    }
-  }
-}
-```
-
-Then you just need to tell Cube which style to use:
-
-```ts
-const MyButton = (props) => {
-  ...
-};
-
-register(MyButton, {
-    disabled: false,
-}, MyButtonStyle) // provide the style
-```
-
-You may also return a CSS string but it does not support nested style:
-
-```ts
-const MyButtonStyle = (props) => {
-  return `
-    // the style tag is not needed but it helps IDEs syntax highlight CSS
-    <style> 
-      :host button {
-        all: unset;
-        background: #222;
-        color: #fff;
-        border-radius: 3px;
-        opacity: ${props.disabled() ? "0.1" : "1"}
-      }
-    </style>
-  `
-}
-```
-
-You may also provide a stylesheet link which is perfect if you have external stylesheets:
-
-```ts
-const MyButtonStyle = () => {
-  return `<link rel="stylesheet" href="./my-button.css">`;
-}
-```
-
-
-
-
-
-
-
-
-
-
-
-
+No npm release, production deployment or main-branch merge is performed by this implementation.

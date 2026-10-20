@@ -1,67 +1,339 @@
 {
   "name": "@beforesemicolon/cube",
-  "version": "0.2.0",
-  "description": "Function-oriented framework to create future-proof UI components and web applications.",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "version": "0.3.0-alpha.1",
   "type": "module",
-  "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "local": "nodemon --watch src -e ts --exec 'tsc && npm-run-all build:min build:client build:client-router build:client-store build:client-intl'",
-    "server": "nodemon --watch server --exec 'node server'",
-    "docs:css-watch": "nodemon --watch docs-src -e scss --exec 'npm run docs:css'",
-    "docs:css": "node-sass docs-src/stylesheets -o docs/stylesheets --output-style compressed",
-    "docs:watch": "rm -rf docs && nodemon --watch docs-src -e ts,json --exec 'npm run docs:build'",
-    "docs:build": "ts-node docs-src/build",
-    "build:docs": "rm -rf docs && npm-run-all docs:build docs:css",
-    "build:min": "esbuild `find src \\( -name '*.ts' ! -name '*.spec.ts' \\)` --outdir=dist --platform=node --format=cjs --keep-names --minify --target=esNext",
-    "build:client": "esbuild src/client.ts --bundle --minify --keep-names --sourcemap --target=esNext --outfile=dist/client.js",
-    "build:client-router": "esbuild src/client-router.ts --bundle --minify --keep-names --sourcemap --target=esNext --outfile=dist/client-router.js",
-    "build:client-store": "esbuild src/client-store.ts --bundle --minify --keep-names --sourcemap --target=esNext --outfile=dist/client-store.js",
-    "build:client-intl": "esbuild src/client-intl.ts --bundle --minify --keep-names --sourcemap --target=esNext --outfile=dist/client-intl.js",
-    "build": "npm-run-all lint test && rm -rf dist && tsc && npm-run-all build:min build:client build:client-router build:client-store build:client-intl",
-    "lint": "eslint ./src && prettier --check ./src",
-    "format": "eslint ./src --fix && prettier --write ./src"
-  },
-  "keywords": [],
-  "author": "",
+  "description": "Cube by Before Semicolon — headless and themed web components for visual editors",
   "license": "BSD-3-Clause",
-  "devDependencies": {
-    "@beforesemicolon/html-parser": "*",
-    "@types/express": "^4.17.17",
-    "@types/highlight.js": "^10.1.0",
-    "@types/jest": "^29.5.11",
-    "@types/jsdom": "^21.1.7",
-    "@types/node": "^20.10.5",
-    "@typescript-eslint/eslint-plugin": "^6.15.0",
-    "@typescript-eslint/parser": "^6.15.0",
-    "core-js": "^3.31.0",
-    "csstype": "^3.1.2",
-    "esbuild": "^0.28.0",
-    "eslint": "^8.56.0",
-    "eslint-config-prettier": "^10.0.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^16.5.0",
-    "eslint-plugin-prettier": "^5.1.2",
-    "eslint-plugin-promise": "^6.1.1",
-    "express": "^5.2.1",
-    "global-jsdom": "^25.0.0",
-    "highlight.js": "^11.12.0",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
-    "jsdom": "^25.0.1",
-    "node-sass": "^9.0.0",
-    "nodemon": "^3.1.14",
-    "npm-run-all": "^4.1.5",
-    "prettier": "3.9.6",
-    "ts-jest": "^29.1.1",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.3.3"
+  "author": "Elson Correia",
+  "engines": {
+    "node": "^22.18.0 || >=24.11.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./core": {
+      "types": "./dist/types/core/index.d.ts",
+      "import": "./dist/esm/core/index.js",
+      "require": "./dist/cjs/core/index.js"
+    },
+    "./studio": {
+      "types": "./dist/types/studio/index.d.ts",
+      "import": "./dist/esm/studio/index.js",
+      "require": "./dist/cjs/studio/index.js"
+    },
+    "./action": {
+      "types": "./dist/types/action/index.d.ts",
+      "import": "./dist/esm/action/index.js",
+      "require": "./dist/cjs/action/index.js"
+    },
+    "./action/*": {
+      "types": "./dist/types/action/*/index.d.ts",
+      "import": "./dist/esm/action/*/index.js",
+      "require": "./dist/cjs/action/*/index.js"
+    },
+    "./action/*/base": {
+      "types": "./dist/types/action/*/base.d.ts",
+      "import": "./dist/esm/action/*/base.js",
+      "require": "./dist/cjs/action/*/base.js"
+    },
+    "./text": {
+      "types": "./dist/types/text/index.d.ts",
+      "import": "./dist/esm/text/index.js",
+      "require": "./dist/cjs/text/index.js"
+    },
+    "./text/*": {
+      "types": "./dist/types/text/*/index.d.ts",
+      "import": "./dist/esm/text/*/index.js",
+      "require": "./dist/cjs/text/*/index.js"
+    },
+    "./text/*/base": {
+      "types": "./dist/types/text/*/base.d.ts",
+      "import": "./dist/esm/text/*/base.js",
+      "require": "./dist/cjs/text/*/base.js"
+    },
+    "./form": {
+      "types": "./dist/types/form/index.d.ts",
+      "import": "./dist/esm/form/index.js",
+      "require": "./dist/cjs/form/index.js"
+    },
+    "./form/*": {
+      "types": "./dist/types/form/*/index.d.ts",
+      "import": "./dist/esm/form/*/index.js",
+      "require": "./dist/cjs/form/*/index.js"
+    },
+    "./form/*/base": {
+      "types": "./dist/types/form/*/base.d.ts",
+      "import": "./dist/esm/form/*/base.js",
+      "require": "./dist/cjs/form/*/base.js"
+    },
+    "./layout": {
+      "types": "./dist/types/layout/index.d.ts",
+      "import": "./dist/esm/layout/index.js",
+      "require": "./dist/cjs/layout/index.js"
+    },
+    "./layout/*": {
+      "types": "./dist/types/layout/*/index.d.ts",
+      "import": "./dist/esm/layout/*/index.js",
+      "require": "./dist/cjs/layout/*/index.js"
+    },
+    "./layout/*/base": {
+      "types": "./dist/types/layout/*/base.d.ts",
+      "import": "./dist/esm/layout/*/base.js",
+      "require": "./dist/cjs/layout/*/base.js"
+    },
+    "./navigation": {
+      "types": "./dist/types/navigation/index.d.ts",
+      "import": "./dist/esm/navigation/index.js",
+      "require": "./dist/cjs/navigation/index.js"
+    },
+    "./navigation/*": {
+      "types": "./dist/types/navigation/*/index.d.ts",
+      "import": "./dist/esm/navigation/*/index.js",
+      "require": "./dist/cjs/navigation/*/index.js"
+    },
+    "./navigation/*/base": {
+      "types": "./dist/types/navigation/*/base.d.ts",
+      "import": "./dist/esm/navigation/*/base.js",
+      "require": "./dist/cjs/navigation/*/base.js"
+    },
+    "./overlay": {
+      "types": "./dist/types/overlay/index.d.ts",
+      "import": "./dist/esm/overlay/index.js",
+      "require": "./dist/cjs/overlay/index.js"
+    },
+    "./overlay/*": {
+      "types": "./dist/types/overlay/*/index.d.ts",
+      "import": "./dist/esm/overlay/*/index.js",
+      "require": "./dist/cjs/overlay/*/index.js"
+    },
+    "./overlay/*/base": {
+      "types": "./dist/types/overlay/*/base.d.ts",
+      "import": "./dist/esm/overlay/*/base.js",
+      "require": "./dist/cjs/overlay/*/base.js"
+    },
+    "./feedback": {
+      "types": "./dist/types/feedback/index.d.ts",
+      "import": "./dist/esm/feedback/index.js",
+      "require": "./dist/cjs/feedback/index.js"
+    },
+    "./feedback/*": {
+      "types": "./dist/types/feedback/*/index.d.ts",
+      "import": "./dist/esm/feedback/*/index.js",
+      "require": "./dist/cjs/feedback/*/index.js"
+    },
+    "./feedback/*/base": {
+      "types": "./dist/types/feedback/*/base.d.ts",
+      "import": "./dist/esm/feedback/*/base.js",
+      "require": "./dist/cjs/feedback/*/base.js"
+    },
+    "./data-display": {
+      "types": "./dist/types/data-display/index.d.ts",
+      "import": "./dist/esm/data-display/index.js",
+      "require": "./dist/cjs/data-display/index.js"
+    },
+    "./data-display/*": {
+      "types": "./dist/types/data-display/*/index.d.ts",
+      "import": "./dist/esm/data-display/*/index.js",
+      "require": "./dist/cjs/data-display/*/index.js"
+    },
+    "./data-display/*/base": {
+      "types": "./dist/types/data-display/*/base.d.ts",
+      "import": "./dist/esm/data-display/*/base.js",
+      "require": "./dist/cjs/data-display/*/base.js"
+    },
+    "./media": {
+      "types": "./dist/types/media/index.d.ts",
+      "import": "./dist/esm/media/index.js",
+      "require": "./dist/cjs/media/index.js"
+    },
+    "./media/*": {
+      "types": "./dist/types/media/*/index.d.ts",
+      "import": "./dist/esm/media/*/index.js",
+      "require": "./dist/cjs/media/*/index.js"
+    },
+    "./media/*/base": {
+      "types": "./dist/types/media/*/base.d.ts",
+      "import": "./dist/esm/media/*/base.js",
+      "require": "./dist/cjs/media/*/base.js"
+    },
+    "./charts": {
+      "types": "./dist/types/charts/index.d.ts",
+      "import": "./dist/esm/charts/index.js",
+      "require": "./dist/cjs/charts/index.js"
+    },
+    "./charts/*": {
+      "types": "./dist/types/charts/*/index.d.ts",
+      "import": "./dist/esm/charts/*/index.js",
+      "require": "./dist/cjs/charts/*/index.js"
+    },
+    "./charts/*/base": {
+      "types": "./dist/types/charts/*/base.d.ts",
+      "import": "./dist/esm/charts/*/base.js",
+      "require": "./dist/cjs/charts/*/base.js"
+    },
+    "./styling": {
+      "types": "./dist/types/styling/index.d.ts",
+      "import": "./dist/esm/styling/index.js",
+      "require": "./dist/cjs/styling/index.js"
+    },
+    "./styling/*": {
+      "types": "./dist/types/styling/*/index.d.ts",
+      "import": "./dist/esm/styling/*/index.js",
+      "require": "./dist/cjs/styling/*/index.js"
+    },
+    "./styling/*/base": {
+      "types": "./dist/types/styling/*/base.d.ts",
+      "import": "./dist/esm/styling/*/base.js",
+      "require": "./dist/cjs/styling/*/base.js"
+    },
+    "./editor": {
+      "types": "./dist/types/editor/index.d.ts",
+      "import": "./dist/esm/editor/index.js",
+      "require": "./dist/cjs/editor/index.js"
+    },
+    "./editor/*": {
+      "types": "./dist/types/editor/*/index.d.ts",
+      "import": "./dist/esm/editor/*/index.js",
+      "require": "./dist/cjs/editor/*/index.js"
+    },
+    "./editor/*/base": {
+      "types": "./dist/types/editor/*/base.d.ts",
+      "import": "./dist/esm/editor/*/base.js",
+      "require": "./dist/cjs/editor/*/base.js"
+    },
+    "./collaboration": {
+      "types": "./dist/types/collaboration/index.d.ts",
+      "import": "./dist/esm/collaboration/index.js",
+      "require": "./dist/cjs/collaboration/index.js"
+    },
+    "./collaboration/*": {
+      "types": "./dist/types/collaboration/*/index.d.ts",
+      "import": "./dist/esm/collaboration/*/index.js",
+      "require": "./dist/cjs/collaboration/*/index.js"
+    },
+    "./collaboration/*/base": {
+      "types": "./dist/types/collaboration/*/base.d.ts",
+      "import": "./dist/esm/collaboration/*/base.js",
+      "require": "./dist/cjs/collaboration/*/base.js"
+    },
+    "./icons": {
+      "types": "./dist/types/icons/index.d.ts",
+      "import": "./dist/esm/icons/index.js",
+      "require": "./dist/cjs/icons/index.js"
+    },
+    "./icons/icon": {
+      "types": "./dist/types/icons/icon/index.d.ts",
+      "import": "./dist/esm/icons/icon/index.js",
+      "require": "./dist/cjs/icons/icon/index.js"
+    },
+    "./icons/icon/base": {
+      "types": "./dist/types/icons/icon/base.d.ts",
+      "import": "./dist/esm/icons/icon/base.js",
+      "require": "./dist/cjs/icons/icon/base.js"
+    },
+    "./theme": {
+      "types": "./dist/types/theme/index.d.ts",
+      "import": "./dist/esm/theme/index.js",
+      "require": "./dist/cjs/theme/index.js"
+    },
+    "./theme/theme-provider": {
+      "types": "./dist/types/theme/theme-provider/index.d.ts",
+      "import": "./dist/esm/theme/theme-provider/index.js",
+      "require": "./dist/cjs/theme/theme-provider/index.js"
+    },
+    "./theme/theme-provider/base": {
+      "types": "./dist/types/theme/theme-provider/base.d.ts",
+      "import": "./dist/esm/theme/theme-provider/base.js",
+      "require": "./dist/cjs/theme/theme-provider/base.js"
+    },
+    "./themes/*": "./dist/themes/*",
+    "./icons/*": "./dist/icons/*",
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/esm/**/*.js",
+    "dist/cjs/**/*.js",
+    "dist/cjs/package.json",
+    "dist/types/**/*.d.ts",
+    "dist/client.js",
+    "dist/*-client.js",
+    "dist/themes/*.css",
+    "dist/themes/*.json",
+    "dist/icons/*.svg",
+    "dist/icons/*.css",
+    "README.md",
+    "MIGRATION.md",
+    "THIRD_PARTY.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "./stories/setup.ts",
+    "./components/core/browser.ts",
+    "./components/client.ts",
+    "./components/*-client.ts",
+    "./components/icons/registry.ts",
+    "./dist/client.js",
+    "./dist/*-client.js",
+    "./dist/esm/icons/registry.js",
+    "./dist/cjs/icons/registry.js"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.contracts.json",
+    "test": "tsc -p tsconfig.unit.json && node --test .test-output/tests/*.spec.js",
+    "build": "tsx scripts/build.ts",
+    "build:package": "npm run typecheck && npm test && npm run build",
+    "storybook": "storybook dev -p 6006",
+    "start": "storybook dev -p 6006",
+    "build:storybook": "storybook build",
+    "test:catalog": "tsx scripts/check-catalog.ts",
+    "test:visual-audit": "tsx scripts/capture-design-qa.ts",
+    "test:storybook-visuals": "tsx scripts/capture-storybook-visuals.ts",
+    "test:browser": "playwright test",
+    "dev": "vite --host 127.0.0.1",
+    "test:exports": "tsx scripts/check-exports.ts",
+    "test:pack": "tsx scripts/check-package.ts",
+    "audit:runtime": "npm audit --omit=dev",
+    "verify:release": "npm run build:package && npm run test:exports && npm run build:storybook && npm run test:catalog && npm run build:docs && npm run test:browser && npm run audit:runtime && npm run test:pack",
+    "prepack": "npm run build:package && npm run test:exports",
+    "prepublishOnly": "npm run verify:release",
+    "build:docs": "tsx scripts/build-docs.ts"
   },
   "dependencies": {
-    "@beforesemicolon/web-component": "^1.21.0"
+    "@beforesemicolon/web-component": "^1.21.0",
+    "echarts": "6.1.0",
+    "highlight.js": "^11.12.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@babel/parser": "^8.0.7",
+    "@babel/types": "^8.0.6",
+    "@beforesemicolon/builder": "^2.0.1",
+    "@beforesemicolon/site-builder": "^1.15.0",
+    "@playwright/test": "^1.64.1",
+    "@storybook/addon-a11y": "^10.6.2",
+    "@storybook/addon-docs": "^10.6.2",
+    "@storybook/web-components-vite": "^10.6.2",
+    "@types/node": "^26.6.5",
+    "esbuild": "^0.28.2",
+    "lit": "^3.3.3",
+    "storybook": "^10.6.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/beforesemicolon/cube.git"
   }
 }

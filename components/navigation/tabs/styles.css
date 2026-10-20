@@ -1,0 +1,69 @@
+@import "../../theme/editor.css";
+:host {
+  display: block;
+}
+[part=tablist] {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-lg,16px);
+  border-block-end: 1px solid var(--color-separator,#dae0e4);
+  overflow: auto;
+}
+:host([data-stacked]) [part=tablist] {
+  flex-direction: column;
+  align-items: stretch;
+  border-block-end: 0;
+  border-inline-end: 1px solid var(--color-separator,#dae0e4);
+}
+[part=tab-item] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-inline-size: 0;
+}
+[part=tab] {
+  position: relative;
+  min-block-size: 32px;
+  padding: 4px 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-muted-foreground,#606b73);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[part=tab][aria-selected=true] {
+  color: var(--color-foreground,#20262b);
+}
+[part=tab][aria-selected=true]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: -1px;
+  block-size: 2px;
+  background: var(--color-primary,#2563eb);
+}
+[part=dirty] {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  flex: none;
+}
+[part=close] {
+  margin-inline-start: 2px;
+}
+:host([data-stacked]) [part=tab-item] {
+  inline-size: 100%;
+}
+:host([data-stacked]) [part=tab] {
+  flex: 1;
+  text-align: start;
+}
+:host([data-stacked]) [part=tab][aria-selected=true]::after {
+  inset-inline-start: auto;
+  inset-inline-end: -1px;
+  inset-block: 0;
+  inline-size: 2px;
+  block-size: auto;
+}

@@ -1,0 +1,128 @@
+@import "../../theme/editor.css";
+:host {
+  display: inline-block;
+  inline-size: var(--component-select-width,240px);
+}
+[part~=root] {
+  position: relative;
+  display: grid;
+}
+[part~=trigger] {
+  display: block;
+  inline-size: 100%;
+  padding: 0;
+  text-align: start;
+}
+[part~=trigger]::part(control),
+[part~=trigger]::part(button-label) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  inline-size: 100%;
+  text-align: inherit;
+}
+[part~=trigger]::part(control) {
+  padding: var(--spacing-xs,4px) var(--spacing-md,12px);
+}
+[part~=value][data-placeholder] {
+  color: var(--color-muted-foreground);
+}
+[part~=value] {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[part~=trigger][data-multi] {
+  align-items: flex-start;
+  block-size: auto;
+}
+[part~=trigger][data-multi] [part~=value] {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 2px 4px;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+[part~=value-item] {
+  white-space: nowrap;
+}
+[part~=trigger][data-multi] [part~=indicator] {
+  margin-block-start: 2px;
+}
+[part~=popup] {
+  z-index: var(--z-index-dropdown,1000);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 4px;
+  inline-size: max-content;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  box-shadow: var(--shadow-md,0 12px 32px rgba(0,0,0,.14));
+}
+[part~=search-wrap] {
+  display: flex;
+  padding: 2px;
+}
+[part~=search] {
+  inline-size: 100%;
+  min-block-size: var(--cb-height);
+  padding-inline: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  font: inherit;
+}
+[part~=search]:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+[part~=listbox] {
+  display: grid;
+  gap: 2px;
+  min-block-size: 0;
+  max-block-size: 220px;
+  overflow: auto;
+}
+[part~=option] {
+  display: block;
+  inline-size: 100%;
+  min-block-size: var(--cb-height);
+  border-color: transparent;
+  background: transparent;
+  text-align: start;
+}
+[part~=option]::part(control),
+[part~=option]::part(button-label) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  inline-size: 100%;
+  text-align: inherit;
+}
+[part~=option]::part(control) {
+  padding: var(--spacing-xs,4px) var(--spacing-md,12px);
+}
+[part~=option][aria-selected=true] {
+  background: var(--color-selection);
+  color: var(--color-signal-text);
+}
+[part~=empty] {
+  padding: 10px;
+  color: var(--color-muted-foreground);
+  text-align: center;
+}
+[part~=native] {
+  inline-size: 100%;
+  appearance: auto;
+  color-scheme: inherit;
+}
