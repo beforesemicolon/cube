@@ -1,7 +1,8 @@
-import { css as componentStyles, type Template, html } from '../../core/runtime.js'
+import componentStylesheet from './styles.css?inline'
+import { type Template, html } from '../../core/runtime.js'
 import { BoxBase } from './BoxBase.js';
 export class Box extends BoxBase {
-    stylesheet = componentStyles`${':host{display:block;box-sizing:border-box;container-type:inline-size}:host([data-inline]){display:inline-block}:host([hidden]){display:none}'}`
+    stylesheet = componentStylesheet
 
     render(): Template {
         return html`<slot name="" part="content"></slot>`;

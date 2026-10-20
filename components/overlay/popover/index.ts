@@ -1,13 +1,11 @@
-import { css as componentStyles, html, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { html, type Template } from '../../core/runtime.js'
+
 import { PopupController, type PopupPlacement } from '../../core/popup.js'
 import { PopoverBase } from './PopoverBase.js'
-const css = editorCSS + `
-:host{display:inline-flex;position:relative}[part~=anchor]{display:inline-flex}
-[part~=popover]{z-index:var(--z-index-popover,50);inline-size:var(--component-popover-width,max-content);box-sizing:border-box;overflow:auto;padding:var(--spacing-md,12px);border:1px solid var(--color-separator);border-radius:var(--radius-md);background:var(--color-surface-raised,var(--color-surface));color:var(--color-foreground);box-shadow:var(--component-popover-shadow,0 12px 32px color-mix(in srgb,var(--color-foreground) 18%,transparent))}
-`;
+
 export class Popover extends PopoverBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private popup?: PopupController
     render(): Template {

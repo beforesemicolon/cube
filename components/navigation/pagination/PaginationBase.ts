@@ -18,9 +18,10 @@ export abstract class PaginationBase<P extends PaginationProps = PaginationProps
     protected get pageCount(): number { return Math.max(1, Math.trunc(finite(this.totalPages, 1))) }
     protected get pages(): Array<number | 'ellipsis'> { return pageRange(this.currentPage, this.pageCount, Math.max(0, Math.trunc(finite(this.siblings, 1)))) }
     protected selectPage(page: number, originalEvent: Event): void {
+        originalEvent.stopPropagation()
         const next = Math.max(1, Math.min(this.pageCount, Math.trunc(finite(page, 1))))
         if (next === this.currentPage || this.unavailable) return
-        const detail = { page: next, previousPage: this.currentPage, originalEvent }
+        const detail = { value: next, previousValue: this.currentPage, page: next, originalEvent }
         if (!this.request('beforechange', detail)) return
         this.page = next; this.syncView(); this.emit('change', detail)
     }

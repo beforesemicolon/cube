@@ -1,12 +1,11 @@
-import { css as componentStyles, type Template } from '../../core/runtime.js'
-import {  createStudioView, type StudioView , studioCSS } from '../../studio/view.js';
+import componentStylesheet from './styles.css?inline'
+import { type Template } from '../../core/runtime.js'
+import { spinnerView } from '../view.js'
 import { SpinnerBase } from './SpinnerBase.js';
 export class Spinner extends SpinnerBase {
-    stylesheet = componentStyles`${studioCSS}`
+    stylesheet = componentStylesheet
 
-    private view?: StudioView;
-    render(): Template { this.view = createStudioView(this); return this.view.root; }
-    protected syncView(): void { this.view?.update(); }
+    render(): Template { return spinnerView(this); }
 }
 export { SpinnerBase };
 export type { SpinnerProps } from './SpinnerBase.js';

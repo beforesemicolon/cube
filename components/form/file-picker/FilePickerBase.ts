@@ -24,7 +24,9 @@ export abstract class FilePickerBase extends FieldControlBase<FilePickerProps, F
     setFiles(files: readonly File[], originalEvent?: Event): boolean {
         const next = this.multiple ? [...files] : files.slice(0, 1)
         const value = this.multiple ? next.map(file => file.name) : next[0]?.name ?? ''
-        return this.commitValue(value,originalEvent,{files:next},changed=>{this.files=next;this.value=changed})
+        const previousFiles = this.files
+        return this.commitState(this.value,value,originalEvent,{files:next,previousFiles},changed=>{this.files=next;this.value=changed},
+            (previous,changed)=>this.valuesEqual(previous,changed)&&previousFiles.length===next.length&&previousFiles.every((file,index)=>file===next[index]))
     }
     protected restoreValue(value: FilePickerValue | FormRestoreValue): void {
         const control = this.fieldElement()

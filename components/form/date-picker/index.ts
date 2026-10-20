@@ -1,14 +1,14 @@
-import { when, or, isNot, css as componentStyles, html, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { when, or, isNot, html, type Template } from '../../core/runtime.js'
+
 import { uid } from '../../core/id.js'
 import { bool, text } from '../../core/value.js'
 import { PopupController } from '../../core/popup.js'
 
 import { DatePickerBase } from './DatePickerBase.js'
-const css = editorCSS + `:host{display:inline-block;inline-size:var(--component-date-picker-width,240px)}[part~=root]{position:relative;display:grid}[part~=trigger]{display:block;inline-size:100%;padding:0;text-align:start}[part~=trigger]::part(control),[part~=trigger]::part(button-label){display:flex;align-items:center;justify-content:space-between;inline-size:100%;text-align:inherit}[part~=trigger]::part(control){padding:var(--spacing-xs,4px) var(--spacing-md,12px)}[part~=popup]{z-index:var(--z-index-dropdown,1000);inline-size:max-content;box-sizing:border-box;overflow:auto;padding:0;border:0;background:transparent;color:var(--color-foreground)}[part~=native]{inline-size:100%;color-scheme:inherit}`;
 
 export class DatePicker extends DatePickerBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly controlId = uid('cb-date-picker')
     private popupController?: PopupController
@@ -71,4 +71,4 @@ export class DatePicker extends DatePickerBase {
 
 }
 export { DatePickerBase };
-export type { DatePickerProps } from './DatePickerBase.js';
+export type { DatePickerProps, DatePickerChangeDetail } from './DatePickerBase.js';

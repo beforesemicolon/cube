@@ -1,22 +1,29 @@
 # Cube by Before Semicolon
 
-A TypeScript, headless-first web-component library for visual editors. This is the **0.3.0 alpha implementation branch**, not a published release.
+A TypeScript, headless-first web-component library for visual editors. Current version: **0.3.0-alpha.1** (prerelease).
 
-The eleven Studio boards contain 217 visual references. The audited component catalog is organized into 15 categories, alongside application-level composition examples. Preview and theme switching are usage contexts for `Switch`; autocomplete is a `Combobox` mode; multi-selection and searchable option lists are modes of `Select`; dimensions, aspect ratio and z-index are examples assembled from form and layout primitives. Categories register their `cb-*` elements explicitly. Components use WebComponent and Markup templates, have headless bases, expose styling parts, and consume site-builder-compatible theme variables.
+The eleven Studio boards contain 216 visual references. The audited component catalog is organized into 15 categories, alongside application-level composition examples. Preview and theme switching are usage contexts for `Switch`; autocomplete is a `Combobox` mode; multi-selection and searchable option lists are modes of `Select`; dimensions, aspect ratio and z-index are examples assembled from form and layout primitives. Categories register their `cb-*` elements explicitly. Components use WebComponent and Markup templates, have headless bases, expose styling parts, and consume site-builder-compatible theme variables.
 
 ## Develop
 
+Use Node 24.11+ (or Node 22.18+) with npm. The lockfile pins the verified toolchain.
+
 ```sh
-npm install
+npm ci
 npm run build:package
 npm run test:exports
 npm run storybook
 npm run build:docs
 npx playwright install chromium
 npm run test:browser
+npm run test:pack
 ```
 
 `npm test` covers DOM-independent models and controllers. Browser tests use the actual WebComponent runtime and ECharts, exercise keyboard/ARIA behavior, run axe checks, and produce light/dark reference screenshots. See the PR/CI results for which checks have actually run. Test files and a successful syntax check alone are not accessibility certification.
+
+Every component has a colocated browser contract. `npm run verify:release` runs the full release gate, including an actual tarball installed into an isolated consumer to check ESM, CJS and declarations. `npm pack` rebuilds the package first; `test:pack` writes its inspected archive to `release-artifacts/` without publishing it. The npm payload is limited to compiled modules, declarations, category clients, themes, icons and package documentation.
+
+This prerelease sets `publishConfig` to public access and the `alpha` tag, not `latest`. CI runs the same `verify:release` command as the prepublish hook. See [npm's publishConfig documentation](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#publishconfig) for the publishing configuration. Verification does not publish the package.
 
 ## Module usage
 
@@ -125,12 +132,14 @@ The chart graphic is decorative to assistive technology; Cube owns the textual e
 
 ## Styling and extension
 
+Reusable component styles live in `.css` files, imported directly into each renderer's `stylesheet` property. Local CSS `@import` rules share normalization and family styles. Vite handles these during development; the package build flattens imports and emits stylesheet text modules for ESM/CJS and browser clients, so consumers do not need a CSS loader or import-assertion support.
+
 Category initializers return concrete classes and their headless bases, for example `const { MenuBase } = await initializeNavigation(runtime)`. The core initializer returns the shared `Component` base. A custom renderer extends the base, returns an `HtmlTemplate`, and registers its own custom-element tag. Individual class and `/base` module paths require the runtime to have been initialized first and do not register elements.
 
 Action parts include semantic surfaces such as `control`, `trigger`, `popup`, `menu`, `item`, `tab`, `navigation`, `page`, `tooltip`, `shortcut` and `key`. Layout primitives expose `content` or `line`; overlay parts include `dialog`, `header`, `heading`, `description`, `body`, `footer`, `message` and `message-actions`. Media and chart parts retain their documented control and data surfaces. Use `::part` for structural overrides and theme variables for appearance. Third-party engine descendants are not stable Cube parts.
 
 ## Scope and status
 
-This remains an alpha increment of the larger Cube rewrite. The full 217-item Studio inventory remains indexed as design references in `components/studio/catalog.ts`; only the audited reusable subset is published as components. Storybook provides one interaction-ready story per component plus a separate application-composition gallery, and the localized documentation site provides category-level visualizers. The source boards in `design/figma-layers/Studio` remain the visual acceptance reference. Legacy `src/`, `docs/` and old build scripts remain for comparison but are excluded from the new package and build.
+This is an alpha increment of the Cube rewrite. The 216-item Studio design-reference inventory is indexed in `components/studio/catalog.ts`; only the audited reusable subset is published as components. Storybook provides interaction-ready component stories plus a separate application-composition gallery, and the localized documentation site provides category-level visualizers. The source boards in `design/figma-layers/Studio` remain the visual acceptance reference. Legacy `src/`, the old `docs/`, and their unused tooling have been removed; current source and documentation live in `components/` and `docs-cube/`.
 
 No npm release, production deployment or main-branch merge is performed by this implementation.

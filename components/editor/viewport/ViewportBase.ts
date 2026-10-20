@@ -17,12 +17,12 @@ export interface ViewportProps extends ComponentProps {
     positionLabel?: string
 }
 
-export interface ViewportChangeDetail {
+export interface ViewportValue {
     readonly zoom: number
     readonly x: number
     readonly y: number
-    readonly originalEvent?: Event
 }
+export interface ViewportChangeDetail extends ViewportValue { readonly value: ViewportValue; readonly previousValue: ViewportValue; readonly originalEvent?: Event }
 
 /** Headless pan and zoom behavior for an editor workspace. */
 export abstract class ViewportBase extends Component<ViewportProps> {
@@ -51,7 +51,7 @@ export abstract class ViewportBase extends Component<ViewportProps> {
         return Math.round(clamp(finite(value, 100), minimum, maximum) * 100) / 100
     }
 
-    protected viewportState(): ViewportChangeDetail {
+    protected viewportState(): ViewportValue {
         return { zoom: this.normalizedZoom(), x: finite(this.x), y: finite(this.y) }
     }
 
@@ -62,7 +62,8 @@ export abstract class ViewportBase extends Component<ViewportProps> {
 
     setViewport(zoom: number, x: number, y: number, originalEvent?: Event, commit = true): boolean {
         if (this.unavailable) return false
-        const detail: ViewportChangeDetail = { zoom: this.normalizedZoom(zoom), x: finite(x), y: finite(y), originalEvent }
+        const value = { zoom: this.normalizedZoom(zoom), x: finite(x), y: finite(y) }
+        const detail: ViewportChangeDetail = { ...value, value, previousValue: this.viewportState(), originalEvent }
         const eventName = commit ? 'beforechange' : 'beforeinput'
         if (!this.request(eventName, detail)) return false
         this.zoom = detail.zoom

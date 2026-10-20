@@ -1,0 +1,59 @@
+@import "../../theme/editor.css";
+:host {
+  --cb-sidebar-toggle-side:1;
+  --cb-sidebar-toggle-state:1;
+  --cb-sidebar-toggle-direction:1;
+  display: block;
+  inline-size: var(--component-sidebar-width,280px);
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow: hidden;
+  transition: inline-size var(--motion-duration-normal,160ms) ease-out;
+}
+:host([data-collapsed]) {
+  --cb-sidebar-toggle-state:-1;
+  inline-size: var(--component-sidebar-collapsed-width,48px);
+}
+:host([data-placement=end]) {
+  --cb-sidebar-toggle-side:-1;
+}
+:host(:dir(rtl)) {
+  --cb-sidebar-toggle-direction:-1;
+}
+[part~=header]::part(toggle) {
+  rotate: calc(90deg * var(--cb-sidebar-toggle-side) * var(--cb-sidebar-toggle-state) * var(--cb-sidebar-toggle-direction));
+}
+[part~=sidebar] {
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: hidden;
+  border: 1px solid var(--color-separator);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+[part~=content] {
+  padding: var(--spacing-md,12px);
+}
+:host([data-collapsed]) [part~=content] {
+  display: none;
+}
+:host([data-collapsed]) [part~=header] {
+  --component-panel-header-padding:var(--spacing-xs,4px);
+}
+:host([data-collapsed]) [part~=header]::part(header) {
+  justify-content: center;
+  border-block-end: 0;
+}
+:host([data-collapsed]) [part~=header]::part(actions) {
+  inline-size: 100%;
+  justify-content: center;
+}
+:host([data-placement=end]) [part~=sidebar] {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+:host([data-placement=start]) [part~=sidebar] {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}

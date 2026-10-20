@@ -1,20 +1,10 @@
-import { isNot, or, css as componentStyles, type Template, html } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import componentStylesheet from './styles.css?inline'
+import { isNot, or, type Template, html } from '../../core/runtime.js'
+
 import { finite } from '../../core/value.js';
-import { token as v } from '../../theme/tokens.js';
+
 import { ViewportBase } from './ViewportBase.js';
-const css = editorCSS + `
-:host{display:block;inline-size:100%;min-inline-size:0;container-type:inline-size}
-[part~=viewport]{position:relative;isolation:isolate;overflow:hidden;min-block-size:var(--component-viewport-height,420px);border:1px solid ${v('--color-border')};border-radius:var(--radius-lg,12px);background:${v('--color-surface-muted')};touch-action:none;user-select:none}
-[part~=viewport][data-grid]{background-image:linear-gradient(${v('--color-separator')} 1px,transparent 1px),linear-gradient(90deg,${v('--color-separator')} 1px,transparent 1px);background-size:var(--component-viewport-grid-size,20px) var(--component-viewport-grid-size,20px)}
-[part~=world]{position:absolute;inset-block-start:50%;inset-inline-start:50%;transform:translate(-50%,-50%) translate(var(--cb-pan-x),var(--cb-pan-y)) scale(var(--cb-zoom));transform-origin:center;will-change:transform}
-[part~=controls]{position:absolute;z-index:2;inset-inline-end:var(--spacing-sm,8px);inset-block-end:var(--spacing-sm,8px);display:flex;align-items:center;gap:2px;padding:2px;border:1px solid ${v('--color-separator')};border-radius:var(--radius-md,10px);background:color-mix(in srgb,${v('--color-surface-raised')} 92%,transparent);box-shadow:0 4px 16px color-mix(in srgb,${v('--color-foreground')} 12%,transparent)}
-[part~=zoom-out],[part~=reset],[part~=zoom-in]{--component-control-height-sm:30px}
-[part~=status]{min-inline-size:58px;text-align:center;font-variant-numeric:tabular-nums;color:${v('--color-muted-foreground')};pointer-events:none}
-[part~=position]{position:absolute;z-index:2;inset-inline-start:var(--spacing-sm,8px);inset-block-end:var(--spacing-sm,8px);margin:0;padding:3px 6px;border-radius:var(--radius-sm,6px);background:color-mix(in srgb,${v('--color-surface-raised')} 88%,transparent);color:${v('--color-muted-foreground')};font:var(--component-code-font,11px/1.4 ui-monospace,monospace);font-variant-numeric:tabular-nums;pointer-events:none}
-:host([data-disabled]) [part~=viewport]{opacity:var(--component-disabled-opacity,.5);cursor:not-allowed}
-@container(max-width:420px){[part~=viewport]{min-block-size:300px}[part~=position]{display:none}}
-`;
+
 interface PanState {
     readonly pointerId: number;
     readonly startX: number;
@@ -24,7 +14,7 @@ interface PanState {
     moved: boolean;
 }
 export class Viewport extends ViewportBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private get surface(): HTMLElement | undefined { const node=this.refs.surface?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private pan?: PanState;

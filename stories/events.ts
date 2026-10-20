@@ -44,10 +44,15 @@ class CubeStoryEvents extends HTMLElement {
             // user outcome. Logging both makes one interaction look duplicated.
             if (name.startsWith('before')) continue
             const listener: EventListener = event => {
-                if (!isCubeCustomEvent(event)) return
+                if (!isCubeCustomEvent(event) && name !== 'scroll') return
+                // Component previews may contain launchers and slotted demo controls.
+                // Use the original source, not the shadow-retargeted event.target.
+                const component = this.querySelector('[data-story-component]')
+                const source = event.composedPath()[0]
+                if (component && source !== component) return
                 loggerFor(name)({
-                    component: event.target instanceof Element ? event.target.localName : '',
-                    detail: event.detail,
+                    component: source instanceof Element ? source.localName : '',
+                    detail: isCubeCustomEvent(event) ? event.detail : source instanceof HTMLElement ? { scrollTop: source.scrollTop, scrollLeft: source.scrollLeft } : null,
                     bubbles: event.bubbles,
                     composed: event.composed,
                     cancelable: event.cancelable,
@@ -55,12 +60,12 @@ class CubeStoryEvents extends HTMLElement {
                 })
             }
             this.listeners.set(name, listener)
-            this.addEventListener(name, listener)
+            this.addEventListener(name, listener, name === 'scroll')
         }
     }
 
     disconnectedCallback(): void {
-        for (const [name, listener] of this.listeners) this.removeEventListener(name, listener)
+        for (const [name, listener] of this.listeners) this.removeEventListener(name, listener, name === 'scroll')
         this.listeners.clear()
     }
 }

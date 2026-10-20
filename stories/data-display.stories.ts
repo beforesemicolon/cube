@@ -77,11 +77,12 @@ export const Avatar: Story = componentStory('cb-avatar', {
     status: 'online', statusLabel: 'Online', decorative: false,
 })
 
-export const Card: Story = componentStory('cb-card', { label: 'Card', actionLabel: 'Open' })
+export const Card: Story = componentStory('cb-card', { width: '320px' })
 
-export const List: Story = componentStory('cb-list', { label: 'List', value: 'one', items, emptyLabel: 'No items' })
-
-export const DescriptionRow: Story = componentStory('cb-description-row', { label: 'Description row', value: 'Example' })
+export const List: Story = componentStory('cb-list', {
+    accessibleLabel: 'List items', gap: '8px', orientation: 'vertical', offset: 40,
+    items: Array.from({ length: 20 }, (_, index) => `Item ${index + 1}`),
+})
 
 export const Table: Story = componentStory('cb-table', {
     label: 'Project resources',

@@ -1,0 +1,102 @@
+@import "../../theme/editor.css";
+:host {
+  display: block;
+  inline-size: min(100%, var(--component-skeleton-width,288px));
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+[part~=root] {
+  display: grid;
+  gap: var(--component-skeleton-gap,var(--spacing-sm,8px));
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+[part~=shape] {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--component-skeleton-radius,3px);
+  background: var(--component-skeleton-color,var(--color-track));
+  color: transparent;
+}
+:host([data-animated]) [part~=shape]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  translate: -100% 0;
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--component-skeleton-highlight,color-mix(in srgb,var(--color-surface) 55%,transparent)),
+      transparent);
+  animation: cb-skeleton-shimmer var(--component-skeleton-duration,1.4s) ease-in-out infinite;
+}
+[part~=line] {
+  block-size: var(--component-skeleton-line-height,10px);
+  inline-size: 81.25%;
+}
+[part~=line]:nth-child(3n+2) {
+  inline-size: 100%;
+}
+[part~=line]:nth-child(3n) {
+  inline-size: 68.75%;
+}
+[part~=root][data-variant=text] {
+  padding: 16px;
+  background: var(--color-surface);
+}
+:host([data-size=md]) [part~=line] {
+  block-size: var(--component-skeleton-line-height,12px);
+}
+:host([data-size=lg]) [part~=line] {
+  block-size: var(--component-skeleton-line-height,16px);
+}
+[part~=media] {
+  aspect-ratio: var(--component-skeleton-media-ratio,254/76);
+  inline-size: 100%;
+}
+[part~=card] {
+  padding: 16px;
+  border: 1px solid var(--color-separator);
+  border-radius: 6px;
+  background: var(--color-surface);
+}
+[part~=card-content] {
+  display: grid;
+  gap: 8px;
+  padding-block-start: 8px;
+}
+[part~=card-content] [part~=line] {
+  inline-size: calc(172 / 254 * 100%);
+  block-size: 12px;
+}
+[part~=card-content] [part~=line]:nth-child(2n) {
+  inline-size: calc(230 / 254 * 100%);
+  block-size: 8px;
+}
+[part~=table] {
+  display: grid;
+  gap: var(--component-skeleton-table-gap,8px);
+  padding: 16px;
+  background: var(--color-surface);
+}
+[part~=row] {
+  display: grid;
+  grid-template-columns: var(--component-skeleton-columns);
+  gap: 12px;
+}
+[part~=cell] {
+  block-size: var(--component-skeleton-cell-height,10px);
+}
+@keyframes cb-skeleton-shimmer {
+  to {
+    translate: 100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :host([data-animated]) [part~=shape]::after {
+    animation: none;
+    display: none;
+  }
+}

@@ -1,20 +1,15 @@
+import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
-import { when, is, or, isNot, css as componentStyles, html, repeat, state, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import { when, is, or, isNot, html, repeat, state, type Template } from '../../core/runtime.js'
+
 import { uid } from '../../core/id.js'
 import { bool, text } from '../../core/value.js'
 import { PopupController } from '../../core/popup.js'
 import type { Button } from '../../action/button/index.js'
 import { ComboboxBase } from './ComboboxBase.js'
-const css = editorCSS + `
-:host{display:inline-block;inline-size:var(--component-combobox-width,280px)}[part~=root]{position:relative;display:grid}[part~=input-shell]{display:flex;align-items:center;block-size:var(--cb-height);min-block-size:var(--cb-height);padding:0;overflow:hidden;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface-muted)}
-[part~=prefix]{margin-inline-start:var(--spacing-md,12px)}[part~=input]{flex:1;inline-size:100%;min-inline-size:0;block-size:100%;padding:var(--spacing-xs,4px) var(--spacing-sm,8px);border:0;background:transparent;outline:0}[part~=toggle]{display:block;align-self:stretch;block-size:100%}[part~=toggle]::part(control){block-size:100%;min-block-size:0;border-radius:0 var(--radius-sm) var(--radius-sm) 0}
-    [part~=popup]{z-index:var(--z-index-dropdown,1000);inline-size:max-content;box-sizing:border-box;overflow:auto;padding:4px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-foreground);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
-[part~=option]{display:block;inline-size:100%;min-block-size:var(--cb-height);border-color:transparent;background:transparent;text-align:start}[part~=option]::part(control){justify-content:flex-start;padding:var(--spacing-xs,4px) var(--spacing-md,12px);text-align:inherit}[part~=option][aria-selected=true]{background:var(--color-selection)}[part~=empty]{display:block;padding:10px;color:var(--color-muted-foreground)}
-`;
 
 export class Combobox extends ComboboxBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly controlId = uid('cb-combobox')
     private popupController?: PopupController
@@ -36,7 +31,7 @@ export class Combobox extends ComboboxBase {
                     aria-label="${this.accessibleName}" role="combobox" aria-autocomplete="${() => this.autocomplete ?? 'list'}"
                     aria-controls="${this.controlId}-listbox" aria-expanded="${when(this.props.open, 'true', 'false')}"
                     aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
-                    oninput="${this.handleInput}" onfocus="${(event: Event) => this.setOpen(true, event)}"
+                    oninput="${this.handleInput}"
                     onkeydown="${this.handleKey}">
                 <cb-button part="toggle" exportparts="control:toggle-control,label:toggle-label,button-label:toggle-label,icon:toggle-icon,description:toggle-description" variant="ghost" icon="down" icon-only="true" accessible-label="${() => text(this.toggleLabel) || this.accessibleName()}"
                     disabled="${or(() => this.unavailable, this.props.readOnly)}" aria-haspopup="listbox" aria-controls="${this.controlId}-listbox" aria-expanded="${when(this.props.open, 'true', 'false')}"

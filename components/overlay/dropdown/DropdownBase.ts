@@ -43,7 +43,7 @@ export abstract class DropdownBase<P extends DropdownProps = DropdownProps> exte
     protected toggle(): void { if (!this.unavailable) this.setOpen(!bool(this.open)) }
     protected select(item: NormalizedItem, originalEvent: Event, source: 'menu' | 'primary' = 'menu'): boolean {
         if (this.unavailable || bool(this.loading) || item.disabled || item.separator) return false
-        const detail = { value: item.id, item, source, originalEvent }
+        const detail = { value: item.id, previousValue: this.value, item, source, originalEvent }
         if (!this.request('beforechange', detail)) return false
         this.value = item.id
         this.syncView()

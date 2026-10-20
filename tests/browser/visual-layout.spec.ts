@@ -5,15 +5,15 @@ test.beforeEach(async ({ page }) => {
     await page.waitForFunction(() => Boolean(customElements.get('cb-color-picker')))
 })
 
-test('composed menu and list buttons retain padding, alignment, and row height', async ({ page }) => {
+test('composed menu buttons retain padding, alignment, and row height', async ({ page }) => {
     await page.evaluate(() => {
-        for (const tag of ['cb-menu', 'cb-list']) {
+        for (const tag of ['cb-menu']) {
             const control = document.createElement(tag)
             Object.assign(control, { label: 'Items', items: [{ id: 'one', label: 'First' }, { id: 'two', label: 'Second', href: '#second' }], value: 'one' })
             document.querySelector('#fixture')?.append(control)
         }
     })
-    for (const tag of ['cb-menu', 'cb-list']) {
+    for (const tag of ['cb-menu']) {
         const item = page.locator(`${tag} cb-button`).first()
         await expect(item).toBeVisible()
         const layout = await item.evaluate(host => {
@@ -23,7 +23,7 @@ test('composed menu and list buttons retain padding, alignment, and row height',
             return { padding: parseFloat(style.paddingInlineStart), display: style.display, height: host.getBoundingClientRect().height }
         })
         expect(layout.padding).toBeGreaterThanOrEqual(8)
-        expect(layout.display).toBe(tag === 'cb-menu' ? 'grid' : 'flex')
+        expect(layout.display).toBe('grid')
         expect(layout.height).toBeGreaterThanOrEqual(28)
     }
     await expect(page.locator('cb-menu cb-link [part~=label]')).toHaveCSS('display', 'contents')
@@ -89,18 +89,28 @@ test('color swatches fill their trigger and expandable headings stay left-aligne
     expect(left).toBeLessThan(40)
 })
 
-test('card slots replace generated content and compact card headers do not stack', async ({ page }) => {
+test('card is only a styled surface and preserves consumer-owned content and layout', async ({ page }) => {
     await page.evaluate(() => {
         const card = document.createElement('cb-card')
-        Object.assign(card, { label: 'Project', actionLabel: 'Open' })
         const content = document.createElement('p'); content.textContent = 'Custom card content'
         card.append(content)
         document.querySelector('#fixture')?.append(card)
     })
-    await expect(page.locator('cb-card [part~=generated-content]')).toBeHidden()
-    const header = page.locator('cb-card [part~=panel-header]')
-    await expect(header).toHaveCSS('flex-direction', 'row')
+    const card = page.locator('cb-card')
+    await expect(card.locator('[part~=generated-content], [part~=panel-header], [part~=card-media], cb-button')).toHaveCount(0)
+    await expect(card).toHaveCSS('display','block')
+    await expect(card).toHaveCSS('border-top-width','1px')
+    await expect(card).toHaveCSS('padding-top','16px')
+    expect(await card.evaluate(node => [...(node.shadowRoot?.children ?? [])].filter(child => child.localName !== 'style').map(child => child.localName))).toEqual(['slot'])
     await expect(page.getByText('Custom card content')).toBeVisible()
+    await card.evaluate(node => Object.assign(node, { padding: '24px', radius: '20px', width: '280px', border: '2px solid red', background: 'rgb(10, 20, 30)', shadow: 'none' }))
+    await expect(card).toHaveCSS('padding-top','24px')
+    await expect(card).toHaveCSS('border-radius','20px')
+    await expect(card).toHaveCSS('width','280px')
+    await expect(card).toHaveCSS('border-top-width','2px')
+    await expect(card).toHaveCSS('background-color','rgb(10, 20, 30)')
+    await expect(card).toHaveCSS('box-shadow','none')
+    expect(await card.evaluate(node => ['value','items','actionLabel'].filter(prop => prop in node))).toEqual([])
 })
 
 test('sidebar responds to programmatic collapse without stale reflected attributes', async ({ page }) => {

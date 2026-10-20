@@ -1,8 +1,9 @@
-import { css as componentStyles, type Template } from '../../core/runtime.js'
-import {  createStudioView, type StudioView , studioCSS } from '../../studio/view.js';
+import componentStylesheet from '../../studio/view.css?inline'
+import { type Template } from '../../core/runtime.js'
+import { createStudioView, type StudioView } from '../../studio/view.js'
 import { RemoteCursorBase } from './RemoteCursorBase.js';
 export class RemoteCursor extends RemoteCursorBase {
-    stylesheet = componentStyles`${studioCSS}`
+    stylesheet = componentStylesheet
 
     private view?: StudioView;
     render(): Template { this.view = createStudioView(this); return this.view.root; }

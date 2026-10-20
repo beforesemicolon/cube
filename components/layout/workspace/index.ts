@@ -1,38 +1,11 @@
-import { isNot, or, css as componentStyles, type Template, html, state } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import componentStylesheet from './styles.css?inline'
+import { isNot, or, type Template, html, state } from '../../core/runtime.js'
+
 import { finite } from '../../core/value.js';
 import { WorkspaceBase, type WorkspacePanel } from './WorkspaceBase.js';
-const css = editorCSS + `
-:host{display:grid;position:relative;isolation:isolate;overflow:hidden;min-inline-size:0;min-block-size:360px;block-size:var(--component-workspace-height,100%);grid-template-columns:var(--workspace-start-track,40px) minmax(0,1fr) var(--workspace-end-track,40px);grid-template-rows:auto minmax(0,1fr) var(--workspace-bottom-track,40px);grid-template-areas:'header header header' 'start main end' 'start bottom end';background:var(--color-background);border:1px solid var(--color-separator);border-radius:var(--radius-md)}
-[part~=header]{grid-area:header;z-index:4;min-inline-size:0;border-block-end:1px solid var(--color-separator);background:var(--color-surface)}
-[part~=main]{grid-area:main;position:relative;min-inline-size:0;min-block-size:0;overflow:auto;background:var(--color-background)}
-[part~=panel],[part~=rail]{position:relative;min-inline-size:0;min-block-size:0;background:var(--color-surface)}
-[part~=start-panel],[part~=start-rail]{grid-area:start;border-inline-end:1px solid var(--color-separator)}
-[part~=end-panel],[part~=end-rail]{grid-area:end;border-inline-start:1px solid var(--color-separator)}
-[part~=bottom-panel],[part~=bottom-rail]{grid-area:bottom;border-block-start:1px solid var(--color-separator)}
-[part~=panel]{overflow:auto}[part~=panel-actions]{position:sticky;z-index:3;inset-block-start:0;display:flex;justify-content:flex-end;padding:var(--spacing-xs,4px);pointer-events:none}[part~=panel-actions]>*{pointer-events:auto}
-[part~=rail]{display:grid;place-items:start center;padding:var(--spacing-xs,4px)}[part~=bottom-rail]{place-items:center end}
-[part~=resize-handle]{position:absolute;z-index:5;touch-action:none;outline-offset:-2px}
-[part~=start-panel] [part~=resize-handle]{inset-block:0;inset-inline-end:-5px;inline-size:10px;cursor:col-resize}
-[part~=end-panel] [part~=resize-handle]{inset-block:0;inset-inline-start:-5px;inline-size:10px;cursor:col-resize}
-[part~=bottom-panel] [part~=resize-handle]{inset-inline:0;inset-block-start:-5px;block-size:10px;cursor:row-resize}
-[part~=resize-handle]::after{content:'';position:absolute;background:transparent;transition:background var(--motion-duration-fast) ease-out}
-[part~=start-panel] [part~=resize-handle]::after,[part~=end-panel] [part~=resize-handle]::after{inset-block:0;inset-inline:4px;inline-size:2px}
-[part~=bottom-panel] [part~=resize-handle]::after{inset-inline:0;inset-block:4px;block-size:2px}
-[part~=resize-handle]:hover::after,[part~=resize-handle]:focus-visible::after,[part~=resize-handle][data-resizing]::after{background:var(--color-primary)}
-[part~=backdrop]{display:none}
-:host([data-mobile]){grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);grid-template-areas:'header' 'main'}
-:host([data-mobile]) [part~=rail],:host([data-mobile]) [part~=resize-handle]{display:none}
-:host([data-mobile]) [part~=panel]{position:absolute;z-index:7;display:none;box-shadow:var(--shadow-lg,0 20px 60px rgba(0,0,0,.24))}
-:host([data-mobile][mobile-panel=start]) [part~=start-panel],:host([data-mobile][mobile-panel=end]) [part~=end-panel],:host([data-mobile][mobile-panel=bottom]) [part~=bottom-panel]{display:block}
-:host([data-mobile]) [part~=start-panel]{inset-block:0;inset-inline-start:0;inline-size:min(88%,var(--workspace-start-size));border-inline-end:1px solid var(--color-separator)}
-:host([data-mobile]) [part~=end-panel]{inset-block:0;inset-inline-end:0;inline-size:min(88%,var(--workspace-end-size));border-inline-start:1px solid var(--color-separator)}
-:host([data-mobile]) [part~=bottom-panel]{inset-inline:0;inset-block-end:0;max-block-size:80%;block-size:var(--workspace-bottom-size);border-block-start:1px solid var(--color-separator)}
-:host([data-mobile][mobile-panel]:not([mobile-panel=''])) [part~=backdrop]{display:block;position:absolute;z-index:6;inset:0;border:0;border-radius:0;background:var(--component-overlay-backdrop,rgba(10,16,22,.48));padding:0}
-:host([data-mobile][mobile-panel]:not([mobile-panel=''])) [part~=backdrop]::part(control){inline-size:100%;block-size:100%}
-`;
+
 export class Workspace extends WorkspaceBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly headerVisible = state(false);
     private get panels(): Map<WorkspacePanel,{handle:HTMLElement}> {

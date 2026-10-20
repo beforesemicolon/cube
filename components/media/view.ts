@@ -1,32 +1,10 @@
 import { when, isNot, pick, or, html, repeat, state, type Template } from '../core/runtime.js';
-import { commonCSS } from '../theme/styles.js';
+
 import { bool, text, mediaURL } from '../core/value.js';
-import { token as v } from '../theme/tokens.js';
+
 import type { MediaBase } from './MediaBase.js';
 import { clock, type PlaybackState } from './controller.js';
-export const mediaCSS=commonCSS+`
-[part=player]{background:${v('--color-surface')};border:1px solid ${v('--color-separator')};border-radius:${v('--radius-md')};padding:${v('--spacing-md')}}
-[part=title]{font-weight:600;font-size:var(--component-title-font-size,14px);margin-block-end:${v('--spacing-sm')}}
-video{display:block;inline-size:100%;aspect-ratio:${v('--component-media-aspect-ratio')};background:${v('--color-background')};object-fit:contain;border-radius:${v('--radius-sm')}}
-audio{display:none}
-[part=timeline]{display:flex;align-items:center;gap:${v('--spacing-md')};margin-block:${v('--spacing-sm')}}
-[part=seek]{flex:1;min-inline-size:0}
-[part=time]{flex:none;font:var(--component-caption-font-size,11px)/1.4 ${v('--typography-mono-font-family')};color:${v('--color-muted-foreground')}}
-[part=controls],[part=transport],[part=settings]{display:flex;align-items:center;gap:${v('--spacing-xs')};flex-wrap:wrap}
-[part=controls]{justify-content:space-between;gap:${v('--spacing-sm')}}
-[part=volume]{inline-size:var(--component-media-volume-width,72px);min-inline-size:0;margin-inline-end:${v('--spacing-xs')}}
-[part=rate]{inline-size:var(--component-media-rate-width,72px)}
-[part=captions]{max-inline-size:var(--component-media-captions-width,128px)}
-[part=status]{margin-block-start:${v('--spacing-sm')}}
-:host(:fullscreen){background:${v('--color-background')};display:block;inline-size:100vw;block-size:100vh;overflow:hidden}
-:host(:fullscreen) [part=player]{display:grid;grid-template-rows:max-content minmax(0,1fr) max-content max-content max-content max-content;inline-size:100%;block-size:100%;border:0;border-radius:0;padding:0;overflow:hidden}
-:host(:fullscreen) video{inline-size:100%;block-size:100%;min-block-size:0;aspect-ratio:auto;border-radius:0;background:${v('--component-media-fullscreen-background')};object-fit:var(--component-media-fullscreen-fit,contain)}
-:host(:fullscreen) [part=title]{padding:${v('--spacing-md')} ${v('--spacing-md')} 0;margin:0}
-:host(:fullscreen) [part=timeline]{padding-inline:${v('--spacing-md')}}
-:host(:fullscreen) [part=controls]{padding:0 ${v('--spacing-md')} ${v('--spacing-md')}}
-:host(:fullscreen) [part=status]{padding-inline:${v('--spacing-md')}}
-@container(max-width:360px){[part=timeline]{gap:${v('--spacing-sm')}}[part=settings]{flex:1;justify-content:flex-end}[part=volume]{inline-size:var(--component-media-volume-compact-width,48px)}}
-`;
+
 /** Native playback remains a side effect; all player presentation is reactive markup. */
 export function mediaView(owner:MediaBase,kind:'audio'|'video') {
     const playback=state<PlaybackState>({position:0,duration:NaN,paused:true,ended:false,volume:1,muted:false,rate:1,buffering:false,error:null,seekStart:0,seekEnd:0});

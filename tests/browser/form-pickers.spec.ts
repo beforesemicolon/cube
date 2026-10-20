@@ -306,6 +306,8 @@ test('combobox stays closed initially, filters interactively and replaces autoco
     expect(await controlHeights()).toEqual([44, 44])
     const input = page.getByRole('combobox', { name: 'Font family' })
     await expect(input).toHaveAttribute('aria-expanded', 'false')
+    await input.focus()
+    await expect(input).toHaveAttribute('aria-expanded', 'false')
     await input.fill('Sou')
     await expect(input).toHaveAttribute('aria-expanded', 'true')
     await expect(page.getByRole('option', { name: 'Source Sans 3' })).toBeVisible()
@@ -314,6 +316,8 @@ test('combobox stays closed initially, filters interactively and replaces autoco
     await page.keyboard.press('Enter')
     await expect(page.locator('cb-combobox')).toHaveJSProperty('value', 'source')
     await expect(input).toHaveValue('Source Sans 3')
+    await expect(input).toHaveAttribute('aria-expanded', 'false')
+    await expect(combo.getByRole('listbox')).toBeHidden()
 })
 
 test('calendar and custom date and time pickers support keyboard-ready themed popups', async ({ page }) => {

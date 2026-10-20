@@ -1,9 +1,10 @@
-import { css, isNot, or, html, type Template } from '../../core/runtime.js'
+import componentStylesheet from '../modal/view.css?inline'
+import { isNot, or, html, type Template } from '../../core/runtime.js'
 import { bool, scalarText } from '../../core/value.js'
 import { AlertDialogBase } from './AlertDialogBase.js'
-import { createModalView, modalCSS, type ModalView } from '../modal/view.js'
+import { createModalView, type ModalView } from '../modal/view.js'
 export class AlertDialog extends AlertDialogBase {
-    stylesheet = css`${modalCSS}`
+    stylesheet = componentStylesheet
     private view?: ModalView
     render(): Template {
         const actions = html`<cb-button part="cancel" exportparts="control:cancel-control,label:cancel-label,button-label:cancel-label,icon:cancel-icon,description:cancel-description" variant="ghost" label="${this.cancelText}"

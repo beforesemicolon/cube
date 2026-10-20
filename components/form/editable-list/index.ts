@@ -1,17 +1,11 @@
-import { is, or, isNot, pick, css as componentStyles, type Template, html, repeat, when, state } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import componentStylesheet from './styles.css?inline'
+import { is, or, isNot, pick, type Template, html, repeat, when, state } from '../../core/runtime.js'
+
 import { bool, scalarText } from '../../core/value.js';
 import { EditableListBase, type EditableListItem } from './EditableListBase.js';
-const css = editorCSS + `
-:host{display:block;inline-size:var(--component-editable-list-width,420px);max-inline-size:100%;min-inline-size:min(100%,var(--component-editable-list-min-width,320px))}
-[part~=editor]{display:grid;gap:var(--spacing-sm,8px)}[part~=list]{display:grid;gap:var(--spacing-xs,4px);margin:0;padding:0;list-style:none}
-[part~=item]{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--spacing-sm,8px);min-block-size:var(--cb-height);padding:var(--spacing-xs,4px) var(--spacing-sm,8px);border:1px solid var(--color-separator);border-radius:var(--radius-sm);background:var(--color-surface)}
-[part~=item-copy]{display:grid;min-inline-size:0}[part~=item-label]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}[part~=item-description]{color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px)}
-[part~=item-actions],[part~=add-row],[part~=edit-actions]{display:flex;align-items:center;gap:var(--spacing-xs,4px)}[part~=add-input],[part~=edit-input]{display:block;min-inline-size:0;flex:1}
-[part~=empty]{padding:var(--spacing-md,12px);border:1px dashed var(--color-separator);border-radius:var(--radius-sm);color:var(--color-muted-foreground);text-align:center}
-`;
+
 export class EditableList extends EditableListBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly editing = state('');
     private readonly draft = state('');

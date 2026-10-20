@@ -67,7 +67,6 @@ const allStudioDefinitions = [
     { board:'data-feedback', category:'data-display', name:'avatar', className:'Avatar', title:'Avatar', kind:'display' },
     { board:'data-feedback', category:'data-display', name:'card', className:'Card', title:'Card', kind:'panel' },
     { board:'data-feedback', category:'data-display', name:'list', className:'List', title:'List', kind:'collection' },
-    { board:'data-feedback', category:'data-display', name:'description-row', className:'DescriptionRow', title:'Description row', kind:'display' },
     { board:'data-feedback', category:'data-display', name:'property-row', className:'PropertyRow', title:'Property row', kind:'editor' },
     { board:'data-feedback', category:'data-display', name:'table', className:'Table', title:'Table', kind:'collection' },
     { board:'data-feedback', category:'data-display', name:'tree', className:'Tree', title:'Tree', kind:'collection' },
@@ -288,7 +287,6 @@ const allStudioBoardItems = [
     { board:'data-feedback', category:'data-display', name:'avatar', title:'Avatar' },
     { board:'data-feedback', category:'data-display', name:'card', title:'Card' },
     { board:'data-feedback', category:'data-display', name:'list', title:'List' },
-    { board:'data-feedback', category:'data-display', name:'description-row', title:'Description row' },
     { board:'data-feedback', category:'data-display', name:'property-row', title:'Property row' },
     { board:'data-feedback', category:'data-display', name:'table', title:'Table' },
     { board:'data-feedback', category:'data-display', name:'tree', title:'Tree' },
@@ -417,7 +415,7 @@ const allStudioBoardItems = [
     { board:'collaboration-ai', category:'collaboration', name:'approval', title:'Approval' },
 ] as const satisfies readonly StudioBoardItem[]
 
-export const publicStudioComponentNames: ReadonlySet<string> = new Set(['text-input','textarea','number-input','unit-input','combobox','checkbox','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input','color-picker','gradient-editor','sidebar','resizable-panel','docked-panel','panel-header','badge','avatar','card','list','description-row','table','tree','accordion','expandable-section','code-preview','status','empty-state','skeleton','progress','spinner','toast','alert','banner','popover','drawer','hover-card','bottom-sheet','viewport','artboard','rulers','device-frame','bezier','timeline','presence','remote-cursor','comment-pin','comment-thread'])
+export const publicStudioComponentNames: ReadonlySet<string> = new Set(['text-input','textarea','number-input','unit-input','combobox','checkbox','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input','color-picker','gradient-editor','sidebar','resizable-panel','docked-panel','panel-header','badge','avatar','card','list','table','tree','accordion','expandable-section','code-preview','status','empty-state','skeleton','progress','spinner','toast','alert','banner','popover','drawer','hover-card','bottom-sheet','viewport','artboard','rulers','device-frame','bezier','timeline','presence','remote-cursor','comment-pin','comment-thread'])
 export const studioDefinitions = allStudioDefinitions.filter(definition => publicStudioComponentNames.has(definition.name))
 export const studioBoardItems = allStudioBoardItems.filter(item => publicStudioComponentNames.has(item.name))
 export const studioDesignReferences = allStudioBoardItems

@@ -1,21 +1,13 @@
+import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
-import { pick, isNot, and, is, css as componentStyles, type Template, html, repeat, when, state } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import { pick, isNot, and, is, type Template, html, repeat, when, state } from '../../core/runtime.js'
+
 import { iconPaths } from '../../icons/paths.js';
 import { bool } from '../../core/value.js';
 import { LayerTreeBase, type LayerDropPosition, type LayerTreeItem } from './LayerTreeBase.js';
-const css = editorCSS + `
-:host{display:block;inline-size:100%;min-inline-size:0}[part~=tree],[part~=group]{display:grid;gap:1px;margin:0;padding:0;list-style:none}[part~=group]{padding-inline-start:var(--component-tree-indent,20px)}
-[part~=row]{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:var(--spacing-xs,4px);min-block-size:30px;padding:2px var(--spacing-xs,4px);border:1px solid transparent;border-radius:var(--radius-sm);background:transparent;color:inherit}
-[part~=row]:hover{background:var(--color-active)}[part~=row][aria-selected=true]{background:var(--color-selection);border-color:var(--color-primary)}[part~=row][data-hidden] [part~=label]{opacity:.55;font-style:italic}[part~=row][data-locked] [part~=label]{color:var(--color-muted-foreground)}
-[part~=disclosure],[part~=action]{--component-button-min-width:24px;--component-control-height-sm:24px}[part~=spacer]{inline-size:24px}[part~=type-icon]{inline-size:16px;block-size:16px;color:var(--color-muted-foreground)}
-[part~=copy]{display:grid;min-inline-size:0;text-align:start}[part~=label]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}[part~=description]{color:var(--color-muted-foreground);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-[part~=actions]{display:flex;align-items:center;gap:1px;opacity:0}[part~=row]:hover [part~=actions],[part~=row]:focus-within [part~=actions],[part~=row][aria-selected=true] [part~=actions]{opacity:1}
-[part~=empty]{padding:var(--spacing-md,12px);color:var(--color-muted-foreground);text-align:center}[part~=edit-row]{display:flex;align-items:center;gap:var(--spacing-xs,4px);min-inline-size:0}[part~=edit-input]{display:block;min-inline-size:100px;flex:1}
-[part~=row][data-drop=before]{box-shadow:inset 0 2px var(--color-primary)}[part~=row][data-drop=after]{box-shadow:inset 0 -2px var(--color-primary)}[part~=row][data-drop=inside]{background:var(--color-selection);outline:1px solid var(--color-primary)}
-`;
+
 export class LayerTree extends LayerTreeBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly editing=state('');
     private readonly draft=state('');

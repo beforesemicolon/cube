@@ -1,18 +1,6 @@
-import { Component, type ComponentProps } from '../../core/Component.js'
-import type { StudioItem, StudioKind, StudioValue } from '../../studio/types.js'
+import { BoxBase, type BoxProps } from '../../layout/box/BoxBase.js'
 
-export interface CardProps extends ComponentProps {
-    value?: StudioValue
-    items?: readonly StudioItem[]
-    actionLabel?: string
-}
+export interface CardProps extends BoxProps {}
 
-/** Headless behavior for the Card component. */
-export abstract class CardBase extends Component<CardProps> {
-    static observedAttributes = [...Component.observedAttributes, 'value', 'items', 'action-label']
-    value: StudioValue = ''
-    items: readonly StudioItem[] = []
-    actionLabel = ''
-    readonly componentName = 'card'
-    readonly componentKind: StudioKind = 'panel'
-}
+/** A box surface without content or layout assumptions. */
+export abstract class CardBase extends BoxBase<CardProps> {}

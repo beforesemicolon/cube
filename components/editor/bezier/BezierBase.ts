@@ -21,7 +21,7 @@ export interface BezierProps extends ComponentProps {
 }
 
 export interface BezierValue { readonly x1: number; readonly y1: number; readonly x2: number; readonly y2: number }
-export interface BezierChangeDetail extends BezierValue { readonly value: string; readonly originalEvent?: Event }
+export interface BezierChangeDetail extends BezierValue { readonly value: string; readonly previousValue: string; readonly originalEvent?: Event }
 
 const defaultCurve: BezierValue = { x1: .25, y1: .1, x2: .25, y2: 1 }
 
@@ -91,7 +91,7 @@ export abstract class BezierBase extends Component<BezierProps> {
     }
 
     private applyCurve(curve: BezierValue, originalEvent: Event | undefined, commit: boolean): boolean {
-        const detail: BezierChangeDetail = { ...curve, value: this.cssValue(curve), originalEvent }
+        const detail: BezierChangeDetail = { ...curve, value: this.cssValue(curve), previousValue: this.cssValue(), originalEvent }
         if (!this.request(commit ? 'beforechange' : 'beforeinput', detail)) return false
         this.x1 = curve.x1; this.y1 = curve.y1; this.x2 = curve.x2; this.y2 = curve.y2; this.value = detail.value
         this.syncView()

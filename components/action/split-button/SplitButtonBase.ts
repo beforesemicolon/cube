@@ -7,7 +7,7 @@ export type SplitButtonProps = DropdownProps
 export abstract class SplitButtonBase<P extends SplitButtonProps = SplitButtonProps> extends DropdownBase<P> {
     protected activatePrimary(originalEvent: Event): void {
         if (this.unavailable || this.loading) return
-        const detail = { value: scalarText(this.value), source: 'primary' as const, originalEvent }
+        const detail = { value: scalarText(this.value), previousValue: scalarText(this.value), source: 'primary' as const, originalEvent }
         if (this.request('beforechange', detail)) this.emit('change', detail)
     }
 }

@@ -20,6 +20,15 @@ for (const category of componentGroups) {
     await access(new URL(`../dist/${category}-client.js`, import.meta.url))
 }
 const files = await readdir(new URL('../dist', import.meta.url), { recursive: true })
+for (const file of files.filter(file => /^(esm|cjs)\//.test(file) && file.endsWith('.js'))) {
+    const source = await readFile(new URL(`../dist/${file}`, import.meta.url), 'utf8')
+    assert(!/\.css\?inline/.test(source), `${file} must resolve CSS imports for published modules`)
+}
+assert(!files.some(file => file.includes('/description-row/')), 'The removed Description Row component must not ship')
+for (const client of ['client.js', 'data-display-client.js']) {
+    const source = await readFile(new URL(`../dist/${client}`, import.meta.url), 'utf8')
+    assert(!source.includes('cb-description-row'), `${client} must not register Description Row`)
+}
 assert(!files.some(file => file.endsWith('/client.js') && !file.startsWith('esm/') && !file.startsWith('cjs/')), 'Individual browser clients must not be emitted')
 assert(!files.some(file => file.includes('editor-dom')), 'The retired DOM builder must not ship')
 const report = JSON.parse(await readFile(new URL('../dist/build-report.json', import.meta.url), 'utf8'))

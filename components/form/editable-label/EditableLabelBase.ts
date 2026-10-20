@@ -24,7 +24,7 @@ export abstract class EditableLabelBase<P extends EditableLabelProps = EditableL
     placeholder = ''
     editing = false
     selectOnEdit = true
-    submitOnBlur = true
+    submitOnBlur = false
     editLabel = ''
     saveLabel = ''
     cancelLabel = ''
@@ -53,7 +53,8 @@ export abstract class EditableLabelBase<P extends EditableLabelProps = EditableL
     commitEditing(value = this.draft, originalEvent?: Event): boolean {
         if (this.unavailable || bool(this.readOnly) || !bool(this.editing)) return false
         const next = scalarText(value)
-        if (next !== this.value && !this.changeDraft(next, originalEvent)) return false
+        if (next !== this.value && !this.commitValue(next, originalEvent)) return false
+        this.draft = next
         const detail = { value: next, previousValue: this.editStartValue, originalEvent }
         this.editing = false
         this.validationShown = true
@@ -63,22 +64,19 @@ export abstract class EditableLabelBase<P extends EditableLabelProps = EditableL
     }
 
     changeDraft(value: string, originalEvent?: Event): boolean {
-        if (!bool(this.editing)) return false
+        if (!bool(this.editing) || !this.canChangeValue()) return false
         const next = scalarText(value)
-        return this.commitValue(next,originalEvent,{},changed=>{this.value=changed;this.draft=changed})
+        this.draft = next
+        return true
     }
 
     cancelEditing = (originalEvent?: Event): boolean => {
         if (!bool(this.editing)) return false
         const detail = { value: this.editStartValue, draft: this.draft, originalEvent }
         if (!this.request('beforeeditcancel', detail)) return false
-        const changed = this.value !== this.editStartValue
-        const previousValue = this.value
-        this.value = this.editStartValue
-        this.draft = this.editStartValue
+        this.draft = scalarText(this.value)
         this.editing = false
         this.syncView()
-        if (changed) this.emit('change', { value: this.value, previousValue, originalEvent, reason: 'cancel' })
         this.emit('editend', { ...detail, reason: 'cancel' })
         return true
     }

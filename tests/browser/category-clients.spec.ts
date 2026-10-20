@@ -1,5 +1,21 @@
 import { expect, test } from '@playwright/test'
 
+test('data-display no longer exports or registers Description Row', async ({ page }) => {
+    await page.goto('/tests/browser/runtime.html')
+    const result = await page.evaluate(async () => {
+        const categoryPath = '/components/data-display/index.ts'
+        const runtimePath = '/components/core/runtime.ts'
+        const initialization: typeof import('../../components/data-display/index.js') = await import(categoryPath)
+        const runtime: typeof import('../../components/core/runtime.js') = await import(runtimePath)
+        const category = await initialization.initializeDataDisplay(runtime.browserRuntime())
+        return { names: Object.keys(category), registered: Boolean(customElements.get('cb-description-row')), card: Boolean(customElements.get('cb-card')) }
+    })
+    expect(result.registered).toBe(false)
+    expect(result.card).toBe(true)
+    expect(result.names).not.toContain('DescriptionRow')
+    expect(result.names).not.toContain('DescriptionRowBase')
+})
+
 test('form client registers only form tags and uses the supplied WebComponent runtime', async ({ page }) => {
     await page.goto('/tests/browser/runtime.html')
     await page.addScriptTag({ url: '/dist/form-client.js' })

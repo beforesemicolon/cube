@@ -1,0 +1,50 @@
+@import "../../theme/editor.css";
+:host {
+  position: relative;
+  display: block;
+  inline-size: var(--component-resizable-panel-size,320px);
+  min-inline-size: 0;
+}
+[part~=panel] {
+  block-size: 100%;
+  overflow: auto;
+  border: 1px solid var(--color-separator);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+[part~=header] {
+  padding: var(--spacing-md,12px);
+  border-block-end: 1px solid var(--color-separator);
+  font-weight: 650;
+}
+[part~=content] {
+  display: block;
+  padding: var(--spacing-md,12px);
+}
+[part~=resize-handle] {
+  position: absolute;
+  z-index: 1;
+  inset-block: 0;
+  inset-inline-start: -5px;
+  inline-size: 10px;
+  cursor: col-resize;
+  touch-action: none;
+}
+:host([data-placement=start]) [part~=resize-handle] {
+  inset-inline-start: auto;
+  inset-inline-end: -5px;
+}
+[part~=resize-handle]::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 4px;
+  inline-size: 2px;
+  background: transparent;
+  transition: background var(--motion-duration-fast,100ms);
+}
+[part~=resize-handle]:hover::before,
+[part~=resize-handle]:focus-visible::before,
+[part~=resize-handle][data-resizing]::before {
+  background: var(--color-primary);
+}

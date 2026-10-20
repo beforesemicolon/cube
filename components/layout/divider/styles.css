@@ -1,0 +1,15 @@
+:host {
+  display: block;
+  align-self: stretch;
+  min-block-size: 1px;
+  background: var(--color-separator,#dae0e4);
+}
+:host([data-stacked]) {
+  display: inline-block;
+  inline-size: 1px;
+  min-inline-size: 1px;
+  min-block-size: 1em;
+}
+:host([hidden]) {
+  display: none;
+}

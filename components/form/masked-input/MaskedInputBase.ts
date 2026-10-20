@@ -28,20 +28,22 @@ export abstract class MaskedInputBase<P extends MaskedInputProps = MaskedInputPr
     autocomplete = 'off'
 
     protected captureValue(): string { return scalarText(this.value) }
-    protected restoreValue(value: unknown): void { this.value = formatMaskedValue(scalarText(value), this.mask) }
-    protected formattedValue = (): string => { return formatMaskedValue(this.value, this.mask) }
-    get rawValue(): string { return unmaskValue(this.value, this.mask) }
-    protected submittedValue(): string { return bool(this.unmask) ? unmaskValue(this.value, this.mask) : this.formattedValue() }
+    protected restoreValue(value: string | File | FormData | null): void { this.value = formatMaskedValue(scalarText(value), scalarText(this.mask)) }
+    // Observed attributes are parsed by the runtime, including numeric-only text.
+    protected formattedValue = (): string => { return formatMaskedValue(scalarText(this.value), scalarText(this.mask)) }
+    get rawValue(): string { return unmaskValue(scalarText(this.value), scalarText(this.mask)) }
+    protected submittedValue(): string { return bool(this.unmask) ? this.rawValue : this.formattedValue() }
     protected serializedValue():string{return this.submittedValue()}
     protected maskGuide = (): string => {
         if (!bool(this.guide)) return scalarText(this.placeholder)
         const placeholder = scalarText(this.maskPlaceholder, '_').charAt(0) || '_'
-        return maskSlotsFor(this.mask).map(slot => slot.literal ?? placeholder).join('') || scalarText(this.placeholder)
+        return maskSlotsFor(scalarText(this.mask)).map(slot => slot.literal ?? placeholder).join('') || scalarText(this.placeholder)
     }
 
     setValue(value: string, originalEvent?: Event): boolean {
-        const next = formatMaskedValue(value, this.mask)
-        return this.handleChange(next,originalEvent,{rawValue:unmaskValue(next,this.mask)})
+        const mask = scalarText(this.mask)
+        const next = formatMaskedValue(value, mask)
+        return this.handleChange(next,originalEvent,{rawValue:unmaskValue(next,mask)})
     }
 }
 

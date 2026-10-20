@@ -1,15 +1,25 @@
 import { componentGroups } from './component-entries.js'
 import { iconPaths } from '../components/icons/registry.js'
-import { buildBrowser, buildModules } from '@beforesemicolon/builder'
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { buildBrowser } from '@beforesemicolon/builder'
+import { mkdir, readdir, rm, writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { resolve } from 'node:path'
-import type { Plugin } from 'esbuild'
+import { build, type Plugin } from 'esbuild'
 import { cubeTheme, flattenTheme } from '../components/theme/tokens.js'
+import { browserStyles, moduleStyles, emitStyleModules } from './styles.js'
 await rm('dist', { recursive: true, force: true })
 await mkdir('dist', { recursive: true })
-execFileSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'), '--emitDeclarationOnly'], { stdio: 'inherit' })
-await buildModules({ directoryPath: resolve('components'), esbuildOptions: { outbase: resolve('components'), target: 'es2022', minify: false, sourcemap: true } })
+execFileSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'), '-p', 'tsconfig.build.json', '--emitDeclarationOnly'], { stdio: 'inherit' })
+const sourceRoot = resolve('components')
+const entryPoints = (await readdir(sourceRoot, { recursive: true }))
+    .filter(path => path.endsWith('.ts') && !path.endsWith('.d.ts') && !path.endsWith('.spec.ts') && !path.endsWith('-client.ts') && path !== 'client.ts' && path !== 'core/browser.ts')
+    .map(path => resolve(sourceRoot, path))
+const styleSources = new Set<string>()
+await Promise.all((['esm', 'cjs'] as const).map(format => build({
+    entryPoints, outbase: sourceRoot, outdir: resolve('dist', format), format,
+    platform: 'node', target: 'es2022', keepNames: true, minify: false, sourcemap: false, plugins: [moduleStyles(styleSources)],
+})))
+await emitStyleModules(sourceRoot, resolve('dist'), styleSources)
 await writeFile('dist/cjs/package.json', '{"type":"commonjs"}\n')
 const externalRuntime: Plugin = {
     name: 'cube-browser-runtime', setup(build) {
@@ -22,7 +32,7 @@ const externalRuntime: Plugin = {
 const sizes: Record<string, number> = {}
 for (const category of ['', ...componentGroups]) {
     const result = await buildBrowser({ entry: resolve(category ? `components/${category}-client.ts` : 'components/client.ts'), out: category ? `dist/${category}-client.js` : 'dist/client.js', esbuildOptions: {
-        target: 'es2022', format: 'iife', globalName: '__CubeModule', keepNames: true, sourcemap: true, metafile: true, plugins: [externalRuntime],
+        target: 'es2022', format: 'iife', globalName: '__CubeModule', keepNames: true, sourcemap: false, metafile: true, plugins: [externalRuntime, browserStyles],
         footer: { js: `{const b=globalThis.BFS;const c=b.CUBE??={};const pending=__CubeModule.ready;c.ready=Promise.all([c.ready,pending]);pending.then(category=>{if(category)for(const [k,v] of Object.entries(category))if(!(k in c))c[k]=v;});for(const [k,v] of Object.entries(__CubeModule))if(k!=='ready'&&!(k in c))c[k]=v;}` },
     } })
     for (const path of Object.keys(result.metafile?.inputs ?? {})) {

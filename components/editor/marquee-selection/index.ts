@@ -1,13 +1,11 @@
-import { isNot, css as componentStyles, type Template, html, state } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { isNot, type Template, html, state } from '../../core/runtime.js'
+
 import type { EditorRect } from '../selection-overlay/SelectionOverlayBase.js';
 import { MarqueeSelectionBase } from './MarqueeSelectionBase.js';
-const css = editorCSS + `
-:host{position:absolute;z-index:var(--z-index-marquee,10);inset:0;display:block;cursor:crosshair;touch-action:none}
-[part~=marquee]{position:absolute;border:1px solid var(--color-primary);background:color-mix(in srgb,var(--color-selection) 42%,transparent);pointer-events:none}
-`;
+
 export class MarqueeSelection extends MarqueeSelectionBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly rectangle = state<EditorRect | null>(null);
     render(): Template {

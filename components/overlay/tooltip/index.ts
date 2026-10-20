@@ -1,11 +1,12 @@
-import { isNot, and, css as componentStyles, html, state, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { isNot, and, html, state, type Template } from '../../core/runtime.js'
+
 import { uid } from '../../core/id.js'
 import { bool, scalarText } from '../../core/value.js'
 import { TooltipBase } from './TooltipBase.js'
-const css = editorCSS + `:host{position:relative;display:inline-flex}[part=trigger]{display:inline-flex}[part=tooltip]{position:absolute;z-index:var(--z-index-tooltip,100);inline-size:max-content;max-inline-size:min(280px,80vw);padding:4px 8px;border-radius:var(--radius-sm,6px);background:var(--color-foreground,#20262b);color:var(--color-background,#fff);font-size:var(--component-caption-font-size,11px);line-height:1.4;pointer-events:none;opacity:0;visibility:hidden;transition:opacity var(--motion-duration-fast,100ms) ease-out;inset-block-end:calc(100% + 6px);inset-inline-start:50%;translate:-50% 0}:host([open]) [part=tooltip]{opacity:1;visibility:visible}:host([data-placement=bottom]) [part=tooltip]{inset-block-start:calc(100% + 6px);inset-block-end:auto}:host([data-placement=left]) [part=tooltip]{inset-inline-end:calc(100% + 6px);inset-inline-start:auto;inset-block-start:50%;inset-block-end:auto;translate:0 -50%}:host([data-placement=right]) [part=tooltip]{inset-inline-start:calc(100% + 6px);inset-block-start:50%;inset-block-end:auto;translate:0 -50%}`;
+
 export class Tooltip extends TooltipBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly tooltipId = uid('cb-tooltip')
     private readonly slottedContent = state(false)

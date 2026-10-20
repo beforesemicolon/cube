@@ -1,0 +1,29 @@
+@import "../../theme/editor.css";
+:host {
+  display: inline-block;
+}
+[part=group] {
+  display: flex;
+  align-items: stretch;
+}
+[part=item] {
+  position: relative;
+  --component-button-radius-start-start:0;
+  --component-button-radius-start-end:0;
+  --component-button-radius-end-end:0;
+  --component-button-radius-end-start:0;
+}
+[part=item]:not(:first-child) {
+  margin-inline-start: -1px;
+}
+[part=item]:first-child {
+  --component-button-radius-start-start:var(--radius-sm,6px);
+  --component-button-radius-end-start:var(--radius-sm,6px);
+}
+[part=item]:last-child {
+  --component-button-radius-start-end:var(--radius-sm,6px);
+  --component-button-radius-end-end:var(--radius-sm,6px);
+}
+[part=item]:focus-within {
+  z-index: 1;
+}

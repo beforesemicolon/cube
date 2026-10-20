@@ -18,6 +18,7 @@ interface StoryControl {
     readonly options?: readonly ControlOption[]
     readonly mapping?: Readonly<Record<string, ((value: number) => string) | null>>
     readonly description: string
+    readonly if?: { readonly arg: string; readonly eq?: ControlOption; readonly neq?: ControlOption }
     readonly table: {
         readonly category: string
         readonly type: { readonly summary: string }
@@ -32,22 +33,22 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 }
 
 const booleanProperties = new Set([
-    'allowAlpha', 'allowReorder', 'allowSampler', 'animated', 'autoplay', 'bottomOpen', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'dirty', 'disabled', 'dismissible',
+    'allowAlpha', 'allowReorder', 'allowSampler', 'animated', 'autoplay', 'bottomOpen', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'dirty', 'disabled', 'dismissible', 'indeterminate',
     'controls', 'disableContentPadding', 'expanded', 'formNoValidate', 'grid', 'iconOnly', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
     'editable', 'editing', 'endOpen', 'guide', 'inline', 'lineNumbers', 'linked', 'mixed', 'movable', 'open', 'patterns', 'pinned', 'pressed', 'readOnly', 'reorderable', 'required', 'resizable', 'returnFocus', 'reverse', 'rotatable', 'rowActivation', 'stacked',
     'pannable', 'playing', 'searchable', 'selectable', 'selected', 'selectOnEdit', 'showCancel', 'showChrome', 'showCursor', 'showDimensions', 'showLock', 'showOrientationControl', 'showSize', 'showVisibility', 'startOpen', 'stickyHeader', 'striped', 'submitOnBlur', 'success', 'unmask', 'wrap', 'zoomable',
 ])
 
 const numberProperties = new Set([
-    'angle', 'bottomSize', 'currentTime', 'cursorX', 'cursorY', 'delay', 'duration', 'endSize', 'firstDayOfWeek', 'firstValue', 'headingLevel', 'height', 'indent', 'lines', 'majorStep', 'max', 'maxBottomSize', 'maxEndSize', 'maxItems', 'maxLines', 'maxRecent', 'maxStartSize', 'maxVisible', 'maxZoom', 'min', 'minBottomSize', 'minEndSize', 'minHeight', 'minItems', 'minLines', 'minStartSize', 'minWidth', 'minorDivisions', 'minZoom', 'mobileBreakpoint', 'moveStep', 'originX', 'originY', 'page', 'playbackRate',
+    'angle', 'bottomSize', 'currentTime', 'cursorX', 'cursorY', 'delay', 'duration', 'endSize', 'firstDayOfWeek', 'headingLevel', 'height', 'indent', 'lines', 'majorStep', 'max', 'maxBottomSize', 'maxEndSize', 'maxItems', 'maxLines', 'maxRecent', 'maxStartSize', 'maxVisible', 'maxZoom', 'min', 'minBottomSize', 'minEndSize', 'minHeight', 'minItems', 'minLines', 'minStartSize', 'minWidth', 'minorDivisions', 'minZoom', 'mobileBreakpoint', 'moveStep', 'originX', 'originY', 'page', 'playbackRate',
     'loadingRows', 'progress', 'searchThreshold', 'seekStep', 'siblings', 'step', 'stickyColumns',
-    'resizeStep', 'rotation', 'secondValue', 'snap', 'startSize', 'tabSize', 'threshold', 'totalPages', 'width', 'x', 'x1', 'x2', 'y', 'y1', 'y2', 'zoom', 'zoomStep',
+    'resizeStep', 'rotation', 'snap', 'startSize', 'tabSize', 'threshold', 'totalPages', 'width', 'x', 'x1', 'x2', 'y', 'y1', 'y2', 'zoom', 'zoomStep',
 ])
 
 const objectProperties = new Set([
     'collapsedGroupKeys', 'entries', 'expandedIds', 'expandedKeys', 'guides', 'handleLabels', 'items', 'messages', 'options', 'recentColors', 'rect', 'selectedIds', 'selectedKeys', 'series', 'swatches', 'targets', 'theme', 'tracks',
     'units', 'visibleSegments', 'visibleSeries',
-    'stops', 'xAxis', 'yAxis',
+    'stops', 'xAxis', 'yAxis', 'values', 'fieldLabels', 'names',
 ])
 
 const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
@@ -67,9 +68,11 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
     size: ['xs', 'sm', 'md', 'lg'],
     target: ['_self', '_blank', '_parent', '_top'],
     type: ['button', 'submit', 'reset'],
+    tone: ['neutral', 'info', 'success', 'warning', 'danger'],
 }
 
 const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly ControlOption[]>>>> = {
+    'cb-list': { orientation: ['vertical', 'horizontal'] },
     'cb-avatar': { status: ['none', 'online', 'idle', 'busy', 'offline'] },
     'cb-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-button-group': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
@@ -104,6 +107,7 @@ const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly Contr
 }
 
 const numberControls: Readonly<Record<string, NumberControl>> = {
+    offset: { type: 'number', min: 0, step: 10 },
     delay: { type: 'number', min: 0, max: 5000, step: 50 },
     firstDayOfWeek: { type: 'number', min: 0, max: 6, step: 1 },
     headingLevel: { type: 'number', min: 1, max: 6, step: 1 },
@@ -331,7 +335,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     color: '', confirmLabel: '', content: '', copiedLabel: '', copyLabel: '', crossOrigin: '', decorative: false, delay: 0,
     description: '', destructive: false, disabled: false, disableContentPadding: false, dismissible: true, download: '', emptyLabel: '', error: '',
     device: 'desktop', duration: 4, errorText: '', expanded: false, extent: 'farthest-corner', firstDayOfWeek: 0, formNoValidate: false, gap: '', grid: true, heading: '', height: 320,
-    href: '', icon: '', iconOnly: false, initials: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
+    href: '', icon: '', iconOnly: false, indeterminate: false, initials: '', inlineSize: '', innerDescription: '', innerTitle: '', invalid: false, justify: 'stretch',
     keys: '', label: '', loading: false, loop: false, margin: '', max: 100, maxBlockSize: '', maxInlineSize: '',
     majorStep: 100, maxItems: 4, maxRecent: 8, maxVisible: 4, maxZoom: 400, mediaTitle: '', min: 0, minorDivisions: 10, minZoom: 25, minBlockSize: '', minInlineSize: '',
     modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'landscape', originX: 0, originY: 0, overflowLabel: '',
@@ -340,16 +344,17 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     pannable: true, playing: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
     seekStep: 10, shape: 'circle', siblings: 1, size: 'sm', src: '', status: '', statusLabel: '', step: 1, summary: '', target: '_self',
     selectable: true, selected: false, showCancel: true, showChrome: true, showCursor: true, showDimensions: true, showOrientationControl: true, snap: .1,
-    totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', width: 640, wrap: false, x: 0, x1: .25, x2: .25, y: 0, y1: .1, y2: 1, zoom: 100, zoomStep: 10, zoomable: false,
+    tone: 'info', totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', width: 640, wrap: false, x: 0, x1: .25, x2: .25, y: 0, y1: .1, y2: 1, zoom: 100, zoomStep: 10, zoomable: false,
     animated: true, allowReorder: true, bottomOpen: false, dirty: false, editable: true, editing: false, endOpen: true, guide: true, headingLevel: 2, inline: false,
     lineNumbers: true, linked: false, lines: 3, loadingRows: 5, maxLines: 32, minItems: 0, minLines: 8, mixed: false,
     mobileBreakpoint: 860, mobilePanel: '', movable: true, moveStep: 1, pinned: false, reorderable: true, resizeStep: 16,
     resizable: true, returnFocus: true, rotatable: false, rowActivation: false, selectionMode: 'none', stacked: false, success: false, successText: '',
-    selectOnEdit: true, showLock: true, showSize: true, showVisibility: true, startOpen: true, submitOnBlur: true, tabSize: 2, threshold: 3, unmask: false,
+    selectOnEdit: true, showLock: true, showSize: true, showVisibility: true, startOpen: true, submitOnBlur: false, tabSize: 2, threshold: 3, unmask: false,
     sortDirection: 'asc', stickyColumns: 0, stickyHeader: false, striped: false, density: 'comfortable',
 }
 
 const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue>>>> = {
+    'cb-list': { gap: 0, orientation: 'vertical', offset: 100, renderItem: null },
     'cb-avatar': { status: 'none' },
     'cb-accordion': { variant: 'simple' },
     'cb-expandable-section': { variant: 'default' },
@@ -377,14 +382,14 @@ const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue
     'cb-code-editor': { language: 'plaintext', lineNumbers: true, wrap: false, tabSize: 2, minLines: 8, maxLines: 32 },
     'cb-json-editor': { indent: 2, lineNumbers: true, wrap: false },
     'cb-editable-list': { minItems: 0, maxItems: 8, allowReorder: true },
-    'cb-linked-values': { firstValue: 320, secondValue: 180, linked: true, min: 0, max: 4096, step: 1 },
+    'cb-linked-values': { values: [320,180], linked: true, min: 0, max: 4096, step: 1 },
     'cb-sidebar': { collapsible: false, expanded: true, placement: 'start' },
     'cb-file-browser': { view: 'grid', sortBy: 'name', sortDirection: 'asc', selectionMode: 'single', searchable: true },
     'cb-guide-overlay': { zoom: 1 },
     'cb-layer-tree': { multiple: true, editable: true, reorderable: true, showVisibility: true, showLock: true },
     'cb-modal': { modalSize: 'md', layer: 'top', returnFocus: true },
     'cb-masked-input': { guide: true, unmask: false, inputMode: 'text', autocomplete: 'off' },
-    'cb-editable-label': { editing: false, selectOnEdit: true, submitOnBlur: true },
+    'cb-editable-label': { editing: false, selectOnEdit: true, submitOnBlur: false },
     'cb-property-group': { expanded: true, collapsible: true, dirty: false, mixed: false },
     'cb-selection-overlay': { rotation: 0, movable: true, resizable: true, rotatable: false, moveStep: 1, minWidth: 1, minHeight: 1, showSize: true },
     'cb-workspace': { startOpen: true, endOpen: true, bottomOpen: false, startSize: 280, endSize: 360, bottomSize: 240, minStartSize: 180, maxStartSize: 560, minEndSize: 220, maxEndSize: 720, minBottomSize: 140, maxBottomSize: 640, resizeStep: 16, mobileBreakpoint: 860, mobilePanel: '' },
@@ -396,7 +401,7 @@ const numericValueTags = new Set([
 
 const colorValueTags = new Set(['cb-color-picker'])
 const dateBoundTags = new Set(['cb-calendar', 'cb-date-picker', 'cb-time-picker'])
-const cssDimensionTags = new Set(['cb-box', 'cb-row', 'cb-col', 'cb-grid'])
+const cssDimensionTags = new Set(['cb-box', 'cb-row', 'cb-col', 'cb-grid', 'cb-card'])
 
 const formatterMapping: Readonly<Record<string, ((value: number) => string) | null>> = {
     Default: null,
@@ -428,6 +433,8 @@ function optionsFor(tag: string, property: string): readonly ControlOption[] | u
 }
 
 function controlFor(tag: string, property: string): StoryControl['control'] {
+    if (tag === 'cb-list' && property === 'renderItem') return false
+    if (tag === 'cb-list' && property === 'offset') return numberControl(property)
     if (property === 'valueFormatter') return 'select'
     if (property === 'value' && numericValueTags.has(tag)) return numberControl(property)
     if (property === 'value' && colorValueTags.has(tag)) return 'color'
@@ -444,6 +451,9 @@ function controlFor(tag: string, property: string): StoryControl['control'] {
 }
 
 function typeSummary(tag: string, property: string, control: StoryControl['control'], options: readonly ControlOption[] | undefined): string {
+    if (tag === 'cb-list' && property === 'renderItem') return '(item, indexOrKey) => Element | HtmlTemplate'
+    if (tag === 'cb-list' && property === 'items') return 'Iterable<T> | ReadonlyMap<K, T>'
+    if (tag === 'cb-list' && property === 'gap') return 'string | number'
     if (property === 'valueFormatter') return '(value: number) => string'
     if (property === 'items') return tag === 'cb-presence' ? 'PresenceItem[]' : 'Item[]'
     if (property === 'stops') return 'GradientStop[]'
@@ -482,7 +492,13 @@ function definitionFor(tag: string, property: string, category: string): StoryCo
         control,
         ...(options ? { options } : {}),
         ...(property === 'valueFormatter' ? { mapping: formatterMapping } : {}),
-        description: descriptionFor(tag, property),
+        description: tag === 'cb-list' && property === 'renderItem'
+            ? 'JavaScript callback property. Receives each item and its numeric index (or Map key); returns an Element or Markup HtmlTemplate. The preview uses plain text.'
+            : tag === 'cb-list' && property === 'offset'
+                ? 'Distance in pixels from the scroll end that triggers loadmoreitems.'
+                : descriptionFor(tag, property),
+        ...(tag === 'cb-skeleton' && ['rows', 'columns'].includes(property) ? { if: { arg: 'variant', eq: 'table' } } : {}),
+        ...(tag === 'cb-skeleton' && property === 'lines' ? { if: { arg: 'variant', neq: 'table' } } : {}),
         table: {
             category,
             type: { summary: typeSummary(tag, property, control, options) },
@@ -548,6 +564,10 @@ function objectDefault(tag: string, property: string): object | null | undefined
 }
 
 function defaultValueFor(tag: string, property: string): StoryValue | undefined {
+    if (tag === 'cb-list' && property === 'renderItem') return undefined
+    if (tag === 'cb-list' && property === 'orientation') return 'vertical'
+    if (tag === 'cb-list' && property === 'offset') return 100
+    if (tag === 'cb-list' && property === 'gap') return 0
     const tagged = taggedDefaults[tag]?.[property]
     if (tagged !== undefined) return tagged
     if (property === 'valueFormatter') return null
@@ -586,6 +606,7 @@ export function controlsFor(tag: string): StoryArgTypes {
             const property = attributeToProperty(attribute)
             if (controls[property]) continue
             controls[property] = definitionFor(tag, property, layer.category)
+            if (tag === 'cb-list' && property === 'items') controls.renderItem = definitionFor(tag, 'renderItem', layer.category)
         }
     }
     return controls

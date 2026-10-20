@@ -1,15 +1,11 @@
-import { is, css as componentStyles, type Template, html, repeat, when } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import componentStylesheet from './styles.css?inline'
+import { is, type Template, html, repeat, when } from '../../core/runtime.js'
+
 import { finite } from '../../core/value.js';
 import { GuideOverlayBase, type EditorGuide } from './GuideOverlayBase.js';
-const css = editorCSS + `
-:host{position:absolute;z-index:var(--z-index-guides,15);inset:0;display:block;overflow:visible;pointer-events:none}
-[part~=line]{position:absolute;background:var(--component-guide-color,var(--color-primary));pointer-events:none}[part~=line][data-axis=x]{block-size:1px}[part~=line][data-axis=y]{inline-size:1px}
-[part~=line][data-type=measurement]{background:var(--component-measurement-color,var(--color-warning))}[part~=line][data-type=insertion]{background:var(--component-insertion-color,var(--color-success));box-shadow:0 0 0 1px color-mix(in srgb,var(--component-insertion-color,var(--color-success)) 25%,transparent)}
-[part~=label]{position:absolute;translate:-50% -50%;padding:2px 5px;border-radius:3px;background:var(--component-guide-label-background,var(--color-primary));color:var(--color-primary-foreground);font:600 10px/1.3 var(--typography-mono-font-family);white-space:nowrap}
-`;
+
 export class GuideOverlay extends GuideOverlayBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     render(): Template {
         return html`<div part="guides">

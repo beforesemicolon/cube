@@ -13,8 +13,10 @@ export abstract class MenuBase<P extends MenuProps = MenuProps> extends Componen
 
     protected activate(item: NormalizedItem, originalEvent: Event): void {
         if (this.unavailable || item.disabled || item.separator) return
-        const checked = item.type === 'checkbox' || item.type === 'radio' ? !item.checked : undefined
-        const detail = { id: item.id, item, checked, originalEvent }
+        const detail = {
+            id: item.id, item, originalEvent,
+            ...(item.type === 'checkbox' || item.type === 'radio' ? { checked: !item.checked } : {}),
+        }
         if (!this.request('beforeaction', detail)) return
         this.emit('action', detail)
     }

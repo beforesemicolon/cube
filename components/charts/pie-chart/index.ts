@@ -1,8 +1,9 @@
-import { css as componentStyles, type Template } from '../../core/runtime.js'
-import {  ChartView , chartCSS } from '../view.js';
+import componentStylesheet from '../view.css?inline'
+import { type Template } from '../../core/runtime.js'
+import { ChartView } from '../view.js'
 import { PieChartBase } from './PieChartBase.js';
 export class PieChart extends PieChartBase {
-    stylesheet = componentStyles`${chartCSS}`
+    stylesheet = componentStylesheet
 
     private view?: ChartView;
     render(): Template { this.view = new ChartView(this); return this.view.root; }

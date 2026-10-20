@@ -112,23 +112,24 @@ test('helper conditions keep live dependencies when selections and collections c
     await expect(select.locator('option')).toHaveText(['Updated beta', 'Gamma'])
 })
 
-test('component stylesheets and delegated slot changes survive content replacement', async ({ page }) => {
+test('card stylesheets survive arbitrary slot content replacement without generating fallback content', async ({ page }) => {
     await page.evaluate(() => {
         const card = document.createElement('cb-card')
-        Object.assign(card, { label: 'Card', value: 'Generated preview' })
         document.querySelector('#fixture')?.append(card)
     })
     const card = page.locator('cb-card')
-    await expect(card.locator('[part~=generated-content]')).toBeVisible()
+    await expect(card).toHaveCSS('border-top-width', '1px')
+    await expect(card.locator('[part=content]')).toHaveCount(1)
     await card.evaluate(element => {
         const paragraph = document.createElement('p')
         paragraph.textContent = 'Custom content'
         element.append(paragraph)
     })
-    await expect(card.locator('[part~=generated-content]')).toBeHidden()
+    await expect(card.getByText('Custom content')).toBeVisible()
     await card.evaluate(element => element.replaceChildren())
-    await expect(card.locator('[part~=generated-content]')).toBeVisible()
-    await expect(card.locator('[part~=panel]')).toHaveCSS('border-top-width', '1px')
+    await expect(card.locator('[part~=generated-content], [part~=panel]')).toHaveCount(0)
+    await expect(card).toHaveCSS('border-top-width', '1px')
+    expect(await card.evaluate(node => node.textContent)).toBe('')
 })
 
 test('ref-based menu navigation has one Tab stop and activates links once', async ({ page }) => {

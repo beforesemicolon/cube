@@ -1,24 +1,12 @@
 import { when, is, or, isNot, and, pick, html, repeat, state, type Template } from '../core/runtime.js';
-import { commonCSS } from '../theme/styles.js';
+
 import { bool, clamp, record, text } from '../core/value.js';
-import { lightTokens, token as v } from '../theme/tokens.js';
+import { lightTokens } from '../theme/tokens.js'
 import type { TableColumn, TableRecord } from '../data-display/table/index.js';
 import { chartEngine, type ChartInstance } from './engine.js';
 import type { ChartBase } from './ChartBase.js';
 import type { ChartModel, ChartSkin } from './model.js';
-export const chartCSS=commonCSS+`
-[part=chart]{padding:${v('--spacing-lg')};border:1px solid ${v('--color-separator')};border-radius:${v('--radius-md')};background:${v('--color-surface')}}
-[part=title]{font-weight:600;font-size:var(--component-title-font-size,14px)}[part=description],[part=instructions]{color:${v('--color-muted-foreground')}}
-[part=legend]{display:flex;flex-wrap:wrap;gap:${v('--spacing-sm')};margin-block:${v('--spacing-sm')}}
-[part=legend-item]{display:inline-flex;max-inline-size:100%}
-[part=legend-swatch]{display:inline-block;inline-size:var(--component-chart-swatch-size,10px);block-size:var(--component-chart-swatch-size,10px);border:1px solid currentColor;border-radius:var(--component-chart-swatch-radius,2px)}
-cb-button[part=navigator]::part(description){position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-[part=plot]{width:100%;height:${v('--component-chart-height')};min-width:0}
-[part=instructions]{font-size:.85em}[part=details]{min-height:1.5em}
-cb-expandable-section[part=data]{margin-block-start:${v('--spacing-sm')}}
-cb-table[part=data-table]{--component-table-min-width:100%;--component-table-max-height:none}
-@container(max-width:480px){[part=chart]{padding:${v('--spacing-sm')}}[part=actions]{gap:${v('--spacing-xs')}}}
-`;
+
 let nextId=0;
 export class ChartView {
     readonly root:Template;

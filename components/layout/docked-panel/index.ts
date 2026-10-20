@@ -1,14 +1,10 @@
-import { isNot, css as componentStyles, html, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { isNot, html, type Template } from '../../core/runtime.js'
+
 import { DockedPanelBase } from './DockedPanelBase.js'
-const css = editorCSS + `
-:host{display:block;min-inline-size:0}
-[part~=panel]{overflow:hidden;border:1px solid var(--color-separator);background:var(--color-surface);box-shadow:var(--component-docked-panel-shadow,-8px 0 24px color-mix(in srgb,var(--color-foreground) 10%,transparent))}
-:host([data-placement=start]) [part~=panel]{border-radius:0 var(--radius-md) var(--radius-md) 0}:host([data-placement=end]) [part~=panel]{border-radius:var(--radius-md) 0 0 var(--radius-md)}:host([data-placement=bottom]) [part~=panel]{border-radius:var(--radius-md) var(--radius-md) 0 0}
-[part~=content]{padding:var(--spacing-md,12px);min-block-size:120px}:host(:not([expanded])) [part~=content]{display:none}
-`;
+
 export class DockedPanel extends DockedPanelBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     render(): Template {
         return html`

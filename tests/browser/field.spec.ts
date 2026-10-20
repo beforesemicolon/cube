@@ -87,7 +87,7 @@ test('field labels delegate focus through composite controls', async ({ page }) 
         const list = document.createElement('cb-editable-list')
         Object.assign(list, { inputLabel: 'New redirect path', addLabel: 'Add path', emptyLabel: 'No paths' })
         const linked = document.createElement('cb-linked-values')
-        Object.assign(linked, { firstLabel: 'Width', secondLabel: 'Height', linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions' })
+        Object.assign(linked, { fieldLabels: ['Width','Height'], linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions' })
         const json = document.createElement('cb-json-editor')
         Object.assign(json, { value: '{"name":"cube"}', formatLabel: 'Format JSON', validLabel: 'Valid JSON', invalidLabel: 'Invalid JSON', positionLabel: 'Line {line}, column {column}' })
         const gradient = document.createElement('cb-gradient-editor')
@@ -123,7 +123,7 @@ test('field-compatible controls keep a useful width and contract with their cont
             ['slider', 'cb-slider', { value: 50 }],
             ['masked', 'cb-masked-input', { mask: '(999) 999-9999' }],
             ['list', 'cb-editable-list', { inputLabel: 'New item', addLabel: 'Add item' }],
-            ['linked', 'cb-linked-values', { firstLabel: 'Width', secondLabel: 'Height' }],
+            ['linked', 'cb-linked-values', { fieldLabels: ['Width','Height'] }],
             ['gradient', 'cb-gradient-editor', { angleLabel: 'Angle' }],
         ]
         const fixture = document.querySelector('#fixture')

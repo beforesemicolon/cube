@@ -1,32 +1,11 @@
-import { or, isNot, is, css as componentStyles, type Template, html, repeat } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import componentStylesheet from './styles.css?inline'
+import { or, isNot, is, type Template, html, repeat } from '../../core/runtime.js'
+
 import type { Button } from '../../action/button/index.js';
 import { bool, finite } from '../../core/value.js';
-import { token as v } from '../../theme/tokens.js';
+
 import { TimelineBase, type TimelineKeyframe, type TimelineTrack } from './TimelineBase.js';
-const css = editorCSS + `
-:host{display:block;inline-size:100%;min-inline-size:0;container-type:inline-size}
-[part~=root]{display:grid;overflow:hidden;border:1px solid ${v('--color-separator')};border-radius:var(--radius-lg,12px);background:${v('--color-surface')}}
-[part~=toolbar]{display:flex;align-items:center;gap:var(--spacing-xs,4px);padding:var(--spacing-sm,8px);border-block-end:1px solid ${v('--color-separator')};background:${v('--color-surface-raised')}}
-[part~=time]{margin-inline-start:auto;min-inline-size:88px;text-align:end;color:${v('--color-muted-foreground')};font:var(--component-code-font,11px/1.4 ui-monospace,monospace);font-variant-numeric:tabular-nums}
-[part~=editor]{position:relative;overflow:auto;min-block-size:var(--component-timeline-height,280px)}
-[part~=ruler-row],[part~=track]{display:grid;grid-template-columns:var(--component-timeline-label-width,112px) minmax(420px,1fr)}
-[part~=ruler-label],[part~=track-label]{position:sticky;z-index:4;inset-inline-start:0;padding:var(--spacing-sm,8px);border-inline-end:1px solid ${v('--color-separator')};background:${v('--color-surface-raised')}}
-[part~=ruler]{position:relative;block-size:34px;border-block-end:1px solid ${v('--color-separator')};background:${v('--color-surface-muted')};cursor:pointer}
-[part~=tick]{position:absolute;inset-block-end:0;block-size:8px;border-inline-start:1px solid ${v('--color-border')}}
-[part~=tick-label]{position:absolute;inset-block-start:4px;translate:-50% 0;color:${v('--color-muted-foreground')};font:var(--component-code-font,9px/1 ui-monospace,monospace);font-variant-numeric:tabular-nums}
-[part~=track]{min-block-size:48px;border-block-end:1px solid ${v('--color-separator')}}
-[part~=track-label]{display:flex;align-items:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${v('--color-muted-foreground')}}
-[part~=lane]{position:relative;background:linear-gradient(90deg,color-mix(in srgb,${v('--color-separator')} 62%,transparent) 1px,transparent 1px);background-size:calc(100% / var(--cb-duration)) 100%;cursor:crosshair}
-[part~=lane]::before{content:'';position:absolute;inset-inline:0;inset-block-start:50%;block-size:1px;background:${v('--color-separator')}}
-[part~=keyframe]{position:absolute;z-index:2;inset-block-start:50%;inset-inline-start:var(--cb-keyframe-position);inline-size:14px;min-inline-size:14px;block-size:14px;min-block-size:14px;--component-control-height-sm:14px;translate:-50% -50%;rotate:45deg;cursor:ew-resize}
-[part~=keyframe]::part(control){inline-size:14px;min-inline-size:14px;block-size:14px;min-block-size:14px;padding:0;border:2px solid ${v('--color-primary')};border-radius:2px;background:${v('--color-surface-raised')}}
-[part~=keyframe][data-selected]::part(control){background:${v('--color-primary')};box-shadow:0 0 0 2px color-mix(in srgb,${v('--color-focus')} 42%,transparent)}
-[part~=playhead]{position:absolute;z-index:3;inset-block-start:0;inset-block-end:0;inset-inline-start:calc(var(--component-timeline-label-width,112px) + (100% - var(--component-timeline-label-width,112px)) * var(--cb-playhead));inline-size:1px;background:${v('--color-danger')};pointer-events:none}
-[part~=playhead]::before{content:'';position:absolute;inset-block-start:0;inset-inline-start:50%;translate:-50% 0;border-inline:5px solid transparent;border-block-start:8px solid ${v('--color-danger')}}
-:host([data-disabled]) [part~=root]{opacity:var(--component-disabled-opacity,.5)}
-@container(max-width:520px){[part~=ruler-row],[part~=track]{grid-template-columns:84px minmax(360px,1fr)}[part~=playhead]{inset-inline-start:calc(84px + (100% - 84px) * var(--cb-playhead))}}
-`;
+
 interface DragState {
     readonly trackId: string;
     readonly keyframeId: string;
@@ -35,7 +14,7 @@ interface DragState {
     readonly button: Button;
 }
 export class Timeline extends TimelineBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private get ruler(): HTMLElement | undefined { const node=this.refs.ruler?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private drag?: DragState;

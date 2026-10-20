@@ -1,9 +1,10 @@
-import { css as componentStyles, type Template } from '../../core/runtime.js'
-import {  mediaView , mediaCSS } from '../view.js';
+import componentStylesheet from '../view.css?inline'
+import { type Template } from '../../core/runtime.js'
+import { mediaView } from '../view.js'
 import type { PlaybackState } from '../controller.js';
 import { VideoPlayerBase } from './VideoPlayerBase.js';
 export class VideoPlayer extends VideoPlayerBase {
-    stylesheet = componentStyles`${mediaCSS}`
+    stylesheet = componentStylesheet
 
     private view?: ReturnType<typeof mediaView>;
     render(): Template { this.view = mediaView(this, 'video'); return this.view.root; }

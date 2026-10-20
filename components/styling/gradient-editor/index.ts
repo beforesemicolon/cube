@@ -1,43 +1,13 @@
-import { pick, isNot, or, and, css as componentStyles, type Template, html, repeat } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import componentStylesheet from './styles.css?inline'
+import { pick, isNot, or, and, type Template, html, repeat } from '../../core/runtime.js'
+
 import type { Button } from '../../action/button/index.js';
 import { bool, clamp, scalarText } from '../../core/value.js';
-import { token as v } from '../../theme/tokens.js';
+
 import type { ColorPicker } from '../color-picker/index.js';
 import { GradientEditorBase } from './GradientEditorBase.js';
 import type { GradientPosition, GradientStop } from './gradient.js';
-const css = editorCSS + `
-:host{display:block;inline-size:var(--component-gradient-editor-width,560px);max-inline-size:100%;min-inline-size:min(100%,var(--component-gradient-editor-min-width,320px));container-type:inline-size}
-[part~=root]{display:grid;gap:var(--spacing-md,12px);min-inline-size:0}
-[part~=track]{background-color:${v('--color-surface')};background-image:conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0);background-size:12px 12px}
-[part~=geometry]{display:flex;align-items:end;gap:var(--spacing-sm,8px);flex-wrap:wrap}
-[part~=mode]{flex:none}
-[part~=angle-field]{display:grid;gap:var(--spacing-xs,4px);min-inline-size:88px}
-[part~=control-label],[part~=section-label]{color:${v('--color-muted-foreground')};font-size:var(--component-caption-font-size,11px);font-weight:600}
-[part~=angle]{inline-size:88px;min-block-size:var(--cb-height);padding:4px 8px;border:1px solid ${v('--color-border')};border-radius:var(--radius-sm);background:${v('--color-surface-muted')};font-variant-numeric:tabular-nums}
-[part~=angle]::-webkit-inner-spin-button{appearance:none;margin:0}
-[part~=radial-controls]{display:flex;align-items:end;gap:var(--spacing-sm,8px);flex:1;flex-wrap:wrap}
-[part~=select-field]{display:grid;gap:var(--spacing-xs,4px);min-inline-size:0}
-[part~=shape],[part~=extent],[part~=position]{--component-select-width:var(--component-gradient-select-width,132px)}
-[part~=stops]{display:grid;gap:var(--spacing-sm,8px)}
-[part~=stops-header]{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-sm,8px)}
-[part~=stop-actions]{display:flex;align-items:center;gap:var(--spacing-xs,4px)}
-[part~=track]{position:relative;block-size:38px;margin:0 10px 32px;border:1px solid ${v('--color-border')};border-radius:var(--radius-md);box-shadow:inset 0 0 0 1px color-mix(in srgb,#fff 35%,transparent);cursor:crosshair;touch-action:none;user-select:none}
-[part~=track-color]{position:absolute;inset:0;border-radius:calc(var(--radius-md) - 1px);background:var(--cb-track-gradient);pointer-events:none}
-[part~=stop]{position:absolute;inset-block-start:100%;display:block;inline-size:22px;min-inline-size:22px;block-size:28px;min-block-size:28px;padding:8px 3px 2px;border:0;border-radius:0;background:transparent!important;transform:translate(-50%,3px);color:${v('--color-muted-foreground')};cursor:ew-resize;touch-action:none}
-[part~=stop]::part(control),[part~=stop]::part(button-label){display:block;inline-size:100%;block-size:100%;overflow:visible;cursor:inherit;touch-action:inherit}
-[part~=stop]::before{content:'';position:absolute;inset-block-start:0;inset-inline-start:7px;border-inline:4px solid transparent;border-block-end:7px solid currentColor}
-[part~=stop-swatch]{display:block;inline-size:16px;block-size:16px;border:2px solid ${v('--color-surface-raised')};border-radius:3px;background:var(--cb-stop-color);box-shadow:0 0 0 1px currentColor}
-[part~=stop][data-selected]{z-index:1;color:${v('--color-primary')}}
-[part~=stop][data-selected] [part~=stop-swatch]{box-shadow:0 0 0 2px currentColor}
-[part~=stop-color]{position:absolute;z-index:2;inset-block-start:calc(100% + 31px);inset-inline-start:var(--cb-selected-stop-position);inline-size:1px;min-inline-size:1px;block-size:1px;transform:translateX(-50%);--component-color-picker-trigger-size:1px}
-[part~=stop-color]::part(trigger){visibility:hidden;padding:0;border:0}
-[part~=hidden-control]{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%)}
-:host([data-disabled]) [part~=track]{cursor:not-allowed;opacity:var(--component-disabled-opacity,.5)}
-:host([data-invalid]) [part~=track]{border-color:${v('--color-danger')}}
-@container(max-width:420px){[part~=geometry],[part~=radial-controls]{display:grid;grid-template-columns:1fr 1fr;inline-size:100%}[part~=mode]{grid-column:1/-1}[part~=shape],[part~=extent],[part~=position]{--component-select-width:100%}}
-@media(pointer:coarse){[part~=track]{block-size:44px;margin-block-end:38px}[part~=stop]{inline-size:30px;min-inline-size:30px;block-size:34px;min-block-size:34px}[part~=stop]::before{inset-inline-start:11px}}
-`;
+
 interface DragState {
     readonly id: string;
     readonly pointerId: number;
@@ -50,7 +20,7 @@ interface ChoiceOption {
     readonly label: string;
 }
 export class GradientEditor extends GradientEditorBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private node(name:string): HTMLElement | undefined { const node=this.refs[name]?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private get track(): HTMLElement | undefined { return this.node('track'); }

@@ -1,16 +1,12 @@
-import { css as componentStyles, or, isNot, is, html, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { or, isNot, is, html, type Template } from '../../core/runtime.js'
+
 import type { CodeEditor } from '../code-editor/index.js'
 import { scalarText } from '../../core/value.js'
 import { JsonEditorBase } from './JsonEditorBase.js'
 
-const css = editorCSS + `
-:host{display:block;inline-size:var(--component-json-editor-width,720px);max-inline-size:100%;min-inline-size:min(100%,var(--component-json-editor-min-width,320px))}[part~=root]{display:grid;gap:var(--spacing-xs,4px)}
-[part~=toolbar]{display:flex;align-items:center;justify-content:flex-end;gap:var(--spacing-sm,8px)}[part~=status]{margin-inline-end:auto;color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px)}
-[part~=status][data-invalid]{color:var(--color-danger)}[part~=editor]{display:block;inline-size:100%}
-`;
 export class JsonEditor extends JsonEditorBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
     private get editor(): CodeEditor | undefined {
         const node = this.refs.editor?.[0]
         return node?.localName === 'cb-code-editor' ? node as CodeEditor : undefined

@@ -12,7 +12,7 @@ export abstract class HoverCardBase<P extends HoverCardProps = HoverCardProps> e
     delay = 250
     popupMaxWidth: PopupLength = '360px'
     popupMaxHeight: PopupLength = '480px'
-    private timer?: number
+    private timer?: ReturnType<typeof globalThis.setTimeout>
     protected isOpen(): boolean { return this.hasAttribute('open') || bool(this.open) }
     protected abstract syncView(): void
     protected mount(): void { this.syncView() }

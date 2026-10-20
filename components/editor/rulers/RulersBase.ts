@@ -14,7 +14,7 @@ export interface RulersProps extends ComponentProps {
     coordinateLabel?: string
 }
 
-export interface RulerCursorDetail { readonly x: number; readonly y: number; readonly originalEvent?: Event }
+export interface RulerCursorDetail { readonly x: number; readonly y: number; readonly value: {readonly x:number;readonly y:number}; readonly previousValue: {readonly x:number;readonly y:number}; readonly originalEvent?: Event }
 
 /** Headless measurement and cursor behavior for editor rulers. */
 export abstract class RulersBase extends Component<RulersProps> {
@@ -47,7 +47,8 @@ export abstract class RulersBase extends Component<RulersProps> {
 
     setCursor(x: number, y: number, originalEvent?: Event, commit = false): boolean {
         if (this.unavailable) return false
-        const detail: RulerCursorDetail = { x: finite(x), y: finite(y), originalEvent }
+        const value = { x: finite(x), y: finite(y) }
+        const detail: RulerCursorDetail = { ...value, value, previousValue: {x:finite(this.cursorX),y:finite(this.cursorY)}, originalEvent }
         if (!this.request(commit ? 'beforechange' : 'beforeinput', detail)) return false
         this.cursorX = detail.x
         this.cursorY = detail.y

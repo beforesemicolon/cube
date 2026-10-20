@@ -36,9 +36,9 @@ test('every Studio design entry registers and mounts without missing-property fa
             componentErrors,
         }
     })
-    expect(result.definitions).toBe(53)
-    expect(result.registered).toBe(53)
-    expect(result.mounted).toBe(53)
+    expect(result.definitions).toBe(52)
+    expect(result.registered).toBe(52)
+    expect(result.mounted).toBe(52)
     expect(result.componentErrors).toEqual([])
     expect(pageErrors).toEqual([])
 })
@@ -88,9 +88,6 @@ test('generated data displays only render containers that belong to the componen
         const badge = document.createElement('cb-badge') as HTMLElement & { label: string; value: string }
         badge.label = 'Status'
         badge.value = 'Ready'
-        const description = document.createElement('cb-description-row') as HTMLElement & { label: string; value: string }
-        description.label = 'Owner'
-        description.value = 'Maya Chen'
         const tree = document.createElement('cb-tree') as HTMLElement & {
             label: string
             items: ReadonlyArray<{ id: string; label: string }>
@@ -99,29 +96,24 @@ test('generated data displays only render containers that belong to the componen
         tree.items = [{ id: 'home', label: 'Home' }, { id: 'pricing', label: 'Pricing' }]
         const card = document.createElement('cb-card') as HTMLElement & { label: string }
         card.label = 'Project summary'
-        document.querySelector('#fixture')?.append(list, badge, description, tree, card)
+        document.querySelector('#fixture')?.append(list, badge, tree, card)
     })
 
     const list = page.locator('cb-list')
-    const root = list.locator('[part~="root"]')
-    await expect(root).toHaveAttribute('part', 'root')
-    await expect(list.locator('[part~="list"]')).toHaveCount(1)
-    await expect(root).toHaveCSS('border-top-width', '0px')
-    await expect(list.locator('[part~="list"]')).toHaveCSS('border-top-width', '1px')
+    await expect(list.locator('[part~="root"], [part~="list"]')).toHaveCount(0)
+    await expect(list.locator('[part~="items"]')).toHaveCSS('border-top-width', '0px')
+    await expect(list).toHaveCSS('border-top-width', '0px')
 
     const badge = page.locator('cb-badge').locator('[part~="display"]')
-    const description = page.locator('cb-description-row').locator('[part~="display"]')
     const tree = page.locator('cb-tree').locator('[part~="list"]')
     await expect(page.locator('cb-badge').locator('[part~="panel"]')).toHaveCount(0)
-    await expect(page.locator('cb-description-row').locator('[part~="panel"]')).toHaveCount(0)
     await expect(badge).toHaveCSS('border-top-width', '0px')
     await expect(badge).toHaveCSS('padding-top', '0px')
-    await expect(description).toHaveCSS('border-top-width', '0px')
-    await expect(description).toHaveCSS('padding-top', '0px')
     await expect(tree).toHaveCSS('border-top-width', '0px')
     await expect(tree).toHaveCSS('padding-top', '0px')
     await expect(tree).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
-    await expect(page.locator('cb-card').locator('[part~="panel"]')).toHaveCount(1)
+    await expect(page.locator('cb-card').locator('[part~="panel"]')).toHaveCount(0)
+    await expect(page.locator('cb-card')).toHaveCSS('border-top-width','1px')
 })
 
 test('text input and textarea keep a usable minimum width without overflowing narrow containers', async ({ page }) => {

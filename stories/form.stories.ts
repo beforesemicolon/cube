@@ -37,7 +37,7 @@ export const TokenInput: Story = componentStory('cb-token-input', { label: 'Toke
 
 export const EditableLabel: Story = componentStory('cb-editable-label', {
     label: 'Layer name', accessibleLabel: 'Layer name', value: 'Hero section', placeholder: 'Untitled layer', editing: false,
-    selectOnEdit: true, submitOnBlur: true, editLabel: 'Edit {value}', saveLabel: 'Save layer name', cancelLabel: 'Cancel editing', emptyLabel: 'Untitled layer',
+    selectOnEdit: true, submitOnBlur: false, editLabel: 'Edit {value}', saveLabel: 'Save layer name', cancelLabel: 'Cancel editing', emptyLabel: 'Untitled layer',
 })
 
 export const MaskedInput: Story = componentStory('cb-masked-input', {
@@ -89,6 +89,6 @@ export const JsonEditor: Story = componentStory('cb-json-editor', {
 })
 
 export const LinkedValues: Story = componentStory('cb-linked-values', {
-    label: 'Dimensions', accessibleLabel: 'Linked width and height', firstValue: 320, secondValue: 180, firstName: 'width', secondName: 'height',
-    firstLabel: 'Width', secondLabel: 'Height', linked: true, min: 0, max: 4096, step: 1, linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions',
+    label: 'Dimensions', accessibleLabel: 'Linked width and height', values: [320,180], names: ['width','height'],
+    fieldLabels: ['Width','Height'], linked: true, min: 0, max: 4096, step: 1, linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions',
 })

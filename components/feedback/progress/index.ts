@@ -1,12 +1,11 @@
-import { css as componentStyles, type Template } from '../../core/runtime.js'
-import {  createStudioView, type StudioView , studioCSS } from '../../studio/view.js';
+import componentStylesheet from './styles.css?inline'
+import { type Template } from '../../core/runtime.js'
+import { progressView } from '../view.js'
 import { ProgressBase } from './ProgressBase.js';
 export class Progress extends ProgressBase {
-    stylesheet = componentStyles`${studioCSS}`
+    stylesheet = componentStylesheet
 
-    private view?: StudioView;
-    render(): Template { this.view = createStudioView(this); return this.view.root; }
-    protected syncView(): void { this.view?.update(); }
+    render(): Template { return progressView(this); }
 }
 export { ProgressBase };
 export type { ProgressProps } from './ProgressBase.js';

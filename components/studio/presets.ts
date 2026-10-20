@@ -19,7 +19,6 @@ const presets: Readonly<Record<string, readonly StudioItem[]>> = {
     menu: [item('rename', 'Rename', '⌘ R'), item('duplicate', 'Duplicate', '⌘ D'), item('delete', 'Delete', '⌫')],
     'nested-menu': [item('arrange', 'Arrange'), item('align', 'Align'), item('distribute', 'Distribute')],
     'canvas-menu': [item('paste', 'Paste here'), item('frame', 'Frame selection'), item('comment', 'Add comment')],
-    list: [item('home', 'Home', 'Published'), item('about', 'About', 'Draft'), item('contact', 'Contact', 'Published')],
     table: [item('home', 'Home', '/ · Published'), item('about', 'About', '/about · Published'), item('contact', 'Contact', '/contact · Draft')],
     tree: [item('page', 'Page'), item('header', 'Header'), item('hero', 'Hero section'), item('button', 'Primary button')],
     'activity-log': [item('publish', 'Elson published version 18', '2 minutes ago'), item('comment', 'Ana left a comment', '18 minutes ago'), item('edit', 'Maya edited Hero', '1 hour ago')],
@@ -92,7 +91,7 @@ const presets: Readonly<Record<string, readonly StudioItem[]>> = {
     'hover-card': [item('name', 'Primary button'), item('type', 'Component instance')], 'bottom-sheet': [item('title', 'Insert component'), item('count', '24 results')],
     sidebar: [item('section', 'Layers'), item('state', 'Expanded')], 'resizable-panel': [item('section', 'Inspector'), item('width', '320 px')],
     'docked-panel': [item('section', 'Assets'), item('position', 'Left')], 'panel-header': [item('title', 'Inspector'), item('action', 'Close')],
-    card: [item('title', 'Project Alpha'), item('meta', 'Updated 2 minutes ago')], accordion: [item('section', 'Layout'), item('state', 'Expanded')],
+    accordion: [item('section', 'Layout'), item('state', 'Expanded')],
     preferences: [item('theme', 'Theme', 'System'), item('language', 'Language', 'English')],
     'share-dialog': [item('access', 'Anyone with the link', 'Can view'), item('invite', 'Invite people', 'name@example.com')],
     'publish-dialog': [item('domain', 'Domain', 'cube.beforesemicolon.com'), item('status', 'Status', 'Ready to publish')],
@@ -116,7 +115,7 @@ export function studioValueFor(name: string, supplied: string): string {
         'aspect-ratio': '16 : 9', expression: 'viewport.width / 2', 'inline-text': 'Edit this text', 'ai-command': 'Make this section more concise',
         'css-variable': '--color-primary', 'gradient-editor': 'Linear gradient · 90°', 'save-status': 'All changes saved', 'publish-status': 'Published', 'review-status': 'Ready for review',
         conflict: 'Resolve conflicting changes', 'instance-indicator': 'Instance', status: 'Online', stat: '1,248 visitors',
-        'empty-state': 'No components yet', toast: 'Changes saved', alert: 'Connection interrupted', validation: 'Check the highlighted fields',
+        toast: 'Changes saved', alert: 'Connection interrupted', validation: 'Check the highlighted fields',
         banner: 'A new version is available', generation: 'Generating variations', spinner: 'Loading', progress: '64% complete',
         badge: 'Published', avatar: 'Elson Correia', 'component-preview': 'Button · Primary', 'page-thumbnail': 'Home · Desktop',
         'media-preview': 'Video · 1920 × 1080', 'diff-preview': 'Spacing update', 'top-bar': 'Homepage', 'status-bar': '100%',
@@ -126,7 +125,7 @@ export function studioValueFor(name: string, supplied: string): string {
 
 export function studioStatusFor(name: string): string {
     const values: Readonly<Record<string, string>> = {
-        'empty-state': 'Create or insert a component to get started.', toast: 'Your project is up to date.', alert: 'We will keep trying in the background.',
+        toast: 'Your project is up to date.', alert: 'We will keep trying in the background.',
         validation: 'Two values need your attention.', banner: 'Refresh when you are ready.', generation: 'Creating three accessible options…',
         conflict: 'Choose which version to keep.', stat: '+12.4% from last week',
     }

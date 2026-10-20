@@ -51,7 +51,7 @@ export abstract class DeviceFrameBase extends Component<DeviceFrameProps> {
     toggleOrientation(originalEvent?: Event): boolean {
         if (this.unavailable) return false
         const orientation: DeviceOrientation = this.orientation === 'portrait' ? 'landscape' : 'portrait'
-        const detail = { orientation, originalEvent }
+        const detail = { value: orientation, previousValue: this.orientation, orientation, originalEvent }
         if (!this.request('beforechange', detail)) return false
         this.orientation = orientation
         this.syncView()

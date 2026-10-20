@@ -1,19 +1,11 @@
-import { css as componentStyles, type Template, html } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import componentStylesheet from './styles.css?inline'
+import { type Template, html } from '../../core/runtime.js'
+
 import { finite } from '../../core/value.js';
 import { ResizablePanelBase } from './ResizablePanelBase.js';
-const css = editorCSS + `
-:host{position:relative;display:block;inline-size:var(--component-resizable-panel-size,320px);min-inline-size:0}
-[part~=panel]{block-size:100%;overflow:auto;border:1px solid var(--color-separator);border-radius:var(--radius-md);background:var(--color-surface)}
-[part~=header]{padding:var(--spacing-md,12px);border-block-end:1px solid var(--color-separator);font-weight:650}
-[part~=content]{display:block;padding:var(--spacing-md,12px)}
-[part~=resize-handle]{position:absolute;z-index:1;inset-block:0;inset-inline-start:-5px;inline-size:10px;cursor:col-resize;touch-action:none}
-:host([data-placement=start]) [part~=resize-handle]{inset-inline-start:auto;inset-inline-end:-5px}
-[part~=resize-handle]::before{content:'';position:absolute;inset-block:0;inset-inline-start:4px;inline-size:2px;background:transparent;transition:background var(--motion-duration-fast,100ms)}
-[part~=resize-handle]:hover::before,[part~=resize-handle]:focus-visible::before,[part~=resize-handle][data-resizing]::before{background:var(--color-primary)}
-`;
+
 export class ResizablePanel extends ResizablePanelBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private get handle(): HTMLElement | undefined { const node = this.refs.handle?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private startX = 0;

@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
 import type { AccordionItem } from '../components/data-display/accordion/base.js'
 import type { TableColumn, TableRecord } from '../components/data-display/table/base.js'
+import type { List } from '../components/data-display/list/index.js'
+import { html } from '../components/core/runtime.js'
 import { createFlashbar, configureFlashbarHost } from '../components/feedback/flashbar/service.js'
 import { showModal } from '../components/overlay/modal/service.js'
 import './setup.js'
@@ -331,9 +333,42 @@ export const AssetBrowser: Story = {
     render: () => {
         const assets = component('cb-grid', { columns: 'repeat(auto-fit,minmax(min(100%,180px),1fr))', gap: '12px' })
         for (const [label, value] of [['Hero image', '1920 × 1080'], ['Logo', 'SVG'], ['Portrait', '800 × 800']]) {
-            assets.append(component('cb-card', { label, value, items: [{ id: 'metadata', label: 'Format', description: value }] }))
+            const card = component('cb-card', {})
+            const content = component('cb-col', { gap: '12px' })
+            const metadata = document.createElement('dl')
+            metadata.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px 8px;margin:0'
+            const term = document.createElement('dt'); term.textContent = 'Format'
+            const description = document.createElement('dd'); description.textContent = value; description.style.margin = '0'
+            metadata.append(term, description)
+            content.append(
+                component('cb-heading', { label, variant: 'h3', size: 'sm' }),
+                metadata,
+            )
+            card.append(content)
+            assets.append(card)
         }
         return wideSurface(formField('cb-combobox', { label: 'Search assets', placeholder: 'Name or type', options: [{ value: 'hero', label: 'Hero image' }, { value: 'logo', label: 'Logo' }] }), fill(assets))
+    },
+}
+
+export const InfiniteList: Story = {
+    name: 'Data display / Infinite list',
+    render: () => {
+        const list = document.createElement('cb-list') as List<number>
+        list.style.cssText = 'height:240px;width:100%'
+        list.accessibleLabel = 'Load more records by scrolling'
+        list.gap = 8
+        list.offset = 60
+        let loaded = Array.from({ length: 20 }, (_, index) => index + 1)
+        list.items = loaded
+        list.renderItem = item => html`<cb-card padding="12px">Record ${item}</cb-card>`
+        list.addEventListener('loadmoreitems', () => {
+            // Loading state and end-of-data handling belong to the application.
+            if (loaded.length >= 100) return
+            loaded = [...loaded, ...Array.from({ length: 20 }, (_, index) => loaded.length + index + 1)]
+            list.items = loaded
+        })
+        return compactSurface(list)
     },
 }
 
@@ -467,8 +502,40 @@ export const FeedbackStates: Story = {
     render: () => surface(
         component('cb-progress', { label: 'Uploading assets', progress: 64, max: 100, status: '64%' }),
         component('cb-alert', { label: 'Autosave paused', value: 'Reconnect to keep editing.', status: 'Offline' }),
-        component('cb-empty-state', { label: 'No comments yet', value: 'Start a review to collect feedback.' }),
+        component('cb-empty-state', { heading: 'No comments yet', description: 'Start a review to collect feedback.', icon: 'comment' }),
     ),
+}
+
+export const FeedbackVariants: Story = {
+    name: 'Feedback / Variants',
+    render: () => {
+        const group = (heading: string, ...samples: HTMLElement[]): HTMLElement => {
+            const column = component('cb-col', { width: '100%', gap: '16px', align: 'start' })
+            column.append(component('cb-heading', { label: heading, variant: 'h3', size: 'sm' }), ...samples)
+            return column
+        }
+        const toast = component('cb-toast', { label: 'Page could not be published', value: 'Check the connection and try again. Your work is preserved.', tone: 'danger' })
+        toast.append(component('cb-button', { label: 'Retry', variant: 'primary' }))
+        const grid = component('cb-grid', { width: '100%', columns: 'repeat(auto-fit,minmax(min(100%,320px),1fr))', gap: '32px' })
+        grid.append(
+            group('Status',
+                component('cb-status', { value: 'Saving changes…', tone: 'info' }),
+                component('cb-status', { value: 'Offline · changes kept locally', tone: 'warning' })),
+            group('Progress',
+                component('cb-progress', { label: 'Preparing export…', indeterminate: true, tone: 'info' }),
+                component('cb-progress', { label: 'Export complete', progress: 100, tone: 'success' }),
+                component('cb-progress', { label: 'Upload interrupted', progress: 40, tone: 'danger', description: '2 of 5 files uploaded · Retry remaining' })),
+            group('Alerts',
+                component('cb-alert', { label: 'This affects every instance', value: 'Editing this component updates 12 instances. Review affected pages first.', tone: 'warning' }),
+                component('cb-alert', { label: 'Connection could not be verified', value: 'Check the connection and try again. Your work is preserved.', tone: 'danger' })),
+            group('Skeletons',
+                component('cb-skeleton', { variant: 'card', lines: 2, accessibleLabel: 'Loading card' }),
+                component('cb-skeleton', { variant: 'table', rows: 3, columns: 3, accessibleLabel: 'Loading table' })),
+            group('Spinner', component('cb-spinner', { status: 'Loading assets…', size: 'sm' })),
+            group('Toast', toast),
+        )
+        return wideSurface(grid)
+    },
 }
 
 export const ReviewWorkflow: Story = {
@@ -499,7 +566,7 @@ export const EditorWorkspace: Story = {
             items: [{ id: 'page', label: 'Homepage', children: [{ id: 'hero', label: 'Hero', children: [{ id: 'title', label: 'Main heading', icon: 'text' }, { id: 'visual', label: 'Product visual', icon: 'image' }] }, { id: 'features', label: 'Features', icon: 'grid' }] }],
         }); layers.slot = 'start'
         const properties = component('cb-property-group', { label: 'Dimensions', expanded: true, dirty: true, resetLabel: 'Reset dimensions', mixedLabel: 'Mixed', expandLabel: 'Expand dimensions', collapseLabel: 'Collapse dimensions' }); properties.slot = 'end'
-        const linked = formField('cb-linked-values', { label: 'Dimensions', accessibleLabel: 'Layer dimensions', firstValue: 320, secondValue: 180, firstLabel: 'Width', secondLabel: 'Height', linked: true, linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions' })
+        const linked = formField('cb-linked-values', { label: 'Dimensions', accessibleLabel: 'Layer dimensions', values: [320,180], fieldLabels: ['Width','Height'], linked: true, linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions' })
         properties.append(linked)
         const timeline = component('cb-timeline', { label: 'Timeline', accessibleLabel: 'Animation timeline', duration: 4, currentTime: 1, playLabel: 'Play', pauseLabel: 'Pause', rewindLabel: 'Rewind', addKeyframeLabel: 'Add keyframe', playheadLabel: 'Playhead', keyframeLabel: '{track} at {time}', timeLabel: '{current} / {duration}', tracks: [{ id: 'opacity', label: 'Opacity', keyframes: [{ id: 'one', time: 0 }, { id: 'two', time: 2 }, { id: 'three', time: 4 }] }] }); timeline.slot = 'bottom'
         const canvas = document.createElement('div')

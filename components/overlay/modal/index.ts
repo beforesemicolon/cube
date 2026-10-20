@@ -1,9 +1,10 @@
-import { css, isNot, or, html, type Template } from '../../core/runtime.js'
+import componentStylesheet from './view.css?inline'
+import { isNot, or, html, type Template } from '../../core/runtime.js'
 import { bool, scalarText } from '../../core/value.js'
 import { ModalBase } from './ModalBase.js'
-import { createModalView, modalCSS, type ModalView } from './view.js'
+import { createModalView, type ModalView } from './view.js'
 export class Modal extends ModalBase {
-    stylesheet = css`${modalCSS}`
+    stylesheet = componentStylesheet
     static observedAttributes = [...ModalBase.observedAttributes, 'cancel-label', 'show-cancel']
     private view?: ModalView
     render(): Template {

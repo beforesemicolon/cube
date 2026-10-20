@@ -31,6 +31,7 @@ export interface ColorPickerProps extends FieldControlProps, PopupConstraintProp
 
 export interface ColorPickerChangeDetail {
     readonly value: string
+    readonly previousValue: string
     readonly color: HSVAColor
     readonly originalEvent?: Event
 }
@@ -108,7 +109,7 @@ export abstract class ColorPickerBase extends FieldControlBase<ColorPickerProps>
     changeColor(color: HSVAColor, originalEvent?: Event): boolean {
         const next = colorToHex({ ...color, alpha: bool(this.allowAlpha) ? color.alpha : 1 })
         if (next === this.normalizedValue()) return false
-        const detail:Omit<ColorPickerChangeDetail,'value'|'originalEvent'>={color:parseHexColor(next)??color}
+        const detail:Omit<ColorPickerChangeDetail,'value'|'previousValue'|'originalEvent'>={color:parseHexColor(next)??color}
         return this.commitValue(next,originalEvent,detail)
     }
 

@@ -1,0 +1,15 @@
+@import "../../theme/editor.css";
+:host {
+  position: absolute;
+  z-index: var(--z-index-marquee,10);
+  inset: 0;
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+}
+[part~=marquee] {
+  position: absolute;
+  border: 1px solid var(--color-primary);
+  background: color-mix(in srgb, var(--color-selection) 42%, transparent);
+  pointer-events: none;
+}

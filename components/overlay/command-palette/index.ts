@@ -1,11 +1,12 @@
-import { isNot, or, css as componentStyles, html, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { isNot, or, html, type Template } from '../../core/runtime.js'
+
 import { bool, scalarText } from '../../core/value.js'
 import type { NormalizedItem } from '../../core/items.js'
 import { CommandPaletteBase } from './CommandPaletteBase.js'
-const css = editorCSS + `:host{display:contents}[part=dialog]{inline-size:min(560px,calc(100vw - 24px));max-block-size:min(70dvh,640px);padding:var(--spacing-sm,8px);border:1px solid var(--color-separator,#dae0e4);border-radius:var(--radius-md,10px);background:var(--color-surface-raised,#fff);color:var(--color-foreground,#20262b);box-shadow:0 24px 70px rgba(12,18,24,.24)}[part=dialog]::backdrop{background:var(--component-overlay-backdrop,rgba(10,16,22,.56))}[part=search]{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:var(--spacing-sm,8px);padding:var(--spacing-xs,4px) var(--spacing-sm,8px);border:1px solid var(--color-border,#8a959f);border-radius:var(--radius-sm,6px)}[part=input]{display:block;inline-size:100%;min-inline-size:0;--component-studio-control-width:100%;--component-studio-control-min-width:0}[part=input]::part(control){min-block-size:28px;padding:0;border:0;background:transparent;outline:0}[part=results]{margin-block-start:var(--spacing-sm,8px)}[part=empty]{padding:var(--spacing-lg,16px);text-align:center}`;
+
 export class CommandPalette extends CommandPaletteBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     render(): Template {
         return html`

@@ -1,9 +1,10 @@
-import { css as componentStyles, type Template } from '../../core/runtime.js'
+import componentStylesheet from '../../navigation/menu/view.css?inline'
+import { type Template } from '../../core/runtime.js'
 import { bool, finite } from '../../core/value.js';
 import { ContextMenuBase } from './ContextMenuBase.js';
-import {  createMenuView, type MenuView , menuCSS } from '../../navigation/menu/view.js';
+import { createMenuView, type MenuView } from '../../navigation/menu/view.js'
 export class ContextMenu extends ContextMenuBase {
-    stylesheet = componentStyles`${menuCSS}`
+    stylesheet = componentStylesheet
 
     private view?: MenuView;
     render(): Template {

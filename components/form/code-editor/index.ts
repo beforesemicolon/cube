@@ -1,30 +1,12 @@
-import { css as componentStyles, pick, isNot, and, html, state, unsafeHTML, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { pick, isNot, and, html, state, unsafeHTML, type Template } from '../../core/runtime.js'
+
 import { highlightCode } from '../../core/highlight.js'
 import { bool, scalarText } from '../../core/value.js'
 import { CodeEditorBase } from './CodeEditorBase.js'
 
-const syntaxCSS = `
-.hljs-keyword,.hljs-selector-tag,.hljs-literal,.hljs-type,.hljs-built_in{color:var(--component-code-keyword,var(--color-primary))}
-.hljs-string,.hljs-attribute,.hljs-template-tag{color:var(--component-code-string,var(--color-success))}
-.hljs-number,.hljs-symbol,.hljs-bullet,.hljs-variable.constant_{color:var(--component-code-number,var(--color-warning))}
-.hljs-comment,.hljs-quote{color:var(--color-muted-foreground);font-style:italic}.hljs-title,.hljs-section,.hljs-selector-id,.hljs-title.class_,.hljs-title.function_{color:var(--component-code-title,var(--color-signal-text));font-weight:600}
-.hljs-attr,.hljs-property,.hljs-selector-class{color:var(--component-code-property,var(--color-signal-text))}.hljs-regexp,.hljs-meta{color:var(--component-code-special,var(--color-danger))}
-`;
-const css = editorCSS + syntaxCSS + `
-:host{display:block;inline-size:var(--component-code-editor-width,720px);max-inline-size:100%;min-inline-size:min(100%,var(--component-code-editor-min-width,320px))}
-[part~=shell]{overflow:hidden;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)}
-[part~=toolbar]{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-sm,8px);min-block-size:32px;padding:var(--spacing-xs,4px) var(--spacing-sm,8px);border-block-end:1px solid var(--color-separator);background:var(--color-surface-muted)}
-[part~=language],[part~=position]{color:var(--color-muted-foreground);font:600 11px/1.4 var(--typography-mono-font-family)}
-[part~=editor]{display:grid;grid-template-columns:auto minmax(0,1fr);min-block-size:0;overflow:hidden}
-[part~=gutter]{margin:0;padding:var(--spacing-sm,8px);border-inline-end:1px solid var(--color-separator);background:var(--color-surface-muted);color:var(--color-muted-foreground);font:400 var(--component-code-font-size,12px)/1.65 var(--typography-mono-font-family);text-align:end;user-select:none;white-space:pre}
-[part~=editing-layer]{position:relative;min-inline-size:0;overflow:hidden}[part~=highlight],[part~=control]{font:400 var(--component-code-font-size,12px)/1.65 var(--typography-mono-font-family);tab-size:var(--code-tab-size,2);white-space:pre;margin:0;padding:var(--spacing-sm,8px);border:0;border-radius:0;min-block-size:var(--code-min-height);max-block-size:var(--code-max-height);overflow:auto}
-[part~=highlight]{position:absolute;inset:0;pointer-events:none;color:var(--color-foreground)}[part~=control]{position:relative;inline-size:100%;resize:none;background:transparent;color:transparent;caret-color:var(--color-foreground);-webkit-text-fill-color:transparent;outline:0}
-[part~=control]::selection{background:var(--component-code-selection-background,var(--color-selection));color:var(--component-code-selection-foreground,var(--color-foreground));-webkit-text-fill-color:var(--component-code-selection-foreground,var(--color-foreground));text-shadow:none}:host([data-wrap]) [part~=highlight],:host([data-wrap]) [part~=control]{white-space:pre-wrap;overflow-wrap:anywhere}
-:host([data-invalid]) [part~=shell]{border-color:var(--color-danger)}
-`;
 export class CodeEditor extends CodeEditorBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
     private readonly cursor = state({ line: 1, column: 1 })
     private get control(): HTMLTextAreaElement | undefined {
         const node = this.refs.control?.[0]

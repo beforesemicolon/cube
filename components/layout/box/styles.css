@@ -1,0 +1,11 @@
+:host {
+  display: block;
+  box-sizing: border-box;
+  container-type: inline-size;
+}
+:host([data-inline]) {
+  display: inline-block;
+}
+:host([hidden]) {
+  display: none;
+}

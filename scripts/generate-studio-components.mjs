@@ -27,7 +27,7 @@ const groups = [
     ]],
     ['data-feedback', [
         ['badge','Badge','display'],['status','Status','status'],['avatar','Avatar','display'],['card','Card','panel'],['list','List','collection'],
-        ['description-row','Description row','display'],['property-row','Property row','editor'],['table','Table','collection'],['tree','Tree','collection'],
+        ['property-row','Property row','editor'],['table','Table','collection'],['tree','Tree','collection'],
         ['accordion','Accordion','panel'],['empty-state','Empty state','status'],['skeleton','Skeleton','status'],['progress','Progress','progress'],
         ['spinner','Spinner','progress'],['toast','Toast','status'],['alert','Alert','status'],['validation','Validation','status'],['banner','Banner','status'],
         ['stat','Stat','status'],['code-preview','Code preview','display'],['activity-log','Activity log','collection'],
@@ -96,7 +96,7 @@ const publicStudioComponentNames = new Set([
     'text-input','textarea','number-input','unit-input','combobox','checkbox','switch','range-slider','stepper','date-picker','time-picker','file-picker','token-input','editable-label','masked-input',
     'color-picker','gradient-editor',
     'sidebar','resizable-panel','docked-panel','panel-header',
-    'badge','avatar','card','list','description-row','table','tree','accordion','code-preview',
+    'badge','avatar','card','list','table','tree','accordion','code-preview',
     'status','empty-state','skeleton','progress','spinner','toast','alert','banner',
     'popover','drawer','hover-card','bottom-sheet',
     'viewport','artboard','rulers','device-frame','bezier','timeline',

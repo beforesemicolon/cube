@@ -80,12 +80,13 @@ export abstract class Component<P extends CommonProps = CommonProps> extends Web
     protected documentLanguage(): string | undefined { return this.ownerDocument.documentElement.lang || undefined }
 }
 const brand = Symbol.for('@beforesemicolon/cube/component-version')
+const componentVersion = '0.3.0-alpha.1'
 export function register(tag: string, ctor: CustomElementConstructor): void {
     const existing = customElements.get(tag)
     if (!existing) {
-        Object.defineProperty(ctor, brand, { value: '0.3.0-alpha.0' })
+        Object.defineProperty(ctor, brand, { value: componentVersion })
         customElements.define(tag, ctor)
-    } else if (existing !== ctor && Reflect.get(existing, brand) !== '0.3.0-alpha.0') {
+    } else if (existing !== ctor && Reflect.get(existing, brand) !== componentVersion) {
         throw new Error(`The custom element ${tag} is already registered by a different implementation`)
     }
 }

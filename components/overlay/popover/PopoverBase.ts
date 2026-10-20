@@ -23,7 +23,6 @@ export abstract class PopoverBase<P extends PopoverProps = PopoverProps> extends
         this.toggleAttribute('open', open)
         this.syncView()
         this.emit(open ? 'open' : 'close', detail)
-        this.emit('openchange', detail)
         return true
     }
 }

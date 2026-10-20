@@ -56,7 +56,7 @@ export abstract class FlashbarBase<P extends FlashbarProps = FlashbarProps> exte
     messages: FlashbarMessage[] = []
     private sequence = 0
     private records: NormalizedFlashbarMessage[] = []
-    private timers = new Map<string, { handle: number; deadline: number; remaining: number }>()
+    private timers = new Map<string, { handle: ReturnType<typeof globalThis.setTimeout> | 0; deadline: number; remaining: number }>()
 
     protected abstract syncMessages(messages: readonly NormalizedFlashbarMessage[]): void
 

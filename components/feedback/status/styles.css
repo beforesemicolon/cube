@@ -1,0 +1,5 @@
+@import "../view.css";
+:host {
+  display: inline-flex;
+  inline-size: var(--component-feedback-width,auto);
+}

@@ -10,7 +10,7 @@ for(const {path,name,className}of componentEntries){
     assert.match(registration,new RegExp(`register\\('cb-${name}'`))
     assert.doesNotMatch(componentSource, /register\('cb-/, `${className} must be registered by its category`)
     assert.match(componentSource, /render\(\): Template/, `${className} must return a Markup template`)
-    assert.match(componentSource,new RegExp(`class ${className} extends ${className}Base`),`${className} must inherit its component base`)
+    assert.match(componentSource,new RegExp(`class ${className}(?:<[^\\n]+>)? extends ${className}Base`),`${className} must inherit its component base`)
     assert.match(baseSource,new RegExp(`class ${className}Base(?:<[^\\n]+>)? extends (?:[A-Za-z]+Base|Component)(?:<[^\\n]+>)?`),`${className}Base must inherit Component or a named family base`)
     assert.doesNotMatch(baseSource,/UIComponent|StudioComponentBase|FormFieldBase/,`${className}Base uses a retired hierarchy layer`)
 }
@@ -20,8 +20,8 @@ for(const {category,name,className}of studioDefinitions){
     assert.match(source,/extends (?:[A-Za-z]+Base|Component)/)
     await access(`components/${category}/${name}/base.ts`)
 }
-assert.equal(studioDefinitions.length,53,'The audited Studio catalog contains 53 component families')
-assert.equal(studioDesignReferences.length,217,'The eleven Studio boards remain available as 217 design references')
+assert.equal(studioDefinitions.length,52,'The audited Studio catalog contains 52 component families')
+assert.equal(studioDesignReferences.length,216,'The eleven Studio boards remain available as 216 design references')
 for(const {name}of studioBoardItems)assert(componentEntries.some(entry=>entry.name===name),`Missing Studio board component: ${name}`)
 const index=JSON.parse(await readFile('storybook-static/index.json','utf8'))
 for(const id of ['bar','line','mixed-line-and-bar','area','bubble','scatter','pie','donut'])assert(index.entries[`charts--${id}`],`Missing ${id} story`)

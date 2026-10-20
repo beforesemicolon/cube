@@ -1,34 +1,12 @@
-import { isNot, or, css as componentStyles, type Template, html, repeat, when, state } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import componentStylesheet from './styles.css?inline'
+import { isNot, or, type Template, html, repeat, when, state } from '../../core/runtime.js'
+
 import { finite, scalarText } from '../../core/value.js';
-import { token as v } from '../../theme/tokens.js';
+
 import { RulersBase } from './RulersBase.js';
-const css = editorCSS + `
-:host{display:block;inline-size:100%;min-inline-size:0;container-type:inline-size}
-[part~=root]{display:grid;grid-template:var(--component-ruler-size,28px) minmax(240px,1fr)/var(--component-ruler-size,28px) minmax(0,1fr);overflow:hidden;border:1px solid ${v('--color-border')};border-radius:var(--radius-md,10px);background:${v('--color-surface')};box-shadow:0 6px 20px color-mix(in srgb,${v('--color-foreground')} 10%,transparent)}
-[part~=corner]{z-index:3;grid-area:1/1;border-inline-end:1px solid ${v('--color-separator')};border-block-end:1px solid ${v('--color-separator')};background:${v('--color-surface-raised')}}
-[part~=horizontal],[part~=vertical]{position:relative;z-index:2;overflow:hidden;background:${v('--color-surface-raised')};color:${v('--color-muted-foreground')};font:var(--component-code-font,9px/1 ui-monospace,monospace);font-variant-numeric:tabular-nums;pointer-events:none}
-[part~=horizontal]{grid-area:1/2;border-block-end:1px solid ${v('--color-separator')}}
-[part~=vertical]{grid-area:2/1;border-inline-end:1px solid ${v('--color-separator')}}
-[part~=tick]{position:absolute;color:${v('--color-border')};border-color:currentColor}
-[part~=horizontal] [part~=tick]{inset-block-end:0;block-size:6px;border-inline-start:1px solid}
-[part~=vertical] [part~=tick]{inset-inline-end:0;inline-size:6px;border-block-start:1px solid}
-[part~=tick][data-major]{color:${v('--color-muted-foreground')}}
-[part~=horizontal] [part~=tick][data-major]{block-size:12px}
-[part~=vertical] [part~=tick][data-major]{inline-size:12px}
-[part~=tick-label]{position:absolute;white-space:nowrap;pointer-events:none}
-[part~=horizontal] [part~=tick-label]{inset-block-start:4px;translate:-50% 0}
-[part~=vertical] [part~=tick-label]{inset-inline-start:3px;translate:0 -50%;writing-mode:vertical-rl}
-[part~=surface]{position:relative;grid-area:2/2;overflow:hidden;min-block-size:var(--component-rulers-height,380px);background:${v('--color-surface-muted')};outline-offset:-2px;cursor:crosshair}
-[part~=content]{display:block;inline-size:100%;block-size:100%}
-[part~=guide-x],[part~=guide-y]{position:absolute;z-index:2;background:${v('--color-primary')};pointer-events:none}
-[part~=guide-x]{inset-block:0;inline-size:1px;inset-inline-start:var(--cb-cursor-x)}
-[part~=guide-y]{inset-inline:0;block-size:1px;inset-block-start:var(--cb-cursor-y)}
-[part~=cursor]{position:absolute;z-index:3;inset-inline-start:var(--cb-cursor-x);inset-block-start:var(--cb-cursor-y);translate:8px 8px;margin:0;padding:3px 6px;border:1px solid ${v('--color-primary')};border-radius:var(--radius-sm,6px);background:${v('--color-surface-raised')};color:${v('--color-foreground')};font:var(--component-code-font,10px/1.3 ui-monospace,monospace);white-space:nowrap;pointer-events:none}
-:host([data-disabled]) [part~=root]{opacity:var(--component-disabled-opacity,.5)}
-`;
+
 export class Rulers extends RulersBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly dimensions = state({width:960,height:480});
     private get surface(): HTMLElement | undefined { const node=this.refs.surface?.[0]; return node instanceof HTMLElement ? node : undefined; }

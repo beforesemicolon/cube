@@ -13,6 +13,7 @@ export abstract class TabsBase<P extends TabsProps = TabsProps> extends ChoiceGr
     closeLabel = ''
 
     protected closeTab(item: TabItem, originalEvent: Event): boolean {
+        originalEvent.stopPropagation()
         if (this.unavailable || item.disabled || !item.closable) return false
         const choices = this.choices
         const index = choices.findIndex(choice => choice.id === item.id)

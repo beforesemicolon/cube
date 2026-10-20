@@ -30,6 +30,20 @@ test.beforeEach(async ({ page }) => {
     })
 })
 
+test('color plane changes color without leaking an empty button action', async ({ page }) => {
+    const picker = page.locator('cb-color-picker')
+    await picker.getByRole('button',{name:'Choose fill color',exact:true}).click()
+    await picker.evaluate(node => {
+        node.dataset.actions = '0'
+        node.dataset.changes = '0'
+        node.addEventListener('action',() => { node.dataset.actions = String(Number(node.dataset.actions) + 1) })
+        node.addEventListener('change',() => { node.dataset.changes = String(Number(node.dataset.changes) + 1) })
+    })
+    await picker.getByLabel('Saturation and brightness',{exact:true}).click({position:{x:20,y:20}})
+    await expect(picker).not.toHaveAttribute('data-changes','0')
+    await expect(picker).toHaveAttribute('data-actions','0')
+})
+
 test('opens from a compact swatch and exposes every custom color control', async ({ page }) => {
     const picker = page.locator('cb-color-picker'), trigger = picker.getByRole('button', { name: 'Choose fill color', exact: true })
     await expect.poll(() => picker.evaluate(element => (element as ColorPickerElement).value)).toBe('#2563ebcc')

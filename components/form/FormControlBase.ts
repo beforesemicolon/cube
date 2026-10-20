@@ -66,7 +66,7 @@ export abstract class FormControlBase<P extends FormControlSharedProps=FormContr
     protected commitState<Value>(previousValue:Value,value:Value,originalEvent:Event|undefined,detail:object,apply:(value:Value)=>void,equal:(previousValue:Value,value:Value)=>boolean=Object.is):boolean{
         if(!this.canChangeValue()){this.syncView();return false}
         if(equal(previousValue,value))return false
-        const changeDetail={value,previousValue,...detail,originalEvent}
+        const changeDetail={...detail,value,previousValue,originalEvent}
         if(!this.request('beforechange',changeDetail)){this.syncView();return false}
         apply(value)
         this.syncView()

@@ -19,7 +19,7 @@ export function studioTemplates(source: StudioViewSource): Template {
     const disabled = () => source.controlUnavailable?.() ?? bool(source.disabled)
     const readOnly = () => bool(source.readOnly)
     const required = () => bool(source.required)
-    const invalid = () => bool(source.invalid) || source.hasAttribute('data-field-invalid')
+    const invalid = or(() => bool(source.invalid), () => scalarText(source.errorText), () => source.hasAttribute('data-field-invalid'))
     const selected = (item: StudioItem) => Array.isArray(source.value)
         ? source.value.includes(String(item.value ?? item.id))
         : String(source.value) === String(item.value ?? item.id) || item.selected === true
@@ -52,7 +52,7 @@ export function studioTemplates(source: StudioViewSource): Template {
     const controlAttributes = {
         'aria-invalid': () => invalid() ? true : null,
         'aria-readonly': () => readOnly() ? true : null,
-        'aria-description': () => [description(),scalarText(source.error)].filter(Boolean).join(' ') || null,
+        'aria-description': () => [description(),scalarText(source.errorText)].filter(Boolean).join(' ') || null,
         'aria-valuetext': () => name === 'unit-input' ? (() => {
             const unit = source as UnitInputBase
             const label = unit.normalizedUnits.find(option => option.value === unit.selectedUnit)?.label ?? unit.selectedUnit
@@ -163,8 +163,7 @@ export function studioTemplates(source: StudioViewSource): Template {
             const slot = event.target
             if (slot instanceof HTMLSlotElement) slottedContent[1](slot.assignedNodes().some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim())))
         }}"><div ref="generated" part="generated-content" hidden="${slottedContent[0]}"><div part="panel-content">
-            ${when(name === 'card', () => html`<div part="preview-block card-media">${() => value() || label()}</div>`, () => '')}
-            ${repeat(items, field, { key: item => item.id, empty: when(name === 'card', () => '', () => html`<div part="preview-block">${() => value() || description()}</div>`) })}
+            ${repeat(items, field, { key: item => item.id, empty: () => html`<div part="preview-block">${() => value() || description()}</div>` })}
         </div></div><slot part="content"></slot></div>
     </section>`
 
@@ -187,7 +186,7 @@ export function studioTemplates(source: StudioViewSource): Template {
     const root = html`<div part="root" data-component="${name}">
         ${when(isNot(or(fieldControl, oneOf(kind, ['choice', 'display', 'panel', 'editor', 'shell', 'status', 'progress']))), html`<div part="label-row row"><label part="label" hidden="${isNot(label)}">${label}</label></div>`)}
         <div part="body">${body}</div>
-        ${when(fieldControl, () => '', () => html`<p part="description" hidden="${isNot(description)}">${description}</p><p part="error" role="alert" hidden="${isNot(() => scalarText(source.error))}">${() => scalarText(source.error)}</p>`)}
+        ${when(fieldControl, () => '', () => html`<p part="description" hidden="${isNot(description)}">${description}</p><p part="error" role="alert" hidden="${isNot(() => scalarText(source.errorText))}">${() => scalarText(source.errorText)}</p>`)}
     </div>`
     return root
 }

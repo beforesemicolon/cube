@@ -57,7 +57,7 @@ try {
             errors = []
             activeStory = story.id
             await page.goto(`${origin}/iframe.html?id=${story.id}&viewMode=story&globals=appearance:${appearance}`)
-            await page.locator('cube-story-events').waitFor({ state: 'attached' })
+            await page.locator(`cube-story-events[data-story-id="${story.id}"]`).waitFor({ state: 'attached' })
             await page.waitForFunction(() => Boolean(document.querySelector('cube-story-events')?.firstElementChild))
             await page.waitForTimeout(250)
             const path = resolve(root, `${story.id}-${appearance}.png`)

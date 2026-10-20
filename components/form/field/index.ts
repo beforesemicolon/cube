@@ -1,23 +1,11 @@
-import { isNot, or, and, pick, css as componentStyles, type Template, html, state } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { isNot, or, and, pick, type Template, html, state } from '../../core/runtime.js'
+
 import { aria } from '../../core/accessibility.js'
 import { uid } from '../../core/id.js'
 import { bool, scalarText } from '../../core/value.js';
 import { FieldBase } from './FieldBase.js';
-const css = editorCSS + `
-:host{display:inline-grid;inline-size:var(--component-field-width,fit-content);max-inline-size:100%;min-inline-size:0}
-[part~=field]{display:grid;gap:var(--spacing-xs,4px);inline-size:100%;min-inline-size:0;box-sizing:border-box}
-[part~=header]{display:flex;align-items:baseline;justify-content:space-between;gap:var(--spacing-sm,8px);min-inline-size:0}
-[part~=label-wrap]{display:flex;align-items:baseline;gap:var(--spacing-xs,4px);min-inline-size:0}
-[part~=label]{font-weight:600}[part~=requirement]{color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px)}
-[part~=control-container]{display:block;min-inline-size:0}
-[part~=description],[part~=help],[part~=error],[part~=success]{margin:0}
-[part~=details]{color:var(--color-muted-foreground);font-size:var(--component-caption-font-size,11px)}
-[part~=details-summary]{cursor:pointer;color:var(--color-signal-text)}[part~=details-copy]{margin-block:var(--spacing-xs,4px) 0}
-[part~=success]{color:var(--color-success)}
-:host([data-invalid]) ::slotted(*){--color-border:var(--color-danger)}
-:host([data-success]) ::slotted(*){--color-border:var(--color-success)}
-`;
+
 interface FieldControlElement extends HTMLElement {
     accessibleLabel?: string;
     description?: string;
@@ -28,7 +16,7 @@ interface FieldControlElement extends HTMLElement {
     errorText?: string;
 }
 export class Field extends FieldBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly fieldId = uid('cb-field');
     private readonly labelId = uid('cb-field-label');

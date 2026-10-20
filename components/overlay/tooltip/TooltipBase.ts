@@ -10,7 +10,7 @@ export abstract class TooltipBase<P extends TooltipProps = TooltipProps> extends
     placement: TooltipProps['placement'] = 'top'
     delay = 400
     open = false
-    private timer?: number
+    private timer?: ReturnType<typeof globalThis.setTimeout>
     protected abstract syncTooltip(): void
     protected mount(): void { this.syncTooltip() }
     protected update(): void { this.syncTooltip() }

@@ -1,13 +1,11 @@
-import { isNot, or, css as componentStyles, html, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { isNot, or, html, type Template } from '../../core/runtime.js'
+
 import { bool, scalarText } from '../../core/value.js'
 import { PropertyGroupBase } from './PropertyGroupBase.js'
-const css = editorCSS + `
-:host{display:block;inline-size:100%;min-inline-size:0}[part~=section]{display:block}[part~=mixed]{display:inline-flex;align-items:center;min-block-size:20px;padding:1px var(--spacing-xs,4px);border-radius:999px;background:var(--color-selection);color:var(--color-signal-text);font-size:10px}
-[part~=reset]{flex:none}:host([data-dirty]) [part~=section]{--component-property-group-accent:var(--color-primary)}
-`;
+
 export class PropertyGroup extends PropertyGroupBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     render(): Template {
         return html`

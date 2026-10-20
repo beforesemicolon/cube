@@ -1,0 +1,87 @@
+@import "../../theme/editor.css";
+:host {
+  display: block;
+  inline-size: 100%;
+  min-inline-size: 0;
+  container-type: inline-size;
+}
+[part~=viewport] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-block-size: var(--component-viewport-height,420px);
+  border: 1px solid var(--color-border, #8A959F);
+  border-radius: var(--radius-lg,12px);
+  background: var(--color-surface-muted, #F5F6F5);
+  touch-action: none;
+  user-select: none;
+}
+[part~=viewport][data-grid] {
+  background-image:
+    linear-gradient(var(--color-separator, #DAE0E4) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      var(--color-separator, #DAE0E4) 1px,
+      transparent 1px);
+  background-size: var(--component-viewport-grid-size,20px) var(--component-viewport-grid-size,20px);
+}
+[part~=world] {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%) translate(var(--cb-pan-x), var(--cb-pan-y)) scale(var(--cb-zoom));
+  transform-origin: center;
+  will-change: transform;
+}
+[part~=controls] {
+  position: absolute;
+  z-index: 2;
+  inset-inline-end: var(--spacing-sm,8px);
+  inset-block-end: var(--spacing-sm,8px);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-separator, #DAE0E4);
+  border-radius: var(--radius-md,10px);
+  background: color-mix(in srgb, var(--color-surface-raised, #FFFFFF) 92%, transparent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-foreground, #20262B) 12%, transparent);
+}
+[part~=zoom-out],
+[part~=reset],
+[part~=zoom-in] {
+  --component-control-height-sm:30px;
+}
+[part~=status] {
+  min-inline-size: 58px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted-foreground, #606B73);
+  pointer-events: none;
+}
+[part~=position] {
+  position: absolute;
+  z-index: 2;
+  inset-inline-start: var(--spacing-sm,8px);
+  inset-block-end: var(--spacing-sm,8px);
+  margin: 0;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm,6px);
+  background: color-mix(in srgb, var(--color-surface-raised, #FFFFFF) 88%, transparent);
+  color: var(--color-muted-foreground, #606B73);
+  font: var(--component-code-font,11px/1.4 ui-monospace,monospace);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+:host([data-disabled]) [part~=viewport] {
+  opacity: var(--component-disabled-opacity,.5);
+  cursor: not-allowed;
+}
+@container (max-width:420px) {
+  [part~=viewport] {
+    min-block-size: 300px;
+  }
+  [part~=position] {
+    display: none;
+  }
+}

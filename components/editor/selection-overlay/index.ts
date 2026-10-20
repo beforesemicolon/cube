@@ -1,23 +1,11 @@
-import { isNot, css as componentStyles, type Template, html, repeat } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import componentStylesheet from './styles.css?inline'
+import { isNot, type Template, html, repeat } from '../../core/runtime.js'
+
 import { bool, finite, scalarText } from '../../core/value.js';
 import { SelectionOverlayBase, type SelectionHandle } from './SelectionOverlayBase.js';
-const css = editorCSS + `
-:host{position:absolute;z-index:var(--z-index-selection,20);display:block;box-sizing:border-box;pointer-events:none;transform-origin:center}
-[part~=outline]{position:absolute;inset:0;border:var(--component-selection-width,1px) solid var(--color-primary);background:color-mix(in srgb,var(--color-selection) 16%,transparent);pointer-events:auto;cursor:move}
-[part~=outline]:focus-visible{outline:var(--focus-ring);outline-offset:2px}
-[part~=handle]{position:absolute;display:block;inline-size:var(--component-selection-handle-size,9px);min-inline-size:0;block-size:var(--component-selection-handle-size,9px);min-block-size:0;padding:0;border:1px solid var(--color-primary);border-radius:2px;background:var(--color-surface);pointer-events:auto;translate:-50% -50%}
-[part~=handle]::part(control),[part~=rotate]::part(control){inline-size:100%;block-size:100%;cursor:inherit}
-[part~=handle][data-handle=nw]{inset:0 auto auto 0;cursor:nwse-resize}[part~=handle][data-handle=n]{inset:0 auto auto 50%;cursor:ns-resize}[part~=handle][data-handle=ne]{inset:0 0 auto auto;translate:50% -50%;cursor:nesw-resize}
-[part~=handle][data-handle=e]{inset:50% 0 auto auto;translate:50% -50%;cursor:ew-resize}[part~=handle][data-handle=se]{inset:auto 0 0 auto;translate:50% 50%;cursor:nwse-resize}[part~=handle][data-handle=s]{inset:auto auto 0 50%;translate:-50% 50%;cursor:ns-resize}
-[part~=handle][data-handle=sw]{inset:auto auto 0 0;translate:-50% 50%;cursor:nesw-resize}[part~=handle][data-handle=w]{inset:50% auto auto 0;cursor:ew-resize}
-[part~=rotate]{position:absolute;inset:-28px auto auto 50%;display:block;inline-size:18px;min-inline-size:18px;block-size:18px;min-block-size:18px;padding:0;border:1px solid var(--color-primary);border-radius:50%;background:var(--color-surface);pointer-events:auto;translate:-50% 0;cursor:grab}
-[part~=rotate]::after{content:'';position:absolute;inset-block-end:-11px;inset-inline-start:50%;block-size:10px;border-inline-start:1px solid var(--color-primary)}
-[part~=size]{position:absolute;inset:auto auto -26px 50%;translate:-50% 0;padding:2px 5px;border-radius:3px;background:var(--color-primary);color:var(--color-primary-foreground);font:600 10px/1.4 var(--typography-mono-font-family);white-space:nowrap;pointer-events:none}
-:host([data-disabled]) [part~=outline]{cursor:default}:host([data-disabled]) [part~=handle],:host([data-disabled]) [part~=rotate]{display:none}
-`;
+
 export class SelectionOverlay extends SelectionOverlayBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private get outline(): HTMLElement | undefined { const node=this.refs.outline?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private get rotateHandle(): HTMLElement | undefined { const node=this.refs.rotate?.[0]; return node instanceof HTMLElement ? node : undefined; }
@@ -34,10 +22,14 @@ export class SelectionOverlay extends SelectionOverlayBase {
             onpointerdown=${this.beginMove} onkeydown=${this.moveKey}></div>
             ${repeat(this.allHandles, handle => html`<cb-button part=${`handle handle-${handle}`} ref="handles" data-handle=${handle} data-bare data-semantic-host
                 hidden=${isNot(this.props.resizable)} disabled=${() => this.unavailable} accessible-label=${() => this.handleLabel(handle)}
+                onbeforeaction=${(event: Event) => event.stopPropagation()}
+                onaction=${(event: Event) => event.stopPropagation()}
                 onpointerdown=${(event: PointerEvent) => { event.stopPropagation(); this.beginResize(handle,event); }}
                 onkeydown=${(event: KeyboardEvent) => this.resizeKey(handle,event)}></cb-button>`, {key: handle => handle})}
             <cb-button part="rotate" exportparts="control:rotate-control,label:rotate-label,button-label:rotate-label,icon:rotate-icon,description:rotate-description" ref="rotate" data-bare data-semantic-host hidden=${isNot(this.props.rotatable)} disabled=${() => this.unavailable}
                 accessible-label=${this.props.rotateLabel}
+                onbeforeaction=${(event: Event) => event.stopPropagation()}
+                onaction=${(event: Event) => event.stopPropagation()}
                 onpointerdown=${(event: PointerEvent) => { event.stopPropagation(); this.beginRotate(event); }}
                 onkeydown=${(event: KeyboardEvent) => {
                     if (!['ArrowLeft','ArrowRight'].includes(event.key)) return;

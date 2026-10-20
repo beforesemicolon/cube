@@ -16,8 +16,8 @@ test('editable label, masked input, editable list, and linked values expose dist
         Object.assign(masked, { name: 'phone', value: '6175550142', mask: '(999) 999-9999', maskPlaceholder: '•', guide: true, unmask: true, inputMode: 'tel' })
         const list = document.createElement('cb-editable-list') as HTMLElement & { items: readonly object[] } & Record<string, string | number | boolean>
         Object.assign(list, { items: [{ id: 'home', label: '/home', value: '/home' }], minItems: 1, maxItems: 3, addLabel: 'Add path', editLabel: 'Edit {item}', saveLabel: 'Save path', cancelLabel: 'Cancel', removeLabel: 'Remove {item}', moveUpLabel: 'Move {item} up', moveDownLabel: 'Move {item} down', inputLabel: 'New redirect path', emptyLabel: 'No paths' })
-        const linked = document.createElement('cb-linked-values') as HTMLElement & { firstValue: number; secondValue: number; linked: boolean; setFirst(value: number): boolean }
-        Object.assign(linked, { firstValue: 320, secondValue: 180, firstLabel: 'Width', secondLabel: 'Height', linked: true, linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions' })
+        const linked = document.createElement('cb-linked-values') as HTMLElement & { values: readonly number[]; linked: boolean; setValueAt(index:0|1,value:number): boolean }
+        Object.assign(linked, { values: [320,180], fieldLabels: ['Width','Height'], linked: true, linkLabel: 'Link dimensions', unlinkLabel: 'Unlink dimensions' })
         const field = (control: HTMLElement, label: string, description: string): HTMLElement => {
             const wrapper = document.createElement('cb-field') as HTMLElement & { label: string; description: string }
             Object.assign(wrapper, { label, description })
@@ -73,9 +73,8 @@ test('editable label, masked input, editable list, and linked values expose dist
     await expect(linkSwitch).toHaveCount(1)
     await expect(linkSwitch.getByRole('button', { name: 'Unlink dimensions' })).toHaveAttribute('aria-pressed', 'true')
     await expect(linkSwitch.locator('[part~="label"]')).toHaveAttribute('part', /sr-only/)
-    await linked.evaluate((node: HTMLElement & { setFirst(value: number): boolean }) => node.setFirst(640))
-    await expect(linked).toHaveJSProperty('firstValue', 640)
-    await expect(linked).toHaveJSProperty('secondValue', 360)
+    await linked.evaluate((node: HTMLElement & { setValueAt(index:0|1,value:number): boolean }) => node.setValueAt(0,640))
+    await expect(linked).toHaveJSProperty('values', [640,360])
 
     const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
     expect(audit.violations).toEqual([])

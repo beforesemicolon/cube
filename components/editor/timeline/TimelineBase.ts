@@ -20,7 +20,7 @@ export interface TimelineProps extends ComponentProps {
     timeLabel?: string
 }
 
-export interface TimelineTimeDetail { readonly currentTime: number; readonly duration: number; readonly originalEvent?: Event }
+export interface TimelineTimeDetail { readonly value: number; readonly previousValue: number; readonly currentTime: number; readonly duration: number; readonly originalEvent?: Event }
 export interface TimelineKeyframeDetail { readonly trackId: string; readonly keyframe: TimelineKeyframe; readonly originalEvent?: Event }
 
 /** Headless timeline playback, scrubbing, selection, and keyframe editing behavior. */
@@ -65,7 +65,7 @@ export abstract class TimelineBase extends Component<TimelineProps> {
 
     seek(time: number, originalEvent?: Event, commit = true): boolean {
         if (this.unavailable) return false
-        const detail: TimelineTimeDetail = { currentTime: this.timelineTime(time), duration: this.timelineDuration(), originalEvent }
+        const detail: TimelineTimeDetail = { value: this.timelineTime(time), previousValue: this.timelineTime(), currentTime: this.timelineTime(time), duration: this.timelineDuration(), originalEvent }
         if (!this.request(commit ? 'beforechange' : 'beforeinput', detail)) return false
         this.currentTime = detail.currentTime
         this.syncView()

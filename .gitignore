@@ -106,5 +106,6 @@ storybook-static/
 design-qa-artifacts/
 playwright-report/
 test-results/
+release-artifacts/
 docs-cube/_template/template.config.js
 .DS_Store

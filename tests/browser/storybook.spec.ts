@@ -1,6 +1,20 @@
 import {test,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 const required=[['bar','Bar'],['line','Line'],['mixed-line-and-bar','Mixed line and bar'],['area','Area'],['bubble','Bubble'],['scatter','Scatter'],['pie','Pie'],['donut','Donut']]
+test('feedback stories render their individual components',async({page})=>{
+    test.setTimeout(60000)
+    for(const [id,tag,label] of [
+        ['status','cb-status','All changes saved'],['spinner','cb-spinner','Loading assets…'],
+        ['progress','cb-progress','Uploading assets · 60%'],['empty-state','cb-empty-state','Start with your first page'],
+        ['toast','cb-toast','Changes published'],['alert','cb-alert','Preview is not published'],['banner','cb-banner','You are offline'],
+    ]) {
+        await page.goto(`http://127.0.0.1:6006/iframe.html?id=feedback--${id}&viewMode=story`)
+        const host=page.locator(`cube-story-events[data-story-id="feedback--${id}"] ${tag}[data-story-component]`)
+        if(id==='empty-state') await expect(host.getByRole('heading',{name:label})).toBeVisible()
+        else await expect(host.locator('[part~=status-title]')).toHaveText(label)
+        if(id==='empty-state')await expect(host.locator('cb-icon').first()).toHaveAttribute('name','plus')
+    }
+})
 for(const [id,name]of required)test(`built Storybook: ${name} finishes its interactive play function`,async({page})=>{
     const tag=id==='pie'||id==='donut'?'cb-pie-chart':'cb-cartesian-chart'
     await page.goto(`http://127.0.0.1:6006/iframe.html?id=charts--${id}&viewMode=story`)
@@ -53,22 +67,22 @@ test('built Storybook: Button exposes optional pressed state and variant example
 })
 
 test('Storybook exposes Actions and records Cube event detail payloads',async({page})=>{
-    await page.goto('http://127.0.0.1:6006/?path=/story/data-display--list')
+    await page.goto('http://127.0.0.1:6006/?path=/story/navigation--menu')
     const story=page.frameLocator('#storybook-preview-iframe')
     const actionsTab=page.getByRole('tab',{name:/Actions/})
     await expect(actionsTab).toBeVisible({timeout:20000})
     await actionsTab.click()
     const panel=page.getByRole('tabpanel',{name:/Actions/})
-    const item=story.getByRole('option',{name:'Secondary item'})
+    const item=story.getByRole('menuitem',{name:'Secondary item'})
     await expect(item).toBeVisible()
     await expect(async()=>{
         await item.click()
         await expect(panel).toContainText('action',{timeout:1000})
     }).toPass({timeout:15000})
     await expect(panel).not.toContainText('beforeaction')
-    await expect(panel).toContainText('cb-list')
+    await expect(panel).toContainText('cb-menu')
     await panel.getByRole('treeitem',{name:/detail: Object/}).last().click()
-    await expect(panel).toContainText(/value:\s*"two"/)
+    await expect(panel).toContainText(/id:\s*"two"/)
     await expect(panel.getByRole('button',{name:'Clear'})).toBeVisible()
 })
 
@@ -84,6 +98,57 @@ test('Storybook records one outcome for one live form edit',async({page})=>{
     await expect(panel).not.toContainText('beforechange')
     await expect(panel.getByText(/^input:/)).toHaveCount(0)
 })
+
+test('Storybook records one segmented selection without empty button actions',async({page})=>{
+    await page.goto('http://127.0.0.1:6006/?path=/story/navigation--segmented-control')
+    const story=page.frameLocator('#storybook-preview-iframe')
+    const actions=page.getByRole('tab',{name:/Actions/})
+    await expect(actions).toBeVisible({timeout:20000});await actions.click()
+    const panel=page.getByRole('tabpanel',{name:/Actions/})
+    const second=story.getByRole('radio',{name:'Secondary item',exact:true})
+    await expect(second).toBeVisible()
+    const clear=panel.getByRole('button',{name:'Clear'});if(await clear.isVisible())await clear.click()
+    await second.click()
+    await expect(panel.getByText(/^change:/)).toHaveCount(1)
+    await expect(panel.getByText(/^action:/)).toHaveCount(0)
+    await panel.getByRole('treeitem',{name:/detail: Object/}).last().click()
+    await expect(panel).toContainText(/value:\s*"two"/)
+    await expect(panel).toContainText(/previousValue:\s*"one"/)
+    await expect(panel).not.toContainText(/value:\s*""/)
+})
+
+for(const scenario of [
+    {story:'popover',label:'Open popover',component:'cb-popover',event:'open'},
+    {story:'drawer',label:'Open drawer',component:'cb-drawer',event:'open'},
+    {story:'bottom-sheet',label:'Open bottom sheet',component:'cb-bottom-sheet',event:'open'},
+    {story:'modal',label:'Open modal',component:'cb-modal',event:'open'},
+    {story:'alert-dialog',label:'Open alert dialog',component:'cb-alert-dialog',event:'open'},
+    {story:'command-palette',label:'Open command palette',component:'cb-command-palette',event:'openchange'},
+    {story:'dropdown',label:'Dropdown',component:'cb-dropdown',event:'openchange'},
+    {story:'hover-card',label:'Hover or focus',component:'cb-hover-card',event:'openchange'},
+    {story:'tooltip',label:'Hover or focus',component:'cb-tooltip',event:'openchange'},
+    {story:'context-menu',label:'Right-click this area',component:'cb-context-menu',event:'openchange'},
+]) {
+    test(`Storybook overlay ${scenario.story} logs only the demonstrated component`,async({page})=>{
+        await page.goto(`http://127.0.0.1:6006/?path=/story/overlay--${scenario.story}`)
+        const story=page.frameLocator('#storybook-preview-iframe')
+        const actions=page.getByRole('tab',{name:/Actions/})
+        await expect(actions).toBeVisible({timeout:20000});await actions.click()
+        const panel=page.getByRole('tabpanel',{name:/Actions/})
+        const clear=panel.getByRole('button',{name:'Clear'});if(await clear.isVisible())await clear.click()
+        if(scenario.story==='context-menu')await story.getByText(scenario.label,{exact:true}).click({button:'right'})
+        else await story.getByRole('button',{name:scenario.label,exact:true}).click()
+        await expect(panel.getByText(new RegExp(`^${scenario.event}:`))).toHaveCount(1)
+        await expect(panel.getByText(/^action:/)).toHaveCount(0)
+        await expect(panel).toContainText(scenario.component)
+        await expect(panel).not.toContainText('"cb-button"')
+        if(scenario.story==='popover') {
+            await expect(panel.getByText(/^openchange:/)).toHaveCount(0)
+            await story.getByRole('button',{name:scenario.label,exact:true}).click()
+            await expect(panel.getByText(/^close:/)).toHaveCount(1)
+        }
+    })
+}
 
 test('built Storybook: layout panel stories expose working controls',async({page})=>{
     await page.goto('http://127.0.0.1:6006/iframe.html?id=layout--sidebar&viewMode=story')
@@ -160,7 +225,12 @@ test('built Storybook: Skeleton has visible loading shapes and complete controls
 
     await page.goto('http://127.0.0.1:6006/?path=/story/feedback--skeleton&addonPanel=storybook/controls/panel')
     const panel=page.getByRole('tabpanel',{name:/Controls/})
-    for(const name of ['variant','lines','rows','columns','animated','accessibleLabel']) await expect(panel.getByText(name,{exact:true}).first()).toBeVisible({timeout:20000})
+    for(const name of ['variant','lines','animated','accessibleLabel']) await expect(panel.getByText(name,{exact:true}).first()).toBeVisible({timeout:20000})
+    await expect(page.locator('#control-rows')).toHaveCount(0)
+    await expect(page.locator('#control-columns')).toHaveCount(0)
+    await page.locator('#control-variant').selectOption('table')
+    for(const name of ['rows','columns']) await expect(panel.getByText(name,{exact:true}).first()).toBeVisible()
+    await expect(page.locator('#control-lines')).toHaveCount(0)
 })
 
 test('built Storybook: Avatar and Presence render distinct identity primitives',async({page})=>{
@@ -226,14 +296,15 @@ test('built Storybook: readiness components expose their complete prop surfaces'
 test('built Storybook: controls follow component, family, and global ownership', async ({ page }) => {
     await page.goto('http://127.0.0.1:6006/?path=/story/data-display--card&addonPanel=storybook/controls/panel')
     const panel = page.getByRole('tabpanel', { name: /Controls/ })
-    const cardGroup = panel.getByText('Card', { exact: true }).first()
+    const cardGroup = panel.getByText('Box family', { exact: true }).first()
     const componentGroup = panel.getByText('Component', { exact: true }).first()
     await expect(cardGroup).toBeVisible({ timeout: 20_000 })
     await expect(componentGroup).toBeVisible()
     const [cardBox, componentBox] = await Promise.all([cardGroup.boundingBox(), componentGroup.boundingBox()])
     expect(cardBox?.y).toBeLessThan(componentBox?.y ?? 0)
     await expect(panel.getByText('status', { exact: true })).toHaveCount(0)
-    for (const property of ['value', 'items', 'actionLabel', 'label', 'accessibleLabel', 'description', 'disabled', 'size']) {
+    for (const property of ['value', 'items', 'actionLabel']) await expect(panel.getByText(property, { exact: true })).toHaveCount(0)
+    for (const property of ['padding', 'width', 'label', 'accessibleLabel', 'description', 'disabled', 'size']) {
         await expect(panel.getByText(property, { exact: true }).first()).toBeVisible()
     }
 

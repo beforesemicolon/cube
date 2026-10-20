@@ -1,39 +1,17 @@
-import { isNot, css as componentStyles, type Template, html, repeat } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import componentStylesheet from './styles.css?inline'
+import { isNot, type Template, html, repeat } from '../../core/runtime.js'
+
 import { finite } from '../../core/value.js';
-import { token as v } from '../../theme/tokens.js';
+
 import { BezierBase } from './BezierBase.js';
-const css = editorCSS + `
-:host{display:block;inline-size:min(100%,var(--component-bezier-width,560px));container-type:inline-size}
-[part~=root]{display:grid;gap:var(--spacing-md,12px);padding:var(--spacing-md,12px);border:1px solid ${v('--color-separator')};border-radius:var(--radius-lg,12px);background:${v('--color-surface')}}
-[part~=header]{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-sm,8px)}
-[part~=label]{font-weight:650}
-[part~=actions]{display:flex;gap:var(--spacing-xs,4px)}
-[part~=workspace]{display:grid;grid-template-columns:minmax(220px,1fr) minmax(150px,.55fr);gap:var(--spacing-md,12px);align-items:stretch}
-[part~=graph]{inline-size:100%;min-block-size:240px;border:1px solid ${v('--color-separator')};border-radius:var(--radius-md,10px);background:${v('--color-surface-muted')};touch-action:none}
-[part~=grid-line]{stroke:${v('--color-separator')};stroke-width:1}
-[part~=axis]{stroke:${v('--color-border')};stroke-width:1.25}
-[part~=handle-line]{stroke:${v('--color-muted-foreground')};stroke-width:1.25;stroke-dasharray:4 3}
-[part~=curve]{fill:none;stroke:${v('--color-primary')};stroke-width:3;stroke-linecap:round}
-[part~=handle]{fill:${v('--color-surface-raised')};stroke:${v('--color-primary')};stroke-width:2;cursor:grab;outline:none}
-[part~=handle]:focus{stroke:${v('--color-focus')};stroke-width:4}
-[part~=fields]{display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-sm,8px);align-content:start}
-[part~=field]{display:grid;gap:var(--spacing-xs,4px);inline-size:100%;min-inline-size:0}[part~=field-label]{color:${v('--color-muted-foreground')};font-size:var(--component-caption-font-size,11px);font-weight:600}[part~=field-control]{display:block;inline-size:100%;min-inline-size:0;--component-studio-control-width:100%}
-[part~=value]{grid-column:1/-1;display:block;overflow:auto;padding:var(--spacing-sm,8px);border:1px solid ${v('--color-separator')};border-radius:var(--radius-sm,6px);background:${v('--color-surface-muted')};font:var(--component-code-font,11px/1.5 ui-monospace,monospace);white-space:nowrap}
-[part~=preview]{position:relative;grid-column:1/-1;block-size:56px;overflow:hidden;border:1px solid ${v('--color-separator')};border-radius:var(--radius-md,10px);background:linear-gradient(90deg,${v('--color-surface-muted')} 50%,${v('--color-surface')} 50%)}
-[part~=preview-dot]{position:absolute;inset-inline-start:8px;inset-block-start:50%;inline-size:18px;block-size:18px;translate:0 -50%;border-radius:50%;background:${v('--color-primary')};box-shadow:0 2px 8px color-mix(in srgb,${v('--color-primary')} 45%,transparent)}
-[part~=preview][data-playing] [part~=preview-dot]{animation:cb-bezier-preview var(--cb-duration) var(--cb-easing) both}
-@keyframes cb-bezier-preview{to{inset-inline-start:calc(100% - 26px)}}
-:host([data-disabled]) [part~=root]{opacity:var(--component-disabled-opacity,.5)}
-@container(max-width:460px){[part~=workspace]{grid-template-columns:1fr}[part~=graph]{min-block-size:210px}}
-`;
+
 interface DragState {
     readonly point: 1 | 2;
     readonly pointerId: number;
     readonly handle: SVGCircleElement;
 }
 export class Bezier extends BezierBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private get graph(): SVGSVGElement | undefined { const node=this.refs.graph?.[0]; return node instanceof SVGSVGElement ? node : undefined; }
     private drag?: DragState;

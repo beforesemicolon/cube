@@ -1,4 +1,6 @@
 import './setup.js'
+import { html } from '../components/core/runtime.js'
+import type { List } from '../components/data-display/list/index.js'
 import { studioItemsFor, studioStatusFor, studioValueFor } from '../components/studio/presets.js'
 
 type PreviewValue = string | number | boolean | null | object | undefined
@@ -72,7 +74,7 @@ function artboardContent(): HTMLElement {
     return page
 }
 
-function seedPreview(tag: string, node: HTMLElement): void {
+function seedPreview(tag: string, node: HTMLElement, args: PreviewArgs): void {
     const name = tag.startsWith('cb-') ? tag.slice(3) : tag
     const items = studioItemsFor(name, [])
     const value = studioValueFor(name, '')
@@ -86,7 +88,10 @@ function seedPreview(tag: string, node: HTMLElement): void {
         { value: 'tablet', label: 'Tablet' },
         { value: 'mobile', label: 'Mobile' },
     ], value: 'desktop' })
-    if (tag === 'cb-toolbar') node.append(demoButton('Select', 'ghost'), demoButton('Move', 'ghost'), demoButton('Comment', 'ghost'))
+    if (tag === 'cb-list') {
+        node.style.cssText = 'height:180px;width:100%'
+        ;(node as List).renderItem = item => html`<span>${item}</span>`
+    } else if (tag === 'cb-toolbar') node.append(demoButton('Select', 'ghost'), demoButton('Move', 'ghost'), demoButton('Comment', 'ghost'))
     else if (tag === 'cb-action-bar') {
         const back = demoButton('Back', 'ghost'); back.slot = 'start'
         node.append(back)
@@ -101,6 +106,16 @@ function seedPreview(tag: string, node: HTMLElement): void {
         const trigger = demoButton('Open popover'); trigger.slot = 'trigger'; node.append(trigger, demoSurface('Popover content'))
     } else if (tag === 'cb-hover-card') {
         const trigger = demoButton('Hover or focus'); trigger.slot = 'trigger'; node.append(trigger, demoSurface('A compact preview with useful context.'))
+    } else if (tag === 'cb-card') {
+        node.append(document.createTextNode('Place any content here.'))
+    } else if (tag === 'cb-empty-state') {
+        const action = demoButton('Create page', 'primary')
+        Object.assign(action, { icon: 'plus' })
+        node.append(action)
+    } else if (tag === 'cb-toast') {
+        node.append(demoButton(args.tone === 'danger' ? 'Retry' : 'View site', 'primary'))
+    } else if (tag === 'cb-banner') {
+        node.append(demoButton('Reconnect', 'primary'))
     } else if (tag === 'cb-drawer' || tag === 'cb-bottom-sheet') {
         node.append(demoSurface(tag === 'cb-drawer' ? 'Drawer content' : 'Sheet content'))
         const footer = document.createElement('div'); footer.slot = 'footer'; footer.append(demoButton('Done', 'primary')); node.append(footer)
@@ -239,7 +254,12 @@ function wireInteraction(tag: string, node: HTMLElement, wrapper: HTMLElement): 
 
 export function preview(tag: string, args: PreviewArgs) {
     const wrapper = document.createElement('div'); wrapper.style.cssText = 'min-height:140px;max-width:960px;width:100%;padding:24px;box-sizing:border-box;background:var(--color-background);color:var(--color-foreground)'
-    const node = document.createElement(tag); seedPreview(tag, node); Object.assign(node, fieldControlTags.has(tag) ? controlArgs(args) : args)
+    if (['cb-status','cb-empty-state','cb-skeleton','cb-progress','cb-spinner','cb-toast','cb-alert','cb-banner','cb-flashbar'].includes(tag)) wrapper.style.background='light-dark(var(--color-surface-muted),var(--color-surface))'
+    const node = document.createElement(tag); seedPreview(tag, node, args); Object.assign(node, fieldControlTags.has(tag) ? controlArgs(args) : args)
+    node.setAttribute('data-story-component', '')
+    if (['cb-empty-state','cb-toast','cb-banner'].includes(tag)) {
+        for (const action of node.children) if (action instanceof HTMLElement && action.localName === 'cb-button') action.style.setProperty('--component-button-min-width','144px')
+    }
     const presentation = fieldControlTags.has(tag) ? fieldFor(node, args) : node
     wireInteraction(tag, presentation, wrapper)
     return wrapper

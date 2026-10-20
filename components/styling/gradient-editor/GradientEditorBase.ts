@@ -64,6 +64,7 @@ export interface GradientEditorProps extends FieldControlProps {
 
 export interface GradientChangeDetail extends GradientModel {
     readonly value: string
+    readonly previousValue: string
     readonly selectedStopId: string
     readonly originalEvent?: Event
 }
@@ -228,7 +229,7 @@ export abstract class GradientEditorBase extends FieldControlBase<GradientEditor
         const model = normalizeGradientModel(source)
         const value = serializeGradient(model)
         if (value === this.cssValue()) return false
-        const detail:Omit<GradientChangeDetail,'value'|'originalEvent'>={...model,selectedStopId:this.selectedId}
+        const detail:Omit<GradientChangeDetail,'value'|'previousValue'|'originalEvent'>={...model,selectedStopId:this.selectedId}
         return this.commitValue(value,originalEvent,detail,changed=>{
             this.type=model.type
             this.angle=model.angle

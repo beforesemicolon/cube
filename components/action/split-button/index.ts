@@ -1,20 +1,11 @@
-import { when, css as componentStyles, html, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { when, html, type Template } from '../../core/runtime.js'
 
 import type { NormalizedItem } from '../../core/items.js'
 import { SplitButtonBase } from './SplitButtonBase.js'
-const css = editorCSS + `
-:host{display:inline-block}
-[part=group]{display:flex;align-items:stretch}
-[part=primary]{--component-button-radius-start-end:0;--component-button-radius-end-end:0}
-[part=trigger]{position:relative;margin-inline-start:-1px;--component-button-radius-start-start:0;--component-button-radius-end-start:0}
-[part=trigger]::part(control){background:var(--color-primary,#2563EB);color:var(--color-primary-foreground,#fff);border-color:transparent}
-[part=trigger]::part(control):hover{background:var(--color-primary-hover,#1D50B3)}
-[part=primary]:focus-within,[part=trigger]:focus-within{z-index:1}
-[part=popup]{z-index:var(--z-index-dropdown,40);inline-size:max-content;box-sizing:border-box;max-inline-size:100%;padding:0;border:0;background:transparent;overflow:auto}
-`;
+
 export class SplitButton extends SplitButtonBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     protected triggerElement(): HTMLElement | undefined { const node = this.refs.trigger?.[0]; return node instanceof HTMLElement ? node : undefined }
     protected popupElement(): HTMLElement | undefined { const node = this.refs.popup?.[0]; return node instanceof HTMLElement ? node : undefined }

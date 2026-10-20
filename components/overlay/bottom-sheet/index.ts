@@ -1,14 +1,12 @@
-import { isNot, css as componentStyles, html, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { isNot, html, type Template } from '../../core/runtime.js'
+
 import { uid } from '../../core/id.js'
 
 import { BottomSheetBase } from './BottomSheetBase.js'
-const css = editorCSS + `
-:host{display:contents}[part~=dialog]{position:fixed;inset:auto 0 0;inline-size:min(var(--component-bottom-sheet-width,720px),100vw);max-block-size:min(85dvh,760px);margin:0 auto;padding:0;border:1px solid var(--color-separator);border-block-end:0;border-radius:var(--radius-lg) var(--radius-lg) 0 0;background:var(--color-surface);color:var(--color-foreground);box-shadow:0 -16px 48px color-mix(in srgb,var(--color-foreground) 20%,transparent)}
-[part~=dialog]::backdrop{background:var(--component-overlay-backdrop,rgba(10,16,22,.48))}[part~=drag-handle]{inline-size:40px;block-size:4px;margin:8px auto 0;border-radius:999px;background:var(--color-border)}[part~=header]{display:flex;align-items:start;justify-content:space-between;gap:var(--spacing-md,12px);padding:var(--spacing-md,12px) var(--spacing-lg,16px);border-block-end:1px solid var(--color-separator)}[part~=heading]{display:block;font-weight:650}[part~=description]{display:block;margin-block-start:4px;color:var(--color-muted-foreground)}[part~=body]{padding:var(--spacing-lg,16px);overflow:auto}[part~=footer]{display:flex;justify-content:flex-end;gap:var(--spacing-sm,8px);padding:var(--spacing-md,12px) var(--spacing-lg,16px);border-block-start:1px solid var(--color-separator)}
-`;
+
 export class BottomSheet extends BottomSheetBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly headingId = uid('cb-bottom-sheet-heading')
     private readonly descriptionId = uid('cb-bottom-sheet-description')

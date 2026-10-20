@@ -1,21 +1,11 @@
+import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
-import { when, is, css as componentStyles, html, repeat, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import { when, is, html, repeat, type Template } from '../../core/runtime.js'
+
 import { CalendarBase } from './CalendarBase.js'
-const calendarCSS = editorCSS + `
-:host{display:block;inline-size:var(--component-calendar-width,288px);max-inline-size:100%;min-inline-size:min(100%,var(--component-calendar-min-width,240px))}
-[part~=calendar]{display:grid;gap:var(--spacing-sm,8px);padding:var(--spacing-md,12px);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-md,0 12px 32px rgba(0,0,0,.14))}
-[part~=header]{display:grid;grid-template-columns:var(--component-control-height-sm,28px) 1fr var(--component-control-height-sm,28px);align-items:center;gap:4px}
-[part~=month]{text-align:center;font-weight:650}
-[part~=weekdays],[part~=days]{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
-[part~=weekday]{display:grid;place-items:center;min-block-size:28px;color:var(--color-muted-foreground);font-size:11px}
-[part~=day]{aspect-ratio:1;min-block-size:34px;padding:0;border-color:transparent;background:transparent}
-[part~=day][data-outside]{color:var(--color-muted-foreground)}
-[part~=day][aria-pressed=true]{background:var(--color-primary);color:var(--color-primary-foreground)}
-[part~=day][data-today]:not([aria-pressed=true]){border-color:var(--color-primary);color:var(--color-primary)}
-`;
+
 export class Calendar extends CalendarBase {
-    stylesheet = componentStyles`${calendarCSS}`
+    stylesheet = componentStylesheet
 
     render(): Template {
         return html`

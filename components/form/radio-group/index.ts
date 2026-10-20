@@ -1,25 +1,12 @@
-import { isNot, is, or, css as componentStyles, html, repeat, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { isNot, is, or, html, repeat, type Template } from '../../core/runtime.js'
+
 import { uid } from '../../core/id.js'
 import { bool, text } from '../../core/value.js'
 import { RadioGroupBase } from './RadioGroupBase.js'
-const css = editorCSS + `
-:host{display:inline-block;inline-size:var(--component-radio-group-width,auto)}
-[part~=field]{display:grid;gap:var(--spacing-xs,4px)}
-[part~=group]{display:flex;flex-flow:row wrap;align-items:flex-start;gap:var(--spacing-md,12px)}
-[part~=group][data-stacked]{flex-direction:column;flex-wrap:nowrap;gap:var(--spacing-sm,8px)}
-[part~=option]{display:inline-flex;align-items:center;gap:var(--spacing-sm,8px);min-block-size:var(--cb-height);cursor:pointer}
-[part~=radio]{appearance:none;display:grid;place-items:center;flex:none;inline-size:var(--component-radio-size,18px);block-size:var(--component-radio-size,18px);min-inline-size:var(--component-radio-size,18px);min-block-size:var(--component-radio-size,18px);padding:0;margin:0;border:1px solid var(--color-border);border-radius:50%;background:var(--color-surface);cursor:inherit}
-[part~=radio]::before{content:'';inline-size:var(--component-radio-dot-size,8px);block-size:var(--component-radio-dot-size,8px);border-radius:50%;background:var(--color-primary);scale:0;transition:scale var(--motion-duration-fast) ease-out}
-[part~=option]:hover [part~=radio]:not(:disabled){border-color:var(--color-primary)}
-[part~=radio]:checked{border-color:var(--color-primary)}
-[part~=radio]:checked::before{scale:1}
-[part~=radio]:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset)}
-[part~=option][data-disabled]{cursor:not-allowed;opacity:.56}
-[part~=error]{font-size:var(--component-caption-font-size,11px);color:var(--color-danger);margin:0}
-`;
+
 export class RadioGroup extends RadioGroupBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly internalName = uid('cb-radio-group')
     private validationError = (): string => { return (this.validationShown || text(this.errorText)) ? this.validationMessage || text(this.errorText) : '' }

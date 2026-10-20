@@ -1,8 +1,9 @@
-import { css as componentStyles, type Template } from '../../core/runtime.js'
+import componentStylesheet from './view.css?inline'
+import { type Template } from '../../core/runtime.js'
 import { MenuBase } from './MenuBase.js';
-import {  createMenuView, type MenuView , menuCSS } from './view.js';
+import { createMenuView, type MenuView } from './view.js'
 export class Menu extends MenuBase {
-    stylesheet = componentStyles`${menuCSS}`
+    stylesheet = componentStylesheet
 
     private view?: MenuView;
     render(): Template { this.view = createMenuView(this, (item, event) => this.activate(item, event)); return this.view.root; }

@@ -114,6 +114,7 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
         const dialog = this.dialogElement()
         if (!dialog) return
         const shouldOpen = bool(this.open)
+        this.toggleAttribute('data-open', shouldOpen)
         if (shouldOpen && !dialog.open) {
             this.captureReturnTarget()
             try {

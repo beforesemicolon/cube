@@ -18,8 +18,9 @@ export abstract class ChoiceGroupBase<P extends ChoiceGroupProps = ChoiceGroupPr
     protected get choices(): NormalizedItem[] { return normalizeItems(this.items).filter(item => !item.separator) }
 
     protected choose(item: NormalizedItem, originalEvent: Event): void {
+        originalEvent.stopPropagation()
         if (this.unavailable || item.disabled || item.id === scalarText(this.value)) return
-        const detail = { value: item.id, item, originalEvent }
+        const detail = { value: item.id, previousValue: this.value, item, originalEvent }
         if (!this.request('beforechange', detail)) return
         this.value = item.id
         this.syncView()

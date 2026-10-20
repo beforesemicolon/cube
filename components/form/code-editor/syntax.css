@@ -1,0 +1,40 @@
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-type,
+.hljs-built_in {
+  color: var(--component-code-keyword,var(--color-primary));
+}
+.hljs-string,
+.hljs-attribute,
+.hljs-template-tag {
+  color: var(--component-code-string,var(--color-success));
+}
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-variable.constant_ {
+  color: var(--component-code-number,var(--color-warning));
+}
+.hljs-comment,
+.hljs-quote {
+  color: var(--color-muted-foreground);
+  font-style: italic;
+}
+.hljs-title,
+.hljs-section,
+.hljs-selector-id,
+.hljs-title.class_,
+.hljs-title.function_ {
+  color: var(--component-code-title,var(--color-signal-text));
+  font-weight: 600;
+}
+.hljs-attr,
+.hljs-property,
+.hljs-selector-class {
+  color: var(--component-code-property,var(--color-signal-text));
+}
+.hljs-regexp,
+.hljs-meta {
+  color: var(--component-code-special,var(--color-danger));
+}

@@ -1,0 +1,24 @@
+:host {
+  display: block;
+  overflow: auto;
+  min-inline-size: 0;
+  min-block-size: 0;
+  box-sizing: border-box;
+}
+[part=items] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cb-list-gap, 0px);
+}
+[part=items][data-orientation=horizontal] {
+  flex-direction: row;
+  inline-size: max-content;
+  min-inline-size: 100%;
+}
+[part=item],
+::slotted(*) {
+  flex: none;
+}
+slot {
+  display: contents;
+}

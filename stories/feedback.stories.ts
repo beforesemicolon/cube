@@ -5,22 +5,21 @@ import './setup.js'
 const meta: Meta = { title: 'Feedback', tags: ['autodocs'], parameters: { docs: { description: { component: 'Feedback components with headless bases, themed parts, category initialization and browser clients.' } } } }
 export default meta
 type Story = StoryObj
-const items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]
 
-export const Status: Story = componentStory('cb-status', { label: 'Status', value: 'Ready', status: 'Updated' })
+export const Status: Story = componentStory('cb-status', { label: 'Status', value: 'All changes saved', status: '', tone: 'success' })
 
-export const EmptyState: Story = componentStory('cb-empty-state', { label: 'Empty state', value: 'Ready', status: 'Updated' })
+export const EmptyState: Story = componentStory('cb-empty-state', { heading: 'Start with your first page', description: 'Build from a blank page or a saved template.', icon: 'plus' })
 
 export const Skeleton: Story = componentStory('cb-skeleton', { variant: 'text', lines: 3, rows: 3, columns: 3, animated: true, accessibleLabel: 'Loading content' })
 
-export const Progress: Story = componentStory('cb-progress', { label: 'Progress', progress: 64, max: 100, status: '64%' })
+export const Progress: Story = componentStory('cb-progress', { label: 'Uploading assets', progress: 60, max: 100, status: '60%', tone: 'info' })
 
-export const Spinner: Story = componentStory('cb-spinner', { label: 'Spinner', status: 'Loading' })
+export const Spinner: Story = componentStory('cb-spinner', { label: 'Loading', status: 'Loading assets…', size: 'md' })
 
-export const Toast: Story = componentStory('cb-toast', { label: 'Toast', value: 'Ready', status: 'Updated' })
+export const Toast: Story = componentStory('cb-toast', { label: 'Changes published', value: 'Your latest changes are available online.', status: '', tone: 'success' })
 
-export const Alert: Story = componentStory('cb-alert', { label: 'Alert', value: 'Ready', status: 'Updated' })
+export const Alert: Story = componentStory('cb-alert', { label: 'Preview is not published', value: 'Only people with the preview link can see this version.', status: '', tone: 'info' })
 
-export const Banner: Story = componentStory('cb-banner', { label: 'Banner', value: 'Ready', status: 'Updated' })
+export const Banner: Story = componentStory('cb-banner', { label: 'You are offline', value: 'Changes are saved on this device until you reconnect.', status: '', tone: 'warning' })
 
 export const Flashbar: Story = componentStory('cb-flashbar', { accessibleLabel: 'Notifications', position: 'top-end', maxVisible: 4, messages: [{ id: 'saved', type: 'success', heading: 'Changes saved', message: 'Your project is up to date.', dismissLabel: 'Dismiss', dismissible: true, duration: 0 }] })

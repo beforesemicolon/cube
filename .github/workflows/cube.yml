@@ -1,7 +1,7 @@
 name: Cube design system
 on:
   push:
-    branches: [feat/cube-design-system]
+    branches: [main, feat/cube-design-system, feat/media-charts-design-system]
   pull_request:
 permissions:
   contents: read
@@ -16,23 +16,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-      - run: npm install --no-audit --no-fund
-      - name: Capture isolated review workspace
-        run: |
-          tar -czf /tmp/cube-workspace.tgz components scripts stories tests design docs-cube .storybook package.json package-lock.json tsconfig.json tsconfig.unit.json playwright.config.ts site.config.json node_modules LICENSE README.md MIGRATION.md THIRD_PARTY.md
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cube-review-workspace
-          path: /tmp/cube-workspace.tgz
-          retention-days: 1
-      - run: npm run build:package
-      - run: npm run test:exports
-      - run: npm run build:storybook
-      - run: npm run test:catalog
-      - run: npm run build:docs
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
+      - run: npm run verify:release
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -42,6 +30,7 @@ jobs:
             dist/build-report.json
             test-results/
             playwright-report/
+            release-artifacts/
             design/figma-layers/Studio/01/Actions.png
             design/figma-layers/Studio/02/Inputs.png
             design/figma-layers/Studio/03/Color & style.png

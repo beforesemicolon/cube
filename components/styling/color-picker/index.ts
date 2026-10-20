@@ -1,52 +1,15 @@
+import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
-import { when, is, isNot, and, or, pick, css as componentStyles, type Template, html, repeat, state } from '../../core/runtime.js';
-import { editorCSS } from '../../theme/styles.js';
+import { when, is, isNot, and, or, pick, type Template, html, repeat, state } from '../../core/runtime.js'
+
 import { uid } from '../../core/id.js';
 
 import { PopupController } from '../../core/popup.js';
 import { bool, clamp, finite, text } from '../../core/value.js';
-import { token as v } from '../../theme/tokens.js';
+
 import { ColorPickerBase } from './ColorPickerBase.js';
 import { colorToHex, hsvaToRgba, parseHexColor, rgbaToHsva, type HSVAColor } from './color.js';
-const css = editorCSS + `
-:host{display:inline-block;inline-size:auto;min-inline-size:0}
-[part~=root]{display:grid;gap:var(--spacing-xs,4px);justify-items:start;min-inline-size:0}
-[part~=trigger],[part~=native]{position:relative;display:block;inline-size:var(--component-color-picker-trigger-size,36px);min-inline-size:var(--component-color-picker-trigger-size,36px);block-size:var(--component-color-picker-trigger-size,36px);min-block-size:var(--component-color-picker-trigger-size,36px);padding:3px;overflow:hidden;border:1px solid ${v('--color-border')};border-radius:var(--component-color-picker-radius,var(--radius-sm));background:conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0) 0 0/10px 10px}
-[part~=trigger]:hover:not(:disabled){border-color:${v('--color-primary')};background:conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0) 0 0/10px 10px}
-[part~=trigger-swatch]{display:block;inline-size:100%;block-size:100%;border-radius:calc(var(--component-color-picker-radius,var(--radius-sm)) - 3px);background:var(--cb-selected-color)}
-[part~=trigger]::part(control),[part~=trigger]::part(button-label),[part~=plane]::part(control),[part~=plane]::part(button-label),[part~=swatch]::part(control),[part~=swatch]::part(button-label){display:block;inline-size:100%;block-size:100%}
-[part~=trigger]::part(button-label),[part~=plane]::part(button-label),[part~=swatch]::part(button-label){overflow:visible}
-[part~=native]{appearance:auto;color-scheme:inherit;cursor:pointer}
-[part~=native]::-webkit-color-swatch-wrapper{padding:0}[part~=native]::-webkit-color-swatch{border:0;border-radius:calc(var(--component-color-picker-radius,var(--radius-sm)) - 3px)}
-[part~=popup]{z-index:var(--z-index-popover,1000);container-type:inline-size;display:grid;gap:var(--spacing-md,12px);inline-size:min(var(--component-color-picker-popup-width,344px),calc(100vw - 16px));box-sizing:border-box;padding:var(--spacing-md,12px);overflow:auto;border:1px solid ${v('--color-border')};border-radius:var(--radius-lg,12px);background:${v('--color-surface-raised')};color:${v('--color-foreground')};box-shadow:var(--shadow-lg,0 18px 50px color-mix(in srgb,${v('--color-foreground')} 22%,transparent))}
-[part~=toolbar]{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:end;gap:var(--spacing-sm,8px)}
-[part~=swatch-preview]{position:relative;overflow:hidden;background:conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0) 0 0/8px 8px}
-[part~=swatch-color]{position:absolute;inset:0;background:var(--cb-swatch-color)}
-[part~=hex-field],[part~=channel-field]{display:grid;gap:2px;min-inline-size:0}
-[part~=channel-label]{color:${v('--color-muted-foreground')};font-size:10px;font-weight:600;letter-spacing:.04em}
-[part~=hex-input],[part~=channel-input]{inline-size:100%;min-inline-size:0;min-block-size:32px;padding:4px 8px;border:1px solid ${v('--color-border')};border-radius:var(--radius-sm);background:${v('--color-surface-muted')};font-variant-numeric:tabular-nums}
-[part~=plane]{position:relative;inline-size:100%;block-size:var(--component-color-picker-plane-height,184px);min-block-size:144px;padding:0;overflow:hidden;border:1px solid ${v('--color-border')};border-radius:var(--radius-md);background:linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,var(--cb-hue-color));cursor:crosshair;touch-action:none}
-button[part~=plane]:hover:not(:disabled),button[part~=plane]:active:not(:disabled){background:linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,var(--cb-hue-color))}
-[part~=marker]{position:absolute;inset-block-start:calc(var(--cb-value-position) - 8px);inset-inline-start:calc(var(--cb-saturation-position) - 8px);inline-size:16px;block-size:16px;border:2px solid #fff;border-radius:50%;background:transparent;box-shadow:0 0 0 1px #000,0 1px 4px rgba(0,0,0,.5);pointer-events:none}
-[part~=slider-field]{display:block;min-inline-size:0}
-[part~=slider]{appearance:none;inline-size:100%;block-size:14px;min-block-size:14px;padding:0;border:1px solid ${v('--color-border')};border-radius:999px;background:transparent;cursor:pointer}
-[part~=hue-slider]{background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
-[part~=alpha-slider]{background:linear-gradient(90deg,transparent,var(--cb-solid-color)),conic-gradient(${v('--color-separator')} 25%,${v('--color-surface')} 0 50%,${v('--color-separator')} 0 75%,${v('--color-surface')} 0) 0 0/8px 8px}
-[part~=slider]::-webkit-slider-thumb{appearance:none;inline-size:18px;block-size:18px;border:2px solid #fff;border-radius:50%;background:${v('--color-surface')};box-shadow:0 0 0 1px color-mix(in srgb,${v('--color-foreground')} 65%,transparent),0 1px 3px rgba(0,0,0,.35)}
-[part~=slider]::-moz-range-thumb{inline-size:16px;block-size:16px;border:2px solid #fff;border-radius:50%;background:${v('--color-surface')};box-shadow:0 0 0 1px color-mix(in srgb,${v('--color-foreground')} 65%,transparent)}
-[part~=channels]{display:grid;gap:var(--spacing-sm,8px)}
-[part~=hsv-channels]{grid-template-columns:repeat(4,minmax(0,1fr))}
-[part~=rgb-channels]{grid-template-columns:repeat(3,minmax(0,1fr))}
-[part~=palette-group]{display:grid;gap:var(--spacing-xs,4px)}
-[part~=palette]{display:flex;flex-wrap:wrap;gap:var(--spacing-xs,4px)}
-[part~=swatch]{position:relative;inline-size:28px;min-inline-size:28px;block-size:28px;min-block-size:28px;padding:2px;border:1px solid ${v('--color-border')};border-radius:var(--radius-sm);background:${v('--color-surface')};overflow:hidden}
-[part~=swatch][aria-pressed=true]{border-color:${v('--color-primary')};box-shadow:0 0 0 1px ${v('--color-primary')}}
-[part~=swatch-preview]{display:block;inline-size:100%;block-size:100%;border-radius:calc(var(--radius-sm) - 2px)}
-[part~=add-swatch]::part(control){border-style:dashed}
-:host([data-invalid]) [part~=trigger],:host([data-invalid]) [part~=native]{border-color:${v('--color-danger')}}
-@container(max-width:300px){[part~=hsv-channels]{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(pointer:coarse){[part~=trigger],[part~=native]{--component-color-picker-trigger-size:44px}[part~=swatch]{inline-size:36px;min-inline-size:36px;block-size:36px;min-block-size:36px}[part~=add-swatch]{--component-control-height-sm:36px}}
-`;
+
 type ChannelName = 'hue' | 'saturation' | 'value' | 'alpha' | 'red' | 'green' | 'blue';
 interface ColorSamplerResult {
     readonly sRGBHex: string;
@@ -73,7 +36,7 @@ const channels: readonly ChannelDefinition[] = [
     { name: 'blue', min: 0, max: 255, step: 1 },
 ];
 export class ColorPicker extends ColorPickerBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     private readonly pickerId=uid('cb-color-picker');
     private readonly hexDraft=state<string|null>(null);
@@ -124,6 +87,8 @@ export class ColorPicker extends ColorPickerBase {
             <section part="popup" ref="popup" id=${`${this.pickerId}-popup`} role="dialog" tabindex="-1" hidden aria-label=${this.accessibleName}
                 style=${() => { const color=this.color(); return `--cb-hue-color:hsl(${color.hue},100%,50%);--cb-solid-color:${colorToHex({...color,alpha:1},false)};--cb-saturation-position:${color.saturation}%;--cb-value-position:${100-color.value}%`; }}>
                 <cb-button part="plane" exportparts="control:plane-control,label:plane-label,button-label:plane-label,icon:plane-icon,description:plane-description" ref="plane" data-bare data-semantic-host accessible-label=${() => this.planeLabel || this.accessibleName()} disabled=${blocked}
+                    onbeforeaction=${(event: Event) => event.stopPropagation()}
+                    onaction=${(event: Event) => event.stopPropagation()}
                     onpointerdown=${(event: PointerEvent) => { if(blocked()) return; this.plane?.setPointerCapture(event.pointerId); this.updateFromPlane(event,false); }}
                     onpointermove=${(event: PointerEvent) => { if(this.plane?.hasPointerCapture(event.pointerId)) this.updateFromPlane(event,false); }}
                     onpointerup=${(event: PointerEvent) => { if(this.plane?.hasPointerCapture(event.pointerId)) { this.plane.releasePointerCapture(event.pointerId); this.updateFromPlane(event,true); } }}

@@ -8,7 +8,7 @@ registerCubeStoryEvents()
 const withCubeTheme: Decorator = (Story, context) => {
     const requestedAppearance = String(context.globals.appearance)
     const appearance = ['light', 'dark', 'system'].includes(requestedAppearance) ? requestedAppearance : 'light'
-    return html`<cb-theme-provider appearance=${appearance}><cube-story-events>${Story()}</cube-story-events></cb-theme-provider>`
+    return html`<cb-theme-provider appearance=${appearance}><cube-story-events data-story-id=${context.id}>${Story()}</cube-story-events></cb-theme-provider>`
 }
 
 const preview: Preview = {

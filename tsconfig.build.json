@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "components/**/*.spec.ts",
+    "components/client.ts",
+    "components/*-client.ts",
+    "components/core/browser.ts"
+  ]
+}

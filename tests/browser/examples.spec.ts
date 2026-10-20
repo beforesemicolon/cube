@@ -18,6 +18,7 @@ const examples = [
     ['canvas-selection', 'wide'],
     ['publish-flow', 'compact'],
     ['feedback-states', 'standard'],
+    ['feedback-variants', 'wide'],
     ['review-workflow', 'compact'],
     ['editor-workspace', 'wide'],
     ['global-modal-system', 'compact'],
@@ -93,7 +94,8 @@ test('example field popups use the top layer without changing the example surfac
         await expect(surface).toBeVisible({ timeout: 20_000 })
         const heightBefore = await surface.evaluate(element => element.getBoundingClientRect().height)
         const control = page.getByRole(id === 'autocomplete' ? 'combobox' : 'button', { name: controlName })
-        await control.click()
+        if (id === 'autocomplete') await control.fill('Auto')
+        else await control.click()
         const popup = surface.locator(`[part~="${popupPart}"]`).last()
         await expect(popup).toBeVisible()
         const geometry = await popup.evaluate(element => {

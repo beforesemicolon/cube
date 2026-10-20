@@ -1,17 +1,10 @@
-import { or, css as componentStyles, html, repeat, type Template } from '../../core/runtime.js'
-import { editorCSS } from '../../theme/styles.js'
+import componentStylesheet from './styles.css?inline'
+import { or, html, repeat, type Template } from '../../core/runtime.js'
+
 import { ButtonGroupBase } from './ButtonGroupBase.js'
-const css = editorCSS + `
-:host{display:inline-block}
-[part=group]{display:flex;align-items:stretch}
-[part=item]{position:relative;--component-button-radius-start-start:0;--component-button-radius-start-end:0;--component-button-radius-end-end:0;--component-button-radius-end-start:0}
-[part=item]:not(:first-child){margin-inline-start:-1px}
-[part=item]:first-child{--component-button-radius-start-start:var(--radius-sm,6px);--component-button-radius-end-start:var(--radius-sm,6px)}
-[part=item]:last-child{--component-button-radius-start-end:var(--radius-sm,6px);--component-button-radius-end-end:var(--radius-sm,6px)}
-[part=item]:focus-within{z-index:1}
-`;
+
 export class ButtonGroup extends ButtonGroupBase {
-    stylesheet = componentStyles`${css}`
+    stylesheet = componentStylesheet
 
     render(): Template {
         return html`

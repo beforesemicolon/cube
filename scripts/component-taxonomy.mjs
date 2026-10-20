@@ -52,7 +52,7 @@ const feedbackComponents = new Set([
     'save-status', 'publish-status',
 ])
 const dataDisplayComponents = new Set([
-    'badge', 'avatar', 'card', 'list', 'description-row', 'property-row', 'table', 'tree', 'accordion', 'stat', 'code-preview',
+    'badge', 'avatar', 'card', 'list', 'property-row', 'table', 'tree', 'accordion', 'stat', 'code-preview',
     'activity-log',
 ])
 const layoutComponents = new Set([

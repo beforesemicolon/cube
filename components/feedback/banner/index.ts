@@ -1,12 +1,11 @@
-import { css as componentStyles, type Template } from '../../core/runtime.js'
-import {  createStudioView, type StudioView , studioCSS } from '../../studio/view.js';
+import componentStylesheet from './styles.css?inline'
+import { type Template } from '../../core/runtime.js'
+import { messageView } from '../view.js'
 import { BannerBase } from './BannerBase.js';
 export class Banner extends BannerBase {
-    stylesheet = componentStyles`${studioCSS}`
+    stylesheet = componentStylesheet
 
-    private view?: StudioView;
-    render(): Template { this.view = createStudioView(this); return this.view.root; }
-    protected syncView(): void { this.view?.update(); }
+    render(): Template { return messageView(this, 'banner'); }
 }
 export { BannerBase };
 export type { BannerProps } from './BannerBase.js';
