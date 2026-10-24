@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { when, html, type Template } from '../../core/runtime.js'
 
@@ -13,7 +14,7 @@ export class Dropdown extends DropdownBase {
         return html`
 
             <cb-button ref="trigger" part="trigger" exportparts="control:trigger-control,label:trigger-label,icon:trigger-icon,spinner:trigger-spinner"
-                label="${this.props.label}" icon="${this.props.icon}" loading="${this.props.loading}"
+                label="${this.props.label}" icon="${this.props.icon}" icon-src=${this.props.iconSrc} loading="${this.props.loading}"
                 accessible-label="${this.accessibleName}" disabled="${() => this.unavailable}"
                 aria-haspopup="menu" aria-expanded="${when(this.props.open, 'true', 'false')}"
                 onbeforeaction="${(event: Event) => event.stopPropagation()}"
@@ -27,3 +28,5 @@ export class Dropdown extends DropdownBase {
 }
 export { DropdownBase };
 export type { DropdownProps } from './DropdownBase.js';
+
+register('cb-dropdown', Dropdown)

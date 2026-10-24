@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { html, type Template } from '../../core/runtime.js'
 
@@ -30,3 +31,5 @@ export class MaskedInput extends MaskedInputBase {
 }
 export { MaskedInputBase, formatMaskedValue, unmaskValue };
 export type { MaskedInputProps } from './MaskedInputBase.js';
+
+register('cb-masked-input', MaskedInput)

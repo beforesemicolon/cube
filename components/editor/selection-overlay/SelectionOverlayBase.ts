@@ -1,5 +1,14 @@
 import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, finite, scalarText } from '../../core/value.js'
+import { normalizeActions, type ComponentAction } from '../../core/actions.js'
+
+export type SelectionAction = ComponentAction
+export interface SelectionActionDetail {
+    readonly action: SelectionAction
+    readonly rect: EditorRect
+    readonly rotation: number
+    readonly originalEvent?: Event
+}
 
 export interface EditorRect { x: number; y: number; width: number; height: number }
 export type SelectionHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
@@ -18,6 +27,8 @@ export interface SelectionOverlayProps extends ComponentProps {
     rotateLabel?: string
     sizeLabel?: string
     handleLabels?: Partial<Record<SelectionHandle, string>>
+    actions?: readonly SelectionAction[]
+    actionsLabel?: string
 }
 
 const handles: readonly SelectionHandle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
@@ -31,7 +42,7 @@ function normalizedRect(rect: EditorRect | undefined): EditorRect {
 export abstract class SelectionOverlayBase<P extends SelectionOverlayProps = SelectionOverlayProps> extends Component<P> {
     static observedAttributes = [
         ...Component.observedAttributes, 'rect', 'rotation', 'movable', 'resizable', 'rotatable', 'move-step', 'min-width',
-        'min-height', 'show-size', 'move-label', 'resize-label', 'rotate-label', 'size-label', 'handle-labels',
+        'min-height', 'show-size', 'move-label', 'resize-label', 'rotate-label', 'size-label', 'handle-labels', 'actions', 'actions-label',
     ]
     rect: EditorRect = { x: 0, y: 0, width: 120, height: 80 }
     rotation = 0
@@ -47,6 +58,17 @@ export abstract class SelectionOverlayBase<P extends SelectionOverlayProps = Sel
     rotateLabel = ''
     sizeLabel = ''
     handleLabels: Partial<Record<SelectionHandle, string>> = {}
+    actions: readonly SelectionAction[] = []
+    actionsLabel = ''
+    protected normalizedActions = (): readonly SelectionAction[] => normalizeActions(this.actions)
+    activateAction = (id: string, originalEvent?: Event): boolean => {
+        const action = this.normalizedActions().find(candidate => candidate.id === id)
+        if (!action || action.disabled || this.unavailable) return false
+        const detail: SelectionActionDetail = { action, rect: this.currentRect(), rotation: finite(this.rotation), originalEvent }
+        if (!this.request('beforeaction', detail)) return false
+        this.emit('action', detail)
+        return true
+    }
 
     currentRect(): EditorRect { return normalizedRect(this.rect) }
     moveBy(dx: number, dy: number, originalEvent?: Event): boolean {

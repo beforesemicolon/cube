@@ -46,3 +46,12 @@
   inset-block-end: auto;
   translate: 0 -50%;
 }
+
+:host [part=tooltip][data-anchored] {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  border: 0;
+  translate: none;
+  overflow: hidden;
+}

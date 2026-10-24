@@ -1,0 +1,66 @@
+@import "../../theme/field.css";
+:host {
+  display: inline-block;
+  inline-size: var(--component-rich-text-editor-width,max-content);
+  min-inline-size: min(100%,var(--component-rich-text-editor-min-width,0px));
+  max-inline-size: 100%;
+  align-self: start;
+  justify-self: start;
+  text-align: left;
+}
+[part~=shell] {
+  position: relative;
+  border: 1px solid var(--cb-field-border);
+  border-radius: var(--cb-field-radius);
+  background: var(--cb-field-background);
+  overflow: visible;
+}
+[part~=toolbar] {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  inline-size: max-content;
+  max-inline-size: none;
+  border: 1px solid var(--cb-field-border);
+  border-radius: var(--radius-sm,6px);
+  background: var(--color-surface,#fff);
+  overflow: auto;
+}
+[part~=toolbar]::part(toolbar) {
+  border: 0;
+  border-radius: 0;
+  padding: 2px;
+  gap: 2px;
+}
+[part~=format] { min-inline-size: 26px; }
+[part~=control] {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  min-inline-size: 0;
+  min-block-size: var(--cb-height);
+  max-block-size: var(--component-rich-text-editor-max-height,320px);
+  margin: 0;
+  padding: var(--spacing-xs,4px) var(--spacing-md,12px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: auto;
+  white-space: pre;
+  outline-offset: -2px;
+}
+[part~=control][data-empty]::before {
+  position: absolute;
+  content: attr(data-placeholder);
+  color: var(--color-muted-foreground,#606b73);
+  pointer-events: none;
+}
+[data-variant=box] [part~=control] {
+  min-block-size: max(var(--component-rich-text-editor-box-height,0px),calc(3lh + var(--spacing-xs,4px) + var(--spacing-xs,4px)));
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  resize: vertical;
+}
+[part~=shell][data-invalid] { border-color: var(--color-danger,#d5294d); }
+:host([data-disabled]) [part~=shell] { opacity: var(--component-disabled-opacity,.5); }

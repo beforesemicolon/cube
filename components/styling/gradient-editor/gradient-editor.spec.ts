@@ -4,5 +4,5 @@ import { componentContract } from '../../../tests/component-contract.js'
 
 componentContract('cb-gradient-editor', 'styling--gradient-editor', async ({ host }) => {
     await host.evaluate(node => { Object.assign(node, {"angle":45} satisfies Partial<GradientEditor>) })
-    await expect(host.locator("input[part~=angle]").first()).toHaveValue("45")
+    await expect(host.getByRole('spinbutton', { name: 'Angle', exact: true })).toHaveValue('45')
 })

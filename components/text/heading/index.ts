@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, html, type Template } from '../../core/runtime.js'
 
@@ -22,3 +23,5 @@ export class Heading extends HeadingBase {
 }
 export { HeadingBase }
 export type { HeadingProps, HeadingVariant } from './HeadingBase.js'
+
+register('cb-heading', Heading)

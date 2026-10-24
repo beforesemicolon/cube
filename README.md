@@ -28,10 +28,7 @@ This prerelease sets `publishConfig` to public access and the `alpha` tag, not `
 ## Module usage
 
 ```ts
-import * as runtime from '@beforesemicolon/web-component'
-import initializeCube from '@beforesemicolon/cube'
-
-await initializeCube(runtime)
+import '@beforesemicolon/cube'
 const chart = document.createElement('cb-cartesian-chart')
 Object.assign(chart, {
     heading: 'Weekly activity',
@@ -44,18 +41,14 @@ Object.assign(chart, {
 document.body.append(chart)
 ```
 
-To initialize selected categories, pass the same runtime to their initializers:
+To load selected categories, import them directly:
 
 ```ts
-import * as runtime from '@beforesemicolon/web-component'
-import initializeAction from '@beforesemicolon/cube/action'
-import initializeForm from '@beforesemicolon/cube/form'
-
-await initializeAction(runtime)
-const { TextInputBase } = await initializeForm(runtime)
+import '@beforesemicolon/cube/action'
+import { TextInputBase } from '@beforesemicolon/cube/form'
 ```
 
-The package root and category entrypoints can be imported without a DOM. They export initialization functions and types; the root also exports pure models, controllers and tokens. Initializing components requires a DOM. `loadCategory('form')` is available when module consumers want Cube to load the installed WebComponent package. ESM and CJS builds are provided.
+The package root, category and individual component entrypoints register their custom elements synchronously when imported, using the installed WebComponent package. For one component, use `import '@beforesemicolon/cube/form/text-input'`. Classes and bases are normal named exports; no initializer, runtime argument, or ready promise is required. Component entrypoints require a DOM, like `@beforesemicolon/router`. ESM and CJS builds are provided. Browser script clients instead receive the WebComponent runtime already available on `BFS`.
 
 ## Browser scripts
 
@@ -77,13 +70,60 @@ Use `dist/client.js` for the complete catalog or flat category clients:
 <script src="https://unpkg.com/@beforesemicolon/cube/dist/form-client.js"></script>
 ```
 
-The public categories are `action`, `text`, `form`, `layout`, `navigation`, `overlay`, `feedback`, `data-display`, `media`, `charts`, `styling`, `editor`, `collaboration`, `icons`, and `theme`. Individual component browser bundles are no longer emitted. Each category registers only its own components. Load the categories used by composed controls at the application level; for example, form steppers use buttons from `action`, and media players use controls from `action` and `form`. Components do not import or register the components they render. Browser exports live in `BFS.CUBE`, including a `ready` promise. Repeated same-version scripts register tags idempotently.
+The public categories are `action`, `text`, `form`, `layout`, `navigation`, `overlay`, `feedback`, `data-display`, `media`, `charts`, `styling`, `editor`, `collaboration`, `icons`, and `theme`. Individual component browser bundles are no longer emitted. Each category registers only its own components. Load the categories used by composed controls at the application level; for example, form steppers use buttons from `action`, and media players use controls from `action` and `form`. Components do not import or register the components they render. Only utility APIs, such as `showModal`, `showFlashbar`, and `configureChartEngine`, are exposed in `BFS.CUBE`—not component classes. Tags are immediately available through `customElements`, without a `ready` promise. Repeated same-version scripts register tags idempotently.
 
 `Select`, `DatePicker` and `TimePicker` use consistent Cube-rendered controls by default. Set `native` only when the browser-provided selector is desired. `Calendar` belongs to the form category, while `Combobox` supports list and autocomplete behavior through its `autocomplete` property.
 
 Anchored menus and pickers size themselves to their content and stay within the viewport. Use `popupMaxWidth` and `popupMaxHeight` with a CSS length or a numeric pixel value to override a component’s defaults; constrained content scrolls inside the popup.
 
+Menus and popups also light-dismiss when focus moves into an outside iframe, including cross-origin frames. An iframe embedded inside the popup remains interactive without dismissing it.
+
 The WebComponent runtime is **external**, not compiled into Cube's browser scripts. Chart scripts also keep ECharts external: load `echarts/dist/echarts.min.js` before mounting a chart, or configure a promise-based loader with `BFS.CUBE.configureChartEngine`. Module consumers lazily import the ECharts dependency on the first chart render. Media-only scripts never load charting code.
+
+## Native rich-text surfaces
+
+`RichTextController` from `@beforesemicolon/cube/form/rich-text-editor/base` attaches the same editing engine used by `cb-rich-text-editor` to an existing `HTMLElement` or text node, including in a same-origin iframe. It changes no typography, dimensions or layout. Supply `value`, a synchronous `commit(value, event)` returning whether the draft was accepted, optional `blocked`, `formatsChanged`, `inline`, `plainText`, and `inlineRun` (only when the authored source represents the whole inline run). `focus(options, point)` optionally places the caret at iframe-local screen coordinates. `format(format, event)` operates on the remembered selection; `sync()` applies external values; `dispose()` removes listeners and restores original attributes/content. Pass `false` to disposal only for a surface owned by a field that is being removed. The controller owns native DOM editing interop, not rendering or persistence.
+
+The standalone `cb-rich-text-toolbar` accepts `activeFormats`, `disabled`, an accessible label and the six formatting labels. It emits one `format` event with `{ format, originalEvent }`. Its default slot accepts extra actions. Import the toolbar, button and toolbar/layout dependencies explicitly. The full `cb-rich-text-editor` now composes this toolbar and controller, retaining its form value, validation, variants, selection and input events. For source-backed page authoring, keep revision checks, source ownership and save/cancel outside Cube.
+
+## Custom tab headers
+
+`cb-accordion` items accept an optional `renderItem: () => HtmlTemplate | Node` factory for lazy panel content. It runs once on first expansion; loaded content remains mounted while collapsed so field values and focusable controls are retained (but hidden and inert). Use `multiple` to allow several panels open at once. Assign items containing factories through the JavaScript `items` property, not JSON attributes. Without `renderItem`, existing `renderContent` and `content` behavior is unchanged. Replacing an item object creates fresh lazy content; `renderItem` takes precedence over either fallback.
+
+`cb-tabs` items accept an optional `renderItem: () => HtmlTemplate | Node` factory. Omit it to display `label`. Keep `label` as the accessible tab name even when the header contains icons or badges. Cube retains selection, disabled state, keyboard navigation, dirty markers and `closable` actions; the active indicator spans the whole header, including its close button. Render non-interactive label content with the factory and use `closable` for the native close action rather than nesting buttons inside a tab.
+
+```ts
+tabs.items = [
+    { id: 'pages', label: 'Pages' },
+    { id: 'component', label: 'HelloWorld', closable: true,
+        renderItem: () => html`<span>HelloWorld <small>Component</small></span>` },
+]
+```
+
+## Workspace panels
+
+`cb-workspace` defaults to single slotted `start`, `end`, and `bottom` panels with toggle buttons. Use `variant="tabbed"` for persistent side rails and horizontal bottom tabs:
+
+```ts
+import '@beforesemicolon/cube/action'
+import '@beforesemicolon/cube/icons'
+import '@beforesemicolon/cube/layout/panel-header'
+import { Workspace } from '@beforesemicolon/cube/layout/workspace'
+import { html } from '@beforesemicolon/web-component'
+
+const workspace = document.createElement('cb-workspace') as Workspace
+workspace.variant = 'tabbed'
+workspace.startLabel = 'Navigation panels'
+workspace.startItems = [
+    { id: 'pages', name: 'Pages', iconName: 'file', renderContent: () => html`<p>Pages</p>` },
+    { id: 'layers', name: 'Layers', iconName: 'layers', renderContent: () => document.createElement('div') },
+]
+document.body.append(workspace)
+```
+
+Assign `startItems`, `endItems`, and `bottomItems` as JavaScript properties; functions cannot be supplied as HTML attributes or JSON. Each item has `id`, `name`, optional `description`, `iconName` and `collapsedName`, and a `renderContent()` factory returning a Markup template or DOM Node. Open panels render a `cb-panel-header` with the item's name and description. Rails show only the icon when provided, otherwise the name (or `collapsedName`); side fallback names are vertical and bottom names horizontal. Accessible tab names remain available in icon-only mode. Do not repeat the panel heading inside `renderContent`. The first valid item is selected by default; `startValue`, `endValue`, and `bottomValue` select IDs explicitly. Invalid/duplicate items are ignored (first valid ID wins), and a missing active ID falls back to the first valid item.
+
+Only each open panel's active factory is called. Switching tabs or collapsing unmounts its content; reopening calls the factory again. Keep any state you want to preserve outside the factory. An empty item array removes that region. Clicking an active tab collapses its panel; clicking another selects and opens it. Tab actions emit one `change` with `{ panel, value, previousValue, open, previousOpen, originalEvent }`; `beforechange` can cancel them. Arrow keys/Home/End move focus; Enter/Space activate. On narrow containers, rails remain visible and only one panel opens as an overlay. `startOpen`, `endOpen`, and `bottomOpen` retain desktop visibility; `mobilePanel` controls the mobile overlay. `persistKey` also remembers tab selection alongside existing panel sizes and visibility.
 
 ## Themes and application-supplied text
 
@@ -99,7 +139,33 @@ The WebComponent runtime is **external**, not compiled into Cube's browser scrip
 
 Theme JSON follows site-builder's `schemaVersion: "1.0"`, `name`, `tokens` contract, including mode-aware leaves and uppercase `DEFAULT` scales. Built outputs include `themes/cube.json`, `light.json`, `dark.json` and CSS equivalents. Nested providers scope variables; an explicit inner theme defines its own palette. External theme loads are abortable and stale responses cannot replace a newer theme. Token files reject stylesheet/network injection; use authored stylesheets for fonts, images and `@keyframes`.
 
+Fields use flat white backgrounds and soft grayscale borders in light mode, with equivalent neutral surfaces in dark mode. Resting and hover states have no inset shading or accent tint; accent color is reserved for focus and checked/active states. The `component.field` theme group controls `background`, `hover`, `border`, `borderHover`, and `radius` (CSS: `--component-field-*`). Applications can override these tokens. This treatment preserves control sizing and is scoped to input surfaces and neutral buttons, not layout panels or editor canvases; opt-in native selectors retain their native behavior.
+
 Cube is localization-agnostic: it does not own a `locale` attribute, translation catalog, or dependency on `@beforesemicolon/intl`. Applications provide final translated visible and ARIA text through the component’s explicit text properties. Native number, date, and time formatting uses the document’s `lang` as a formatting hint. The documentation itself is available in five languages and uses the `fading-citrus` site-builder theme as Markup. The `:::cube component-name` markdown extension renders a fixed, safe example visualizer; it does not evaluate arbitrary pasted code. Markdown highlighting uses site-builder's existing highlight.js integration.
+
+### Multi-select combobox and compact actions
+
+`cb-combobox` supports `multi` with an array `value`. Selected options appear as removable chips, typing filters independently of the selections, and the dropdown stays open after choosing an option. Provide `remove-label="Remove {label}"` (or translated equivalent) for the × buttons. There is no comma-separated entry syntax: commas remain ordinary characters. Each add/remove emits one `change` with the new and previous values. Multi selections submit repeated form entries under `name`.
+
+A sole enabled match is highlighted automatically; Enter or Space accepts it without moving focus out of the input. Add `allow-custom` (JS: `allowCustom = true`) to let Enter commit unmatched text as a value. This flag is off by default. Custom values are trimmed, duplicate selections are not added again, and the supplied options remain unchanged. Space is still ordinary text when there is no sole match.
+
+Use `<cb-button size="tiny" icon="close" icon-only accessible-label="Remove item"></cb-button>` for compact contextual actions: 1px padding, 10px icons, and a 14px default height. Normal button variants, focus, disabled and toggle behavior are unchanged.
+
+### Custom icons
+
+`cb-icon` accepts an SVG child, an image `src`, or a built-in `name`, in that order of precedence:
+
+```html
+<cb-icon accessible-label="Company mark">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M2 2h20v20H2z" /></svg>
+</cb-icon>
+<cb-icon src="/icons/company.svg" accessible-label="Company mark"></cb-icon>
+<cb-button icon-src="/icons/company.svg" label="Company"></cb-button>
+```
+
+Inline SVG inherits `currentColor` and scales to the icon size. Supply trusted SVG markup as children. External SVG sources load as inert images, retain their file colors, and are never injected into the page. Relative, HTTP(S), blob and image data URLs are supported. Provide `accessible-label` for standalone meaningful icons; omit it for decorative icons beside text.
+
+Controls with an `icon` property also accept `iconSrc` (`icon-src` in HTML). Item/action records with `icon` or workspace tab records with `iconName` accept `iconSrc` too. Sources take precedence over built-in names. When loading individual components or categories, load the icons category as well as their other composed dependencies; the full Cube import/client includes it.
 
 Every original icon is emitted as an individual SVG, as a combined `dist/icons/sprite.svg`, and through `dist/icons/icons.css` mask classes. The CSS form behaves like an icon font while retaining SVG geometry and `currentColor`: `<span class="cb-icon cb-icon--undo" aria-hidden="true"></span>`. Use `<cb-icon>` when you need the component API and styling parts.
 
@@ -132,11 +198,48 @@ The chart graphic is decorative to assistive technology; Cube owns the textual e
 
 ## Styling and extension
 
+`cb-rich-text-editor` is a small WYSIWYG form field with bold, italic, underline, strikethrough, superscript, and subscript controls. Its `value` consumes/emits canonical HTML (`strong`, `em`, `u`, `s`, `sup`, `sub`, `br` only, no attributes). Unsupported wrappers become plain text; executable/embedded content is discarded. Pasted HTML goes through the same allowlist. `variant="inline"` is a one-row editor by default and flattens pasted line breaks to spaces; `variant="box"` supports line breaks and vertical resizing. It submits its HTML value under `name`, supports required/read-only/disabled/reset/restoration and cancelable live `beforechange`/`change` transactions with both `value` and `previousValue`. Assigning `value` does not emit `change`.
+
+Provide `accessible-label`, `toolbar-label`, `bold-label`, `italic-label`, `underline-label`, `strikethrough-label`, `superscript-label`, and `subscript-label`. Use `cb-field` for external labels/messages. Formatting applies to the selection or subsequent typing at the caret; superscript and subscript are mutually exclusive. Keyboard shortcuts support Ctrl/Cmd+B/I/U and undo/redo. Load the `action` and `layout` categories alongside `form` for the toolbar/buttons. CSS parts include `shell`, `toolbar`, `control`, `format`, and `format-bold`/`format-italic`/`format-underline`/`format-strikethrough`/`format-superscript`/`format-subscript`.
+
+Layer-tree nodes accept `actions: [{ id, icon, name, label, disabled }]` (only `id` and `label` are required). Actions are application-owned commands; `name` is the button name and `label` is its accessible text, also shown when no icon is supplied. Listen to `action` on `cb-layer-tree`: `detail` contains `{ id, item, action, originalEvent }`. These commands do not select, rename, or drag the node. Cancel `beforeaction` to veto a command. Existing visibility/lock/rename controls remain available independently.
+
+Selection overlays accept the same `actions` array and an `actionsLabel` for the toolbar's accessible name. Their `action` detail is `{ action, rect, rotation, originalEvent }`. The toolbar flips above/below and shifts sideways within the nearest `cb-viewport` (intersected with the browser viewport). It stays unscaled and upright during zoom, pan, rotation, resizing, and scrolling; oversized action lists scroll. With no actions, no toolbar is shown. Load the `action` and `layout` categories alongside `editor` for the composed toolbar and buttons.
+
+Selection borders are CSS-customizable, not a fixed set of variant props. Both `cb-selection-overlay` and `cb-marquee-selection` expose `::part(selection)`; existing `::part(outline)` and `::part(marquee)` remain available. For example:
+
+```css
+cb-selection-overlay::part(selection) { border-style: dashed; border-color: #be185d; }
+cb-marquee-selection::part(selection) { border-style: dotted; border-color: #0891b2; }
+/* Or theme all selection chrome, including handles and size labels: */
+cb-selection-overlay {
+  --component-selection-border-style: solid;
+  --component-selection-color: #7c3aed;
+  --component-selection-width: 2px;
+}
+```
+
+Style the selection toolbar with `::part(controls)` and `::part(toolbar)`; its actions expose `action`, `action-control`, `action-icon`, and `action-label`. Node commands expose the same action parts on `cb-layer-tree` plus `node-action`.
+
+Artboards size themselves to the full content extent by default, without internal scrolling. Set `name` for the editable title; provide `nameLabel`, `saveLabel`, and `cancelLabel` for its controls. Selected artboards show right, bottom, and corner resize handles. Resizing fixes both dimensions; clear `width` and `height` (or set them to `0`) to return to content sizing. Confirmed name edits emit `change` with `value` and `previousValue`; resizing emits `resize` with previous and next size objects. Single-click the name to select and center the artboard at 100% zoom inside `cb-viewport`; double-click the name (or press F2) to edit it. Double-clicking the artboard surface also centers it. Composed artboards require the `form` and `action` categories for their name editor and handles.
+
+Enable artboard guides with `guidesEnabled`; `showGuides` hides the UI without deleting saved guides. Supply `guides` as `{ id, axis, position }[]` in document pixels (`x`: horizontal line, `y`: vertical line). Provide `horizontalGuideLabel`, `verticalGuideLabel`, and `guideLabel` (supports `{id}`, `{axis}`, `{position}`) for accessible controls. Drag from the top/left edge to create, drag a line to reposition, or drag past an edge to remove. Lines snap to edges, the center, and other parallel guides. Escape restores the starting guides. Focused guides support arrows (Shift: 10px), Home, End, and Delete; activating a creation edge by keyboard adds a centered guide. `guideDistanceLabel` supports `{start}` and `{end}` distances from opposing edges. `guideschange` reports live `value`, `previousValue`, `guide`, and `operation`; `guideend` reports the completed gesture, its original `previousValue`, and `cancelled`. Persist `event.detail.value` to restore guides later. Programmatic assignment emits no interaction event. Guides use the editor category's `cb-guide-overlay` and the action category's `cb-button`.
+
 Reusable component styles live in `.css` files, imported directly into each renderer's `stylesheet` property. Local CSS `@import` rules share normalization and family styles. Vite handles these during development; the package build flattens imports and emits stylesheet text modules for ESM/CJS and browser clients, so consumers do not need a CSS loader or import-assertion support.
 
-Category initializers return concrete classes and their headless bases, for example `const { MenuBase } = await initializeNavigation(runtime)`. The core initializer returns the shared `Component` base. A custom renderer extends the base, returns an `HtmlTemplate`, and registers its own custom-element tag. Individual class and `/base` module paths require the runtime to have been initialized first and do not register elements.
+Component hosts, their shadow DOM elements, and their pseudo-elements use `box-sizing: border-box` without relying on a page-wide reset. Slotted application content remains styled by the application.
+
+Import concrete classes and headless bases directly, for example `import { MenuBase } from '@beforesemicolon/cube/navigation'` or `import { Component } from '@beforesemicolon/cube/core'`. A custom renderer extends the base, returns an `HtmlTemplate`, and registers its own custom-element tag. Individual component paths register their own tags; `/base` paths load only headless behavior, without registering tags or rendered dependencies.
 
 Action parts include semantic surfaces such as `control`, `trigger`, `popup`, `menu`, `item`, `tab`, `navigation`, `page`, `tooltip`, `shortcut` and `key`. Layout primitives expose `content` or `line`; overlay parts include `dialog`, `header`, `heading`, `description`, `body`, `footer`, `message` and `message-actions`. Media and chart parts retain their documented control and data surfaces. Use `::part` for structural overrides and theme variables for appearance. Third-party engine descendants are not stable Cube parts.
+
+### Automatic button tooltips
+
+Opt in by wrapping an application or panel in `<cb-tooltip-provider>`. Register both `@beforesemicolon/cube/overlay/tooltip-provider` and `@beforesemicolon/cube/overlay/tooltip` when using individual imports. The provider uses existing accessible labels, button labels, or native titles, including buttons rendered inside composed Cube components. It does not change button layout, actions, or selection styling. Website content inside an iframe is outside the scope.
+
+The provider supports pointer hover, keyboard navigation, disabled controls, and dynamic buttons. `delay` defaults to 400ms; set `enabled="false"` to disable the scope. Escape, activation, focus blur, document scrolling, window blur, and removal dismiss hints. Composed hover/focus ownership is also checked while a hint is active, so entering an iframe or a trimmed shadow-boundary event cannot retain stale hints. Original titles and accessibility descriptions are restored on dismissal; explicit `cb-tooltip` wrappers and nested providers take precedence. Supply labels for icon-only controls, as usual.
+
+Provider hints reuse `cb-tooltip` with its optional `anchorRect` (`{ left, top, right, bottom }` in viewport pixels). The provider supplies `boundaryRect` in the same shape, intersecting the visual viewport with composed `overflow:auto`/`scroll` ancestors (including shadow roots and slots). Anchored hints flip and shift inside those visible scrollports, remain unscaled in the browser top layer, and dismiss when their trigger scrolls fully outside. Decorative `overflow:hidden` wrappers do not create a scroll boundary. Standalone anchored tooltips can supply `boundary-rect` explicitly; ordinary slotted tooltips retain their existing placement and API.
 
 ## Scope and status
 

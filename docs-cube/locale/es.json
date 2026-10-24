@@ -3,7 +3,7 @@
     "title": "Cube por Before Semicolon",
     "intro": "Biblioteca de componentes web con lógica independiente de la presentación y temas para editores visuales. Los componentes se organizan en acciones, formularios, layout, navegación, superposiciones, retroalimentación, visualización de datos, medios, gráficos, estilos, editor, colaboración, iconos y temas.",
     "guide": "Instalación y arquitectura",
-    "guideBody": "Inicializa el catálogo completo o las categorías seleccionadas con el mismo runtime WebComponent. Los inicializadores devuelven clases concretas y bases sin presentación. La raíz ofrece utilidades sin DOM y loadCategory. La representación y el registro requieren un DOM.",
+    "guideBody": "Importa Cube o una categoría para registrar sus componentes inmediatamente. Las clases y bases sin presentación son exportaciones con nombre. Los módulos usan el runtime WebComponent instalado; los scripts del navegador usan BFS. No se necesita llamar a un inicializador ni esperar una promesa. Los componentes requieren un DOM.",
     "runtime": "Carga primero el runtime web-component. Los gráficos requieren además ECharts o un cargador configureChartEngine. Los scripts de medios no cargan ECharts. Esta rama no ha sustituido la versión publicada en npm.",
     "theme": "Temas",
     "themeBody": "ThemeProvider acepta ThemeDefinitionV1 de site-builder mediante theme o src. appearance admite light, dark o system. Las variables CSS conservan los nombres de site-builder; los proveedores anidados crean ámbitos explícitos. Los archivos se generan en dist/themes.",
@@ -60,7 +60,7 @@
     "categoryEditor": "Editor",
     "categoryAssets": "Recursos",
     "categoryCollaboration": "Colaboración",
-    "studioCatalogBody": "Esta categoría contiene elementos cb-* reutilizables registrados juntos por un inicializador o script de categoría. Los componentes usan plantillas Markup reactivas, bases tipadas, variables de tema, partes CSS e historias interactivas de Storybook. La aplicación carga las categorías que necesitan los controles compuestos.",
-    "studioCatalogApi": "Proporciona el texto visible y accesible en el idioma de la aplicación. Los controles emiten beforechange o beforeaction cancelables antes de change o action. Inicializa la categoría con el runtime WebComponent compartido para registrar las etiquetas y obtener las clases y bases."
+    "studioCatalogBody": "Importar esta categoría o cargar su script registra inmediatamente sus elementos cb-* reutilizables. Los componentes usan plantillas Markup reactivas, bases tipadas, variables de tema, partes CSS e historias interactivas de Storybook. La aplicación carga las categorías que necesitan los controles compuestos.",
+    "studioCatalogApi": "Proporciona el texto visible y accesible en el idioma de la aplicación. Los controles emiten beforechange o beforeaction cancelables antes de change o action. Importa un componente o categoría para registrar sus etiquetas automáticamente. Los scripts del navegador usan el runtime BFS existente; BFS.CUBE expone APIs utilitarias, no clases de componentes."
   }
 }

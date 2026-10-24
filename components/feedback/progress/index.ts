@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { progressView } from '../view.js'
@@ -9,3 +10,5 @@ export class Progress extends ProgressBase {
 }
 export { ProgressBase };
 export type { ProgressProps } from './ProgressBase.js';
+
+register('cb-progress', Progress)

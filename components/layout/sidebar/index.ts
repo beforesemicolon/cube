@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { html, type Template } from '../../core/runtime.js'
 
@@ -29,3 +30,5 @@ export class Sidebar extends SidebarBase {
 }
 export { SidebarBase };
 export type { SidebarProps } from './SidebarBase.js';
+
+register('cb-sidebar', Sidebar)

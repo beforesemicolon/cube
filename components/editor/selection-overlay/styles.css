@@ -10,8 +10,11 @@
 [part~=outline] {
   position: absolute;
   inset: 0;
-  border: var(--component-selection-width,1px) solid var(--color-primary);
-  background: color-mix(in srgb, var(--color-selection) 16%, transparent);
+  border: var(--component-selection-width,1px) var(--component-selection-border-style,solid) var(--component-selection-color,var(--color-primary));
+  background: transparent;
+  pointer-events: none;
+}
+[part~=outline][data-movable=true] {
   pointer-events: auto;
   cursor: move;
 }
@@ -27,7 +30,7 @@
   block-size: var(--component-selection-handle-size,9px);
   min-block-size: 0;
   padding: 0;
-  border: 1px solid var(--color-primary);
+  border: 1px solid var(--component-selection-color,var(--color-primary));
   border-radius: 2px;
   background: var(--color-surface);
   pointer-events: auto;
@@ -85,7 +88,7 @@
   block-size: 18px;
   min-block-size: 18px;
   padding: 0;
-  border: 1px solid var(--color-primary);
+  border: 1px solid var(--component-selection-color,var(--color-primary));
   border-radius: 50%;
   background: var(--color-surface);
   pointer-events: auto;
@@ -98,7 +101,7 @@
   inset-block-end: -11px;
   inset-inline-start: 50%;
   block-size: 10px;
-  border-inline-start: 1px solid var(--color-primary);
+  border-inline-start: 1px solid var(--component-selection-color,var(--color-primary));
 }
 [part~=size] {
   position: absolute;
@@ -106,7 +109,7 @@
   translate: -50% 0;
   padding: 2px 5px;
   border-radius: 3px;
-  background: var(--color-primary);
+  background: var(--component-selection-color,var(--color-primary));
   color: var(--color-primary-foreground);
   font: 600 10px/1.4 var(--typography-mono-font-family);
   white-space: nowrap;
@@ -114,6 +117,21 @@
 }
 :host([data-disabled]) [part~=outline] {
   cursor: default;
+}
+[part~=controls] {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-foreground);
+  pointer-events: auto;
+  overflow: auto;
+  box-shadow: var(--shadow-md,0 4px 16px #0002);
+}
+[part~=controls]::part(toolbar) {
+  max-block-size: inherit;
 }
 :host([data-disabled]) [part~=handle],
 :host([data-disabled]) [part~=rotate] {

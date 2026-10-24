@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, or, html, type Template } from '../../core/runtime.js'
 
@@ -32,3 +33,5 @@ export class CommandPalette extends CommandPaletteBase {
 }
 export { CommandPaletteBase };
 export type { CommandPaletteProps } from './CommandPaletteBase.js';
+
+register('cb-command-palette', CommandPalette)

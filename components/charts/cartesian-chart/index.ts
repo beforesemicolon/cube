@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from '../view.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { ChartView } from '../view.js'
@@ -13,3 +14,5 @@ export class CartesianChart extends CartesianChartBase {
 }
 export { CartesianChartBase };
 export type { CartesianChartProps } from './CartesianChartBase.js';
+
+register('cb-cartesian-chart', CartesianChart)

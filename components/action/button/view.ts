@@ -2,7 +2,6 @@ import { when, is, isNot, or, html, type Template } from '../../core/runtime.js'
 
 import { aria } from '../../core/accessibility.js'
 import { uid } from '../../core/id.js'
-import { iconPaths } from '../../icons/registry.js'
 import { bool, scalarText } from '../../core/value.js'
 import type { ButtonBase, ButtonProps } from './ButtonBase.js'
 
@@ -10,14 +9,12 @@ export function buttonView<P extends ButtonProps>(host: ButtonBase<P>, activate:
     const semanticHost = host.hasAttribute('data-semantic-host')
     const descriptionId = uid('cb-button-help')
     const busy = is(host.props.loading)
-    const glyph = () => iconPaths[host.icon] ?? ''
     const content = html`<slot part="prefix" name="prefix"></slot>
-        <svg part="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden="${or(busy, isNot(glyph))}">
-            <path part="path" d="${glyph}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
+        ${when(or(host.props.icon, host.props.iconSrc), html`<cb-icon part="icon" exportparts="path" name=${host.props.icon} src=${host.props.iconSrc} aria-hidden="true" hidden=${busy}></cb-icon>`)}
         <span part="spinner" hidden="${isNot(busy)}"></span>
         <span part="${() => (semanticHost ? 'button-label' : 'label') + (bool(host.iconOnly) ? ' sr-only' : '')}"><slot part="content">${host.props.label}</slot></span>
-        <slot part="suffix" name="suffix"></slot>`
+        <slot part="suffix" name="suffix"></slot>
+        <span part="indicator" aria-hidden="true" hidden="${isNot(host.props.indicator)}"></span>`
     const onClick = (event: Event): void => { if (!semanticHost) activate(event) }
     const attributes = {
         role: () => semanticHost ? 'none' : host.props.role?.() || null,
@@ -36,7 +33,7 @@ export function buttonView<P extends ButtonProps>(host: ButtonBase<P>, activate:
         'aria-valuemax': () => semanticHost ? null : host.props.ariaValuemax?.() ?? null,
         'aria-valuenow': () => semanticHost ? null : host.props.ariaValuenow?.() ?? null,
         'aria-valuetext': () => semanticHost ? null : host.props.ariaValuetext?.() || null,
-        'aria-description': () => semanticHost ? null : host.props.ariaDescription?.() || null,
+        'aria-description': () => semanticHost ? null : host.props.ariaDescription?.() || (bool(host.indicator) ? scalarText(host.indicatorLabel) : null),
         'aria-keyshortcuts': () => semanticHost ? null : host.props.ariaKeyshortcuts?.() || null,
         'aria-pressed': () => host.pressed === undefined ? null : bool(host.pressed),
     }

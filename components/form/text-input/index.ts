@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from '../../studio/view.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { createStudioView, type StudioView } from '../../studio/view.js'
@@ -11,3 +12,5 @@ export class TextInput extends TextInputBase {
 }
 export { TextInputBase };
 export type { TextInputProps } from './TextInputBase.js';
+
+register('cb-text-input', TextInput)

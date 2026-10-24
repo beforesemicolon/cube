@@ -1,5 +1,5 @@
 export interface ActionItem {
-    id?: string; label?: string; description?: string; icon?: string; disabled?: boolean; href?: string
+    id?: string; label?: string; description?: string; icon?: string; iconSrc?: string; disabled?: boolean; href?: string
     shortcut?: string; separator?: boolean; checked?: boolean; type?: 'action'|'checkbox'|'radio'; group?: string
     children?: ActionItem[]
 }

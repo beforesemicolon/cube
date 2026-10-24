@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, html, type Template } from '../../core/runtime.js'
 
@@ -24,3 +25,5 @@ export class DockedPanel extends DockedPanelBase {
 }
 export { DockedPanelBase };
 export type { DockedPanelProps } from './DockedPanelBase.js';
+
+register('cb-docked-panel', DockedPanel)

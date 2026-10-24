@@ -103,7 +103,7 @@ test('editing controls use change as their single live value event',async({page}
     const slider=page.getByRole('slider',{name:'Live slider'});await slider.focus();await page.keyboard.press('ArrowRight');await slider.blur()
     await page.locator('cb-code-editor textarea').fill('const after = true')
     await page.locator('#fixture > cb-color-picker input[type=color]').evaluate((input:HTMLInputElement)=>{input.value='#ff0000';input.dispatchEvent(new InputEvent('input',{bubbles:true,composed:true}))})
-    await page.locator('cb-gradient-editor input[part~=angle]').evaluate((input:HTMLInputElement)=>{input.value='45';input.dispatchEvent(new InputEvent('input',{bubbles:true,composed:true}))})
+    await page.locator('cb-gradient-editor cb-unit-input[part~=angle]').getByRole('spinbutton').fill('45')
     for(const tag of ['cb-text-input','cb-slider','cb-code-editor','cb-color-picker','cb-gradient-editor']){
         await expect(page.locator(`#fixture > ${tag}`)).toHaveAttribute('data-change-count','1')
         await expect(page.locator(`#fixture > ${tag}`)).not.toHaveAttribute('data-input-count')

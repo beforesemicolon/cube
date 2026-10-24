@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
 import { pick, isNot, or, is, and, type Template, html, repeat, when, state } from '../../core/runtime.js'
@@ -205,3 +206,5 @@ export class Table extends TableBase {
 }
 export { TableBase };
 export type { TableAlign, TableCellContent, TableCellContext, TableCellVariant, TableColumn, TableDensity, TableGroupModel, TablePrimitive, TableProps, TableRecord, TableRowModel, TableSelectionMode, TableSortDirection, TableValue, } from './TableBase.js';
+
+register('cb-table', Table)

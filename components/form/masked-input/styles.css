@@ -1,4 +1,4 @@
-@import "../../theme/editor.css";
+@import "../../theme/field.css";
 :host {
   display: block;
   inline-size: var(--component-masked-input-width,360px);
@@ -10,9 +10,6 @@
   min-inline-size: 0;
   box-sizing: border-box;
   min-block-size: var(--cb-height);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-background);
   color: var(--color-foreground);
   padding: var(--spacing-xs,4px) var(--spacing-sm,8px);
   font: inherit;

@@ -1,7 +1,4 @@
-import './core/browser.js'
-import { registerLayout } from './layout/register.js'
-export * from './layout/register.js'
+import createComponents from 'cube:client/layout'
+import { browserRuntime } from './core/browser.js'
 
-registerLayout()
-
-export const ready = Promise.resolve()
+createComponents(browserRuntime())

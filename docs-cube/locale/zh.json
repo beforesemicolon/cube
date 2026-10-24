@@ -3,7 +3,7 @@
     "title": "Cube · Before Semicolon",
     "intro": "面向可视化编辑器的 Web 组件库，逻辑与渲染分离并支持主题。组件按操作、表单、布局、导航、浮层、反馈、数据展示、媒体、图表、样式、编辑器、协作、图标和主题分类。",
     "guide": "安装与架构",
-    "guideBody": "使用同一个 WebComponent 运行时初始化完整目录或所选类别。类别初始化函数返回具体组件类和无样式基类。包根入口提供不依赖 DOM 的工具和 loadCategory。渲染与注册需要 DOM。",
+    "guideBody": "导入 Cube 或某个类别即可立即注册组件。组件类和无样式基类通过命名导出提供。模块入口使用已安装的 WebComponent 运行时，浏览器脚本使用 BFS。无需调用初始化函数或等待就绪 Promise。组件入口需要 DOM。",
     "runtime": "浏览器脚本必须先加载 web-component 运行时。图表还需要 ECharts 或自定义 configureChartEngine 加载器。仅媒体脚本不会加载 ECharts。此分支尚未替换 npm 上发布的版本。",
     "theme": "主题",
     "themeBody": "ThemeProvider 通过 theme 或 src 接受 site-builder ThemeDefinitionV1。appearance 支持 light、dark 或 system。CSS 变量名与 site-builder 一致；嵌套提供器创建明确的作用域。JSON 主题和 CSS 生成到 dist/themes。",
@@ -60,7 +60,7 @@
     "categoryEditor": "编辑器",
     "categoryAssets": "资源",
     "categoryCollaboration": "协作",
-    "studioCatalogBody": "此类别包含由类别初始化函数或浏览器脚本统一注册的可复用 cb-* 元素。组件使用响应式 Markup 模板、类型化基类、主题变量、CSS 部件和交互式 Storybook 示例。应用负责加载组合控件需要的类别。",
-    "studioCatalogApi": "请提供应用当前语言的可见文本和无障碍文本。交互控件在 change 或 action 前发出可取消的 beforechange 或 beforeaction。使用共享 WebComponent 运行时初始化类别，以注册标签并获取组件类和基类。"
+    "studioCatalogBody": "导入此类别或加载其浏览器脚本即可立即注册可复用的 cb-* 元素。组件使用响应式 Markup 模板、类型化基类、主题变量、CSS 部件和交互式 Storybook 示例。应用负责加载组合控件需要的类别。",
+    "studioCatalogApi": "请提供应用当前语言的可见文本和无障碍文本。交互控件在 change 或 action 前发出可取消的 beforechange 或 beforeaction。导入组件或类别即可自动注册标签。浏览器脚本使用现有的 BFS 运行时；BFS.CUBE 仅公开实用 API，不公开组件类。"
   }
 }

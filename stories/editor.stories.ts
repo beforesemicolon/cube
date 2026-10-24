@@ -9,13 +9,23 @@ const items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary ite
 
 export const Viewport: Story = componentStory('cb-viewport', {
     label: 'Viewport', accessibleLabel: 'Design workspace', zoom: 100, minZoom: 25, maxZoom: 400, zoomStep: 10,
-    x: 0, y: 0, pannable: true, grid: true, controls: true, zoomInLabel: 'Zoom in', zoomOutLabel: 'Zoom out',
+    x: 0, y: 0, pannable: true, panTool: false, grid: true, controls: true, zoomInLabel: 'Zoom in', zoomOutLabel: 'Zoom out',
     resetLabel: 'Reset view', positionLabel: 'x {x} · y {y}',
+    actions: [
+        { id: 'select', icon: 'cursor', label: 'Select', position: 'top-left' },
+        { id: 'measurements', icon: 'ruler', label: 'Show measurements', position: 'top-right', pressed: true },
+        { id: 'fit', icon: 'layers', label: 'Fit content', position: 'bottom-right' },
+    ],
 })
 
 export const Artboard: Story = componentStory('cb-artboard', {
-    label: 'Artboard', accessibleLabel: 'Homepage artboard', width: 640, height: 400, background: '', selected: true,
+    guidesEnabled: true, showGuides: true, guides: [{ id: 'margin-left', axis: 'y', position: 24 }, { id: 'margin-top', axis: 'x', position: 24 }],
+    horizontalGuideLabel: 'Create horizontal guide', verticalGuideLabel: 'Create vertical guide', guideLabel: 'Guide {id}', guideDistanceLabel: '{start}px · {end}px',
+    label: 'Artboard', accessibleLabel: 'Homepage artboard', name: 'Homepage', width: undefined, height: undefined, background: '', selected: true,
     selectable: true, showDimensions: true, dimensionsLabel: '{width} × {height}',
+    editable: true, nameLabel: 'Artboard name', namePlaceholder: 'Untitled artboard', saveLabel: 'Save name', cancelLabel: 'Cancel rename',
+    resizable: true, minWidth: 40, minHeight: 40, resizeStep: 1, resizeLabel: '{handle}',
+    handleLabels: { e: 'Resize right', s: 'Resize bottom', se: 'Resize corner' },
 })
 
 export const Rulers: Story = componentStory('cb-rulers', {
@@ -52,6 +62,10 @@ export const PropertyGroup: Story = componentStory('cb-property-group', {
 })
 
 export const SelectionOverlay: Story = componentStory('cb-selection-overlay', {
+    actionsLabel: 'Selection actions', actions: [
+        { id: 'duplicate', name: 'duplicate', icon: 'copy', label: 'Duplicate selection' },
+        { id: 'delete', name: 'delete', icon: 'close', label: 'Delete selection' },
+    ],
     label: 'Selected layer', accessibleLabel: 'Selected hero card', rect: { x: 96, y: 72, width: 240, height: 148 }, rotation: 0,
     movable: true, resizable: true, rotatable: true, moveStep: 1, minWidth: 32, minHeight: 24, showSize: true,
     moveLabel: 'Move selected layer', resizeLabel: 'Resize selected layer', rotateLabel: 'Rotate selected layer', sizeLabel: '{width} × {height}',

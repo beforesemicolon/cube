@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite'
 import type { AccordionItem } from '../components/data-display/accordion/base.js'
 import type { TableColumn, TableRecord } from '../components/data-display/table/base.js'
 import type { List } from '../components/data-display/list/index.js'
-import { html } from '../components/core/runtime.js'
+import type { Workspace } from '../components/layout/workspace/index.js'
+import { html, repeat } from '../components/core/runtime.js'
 import { createFlashbar, configureFlashbarHost } from '../components/feedback/flashbar/service.js'
 import { showModal } from '../components/overlay/modal/service.js'
 import './setup.js'
@@ -134,6 +135,15 @@ export const MultiSelection: Story = {
 export const Autocomplete: Story = {
     name: 'Form / Autocomplete',
     render: () => compactSurface(formField('cb-combobox', { label: 'Add a command', placeholder: 'Start typing…', autocomplete: 'both', options: [{ value: 'layout', label: 'Auto layout' }, { value: 'width', label: 'Auto width' }, { value: 'save', label: 'Autosave' }] })),
+}
+
+export const ComboboxMultiSelection: Story = {
+    name: 'Form / Combobox multi-selection',
+    render: () => compactSurface(formField('cb-combobox', {
+        label: 'Countries', multi: true, value: ['at', 'be'], placeholder: 'Choose a country',
+        toggleLabel: 'Toggle countries', removeLabel: 'Remove {label}', emptyLabel: 'No matching countries',
+        options: [{ value: 'at', label: 'Austria' }, { value: 'by', label: 'Belarus' }, { value: 'be', label: 'Belgium' }, { value: 'bg', label: 'Bulgaria' }, { value: 'cy', label: 'Cyprus' }, { value: 'cz', label: 'Czech Republic' }],
+    })),
 }
 
 export const NativeFormControls: Story = {
@@ -463,7 +473,11 @@ export const SettingsAccordion: Story = {
 export const CanvasSelection: Story = {
     name: 'Editor / Canvas selection',
     render: () => {
-        const artboard = component('cb-artboard', { label: 'Homepage artboard', accessibleLabel: 'Homepage artboard', selected: true, showDimensions: true, dimensionsLabel: '{width} × {height}' })
+        const artboard = component('cb-artboard', {
+            label: 'Homepage artboard', name: 'Homepage', accessibleLabel: 'Homepage artboard', selected: true, showDimensions: true, dimensionsLabel: '{width} × {height}',
+            nameLabel: 'Artboard name', saveLabel: 'Save name', cancelLabel: 'Cancel rename', resizeLabel: '{handle}',
+            handleLabels: { e: 'Resize right', s: 'Resize bottom', se: 'Resize corner' },
+        })
         const heading = component('cb-heading', { label: 'Build something great.', description: 'A selected homepage section', level: 2 })
         heading.style.cssText = 'display:block;padding:48px'
         artboard.append(heading)
@@ -471,6 +485,24 @@ export const CanvasSelection: Story = {
         const selection = component('cb-badge', { value: '1 layer selected' }); selection.slot = 'start'
         actions.append(selection, component('cb-button', { label: 'Duplicate', icon: 'copy' }), component('cb-button', { label: 'Delete', icon: 'close', variant: 'destructive' }))
         return wideSurface(artboard, actions)
+    },
+}
+
+export const SelectionBorderStyles: Story = {
+    name: 'Editor / Selection border styles',
+    render: () => {
+        // Storybook consumes DOM nodes; mount the Markup template into the layout host.
+        const row = document.createElement('cb-row')
+        row.setAttribute('gap', '24px'); row.setAttribute('wrap', '')
+        html`${repeat([
+            { style: 'solid', color: '#2563eb' }, { style: 'dashed', color: '#be185d' }, { style: 'dotted', color: '#0891b2' },
+        ], option => html`<cb-box width="240px" height="180px" padding="16px" background="var(--color-surface)" style="position:relative">
+            <cb-heading label=${option.style} level="3"></cb-heading>
+            <cb-selection-overlay accessible-label=${`${option.style} selection`} move-label=${`Move ${option.style} selection`}
+                rect=${{ x: 24, y: 64, width: 180, height: 90 }} resizable="false" show-size="false"
+                style=${`--component-selection-border-style:${option.style};--component-selection-color:${option.color};--component-selection-width:2px`}></cb-selection-overlay>
+        </cb-box>`)}`.render(row)
+        return row
     },
 }
 
@@ -571,12 +603,46 @@ export const EditorWorkspace: Story = {
         const timeline = component('cb-timeline', { label: 'Timeline', accessibleLabel: 'Animation timeline', duration: 4, currentTime: 1, playLabel: 'Play', pauseLabel: 'Pause', rewindLabel: 'Rewind', addKeyframeLabel: 'Add keyframe', playheadLabel: 'Playhead', keyframeLabel: '{track} at {time}', timeLabel: '{current} / {duration}', tracks: [{ id: 'opacity', label: 'Opacity', keyframes: [{ id: 'one', time: 0 }, { id: 'two', time: 2 }, { id: 'three', time: 4 }] }] }); timeline.slot = 'bottom'
         const canvas = document.createElement('div')
         canvas.style.cssText = 'position:relative;min-block-size:100%;background:linear-gradient(90deg,var(--color-separator) 1px,transparent 1px),linear-gradient(var(--color-separator) 1px,transparent 1px);background-size:20px 20px'
-        const artboard = component('cb-artboard', { label: 'Homepage', accessibleLabel: 'Homepage artboard', width: 640, height: 420, selected: true, dimensionsLabel: '{width} × {height}' })
+        const artboard = component('cb-artboard', {
+            label: 'Homepage', name: 'Homepage', accessibleLabel: 'Homepage artboard', width: 640, height: 420, selected: true, dimensionsLabel: '{width} × {height}',
+            nameLabel: 'Artboard name', saveLabel: 'Save name', cancelLabel: 'Cancel rename', resizeLabel: '{handle}',
+            handleLabels: { e: 'Resize right', s: 'Resize bottom', se: 'Resize corner' },
+        })
         const heading = component('cb-heading', { label: 'Make better products.', description: 'Compose accessible interfaces with Cube.', level: 2 })
         heading.style.cssText = 'display:block;padding:32px'
         artboard.append(heading)
         canvas.append(artboard)
         workspace.append(header, layers, canvas, properties, timeline)
+        return wideSurface(workspace)
+    },
+}
+
+export const TabbedWorkspace: Story = {
+    name: 'Layout / Tabbed workspace',
+    render: () => {
+        const workspace = document.createElement('cb-workspace') as Workspace
+        Object.assign(workspace, {
+            variant: 'tabbed', accessibleLabel: 'Tabbed editor workspace',
+            startLabel: 'Navigation panels', endLabel: 'Inspector panels', bottomLabel: 'Tools', closeMobileLabel: 'Close panel',
+            startSize: 240, endSize: 280, bottomSize: 160, bottomOpen: false,
+            startItems: [
+                { id: 'pages', name: 'Pages', description: 'Browse project pages.', iconName: 'file', renderContent: () => html`<div style="padding:16px"><cb-button label="Homepage" variant="ghost"></cb-button><cb-button label="About" variant="ghost"></cb-button></div>` },
+                { id: 'layers', name: 'Layers', description: 'Explore the active page structure.', iconName: 'layers', renderContent: () => html`<div style="padding:16px"><p>Header</p><p>Hero</p><p>Footer</p></div>` },
+            ],
+            endItems: [
+                { id: 'properties', name: 'Properties', description: 'Edit the selected element.', collapsedName: 'Inspect', iconName: 'settings', renderContent: () => html`<div style="padding:16px"><cb-field label="Element name"><cb-text-input value="Hero"></cb-text-input></cb-field></div>` },
+                { id: 'styles', name: 'Styles', iconName: 'edit', renderContent: () => html`<div style="padding:16px"><p>Styles for the selected element.</p></div>` },
+            ],
+            bottomItems: [
+                { id: 'console', name: 'Console', renderContent: () => html`<pre style="padding:16px">Ready. No errors.</pre>` },
+                { id: 'history', name: 'History', renderContent: () => html`<p style="padding:16px">Opened the editor.</p>` },
+            ],
+        } satisfies Partial<Workspace>)
+        workspace.style.cssText = 'inline-size:100%;block-size:640px'
+        const canvas = document.createElement('div')
+        canvas.style.cssText = 'display:grid;place-content:center;min-block-size:100%;padding:24px;text-align:center'
+        canvas.textContent = 'Select a panel tab. Click its active tab again to collapse it.'
+        workspace.append(canvas)
         return wideSurface(workspace)
     },
 }

@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { messageView } from '../view.js'
@@ -9,3 +10,5 @@ export class Toast extends ToastBase {
 }
 export { ToastBase };
 export type { ToastProps } from './ToastBase.js';
+
+register('cb-toast', Toast)

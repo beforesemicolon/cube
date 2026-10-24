@@ -5,10 +5,7 @@ import {studioBoardItems,studioDefinitions,studioDesignReferences} from '../comp
 for(const {path,name,className}of componentEntries){
     const baseSource=await readFile(`components/${path}/${className}Base.ts`,'utf8')
     const componentSource=await readFile(`components/${path}/index.ts`,'utf8')
-    const category = path.split('/')[0]
-    const registration = await readFile(`components/${category}/register.ts`, 'utf8')
-    assert.match(registration,new RegExp(`register\\('cb-${name}'`))
-    assert.doesNotMatch(componentSource, /register\('cb-/, `${className} must be registered by its category`)
+    assert.match(componentSource,new RegExp(`register\\('cb-${name}', ${className}\\)`), `${className} must register on import`)
     assert.match(componentSource, /render\(\): Template/, `${className} must return a Markup template`)
     assert.match(componentSource,new RegExp(`class ${className}(?:<[^\\n]+>)? extends ${className}Base`),`${className} must inherit its component base`)
     assert.match(baseSource,new RegExp(`class ${className}Base(?:<[^\\n]+>)? extends (?:[A-Za-z]+Base|Component)(?:<[^\\n]+>)?`),`${className}Base must inherit Component or a named family base`)

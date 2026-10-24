@@ -3,7 +3,7 @@ import { finite, text } from '../../core/value.js'
 
 export type FlashbarType = 'info' | 'success' | 'warning' | 'danger' | 'error' | 'loading'
 export type NormalizedFlashbarType = Exclude<FlashbarType, 'error'>
-export type FlashbarPosition = 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end'
+export type FlashbarPosition = 'top-start' | 'top-center' | 'top-end' | 'bottom-start' | 'bottom-end'
 export interface FlashbarActionContext { id: string; message: NormalizedFlashbarMessage; originalEvent: Event }
 export type FlashbarActionHandler = (context: FlashbarActionContext) => void | Promise<void>
 
@@ -182,7 +182,7 @@ export abstract class FlashbarBase<P extends FlashbarProps = FlashbarProps> exte
 
     private renderMessages(): void {
         const maximum = Math.max(1, Math.trunc(finite(this.maxVisible, 4)))
-        this.dataset.position = ['top-start', 'top-end', 'bottom-start', 'bottom-end'].includes(this.position) ? this.position : 'top-end'
+        this.dataset.position = ['top-start', 'top-center', 'top-end', 'bottom-start', 'bottom-end'].includes(this.position) ? this.position : 'top-end'
         this.syncMessages(this.records.slice(0, maximum))
     }
 }

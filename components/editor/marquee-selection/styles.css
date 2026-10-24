@@ -9,7 +9,7 @@
 }
 [part~=marquee] {
   position: absolute;
-  border: 1px solid var(--color-primary);
+  border: var(--component-selection-width,1px) var(--component-selection-border-style,solid) var(--component-selection-color,var(--color-primary));
   background: color-mix(in srgb, var(--color-selection) 42%, transparent);
   pointer-events: none;
 }

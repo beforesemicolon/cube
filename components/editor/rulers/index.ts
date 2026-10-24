@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, or, type Template, html, repeat, when, state } from '../../core/runtime.js'
 
@@ -65,3 +66,5 @@ export class Rulers extends RulersBase {
 }
 export { RulersBase };
 export type { RulersProps } from './RulersBase.js';
+
+register('cb-rulers', Rulers)

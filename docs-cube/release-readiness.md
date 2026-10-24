@@ -29,7 +29,7 @@ Completed:
   by the runtime. The regression covers programmatic values, attributes and typing.
 - Built Storybook and the current 20-page documentation site in five languages.
 - Restricted npm payload and tested a real archive in an isolated installed
-  consumer: SSR-safe ESM/CJS entrypoints, all component declarations and category
+  consumer: DOM-free ESM/CJS utilities, all component declarations and category
   clients resolve. The archive contains no legacy source, tests, source maps,
   design assets or build reports.
 - Verified a clean `npm ci`, release scripts, package/registration version

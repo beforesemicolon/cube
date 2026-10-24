@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { pick, isNot, or, html, state, unsafeHTML, type Template } from '../../core/runtime.js'
 
@@ -29,3 +30,5 @@ export class CodePreview extends CodePreviewBase {
 }
 export { CodePreviewBase };
 export type { CodePreviewProps } from './CodePreviewBase.js';
+
+register('cb-code-preview', CodePreview)

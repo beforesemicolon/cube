@@ -1,0 +1,4 @@
+@import "../../theme/box-sizing.css";
+
+:host { display: contents; }
+:host([hidden]) { display: none; }

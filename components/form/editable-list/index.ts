@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { is, or, isNot, pick, type Template, html, repeat, when, state } from '../../core/runtime.js'
 
@@ -61,3 +62,5 @@ export class EditableList extends EditableListBase {
 }
 export { EditableListBase };
 export type { EditableListProps, EditableListItem, EditableListChangeReason } from './EditableListBase.js';
+
+register('cb-editable-list', EditableList)

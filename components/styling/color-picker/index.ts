@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
 import { when, is, isNot, and, or, pick, type Template, html, repeat, state } from '../../core/runtime.js'
@@ -40,6 +41,12 @@ export class ColorPicker extends ColorPickerBase {
 
     private readonly pickerId=uid('cb-color-picker');
     private readonly hexDraft=state<string|null>(null);
+    private readonly selectedSwatch=state<string|null>(null);
+    setOpen(open: boolean, originalEvent?: Event): boolean {
+        if(!super.setOpen(open,originalEvent)) return false;
+        if(!open) this.selectedSwatch[1](null);
+        return true;
+    }
     private node(name: string): HTMLElement | undefined { const node=this.refs[name]?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private get trigger(): HTMLElement | undefined { return this.node('trigger'); }
     private get popup(): HTMLElement | undefined { return this.node('popup'); }
@@ -71,7 +78,9 @@ export class ColorPicker extends ColorPickerBase {
                     aria-label=${() => this.channelLabel(definition.name)} value=${() => this.channelValue(definition.name)} disabled=${blocked}
                     oninput=${(event: Event) => { if(event.currentTarget instanceof HTMLInputElement) this.updateFromChannel(definition.name,event.currentTarget.valueAsNumber,false,event); }}>
             </label>`,{key:definition=>definition.name})}`;
-        return html`<div part="root">
+        // Color variables belong to the root. PopupController exclusively owns
+        // popup positioning; replacing its style attribute would erase left/top.
+        return html`<div part="root" style=${() => { const color=this.color(); return `--cb-hue-color:hsl(${color.hue},100%,50%);--cb-solid-color:${colorToHex({...color,alpha:1},false)};--cb-saturation-position:${color.saturation}%;--cb-value-position:${100-color.value}%`; }}>
             <cb-button part="trigger control" exportparts="control:trigger-control,label:trigger-label,button-label:trigger-label,icon:trigger-icon,description:trigger-description,control:control-control,label:control-label,button-label:control-label,icon:control-icon,description:control-description" ref="trigger" data-bare data-semantic-host id=${this.pickerId}
                 disabled=${blocked} hidden=${this.props.native} accessible-label=${this.accessibleName}
                 aria-haspopup="dialog" aria-controls=${`${this.pickerId}-popup`} aria-expanded=${when(and(this.props.open, isNot(this.props.native)), 'true', 'false')}
@@ -84,8 +93,7 @@ export class ColorPicker extends ColorPickerBase {
                 hidden=${isNot(this.props.native)} aria-label=${this.accessibleName} aria-description=${this.descriptionText} aria-invalid=${() => this.validationError() || null}
                 oninput=${(event: Event) => { const color=parseHexColor(this.nativeControl?.value ?? ''); if(color) this.changeColor(color,event); }}
                 onblur=${() => { this.validationShown=true; }}>
-            <section part="popup" ref="popup" id=${`${this.pickerId}-popup`} role="dialog" tabindex="-1" hidden aria-label=${this.accessibleName}
-                style=${() => { const color=this.color(); return `--cb-hue-color:hsl(${color.hue},100%,50%);--cb-solid-color:${colorToHex({...color,alpha:1},false)};--cb-saturation-position:${color.saturation}%;--cb-value-position:${100-color.value}%`; }}>
+            <section part="popup" ref="popup" id=${`${this.pickerId}-popup`} role="dialog" tabindex="-1" hidden aria-label=${this.accessibleName}>
                 <cb-button part="plane" exportparts="control:plane-control,label:plane-label,button-label:plane-label,icon:plane-icon,description:plane-description" ref="plane" data-bare data-semantic-host accessible-label=${() => this.planeLabel || this.accessibleName()} disabled=${blocked}
                     onbeforeaction=${(event: Event) => event.stopPropagation()}
                     onaction=${(event: Event) => event.stopPropagation()}
@@ -120,16 +128,21 @@ export class ColorPicker extends ColorPickerBase {
                             title=${() => color === '#00000000' ? this.transparentLabel || color : color}
                             aria-keyshortcuts=${() => this.removable(color) ? 'Delete Backspace' : null}
                             aria-description=${() => this.removable(color) && this.removeSwatchLabel ? this.removeSwatchLabel.replaceAll('{color}',color) : null}
-                            onaction=${(event: Event) => { event.stopPropagation(); if(this.choose(color,event)) this.focusSwatch(color); }}
+                            onaction=${(event: Event) => { event.stopPropagation(); this.selectedSwatch[1](color); this.choose(color,event); this.focusSwatch(color); }}
                             onkeydown=${(event: KeyboardEvent) => {
                                 if(!['Delete','Backspace'].includes(event.key) || !this.removable(color)) return;
                                 const index=this.paletteColors().indexOf(color);
-                                if(this.removeSwatch(color,event)) { event.preventDefault(); queueMicrotask(() => this.focusPaletteItem(Math.max(0,index))); }
+                                if(this.removeSwatch(color,event)) { event.preventDefault(); if(this.selectedSwatch[0]() === color) this.selectedSwatch[1](null); queueMicrotask(() => this.focusPaletteItem(Math.max(0,index))); }
                             }}><span part="swatch-preview"><span part="swatch-color" style=${`--cb-swatch-color:${color}`}></span></span></cb-button>`,{key:color=>color})}
                         <cb-button part="add-swatch" exportparts="control:add-swatch-control,label:add-swatch-label,button-label:add-swatch-label,icon:add-swatch-icon,description:add-swatch-description" ref="addSwatch" icon-only icon="plus" variant="outline" size="sm"
                             accessible-label=${this.props.addSwatchLabel} hidden=${isNot(this.props.addSwatchLabel)} disabled=${blocked}
                             onpointerdown=${(event: PointerEvent) => event.preventDefault()}
-                            onaction=${(event: Event) => { event.stopPropagation(); const value=this.normalizedValue(); if(this.addSwatch(value,event)) queueMicrotask(() => this.focusSwatch(value)); }}></cb-button>
+                            onaction=${(event: Event) => { event.stopPropagation(); const value=this.normalizedValue(); if(this.addSwatch(value,event)) { this.selectedSwatch[1](value); queueMicrotask(() => this.focusSwatch(value)); } }}></cb-button>
+                        <cb-button part="update-swatch" icon-only icon="edit" variant="outline" size="sm" accessible-label=${this.props.updateSwatchLabel}
+                            hidden=${() => !this.props.updateSwatchLabel?.() || !this.selectedSwatch[0]() || !this.savedSwatches().includes(this.selectedSwatch[0]() || '')}
+                            disabled=${or(blocked, () => this.selectedSwatch[0]() === this.normalizedValue())}
+                            onpointerdown=${(event: PointerEvent) => event.preventDefault()}
+                            onaction=${(event: Event) => { event.stopPropagation(); const previous=this.selectedSwatch[0](), value=this.normalizedValue(); if(previous && this.updateSwatch(previous,value,event)) { this.selectedSwatch[1](value); queueMicrotask(() => this.focusSwatch(value)); } }}></cb-button>
                     </div></div>
             </section></div>`;
     }
@@ -248,6 +261,8 @@ export class ColorPicker extends ColorPickerBase {
     }
 }
 export { ColorPickerBase };
-export type { ColorPickerChangeDetail, ColorPickerProps, ColorPickerSwatchDetail } from './ColorPickerBase.js';
+export type { ColorPickerChangeDetail, ColorPickerProps, ColorPickerSwatchDetail, ColorPickerSwatchUpdateDetail } from './ColorPickerBase.js';
 export { colorToHex, hsvaToRgba, normalizeColor, parseHexColor, rgbaToHsva } from './color.js';
 export type { HSVAColor, RGBAColor } from './color.js';
+
+register('cb-color-picker', ColorPicker)

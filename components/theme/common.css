@@ -1,13 +1,9 @@
+@import "./box-sizing.css";
 :host {
   display: block;
   color: var(--color-foreground, #20262B);
   font: var(--typography-body-font-size, 14px)/var(--typography-body-line-height, 1.5) var(--typography-body-font-family, Inter, system-ui, sans-serif);
   container-type: inline-size;
-}
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
 }
 [hidden] {
   display: none !important;

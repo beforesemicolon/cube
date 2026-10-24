@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, is, html, state, type Template } from '../../core/runtime.js'
 
@@ -27,3 +28,5 @@ export class Avatar extends AvatarBase {
 }
 export { AvatarBase };
 export type { AvatarProps, AvatarStatus } from './AvatarBase.js';
+
+register('cb-avatar', Avatar)

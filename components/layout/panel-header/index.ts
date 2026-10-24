@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { when, is, isNot, html, type Template } from '../../core/runtime.js'
 
@@ -8,7 +9,7 @@ export class PanelHeader extends PanelHeaderBase {
 
     render(): Template {
         return html`
-            <header part="header">
+            <header part="header" role="presentation">
                 <div part="copy"><slot name="heading" part="heading">${this.props.label}</slot>
                     <p part="description" hidden="${isNot(this.props.description)}">${this.props.description}</p></div>
                 <div part="actions"><slot name="actions" part="action-content"></slot>
@@ -27,3 +28,5 @@ export class PanelHeader extends PanelHeaderBase {
 }
 export { PanelHeaderBase };
 export type { PanelHeaderProps } from './PanelHeaderBase.js';
+
+register('cb-panel-header', PanelHeader)

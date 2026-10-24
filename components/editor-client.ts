@@ -1,7 +1,4 @@
-import './core/browser.js'
-import { registerEditor } from './editor/register.js'
-export * from './editor/register.js'
+import createComponents from 'cube:client/editor'
+import { browserRuntime } from './core/browser.js'
 
-registerEditor()
-
-export const ready = Promise.resolve()
+createComponents(browserRuntime())

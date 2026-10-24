@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { or, isNot, is, type Template, html, repeat } from '../../core/runtime.js'
 
@@ -154,3 +155,5 @@ export class Timeline extends TimelineBase {
 }
 export { TimelineBase };
 export type { TimelineKeyframe, TimelineProps, TimelineTrack } from './TimelineBase.js';
+
+register('cb-timeline', Timeline)

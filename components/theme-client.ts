@@ -1,7 +1,6 @@
-import './core/browser.js'
-import { registerTheme } from './theme/register.js'
-export * from './theme/register.js'
+import createComponents from 'cube:client/theme'
+import { browserRuntime } from './core/browser.js'
 
-registerTheme()
-
-export const ready = Promise.resolve()
+const { flattenTheme, cubeTheme, lightTokens, darkTokens, token } = createComponents(browserRuntime())
+const browser = globalThis as typeof globalThis & { BFS: { CUBE?: object } }
+browser.BFS.CUBE = { flattenTheme, cubeTheme, lightTokens, darkTokens, token, ...browser.BFS.CUBE }

@@ -1,4 +1,4 @@
-@import "../../theme/editor.css";
+@import "../../theme/field.css";
 :host {
   display: inline-block;
   inline-size: var(--component-combobox-width,280px);
@@ -14,32 +14,78 @@
   min-block-size: var(--cb-height);
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-muted);
+  border: 1px solid var(--cb-field-border);
+  border-radius: var(--cb-field-radius);
+  background: var(--cb-field-background);
 }
-[part~=prefix] {
-  margin-inline-start: var(--spacing-md,12px);
+[part~=values] {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-inline-size: 0;
+  align-self: stretch;
 }
 [part~=input] {
   flex: 1;
   inline-size: 100%;
   min-inline-size: 0;
-  block-size: 100%;
+  block-size: calc(var(--cb-height) - 2px);
   padding: var(--spacing-xs,4px) var(--spacing-sm,8px);
   border: 0;
   background: transparent;
   outline: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+[part~=input-shell][data-multi] {
+  block-size: auto;
+}
+[data-multi] [part~=values] {
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 2px 4px;
+}
+[data-multi] [part~=input] {
+  flex: 1 0 4ch;
+  inline-size: 4ch;
+  max-inline-size: 100%;
+  min-inline-size: 4ch;
+  block-size: calc(var(--cb-height) - 6px);
+  padding: 0 2px;
+}
+[part~=selection] {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-inline-size: 100%;
+  min-block-size: 20px;
+  padding: 1px 3px 1px 6px;
+  border: 1px solid var(--cb-field-border);
+  border-radius: var(--radius-sm,6px);
+  background: var(--cb-field-background);
+}
+[part~=selection-label] {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+[part~=remove] {
+  flex: none;
+}
+[part~=input-shell] [part~=input]:is(:hover,:focus) {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 [part~=toggle] {
   display: block;
   align-self: stretch;
-  block-size: 100%;
+  flex: none;
 }
 [part~=toggle]::part(control) {
   block-size: 100%;
   min-block-size: 0;
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-radius: 0 var(--cb-field-radius) var(--cb-field-radius) 0;
 }
 [part~=popup] {
   z-index: var(--z-index-dropdown,1000);
@@ -47,7 +93,7 @@
   box-sizing: border-box;
   overflow: auto;
   padding: 4px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--cb-field-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-foreground);
@@ -66,8 +112,17 @@
   padding: var(--spacing-xs,4px) var(--spacing-md,12px);
   text-align: inherit;
 }
-[part~=option][aria-selected=true] {
+[part~=option]::part(button-label) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  inline-size: 100%;
+}
+[part~=option][aria-selected=true],
+[part~=option][data-highlighted=true] {
   background: var(--color-selection);
+  box-shadow: inset 2px 0 0 var(--color-primary);
 }
 [part~=empty] {
   display: block;

@@ -1,7 +1,4 @@
-import './core/browser.js'
-import { registerNavigation } from './navigation/register.js'
-export * from './navigation/register.js'
+import createComponents from 'cube:client/navigation'
+import { browserRuntime } from './core/browser.js'
 
-registerNavigation()
-
-export const ready = Promise.resolve()
+createComponents(browserRuntime())

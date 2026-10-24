@@ -11,7 +11,6 @@
   overflow: hidden;
   min-block-size: var(--component-viewport-height,420px);
   border: 1px solid var(--color-border, #8A959F);
-  border-radius: var(--radius-lg,12px);
   background: var(--color-surface-muted, #F5F6F5);
   touch-action: none;
   user-select: none;
@@ -33,7 +32,23 @@
   transform-origin: center;
   will-change: transform;
 }
-[part~=controls] {
+[part~=viewport][data-pan-tool] {
+  cursor: grab;
+}
+[part~=viewport][data-panning] {
+  cursor: grabbing;
+}
+/* Capture hand-tool input above arbitrary content, including iframes.
+   Native viewport controls remain above this surface and keep their cursors. */
+[part~=pan-surface] {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: inherit;
+  touch-action: none;
+}
+[part~=controls],
+[part~=actions] {
   position: absolute;
   z-index: 2;
   inset-inline-end: var(--spacing-sm,8px);
@@ -46,6 +61,17 @@
   border-radius: var(--radius-md,10px);
   background: color-mix(in srgb, var(--color-surface-raised, #FFFFFF) 92%, transparent);
   box-shadow: 0 4px 16px color-mix(in srgb, var(--color-foreground, #20262B) 12%, transparent);
+  max-inline-size: calc(100% - 16px);
+  overflow: auto;
+  cursor: default;
+}
+[part~=actions] {
+  inset-block-start: var(--spacing-sm,8px);
+  inset-block-end: auto;
+}
+[part~=top-left] {
+  inset-inline-start: var(--spacing-sm,8px);
+  inset-inline-end: auto;
 }
 [part~=zoom-out],
 [part~=reset],

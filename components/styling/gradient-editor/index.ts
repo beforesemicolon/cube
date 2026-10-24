@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { pick, isNot, or, and, type Template, html, repeat } from '../../core/runtime.js'
 
@@ -5,6 +6,7 @@ import type { Button } from '../../action/button/index.js';
 import { bool, clamp, scalarText } from '../../core/value.js';
 
 import type { ColorPicker } from '../color-picker/index.js';
+import type { UnitInput } from '../../form/unit-input/index.js';
 import { GradientEditorBase } from './GradientEditorBase.js';
 import type { GradientPosition, GradientStop } from './gradient.js';
 
@@ -24,7 +26,7 @@ export class GradientEditor extends GradientEditorBase {
 
     private node(name:string): HTMLElement | undefined { const node=this.refs[name]?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private get track(): HTMLElement | undefined { return this.node('track'); }
-    private get angleInput(): HTMLInputElement | undefined { const node=this.node('angle'); return node instanceof HTMLInputElement ? node : undefined; }
+    private get angleInput(): UnitInput | undefined { return this.node('angle') as UnitInput | undefined; }
     private get colorPicker(): ColorPicker | undefined { return this.node('picker') as ColorPicker | undefined; }
     private get formControl(): HTMLInputElement | undefined { const node=this.node('form'); return node instanceof HTMLInputElement ? node : undefined; }
     private get handles(): Map<string,Button> { return new Map((this.refs.handles ?? []).flatMap(node => node instanceof HTMLElement && node.dataset.stopId ? [[node.dataset.stopId,node as Button] as const] : [])); }
@@ -38,9 +40,10 @@ export class GradientEditor extends GradientEditorBase {
                 value=${pick(this.model, "type")} accessible-label=${() => this.typeLabel || this.accessibleName()} disabled=${this.blocked} size=${this.props.size}
                 items=${() => [{id:'linear',label:this.linearLabel || 'linear'},{id:'radial',label:this.radialLabel || 'radial'}]}
                 onchange=${(event: CustomEvent<{value:string}>) => { event.stopPropagation(); if(event.detail.value === 'linear' || event.detail.value === 'radial') this.changeType(event.detail.value,event); }}></cb-segmented-control>
-            <label part="angle-field" hidden=${isNot(() => this.model().type, 'linear')}><span part="control-label">${this.props.angleLabel}</span>
-                <input part="angle control" ref="angle" type="number" step="1" inputmode="decimal" value=${pick(this.model, "angle")} disabled=${this.blocked}
-                    aria-label=${this.props.angleLabel} oninput=${(event: Event) => this.changeAngle(this.angleInput?.valueAsNumber ?? this.angle,event,false)}></label>
+            <div part="angle-field" hidden=${isNot(() => this.model().type, 'linear')}><span part="control-label">${this.props.angleLabel}</span>
+                <cb-unit-input part="angle" exportparts="control:angle-control" ref="angle" unit="deg" units=${['deg']} min="-1000000" max="1000000" step="1" size=${this.props.size}
+                    value=${pick(this.model, "angle")} disabled=${this.blocked} accessible-label=${this.props.angleLabel}
+                    onchange=${(event: CustomEvent<{ value: number | null }>) => { event.stopPropagation(); this.changeAngle(event.detail.value ?? this.model().angle,event,false); }}></cb-unit-input></div>
             <div part="radial-controls" hidden=${isNot(() => this.model().type, 'radial')}>
                 ${this.selectField('shape',this.props.shapeLabel,pick(this.model, "shape"),() => [
                     {value:'circle',label:this.circleLabel || 'circle'},{value:'ellipse',label:this.ellipseLabel || 'ellipse'}
@@ -84,11 +87,11 @@ export class GradientEditor extends GradientEditorBase {
                     style=${() => `--cb-selected-stop-position:${this.selectedStop().position}%`} value=${pick(this.selectedStop, "color")}
                     accessible-label=${() => this.stopName(this.model().stops.findIndex(stop=>stop.id === this.selectedStopId()),this.selectedStop().position)}
                     disabled=${() => this.unavailable} read-only=${this.props.readOnly} allow-alpha=${this.props.allowAlpha} allow-sampler=${this.props.allowSampler}
-                    swatches=${() => Array.isArray(this.swatches) ? this.swatches : []}
+                    swatches=${() => JSON.stringify(this.props.swatches?.() || [])}
                     hue-label=${this.props.hueLabel} saturation-label=${this.props.saturationLabel} value-label=${this.props.brightnessLabel}
                     alpha-label=${this.props.alphaLabel} red-label=${this.props.redLabel} green-label=${this.props.greenLabel} blue-label=${this.props.blueLabel}
                     hex-label=${this.props.hexLabel} plane-label=${this.props.planeLabel} sampler-label=${this.props.samplerLabel} close-label=${this.props.closeLabel}
-                    swatches-label=${this.props.swatchesLabel} add-swatch-label=${this.props.addSwatchLabel} remove-swatch-label=${this.props.removeSwatchLabel} transparent-label=${this.props.transparentLabel}
+                    swatches-label=${this.props.swatchesLabel} add-swatch-label=${this.props.addSwatchLabel} update-swatch-label=${this.props.updateSwatchLabel} remove-swatch-label=${this.props.removeSwatchLabel} transparent-label=${this.props.transparentLabel}
                     onchange=${(event: CustomEvent<{value:string}>) => { event.stopPropagation(); this.changeStopColor(this.selectedStopId(),event.detail.value,event,false); }}
                     onclose=${(event: CustomEvent<{originalEvent?:Event}>) => {
                         const source=event.detail.originalEvent;
@@ -210,3 +213,5 @@ export { GradientEditorBase };
 export type { GradientEditorProps, GradientChangeDetail } from './GradientEditorBase.js';
 export { defaultGradientStops, normalizeGradientModel, normalizeGradientStops, parseGradient, serializeGradient, } from './gradient.js';
 export type { GradientExtent, GradientModel, GradientModelInput, GradientPosition, GradientShape, GradientStop, GradientStopInput, GradientType, } from './gradient.js';
+
+register('cb-gradient-editor', GradientEditor)

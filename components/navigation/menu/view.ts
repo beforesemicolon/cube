@@ -22,8 +22,8 @@ export function createMenuView(host: MenuBase, onActivate: (item: MenuBase['norm
                 if (item.separator) return html`<div part="separator"></div>`
                 const href = safeHref(item.href)
                 const role = item.type === 'checkbox' ? 'menuitemcheckbox' : item.type === 'radio' ? 'menuitemradio' : 'menuitem'
-                const content = html`<cb-icon part="icon" name="${item.icon ?? ''}" decorative="true" hidden="${!item.icon}"></cb-icon>
-                    ${when(!item.icon, () => html`<span part="icon-spacer"></span>`, () => '')}
+                const content = html`<cb-icon part="icon" name="${item.icon ?? ''}" src=${item.iconSrc} decorative="true" hidden="${!item.icon && !item.iconSrc}"></cb-icon>
+                    ${when(!item.icon && !item.iconSrc, () => html`<span part="icon-spacer"></span>`, () => '')}
                     <span part="item-copy"><span part="item-label">${item.label}</span>
                         ${when(item.description, () => html`<span part="description">${item.description}</span>`, () => '')}</span>
                     ${when(item.shortcut, () => html`<span part="shortcut">${item.shortcut}</span>`, () => when(item.children?.length, () => html`<cb-icon name="right" decorative="true"></cb-icon>`, () => ''))}`

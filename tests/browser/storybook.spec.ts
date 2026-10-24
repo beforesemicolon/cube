@@ -216,7 +216,7 @@ test('built Storybook: overlay stories are launchable and dismissible',async({pa
 
     await page.goto('http://127.0.0.1:6006/iframe.html?id=overlay--context-menu&viewMode=story')
     await page.getByText('Right-click this area').click({button:'right'})
-    await expect(page.locator('cb-context-menu')).toBeVisible()
+    await expect(page.locator('cb-context-menu').getByRole('menu', { name: 'Context menu', exact: true })).toBeVisible()
 })
 
 test('built Storybook: Skeleton has visible loading shapes and complete controls',async({page})=>{

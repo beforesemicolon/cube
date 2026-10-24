@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { messageView } from '../view.js'
@@ -9,3 +10,5 @@ export class Banner extends BannerBase {
 }
 export { BannerBase };
 export type { BannerProps } from './BannerBase.js';
+
+register('cb-banner', Banner)

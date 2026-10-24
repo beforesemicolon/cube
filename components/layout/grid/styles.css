@@ -1,3 +1,4 @@
+@import "../../theme/box-sizing.css";
 :host {
   display: grid;
   box-sizing: border-box;

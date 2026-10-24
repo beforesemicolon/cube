@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { is, isNot, type Template, html } from '../../core/runtime.js'
 
@@ -33,3 +34,5 @@ export class DeviceFrame extends DeviceFrameBase {
 }
 export { DeviceFrameBase };
 export type { DeviceFrameProps, DeviceOrientation, DevicePreset } from './DeviceFrameBase.js';
+
+register('cb-device-frame', DeviceFrame)

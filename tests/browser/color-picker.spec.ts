@@ -7,6 +7,7 @@ interface ColorPickerElement extends HTMLElement {
     open: boolean
     swatches: readonly string[]
     recentColors: readonly string[]
+    updateSwatch(previousValue: string, value?: string): boolean
 }
 
 test.beforeEach(async ({ page }) => {
@@ -60,6 +61,63 @@ test('opens from a compact swatch and exposes every custom color control', async
         const popup = element.shadowRoot?.querySelector('[part~="popup"]')
         return Array.from(popup?.children ?? []).map(child => child.getAttribute('part'))
     })).toEqual(['plane', 'slider-field hue-slider-field', 'slider-field alpha-slider-field', 'toolbar', 'channels hsv-channels', 'channels rgb-channels', 'palette-group'])
+})
+
+test('color changes retain popup positioning next to a right-edge trigger', async ({ page }) => {
+    const picker = page.locator('cb-color-picker')
+    await picker.evaluate(element => { element.style.cssText = 'position:fixed;right:24px;top:40px' })
+    await picker.getByRole('button', { name: 'Choose fill color', exact: true }).click()
+    const popup = picker.getByRole('dialog'), before = (await popup.boundingBox())!
+    for (const color of ['#004aff', '#ff000080', '#112233']) {
+        await picker.getByRole('textbox', { name: 'HEX', exact: true }).fill(color)
+        await expect(picker).toHaveJSProperty('value', color)
+        await expect(popup).toHaveCSS('position', 'fixed')
+        await expect.poll(async () => Math.abs((await popup.boundingBox())!.x - before.x)).toBeLessThanOrEqual(1)
+        await expect.poll(async () => Math.abs((await popup.boundingBox())!.y - before.y)).toBeLessThanOrEqual(1)
+    }
+    await picker.getByLabel('Saturation and brightness', { exact: true }).click({ position: { x: 20, y: 20 } })
+    await expect.poll(async () => Math.abs((await popup.boundingBox())!.x - before.x)).toBeLessThanOrEqual(1)
+    await expect.poll(async () => Math.abs((await popup.boundingBox())!.y - before.y)).toBeLessThanOrEqual(1)
+})
+
+test('saved swatches update through an opt-in action and external palettes refresh reactively', async ({ page }) => {
+    const picker = page.locator('cb-color-picker')
+    await picker.evaluate(element => {
+        element.setAttribute('update-swatch-label', 'Update selected swatch')
+        element.addEventListener('swatchupdate', () => { element.dataset.updates = String(Number(element.dataset.updates || 0) + 1) })
+    })
+    await picker.getByRole('button', { name: 'Choose fill color', exact: true }).click()
+    await expect(picker.getByRole('button', { name: 'Update selected swatch', exact: true })).toBeHidden()
+    await picker.getByRole('button', { name: 'Saved and recent colors: #db2777', exact: true }).click()
+    await expect(picker.getByRole('button', { name: 'Update selected swatch', exact: true })).toBeDisabled()
+    await picker.getByRole('textbox', { name: 'HEX', exact: true }).fill('#abcdef')
+    await picker.getByRole('button', { name: 'Update selected swatch', exact: true }).click()
+    await expect(picker).toHaveAttribute('data-updates', '1')
+    await expect(picker.getByRole('button', { name: 'Saved and recent colors: #db2777', exact: true })).toHaveCount(0)
+    await expect(picker.getByRole('button', { name: 'Saved and recent colors: #abcdef', exact: true })).toBeFocused()
+    await picker.getByRole('textbox', { name: 'HEX', exact: true }).press('Escape')
+    await picker.getByRole('button', { name: 'Choose fill color', exact: true }).click()
+    await expect(picker.getByRole('button', { name: 'Update selected swatch', exact: true })).toBeHidden()
+    await picker.evaluate(element => element.setAttribute('swatches', '["#123456"]'))
+    await expect(picker.getByRole('button', { name: 'Saved and recent colors: #123456', exact: true })).toBeVisible()
+    await expect(picker.getByRole('button', { name: 'Saved and recent colors: #abcdef', exact: true })).toHaveCount(0)
+})
+
+test('swatch updates validate colors, honor cancellation and read-only, and deduplicate replacements', async ({ page }) => {
+    const picker = page.locator('cb-color-picker')
+    await picker.evaluate(element => {
+        const control = element as ColorPickerElement
+        element.addEventListener('beforeswatchupdate', event => event.preventDefault(), { once: true })
+        element.dataset.cancelled = String(control.updateSwatch('#db2777', '#abcdef'))
+    })
+    await expect(picker).toHaveAttribute('data-cancelled', 'false')
+    await expect(picker).toHaveJSProperty('swatches', ['#2563eb', '#7c3aed', '#db2777'])
+    await expect(picker.evaluate(element => (element as ColorPickerElement).updateSwatch('#db2777', 'invalid'))).resolves.toBe(false)
+    await expect(picker.evaluate(element => (element as ColorPickerElement).updateSwatch('#112233', '#abcdef'))).resolves.toBe(false)
+    await expect(picker.evaluate(element => (element as ColorPickerElement).updateSwatch('#db2777', '#2563eb'))).resolves.toBe(true)
+    await expect(picker).toHaveJSProperty('swatches', ['#2563eb', '#7c3aed'])
+    await picker.evaluate(element => element.setAttribute('read-only', 'true'))
+    await expect(picker.evaluate(element => (element as ColorPickerElement).updateSwatch('#2563eb', '#abcdef'))).resolves.toBe(false)
 })
 
 test('edits color, saves and removes swatches, supports keyboard movement and native opt-in', async ({ page }) => {

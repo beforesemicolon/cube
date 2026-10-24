@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { html, repeat, type Template } from '../../core/runtime.js'
 
@@ -14,3 +15,5 @@ export class Shortcut extends ShortcutBase {
 }
 export { ShortcutBase }
 export type { ShortcutProps } from './ShortcutBase.js'
+
+register('cb-shortcut', Shortcut)

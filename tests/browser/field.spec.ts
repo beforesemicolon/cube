@@ -110,7 +110,7 @@ test('field labels delegate focus through composite controls', async ({ page }) 
     await page.locator('#json-field [id^="cb-field-label"]').click()
     await expect(page.locator('#json-field').getByRole('textbox', { name: 'Configuration' })).toBeFocused()
     await page.locator('#gradient-field [id^="cb-field-label"]').click()
-    await expect(page.locator('#gradient-field input[part~="angle"]')).toBeFocused()
+    await expect(page.locator('#gradient-field cb-unit-input[part~="angle"]').getByRole('spinbutton')).toBeFocused()
 })
 
 test('field-compatible controls keep a useful width and contract with their container', async ({ page }) => {

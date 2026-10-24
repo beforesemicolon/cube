@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { html, type Template } from '../../core/runtime.js'
 
@@ -9,3 +10,5 @@ export class ActionBar extends ActionBarBase {
 }
 export { ActionBarBase }
 export type { ActionBarProps } from './ActionBarBase.js'
+
+register('cb-action-bar', ActionBar)

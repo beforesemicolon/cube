@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { messageView } from '../view.js'
@@ -9,3 +10,5 @@ export class Alert extends AlertBase {
 }
 export { AlertBase };
 export type { AlertProps } from './AlertBase.js';
+
+register('cb-alert', Alert)

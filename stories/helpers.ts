@@ -1,12 +1,14 @@
 import './setup.js'
 import { html } from '../components/core/runtime.js'
 import type { List } from '../components/data-display/list/index.js'
+import type { Workspace, WorkspaceItem } from '../components/layout/workspace/index.js'
 import { studioItemsFor, studioStatusFor, studioValueFor } from '../components/studio/presets.js'
 
 type PreviewValue = string | number | boolean | null | object | undefined
 type PreviewArgs = Record<string, PreviewValue>
 
 export const fieldControlTags = new Set([
+    'cb-rich-text-editor',
     'cb-text-input', 'cb-textarea', 'cb-number-input', 'cb-unit-input', 'cb-combobox', 'cb-range-slider', 'cb-stepper',
     'cb-date-picker', 'cb-time-picker', 'cb-file-picker', 'cb-token-input', 'cb-masked-input', 'cb-select', 'cb-slider',
     'cb-code-editor', 'cb-json-editor', 'cb-editable-list', 'cb-linked-values', 'cb-color-picker', 'cb-gradient-editor',
@@ -102,6 +104,11 @@ function seedPreview(tag: string, node: HTMLElement, args: PreviewArgs): void {
     else if (tag === 'cb-tooltip') {
         Object.assign(node, { content: 'Align selected layers' })
         node.append(demoButton('Hover or focus'))
+    } else if (tag === 'cb-tooltip-provider') {
+        node.append(demoButton('Save document'), demoButton('Duplicate'))
+        const unavailable = demoButton('Undo change')
+        unavailable.setAttribute('disabled', 'true')
+        node.append(unavailable)
     } else if (tag === 'cb-popover') {
         const trigger = demoButton('Open popover'); trigger.slot = 'trigger'; node.append(trigger, demoSurface('Popover content'))
     } else if (tag === 'cb-hover-card') {
@@ -182,7 +189,11 @@ function seedPreview(tag: string, node: HTMLElement, args: PreviewArgs): void {
         surface.style.minHeight = '120px'; surface.style.padding = '24px'; node.append(surface)
     } else if (tag === 'cb-viewport') {
         const artboard = document.createElement('cb-artboard')
-        Object.assign(artboard, { width: 540, height: 330, accessibleLabel: 'Homepage artboard', dimensionsLabel: '{width} × {height}', selected: true })
+        Object.assign(artboard, {
+            width: 540, height: 330, name: 'Homepage', accessibleLabel: 'Homepage artboard', dimensionsLabel: '{width} × {height}', selected: true,
+            nameLabel: 'Artboard name', saveLabel: 'Save name', cancelLabel: 'Cancel rename', resizeLabel: '{handle}',
+            handleLabels: { e: 'Resize right', s: 'Resize bottom', se: 'Resize corner' },
+        })
         artboard.append(artboardContent())
         node.append(artboard)
     } else if (tag === 'cb-artboard') {
@@ -256,6 +267,15 @@ export function preview(tag: string, args: PreviewArgs) {
     const wrapper = document.createElement('div'); wrapper.style.cssText = 'min-height:140px;max-width:960px;width:100%;padding:24px;box-sizing:border-box;background:var(--color-background);color:var(--color-foreground)'
     if (['cb-status','cb-empty-state','cb-skeleton','cb-progress','cb-spinner','cb-toast','cb-alert','cb-banner','cb-flashbar'].includes(tag)) wrapper.style.background='light-dark(var(--color-surface-muted),var(--color-surface))'
     const node = document.createElement(tag); seedPreview(tag, node, args); Object.assign(node, fieldControlTags.has(tag) ? controlArgs(args) : args)
+    if (tag === 'cb-workspace') {
+        const workspace = node as Workspace
+        // Storybook serializes metadata; install the example factories here.
+        for (const key of ['startItems', 'endItems', 'bottomItems'] as const) {
+            workspace[key] = workspace[key].map((item: WorkspaceItem) => ({ ...item,
+                renderContent: () => html`<div style="padding:16px"><p>${item.name} panel content</p></div>`,
+            }))
+        }
+    }
     node.setAttribute('data-story-component', '')
     if (['cb-empty-state','cb-toast','cb-banner'].includes(tag)) {
         for (const action of node.children) if (action instanceof HTMLElement && action.localName === 'cb-button') action.style.setProperty('--component-button-min-width','144px')

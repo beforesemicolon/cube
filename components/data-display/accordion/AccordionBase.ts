@@ -2,9 +2,10 @@ import { elementRefs } from '../../core/refs.js'
 import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 import type { ButtonVariant } from '../../action/button/ButtonBase.js'
+import type { Template } from '../../core/runtime.js'
 
 export type AccordionVariant = 'simple' | 'container'
-export type AccordionContent = Node | string | number | boolean | null | undefined | readonly Node[]
+export type AccordionContent = Template | Node | string | number | boolean | null | undefined | readonly Node[]
 
 export interface AccordionItemContext {
     readonly accordion: AccordionBase
@@ -16,6 +17,7 @@ export interface AccordionAction {
     readonly id: string
     readonly label: string
     readonly icon?: string
+    readonly iconSrc?: string
     readonly disabled?: boolean
     readonly variant?: ButtonVariant
 }
@@ -28,6 +30,8 @@ export interface AccordionItem {
     readonly disabledReason?: string
     readonly expanded?: boolean
     readonly content?: AccordionContent
+    /** Created on first expansion and retained while this item remains in the accordion. */
+    readonly renderItem?: () => Template | Node
     readonly actions?: readonly AccordionAction[]
     readonly renderContent?: (context: AccordionItemContext) => AccordionContent
     readonly renderActions?: (context: AccordionItemContext) => AccordionContent

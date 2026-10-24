@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
 import { is, or, pick, html, repeat, when, type Template } from '../../core/runtime.js'
@@ -19,14 +20,14 @@ export class Tabs extends TabsBase {
                 onkeydown="${(event: KeyboardEvent) => this.roving.keydown(event)}">
                 ${repeat(() => this.choices, item => {
                     const source = () => this.items.find(candidate => scalarText(candidate.id) === item.id)
-                    return html`<div part="tab-item">
-                        <cb-button ref="items" part="tab" exportparts="control:tab-control,label:tab-label,button-label:tab-label,icon:tab-icon,description:tab-description" data-bare data-semantic-host role="tab" data-label="${item.label}" label="${item.label}"
-                            accessible-label="${item.label}" disabled="${or(() => this.unavailable, item.disabled)}"
+                    return html`<div part="tab-item" data-selected="${is(() => item.id === this.selected())}">
+                        <cb-button ref="items" part="tab" exportparts="control:tab-control,label:tab-label,button-label:tab-label,icon:tab-icon,description:tab-description" data-bare data-semantic-host role="tab" data-label="${item.label}"
+                            accessible-label="${item.label}" icon=${item.icon} icon-src=${item.iconSrc} disabled="${or(() => this.unavailable, item.disabled)}"
                             aria-selected="${when(is(() => item.id === this.selected()), 'true', 'false')}" tabindex="${() => item.id === this.selected() ? 0 : -1}"
                             id="${() => (this.id || 'cb-tabs') + '-' + item.id + '-tab'}"
                             aria-controls="${() => (this.id || 'cb-tabs') + '-' + item.id + '-panel'}"
                             onbeforeaction="${(event: Event) => event.stopPropagation()}"
-                            onaction="${(event: Event) => this.choose(item, event)}"></cb-button>
+                            onaction="${(event: Event) => this.choose(item, event)}">${() => source()?.renderItem?.() ?? item.label}</cb-button>
                         ${when(pick(source, "dirty"), html`<span part="dirty" aria-hidden="true"></span>`)}
                         ${when(pick(source, "closable"), html`<cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" icon="close" icon-only="true" variant="ghost" size="xs"
                             accessible-label="${() => scalarText(this.closeLabel).replaceAll('{tab}', item.label)}" disabled="${or(() => this.unavailable, item.disabled)}"
@@ -43,3 +44,5 @@ export class Tabs extends TabsBase {
 }
 export { TabsBase };
 export type { TabsProps, TabItem } from './TabsBase.js';
+
+register('cb-tabs', Tabs)

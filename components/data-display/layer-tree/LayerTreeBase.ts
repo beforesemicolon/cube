@@ -1,17 +1,28 @@
 import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
+import { normalizeActions, type ComponentAction } from '../../core/actions.js'
+
+export type LayerTreeAction = ComponentAction
+export interface LayerTreeActionDetail {
+    readonly id: string
+    readonly item: LayerTreeItem
+    readonly action: LayerTreeAction
+    readonly originalEvent?: Event
+}
 
 export interface LayerTreeItem {
     id: string
     label: string
     description?: string
     icon?: string
+    iconSrc?: string
     children?: readonly LayerTreeItem[]
     hidden?: boolean
     locked?: boolean
     disabled?: boolean
     renamable?: boolean
     draggable?: boolean
+    actions?: readonly LayerTreeAction[]
 }
 export type LayerDropPosition = 'before' | 'after' | 'inside'
 export interface LayerTreeProps extends ComponentProps {
@@ -46,9 +57,9 @@ function normalizeTree(items: readonly LayerTreeItem[]): LayerTreeItem[] {
         if (!id || !label || ids.has(id)) return []
         ids.add(id); ancestors.add(node)
         const normalized: LayerTreeItem = {
-            id, label, description: scalarText(node.description), icon: scalarText(node.icon), hidden: bool(node.hidden), locked: bool(node.locked),
+            id, label, description: scalarText(node.description), icon: scalarText(node.icon), iconSrc: scalarText(node.iconSrc), hidden: bool(node.hidden), locked: bool(node.locked),
             disabled: bool(node.disabled), renamable: node.renamable !== false, draggable: node.draggable !== false,
-            children: visit(node.children ?? []),
+            children: visit(node.children ?? []), actions: normalizeActions(node.actions ?? []),
         }
         ancestors.delete(node)
         return [normalized]
@@ -115,6 +126,16 @@ export abstract class LayerTreeBase<P extends LayerTreeProps = LayerTreeProps> e
 
     normalizedItems = (): readonly LayerTreeItem[] => { return normalizeTree(this.items) }
     flattenedItems(): readonly LayerTreeItem[] { return flatten(this.normalizedItems()) }
+
+    activateAction = (id: string, actionId: string, originalEvent?: Event): boolean => {
+        const item = this.flattenedItems().find(candidate => candidate.id === id)
+        const action = item?.actions?.find(candidate => candidate.id === actionId)
+        if (!item || item.disabled || !action || action.disabled || this.unavailable) return false
+        const detail: LayerTreeActionDetail = { id, item, action, originalEvent }
+        if (!this.request('beforeaction', detail)) return false
+        this.emit('action', detail)
+        return true
+    }
 
     toggleExpanded(id: string, originalEvent?: Event): boolean {
         const item = this.flattenedItems().find(candidate => candidate.id === id)

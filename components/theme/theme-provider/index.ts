@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { type Template, html } from '../../core/runtime.js'
 import { ThemeProviderBase } from './ThemeProviderBase.js';
@@ -9,3 +10,5 @@ export class ThemeProvider extends ThemeProviderBase {
 }
 export { ThemeProviderBase };
 export type { ThemeProviderProps } from './ThemeProviderBase.js';
+
+register('cb-theme-provider', ThemeProvider)

@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, is, or, type Template, html, repeat, when } from '../../core/runtime.js'
 
@@ -31,3 +32,5 @@ export class Presence extends PresenceBase {
 }
 export { PresenceBase };
 export type { PresenceItem, PresenceProps } from './PresenceBase.js';
+
+register('cb-presence', Presence)

@@ -11,9 +11,10 @@ order: 1
 {{t.cube.guideBody}}
 
 ```ts
-import * as runtime from '@beforesemicolon/web-component'
-import initializeCube from '@beforesemicolon/cube'
-await initializeCube(runtime)
+import '@beforesemicolon/cube'
+
+// Or import only the categories your application uses:
+import { TextInput } from '@beforesemicolon/cube/form'
 ```
 
 {{t.cube.runtime}}

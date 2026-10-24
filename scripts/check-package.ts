@@ -56,35 +56,59 @@ const directory = await mkdtemp(resolve(tmpdir(), 'cube-installed-consumer-'))
 try {
     await writeFile(resolve(directory, 'package.json'), JSON.stringify({ name: 'cube-release-consumer', private: true, type: 'module' }))
     execFileSync('npm', ['install', archive, '--ignore-scripts', '--omit=dev', '--no-audit', '--no-fund'], { cwd: directory, stdio: 'inherit' })
-    const entries = [manifest.name, ...['core', 'studio', ...componentGroups].map(category => `${manifest.name}/${category}`)]
+    const entries = ['theme/tokens', 'media/controller', 'charts/model'].map(path => `${manifest.name}/dist/esm/${path}.js`)
     const smoke = `
         import assert from 'node:assert/strict';
         import { createRequire } from 'node:module';
         const require = createRequire(import.meta.url);
         assert.equal(typeof globalThis.HTMLElement, 'undefined');
         for (const name of ${JSON.stringify(entries)}) {
-            const esm = await import(name), cjs = require(name);
-            if (!name.endsWith('/studio')) {
-                assert.equal(typeof esm.default, 'function', name + ' ESM initializer');
-                assert.equal(typeof cjs.default, 'function', name + ' CJS initializer');
-            }
+            const esm = await import(name), cjs = require(name.replace('/esm/', '/cjs/'));
+            assert.deepEqual(Object.keys(esm).sort(), Object.keys(cjs).sort());
         }
+        // A minimal DOM registry tests module evaluation/registration only;
+        // rendering, stylesheets and forms are checked in real browsers.
+        const registry = new Map();
+        globalThis.HTMLElement = class extends EventTarget {};
+        globalThis.customElements = {
+            get: name => registry.get(name),
+            define: (name, constructor) => { assert(!registry.has(name)); registry.set(name, constructor); },
+        };
+        const single = await import(${JSON.stringify(manifest.name + '/form/text-input')});
+        assert.equal(registry.size, 1, 'An individual import registers only its own tag');
+        assert.equal(registry.get('cb-text-input'), single.TextInput);
+        const form = await import(${JSON.stringify(manifest.name + '/form')});
+        assert.equal(registry.size, ${componentEntries.filter(entry => entry.path.startsWith('form/')).length}, 'A category import registers only its own category');
+        assert.equal(registry.get('cb-text-input'), form.TextInput);
+        const esm = await import(${JSON.stringify(manifest.name)});
+        assert.equal(registry.size, ${componentEntries.length}, 'ESM import registers immediately');
+        assert.equal(typeof esm.TextInput, 'function');
+        assert(!('initializeCube' in esm)); assert(!('ready' in esm));
+        registry.clear();
+        const singleCjs = require(${JSON.stringify(manifest.name + '/form/text-input')});
+        assert.equal(registry.size, 1, 'An individual CJS require registers only its own tag');
+        assert.equal(registry.get('cb-text-input'), singleCjs.TextInput);
+        require(${JSON.stringify(manifest.name + '/form')});
+        assert.equal(registry.size, ${componentEntries.filter(entry => entry.path.startsWith('form/')).length});
+        const cjs = require(${JSON.stringify(manifest.name)});
+        assert.equal(registry.size, ${componentEntries.length}, 'CJS require registers immediately');
+        assert.equal(typeof cjs.TextInput, 'function');
+        assert(!('initializeCube' in cjs)); assert(!('ready' in cjs));
         assert.equal((await import(${JSON.stringify(manifest.name + '/package.json')}, {with:{type:'json'}})).default.version, ${JSON.stringify(manifest.version)});
     `
     await writeFile(resolve(directory, 'smoke.mjs'), smoke)
     execFileSync(process.execPath, ['smoke.mjs'], { cwd: directory, stdio: 'inherit' })
     const declarations = componentEntries.map((entry, index) => `import type { ${entry.className} as Component${index} } from '${manifest.name}/${entry.path}';\nimport type * as Base${index} from '${manifest.name}/${entry.path}/base';`).join('\n')
     await writeFile(resolve(directory, 'types.ts'), `${declarations}
-        import initializeCube, { type CubeRuntime } from '${manifest.name}';
-        import initializeDataDisplay, { type ListRenderer } from '${manifest.name}/data-display';
+        import { Button, TextInput } from '${manifest.name}';
+        import { List, type ListRenderer } from '${manifest.name}/data-display';
         const render: ListRenderer<string> = (item, index) => { const element = document.createElement('span'); element.textContent = index + ': ' + item; return element; };
-        declare const runtime: CubeRuntime;
-        async function initialize(): Promise<void> {
-            const { List } = await initializeDataDisplay(runtime);
+        function renderList(): void {
             const list = new List<string>(); list.items = new Set(['one']); list.renderItem = render;
-            await initializeCube(runtime);
+            const button = new Button(); const input = new TextInput();
+            void button; void input;
         }
-        void initialize;
+        void renderList;
     `)
     execFileSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'), '--noEmit', '--strict', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', '--target', 'ES2022', '--lib', 'ES2022,DOM,DOM.Iterable', 'types.ts'], { cwd: directory, stdio: 'inherit' })
 } finally {

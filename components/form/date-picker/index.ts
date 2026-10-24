@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { when, or, isNot, html, type Template } from '../../core/runtime.js'
 
@@ -72,3 +73,5 @@ export class DatePicker extends DatePickerBase {
 }
 export { DatePickerBase };
 export type { DatePickerProps, DatePickerChangeDetail } from './DatePickerBase.js';
+
+register('cb-date-picker', DatePicker)

@@ -1,7 +1,4 @@
-import './core/browser.js'
-import { registerAction } from './action/register.js'
-export * from './action/register.js'
+import createComponents from 'cube:client/action'
+import { browserRuntime } from './core/browser.js'
 
-registerAction()
-
-export const ready = Promise.resolve()
+createComponents(browserRuntime())

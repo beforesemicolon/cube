@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { html, repeat, type Template } from '../../core/runtime.js'
 import { ListBase } from './ListBase.js'
@@ -15,3 +16,5 @@ export class List<T = string, K = number> extends ListBase<T, K> {
 
 export { ListBase }
 export type { ListProps, ListItems, ListRenderer, ListOrientation, ListLoadMoreDetail } from './ListBase.js'
+
+register('cb-list', List)

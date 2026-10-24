@@ -1,11 +1,14 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
-import { isNot, type Template, html, repeat } from '../../core/runtime.js'
+import { isNot, or, type Template, html, repeat } from '../../core/runtime.js'
 
 import { bool, finite, scalarText } from '../../core/value.js';
 import { SelectionOverlayBase, type SelectionHandle } from './SelectionOverlayBase.js';
+import { SelectionControlsController } from './controls.js'
 
 export class SelectionOverlay extends SelectionOverlayBase {
     stylesheet = componentStylesheet
+    private controlsController?: SelectionControlsController
 
     private get outline(): HTMLElement | undefined { const node=this.refs.outline?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private get rotateHandle(): HTMLElement | undefined { const node=this.refs.rotate?.[0]; return node instanceof HTMLElement ? node : undefined; }
@@ -16,7 +19,8 @@ export class SelectionOverlay extends SelectionOverlayBase {
         }));
     }
     render(): Template {
-        return html`<div part="outline" ref="outline" role="group"
+        return html`<div part="outline selection" ref="outline" role="group"
+            data-movable=${() => bool(this.movable) && !this.unavailable}
             tabindex=${() => this.unavailable || !bool(this.movable) ? -1 : 0}
             aria-label=${() => scalarText(this.moveLabel) || this.accessibleName()}
             onpointerdown=${this.beginMove} onkeydown=${this.moveKey}></div>
@@ -38,11 +42,34 @@ export class SelectionOverlay extends SelectionOverlayBase {
             <span part="size" hidden=${isNot(this.props.showSize)}>${() => {
                 const rect = this.currentRect();
                 return scalarText(this.sizeLabel).replaceAll('{width}',String(Math.round(rect.width))).replaceAll('{height}',String(Math.round(rect.height)));
-            }}</span>`;
+            }}</span>
+            <cb-toolbar part="controls" exportparts="toolbar:toolbar" ref="controls" popover="manual" hidden
+                accessible-label=${() => scalarText(this.actionsLabel) || this.accessibleName()}
+                onpointerdown=${this.containEvent} onclick=${this.containEvent} ondblclick=${this.containEvent} onkeydown=${this.containEvent}>
+                ${repeat(this.normalizedActions, action => html`<cb-button part="action" data-action-id=${action.id}
+                    exportparts="control:action-control,icon:action-icon,label:action-label,button-label:action-label"
+                    icon=${action.icon} icon-src=${action.iconSrc} icon-only=${Boolean(action.icon || action.iconSrc)} label=${action.label} accessible-label=${action.label}
+                    name=${action.name} title=${action.label} size="sm" variant="ghost"
+                    indicator=${action.indicator} indicator-label=${action.indicatorLabel}
+                    disabled=${or(() => this.unavailable, action.disabled)} onbeforeaction=${this.containEvent}
+                    onaction=${(event: CustomEvent<{ originalEvent?: Event }>) => {
+                        event.stopPropagation(); this.activateAction(action.id, event.detail.originalEvent)
+                    }}></cb-button>`, { key: action => action.id })}
+            </cb-toolbar>`;
+    }
+    private containEvent = (event: Event): void => { event.stopPropagation() }
+    protected mount(): void {
+        super.mount()
+        const bar = this.refs.controls?.[0]
+        if (!(bar instanceof HTMLElement)) return
+        this.controlsController = new SelectionControlsController(this, bar, () => this.normalizedActions().length > 0, () => bool(this.rotatable) ? 32 : 8)
+        this.controlsController.refresh()
+        this.cleanup(() => { this.controlsController?.dispose(); this.controlsController = undefined })
     }
     protected syncView(): void {
         const rect=this.currentRect();
         Object.assign(this.style,{left:`${rect.x}px`,top:`${rect.y}px`,width:`${rect.width}px`,height:`${rect.height}px`,rotate:`${finite(this.rotation)}deg`});
+        this.controlsController?.refresh()
     }
     private beginMove = (event: PointerEvent): void => {
         if (event.button !== 0 || !bool(this.movable) || this.unavailable || event.target !== this.outline || !this.outline)
@@ -116,4 +143,6 @@ export class SelectionOverlay extends SelectionOverlayBase {
     }
 }
 export { SelectionOverlayBase };
-export type { SelectionOverlayProps, EditorRect, SelectionHandle } from './SelectionOverlayBase.js';
+export type { SelectionOverlayProps, EditorRect, SelectionHandle, SelectionAction, SelectionActionDetail } from './SelectionOverlayBase.js';
+
+register('cb-selection-overlay', SelectionOverlay)

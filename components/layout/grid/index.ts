@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { type Template, html } from '../../core/runtime.js'
 import { GridBase } from './GridBase.js';
@@ -10,3 +11,5 @@ export class Grid extends GridBase {
 }
 export { GridBase };
 export type { GridProps } from './GridBase.js';
+
+register('cb-grid', Grid)

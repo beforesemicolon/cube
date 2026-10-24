@@ -1,7 +1,6 @@
-import './core/browser.js'
-import { registerIcons } from './icons/register.js'
-export * from './icons/register.js'
+import createComponents from 'cube:client/icons'
+import { browserRuntime } from './core/browser.js'
 
-registerIcons()
-
-export const ready = Promise.resolve()
+const { iconPaths } = createComponents(browserRuntime())
+const browser = globalThis as typeof globalThis & { BFS: { CUBE?: object } }
+browser.BFS.CUBE = { iconPaths, ...browser.BFS.CUBE }

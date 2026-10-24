@@ -1,29 +1,149 @@
 @import "../../theme/editor.css";
 :host {
-  display: block;
-  inline-size: min(100%, var(--cb-artboard-width));
+  display: inline-block;
+  max-inline-size: none;
   min-inline-size: 0;
 }
 [part~=frame] {
+  --artboard-selection-color: var(--color-primary, #2563EB);
+  --artboard-selection-line-width: 3px;
   position: relative;
   display: block;
-  inline-size: 100%;
-  aspect-ratio: var(--cb-artboard-ratio);
+  min-block-size: 0;
+  padding: 0;
   border: 1px solid var(--color-border, #8A959F);
   border-radius: var(--component-artboard-radius,2px);
-  background: var(--cb-artboard-background,var(--color-surface, #FFFFFF));
   box-shadow: 0 8px 28px color-mix(in srgb, var(--color-foreground, #20262B) 14%, transparent);
   overflow: visible;
 }
-[part~=frame][aria-current=true] {
-  border-color: var(--color-primary, #2563EB);
-  box-shadow: 0 0 0 2px var(--color-focus, #2563EB), 0 10px 32px color-mix(in srgb, var(--color-foreground, #20262B) 18%, transparent);
+[part~=frame][data-selected] {
+  border-color: var(--artboard-selection-color);
+  box-shadow: 0 0 0 calc(var(--artboard-selection-line-width) - 1px) var(--artboard-selection-color), 0 10px 32px color-mix(in srgb, var(--color-foreground, #20262B) 18%, transparent);
 }
 [part~=content] {
-  display: block;
+  display: flow-root;
+  min-inline-size: 0;
+}
+[part~=content-viewport] {
+  position: relative;
+  /* Consumer content cannot escape above the artboard's editor chrome. */
+  isolation: isolate;
+  z-index: 0;
   inline-size: 100%;
   block-size: 100%;
-  overflow: hidden;
+  overflow: clip;
+  border-radius: inherit;
+}
+[part~=name] {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-end: calc(100% + 4px);
+  max-inline-size: 100%;
+  color: var(--color-muted-foreground);
+  font-weight: 500;
+}
+[part~=resize-handle] {
+  z-index: 20;
+  position: absolute;
+  display: block;
+  inline-size: calc(var(--artboard-selection-line-width) + 2px);
+  block-size: calc(var(--artboard-selection-line-width) + 2px);
+  min-inline-size: 0;
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--artboard-selection-color);
+  opacity: 0;
+  touch-action: none;
+  user-select: none;
+}
+[part~=frame]:has(> [part~=selection-edge]:hover) > [part~=resize-handle],
+[part~=frame]:has(> [part~=resize-handle]:hover) > [part~=resize-handle],
+[part~=resize-handle]:focus-visible,
+[part~=resize-handle]:active { opacity: 1; }
+[part~=selection-edge] {
+  position: absolute;
+  z-index: 19;
+  --edge-outset: calc(0px - var(--artboard-selection-line-width));
+}
+[part~=selection-edge-n], [part~=selection-edge-s] {
+  inset-inline: var(--edge-outset);
+  block-size: var(--artboard-selection-line-width);
+}
+[part~=selection-edge-e], [part~=selection-edge-w] {
+  inset-block: var(--edge-outset);
+  inline-size: var(--artboard-selection-line-width);
+}
+[part~=selection-edge-n] { inset-block-start: var(--edge-outset); }
+[part~=selection-edge-s] { inset-block-end: var(--edge-outset); }
+[part~=selection-edge-e] { inset-inline-end: var(--edge-outset); }
+[part~=selection-edge-w] { inset-inline-start: var(--edge-outset); }
+[part~=guide-layer] {
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline-start: -1px;
+  z-index: auto;
+  pointer-events: none;
+}
+[part~=guide-handle],
+[part~=guide-edge] {
+  position: absolute;
+  display: block;
+  min-inline-size: 0;
+  min-block-size: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+[part~=guide-handle] {
+  z-index: 3;
+}
+[part~=guide-edge] {
+  z-index: 2;
+  opacity: 0;
+  background: color-mix(in srgb,var(--color-primary) 22%,transparent);
+}
+[part~=guide-edge]:hover,
+[part~=guide-edge]:focus-visible {
+  opacity: 1;
+}
+[part~=guide-top] {
+  inset-block-start: 0;
+  inset-inline: var(--guide-hit-x,10px) 0;
+  block-size: var(--guide-hit-y,10px);
+  cursor: ns-resize;
+}
+[part~=guide-left] {
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--guide-hit-x,10px);
+  cursor: ew-resize;
+}
+[part~=resize-handle]::part(control) {
+  inline-size: 100%;
+  block-size: 100%;
+  cursor: inherit;
+}
+[part~=handle-e] {
+  inset: 50% calc(var(--artboard-selection-line-width) / -2) auto auto;
+  translate: 50% -50%;
+  cursor: ew-resize;
+}
+[part~=handle-s] {
+  inset: auto auto calc(var(--artboard-selection-line-width) / -2) 50%;
+  translate: -50% 50%;
+  cursor: ns-resize;
+}
+[part~=handle-se] {
+  inset: auto calc(var(--artboard-selection-line-width) / -2) calc(var(--artboard-selection-line-width) / -2) auto;
+  translate: 50% 50%;
+  cursor: nwse-resize;
 }
 [part~=dimensions] {
   position: absolute;

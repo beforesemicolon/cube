@@ -1,5 +1,17 @@
 import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
+import type { ComponentAction } from '../../core/actions.js'
+
+export type ViewportActionPosition = 'top-left' | 'top-right' | 'bottom-right'
+export interface ViewportAction extends ComponentAction {
+    readonly position: ViewportActionPosition
+    readonly pressed?: boolean
+}
+export interface ViewportActionDetail {
+    readonly action: ViewportAction
+    readonly pressed?: boolean
+    readonly originalEvent?: Event
+}
 
 export interface ViewportProps extends ComponentProps {
     zoom?: number
@@ -9,12 +21,14 @@ export interface ViewportProps extends ComponentProps {
     x?: number
     y?: number
     pannable?: boolean
+    panTool?: boolean
     grid?: boolean
     controls?: boolean
     zoomInLabel?: string
     zoomOutLabel?: string
     resetLabel?: string
     positionLabel?: string
+    actions?: readonly ViewportAction[]
 }
 
 export interface ViewportValue {
@@ -27,8 +41,8 @@ export interface ViewportChangeDetail extends ViewportValue { readonly value: Vi
 /** Headless pan and zoom behavior for an editor workspace. */
 export abstract class ViewportBase extends Component<ViewportProps> {
     static observedAttributes = [
-        ...Component.observedAttributes, 'zoom', 'min-zoom', 'max-zoom', 'zoom-step', 'x', 'y', 'pannable', 'grid', 'controls',
-        'zoom-in-label', 'zoom-out-label', 'reset-label', 'position-label',
+        ...Component.observedAttributes, 'zoom', 'min-zoom', 'max-zoom', 'zoom-step', 'x', 'y', 'pannable', 'pan-tool', 'grid', 'controls',
+        'zoom-in-label', 'zoom-out-label', 'reset-label', 'position-label', 'actions',
     ]
 
     zoom = 100
@@ -38,12 +52,38 @@ export abstract class ViewportBase extends Component<ViewportProps> {
     x = 0
     y = 0
     pannable = true
+    panTool = false
     grid = true
     controls = true
     zoomInLabel = ''
     zoomOutLabel = ''
     resetLabel = ''
     positionLabel = ''
+    actions: readonly ViewportAction[] = []
+
+    protected actionsAt = (position: ViewportActionPosition): readonly ViewportAction[] => {
+        const ids = new Set<string>()
+        return (Array.isArray(this.actions) ? this.actions : []).filter((action: ViewportAction) => {
+            if (!action || typeof action !== 'object' || action.position !== position) return false
+            const id = scalarText(action.id).trim()
+            if (!id || !scalarText(action.label).trim() || ids.has(id)) return false
+            ids.add(id)
+            return true
+        })
+    }
+
+    activateAction = (id: string, originalEvent?: Event): boolean => {
+        const action = (['top-left', 'top-right', 'bottom-right'] as const)
+            .flatMap(position => this.actionsAt(position)).find(candidate => candidate.id === id)
+        if (!action || bool(action.disabled) || this.unavailable) return false
+        const detail: ViewportActionDetail = {
+            action, originalEvent,
+            ...(action.pressed === undefined ? {} : { pressed: !bool(action.pressed) }),
+        }
+        if (!this.request('beforeaction', detail)) return false
+        this.emit('action', detail)
+        return true
+    }
 
     protected normalizedZoom(value = this.zoom): number {
         const minimum = Math.max(1, finite(this.minZoom, 25))
@@ -56,6 +96,7 @@ export abstract class ViewportBase extends Component<ViewportProps> {
     }
 
     protected canPan(): boolean { return !this.unavailable && bool(this.pannable, true) }
+    protected panToolActive = (): boolean => this.canPan() && bool(this.panTool, false)
     protected controlsVisible = (): boolean => { return bool(this.controls, true) }
     protected gridVisible(): boolean { return bool(this.grid, true) }
     protected text(name: 'zoomInLabel' | 'zoomOutLabel' | 'resetLabel' | 'positionLabel'): string { return scalarText(this[name]) }
@@ -76,6 +117,17 @@ export abstract class ViewportBase extends Component<ViewportProps> {
 
     zoomBy(delta: number, originalEvent?: Event, commit = true): boolean {
         return this.setViewport(this.normalizedZoom() + finite(delta), finite(this.x), finite(this.y), originalEvent, commit)
+    }
+
+    protected zoomAround = (delta: number, x: number, y: number, originalEvent?: Event, commit = true): boolean => {
+        const current = this.viewportState()
+        const zoom = this.normalizedZoom(current.zoom + finite(delta))
+        if (zoom === current.zoom) return false
+        const ratio = zoom / current.zoom
+        return this.setViewport(zoom,
+            finite(x) - (finite(x) - current.x) * ratio,
+            finite(y) - (finite(y) - current.y) * ratio,
+            originalEvent, commit)
     }
 
     panBy(deltaX: number, deltaY: number, originalEvent?: Event, commit = true): boolean {

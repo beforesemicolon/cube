@@ -12,6 +12,10 @@
   inset-inline-start: var(--spacing-lg,16px);
   inset-inline-end: auto;
 }
+:host([data-position=top-center]) {
+  inset-inline: 0;
+  margin-inline: auto;
+}
 :host([data-position=bottom-start]) {
   inset-block-start: auto;
   inset-block-end: var(--spacing-lg,16px);
@@ -97,5 +101,8 @@
   :host {
     inset-inline: 8px;
     inline-size: auto;
+  }
+  :host([data-position=top-center]) {
+    inline-size: calc(100vw - 16px);
   }
 }

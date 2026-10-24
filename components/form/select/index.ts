@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
 import { is, or, and, isNot, html, repeat, state, when, type Template } from '../../core/runtime.js'
@@ -141,3 +142,5 @@ export class Select extends SelectBase {
 export { SelectBase };
 export type { SelectProps, SelectSearchMode } from './SelectBase.js';
 export type { SelectOption } from '../model.js';
+
+register('cb-select', Select)

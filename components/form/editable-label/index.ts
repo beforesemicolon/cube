@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { or, isNot, html, type Template } from '../../core/runtime.js'
 
@@ -52,3 +53,5 @@ export class EditableLabel extends EditableLabelBase {
 }
 export { EditableLabelBase };
 export type { EditableLabelProps } from './EditableLabelBase.js';
+
+register('cb-editable-label', EditableLabel)

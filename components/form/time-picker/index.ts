@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
 import { when, is, or, isNot, html, repeat, type Template } from '../../core/runtime.js'
@@ -106,3 +107,5 @@ export class TimePicker extends TimePickerBase {
 }
 export { TimePickerBase };
 export type { TimePickerProps } from './TimePickerBase.js';
+
+register('cb-time-picker', TimePicker)

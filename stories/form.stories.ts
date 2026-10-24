@@ -11,11 +11,27 @@ export const TextInput: Story = componentStory('cb-text-input', { label: 'Text i
 
 export const Textarea: Story = componentStory('cb-textarea', { label: 'Textarea', value: 'Editable content' })
 
+export const RichTextEditor: Story = componentStory('cb-rich-text-editor', {
+    accessibleLabel: 'Rich text', label: 'Rich text editor', value: 'A <strong>small</strong> rich text editor', variant: 'inline', placeholder: 'Write something…',
+    toolbarLabel: 'Text formatting', boldLabel: 'Bold', italicLabel: 'Italic', underlineLabel: 'Underline', strikethroughLabel: 'Strikethrough',
+    superscriptLabel: 'Superscript', subscriptLabel: 'Subscript',
+})
+
+export const RichTextToolbar: Story = componentStory('cb-rich-text-toolbar', {
+    accessibleLabel: 'Text formatting', activeFormats: ['bold'], boldLabel: 'Bold', italicLabel: 'Italic',
+    underlineLabel: 'Underline', strikethroughLabel: 'Strikethrough', superscriptLabel: 'Superscript', subscriptLabel: 'Subscript',
+})
+
 export const NumberInput: Story = componentStory('cb-number-input', { label: 'Number input', value: 24, min: 0, max: 100, step: 1 })
 
 export const UnitInput: Story = componentStory('cb-unit-input', { label: 'Unit input', value: 24, min: 0, max: 100, step: 1, unit: 'px', units: [{ value: 'px', label: 'px' }, { value: '%', label: '%' }, { value: 'rem', label: 'rem' }, { value: 'vw', label: 'vw' }], unitLabel: 'Unit' })
 
-export const Combobox: Story = componentStory('cb-combobox', { label: 'Font family', placeholder: 'Search fonts', toggleLabel: 'Toggle options', emptyLabel: 'No fonts found', open: false, autocomplete: 'list', options: [{ value: 'inter', label: 'Inter' }, { value: 'source-sans', label: 'Source Sans 3' }] })
+export const Combobox: Story = componentStory('cb-combobox', {
+    label: 'Font family', placeholder: 'Choose fonts', toggleLabel: 'Toggle options', removeLabel: 'Remove {label}',
+    multi: true, allowCustom: false, value: ['inter', 'source-sans'], emptyLabel: 'No fonts found', open: false, autocomplete: 'list',
+    options: [{ value: 'inter', label: 'Inter' }, { value: 'source-sans', label: 'Source Sans 3' }, { value: 'georgia', label: 'Georgia' },
+        { value: 'arial', label: 'Arial' }, { value: 'roboto', label: 'Roboto' }, { value: 'courier', label: 'Courier New' }],
+})
 
 export const Checkbox: Story = componentStory('cb-checkbox', { label: 'Checkbox', checked: true })
 

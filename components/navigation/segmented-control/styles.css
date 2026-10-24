@@ -19,7 +19,7 @@
   justify-content: center;
   gap: var(--spacing-xs,4px);
   min-block-size: 24px;
-  padding: 3px 8px;
+  padding: 3px var(--component-segmented-control-item-padding-inline,8px);
   border: 0;
   background: transparent;
 }
@@ -28,7 +28,20 @@
   color: var(--color-signal-text,#1d50b3);
   box-shadow: 0 1px 3px rgba(12, 18, 24, .14);
 }
+[part=item][data-icon-only] {
+  min-inline-size: 24px;
+  padding-inline: 4px;
+}
 [part=icon] {
   inline-size: 14px;
   block-size: 14px;
+}
+:host([data-size=xs]) [part=item] {
+  --component-icon-size: 12px;
+  min-block-size: 20px;
+  padding-block: 2px;
+}
+:host([data-size=xs]) [part=item][data-icon-only] {
+  min-inline-size: 18px;
+  padding-inline: 2px;
 }

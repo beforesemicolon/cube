@@ -1,3 +1,4 @@
+@import "./box-sizing.css";
 :host {
   display: inline-block;
   max-inline-size: 100%;
@@ -20,11 +21,6 @@
 }
 :host([data-size=lg]) {
   --cb-height:var(--component-control-height-lg,44px);
-}
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
 }
 [hidden] {
   display: none !important;

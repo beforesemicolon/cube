@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { messageView } from '../view.js'
@@ -9,3 +10,5 @@ export class Status extends StatusBase {
 }
 export { StatusBase };
 export type { StatusProps } from './StatusBase.js';
+
+register('cb-status', Status)

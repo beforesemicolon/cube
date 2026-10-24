@@ -3,14 +3,11 @@ import { expect, test } from '@playwright/test'
 test('published ESM categories initialize with imported shadow stylesheets', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', error => errors.push(error.message))
-    await page.route('**/esm-styles-fixture', route => route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head><script src="/node_modules/@beforesemicolon/web-component/dist/client.js"></script></head><body></body></html>' }))
+    await page.route('**/esm-styles-fixture', route => route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head><title>Module consumer</title></head><body></body></html>' }))
     await page.goto('/esm-styles-fixture')
     await page.evaluate(async () => {
-        const runtimePath = '/dist/esm/core/runtime.js'
         const categoryPath = '/dist/esm/data-display/index.js'
-        const runtime: typeof import('../../components/core/runtime.js') = await import(runtimePath)
-        const category: typeof import('../../components/data-display/index.js') = await import(categoryPath)
-        const { List, Avatar } = await category.default(runtime.browserRuntime())
+        const { List, Avatar }: typeof import('../../components/data-display/index.js') = await import(categoryPath)
         const list = new List<string>()
         list.items = ['One', 'Two']
         list.gap = 12

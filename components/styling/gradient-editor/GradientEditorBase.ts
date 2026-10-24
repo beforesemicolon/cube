@@ -58,6 +58,7 @@ export interface GradientEditorProps extends FieldControlProps {
     closeLabel?: string
     swatchesLabel?: string
     addSwatchLabel?: string
+    updateSwatchLabel?: string
     removeSwatchLabel?: string
     transparentLabel?: string
 }
@@ -78,7 +79,7 @@ export abstract class GradientEditorBase extends FieldControlBase<GradientEditor
         'top-left-label', 'top-label', 'top-right-label', 'left-label', 'center-label', 'right-label', 'bottom-left-label', 'bottom-label', 'bottom-right-label',
         'stops-label', 'stop-label', 'add-stop-label', 'remove-stop-label', 'help-text',
         'hue-label', 'saturation-label', 'brightness-label', 'alpha-label', 'red-label', 'green-label', 'blue-label', 'hex-label', 'plane-label',
-        'sampler-label', 'close-label', 'swatches-label', 'add-swatch-label', 'remove-swatch-label', 'transparent-label',
+        'sampler-label', 'close-label', 'swatches-label', 'add-swatch-label', 'update-swatch-label', 'remove-swatch-label', 'transparent-label',
     ]
 
     value = ''
@@ -131,6 +132,7 @@ export abstract class GradientEditorBase extends FieldControlBase<GradientEditor
     closeLabel = ''
     swatchesLabel = ''
     addSwatchLabel = ''
+    updateSwatchLabel = ''
     removeSwatchLabel = ''
     transparentLabel = ''
 

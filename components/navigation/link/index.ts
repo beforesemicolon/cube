@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from '../../action/button/view.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { safeHref } from '../../core/url.js'
@@ -14,3 +15,5 @@ export class Link extends LinkBase {
 }
 export { LinkBase };
 export type { LinkProps } from './LinkBase.js';
+
+register('cb-link', Link)

@@ -10,17 +10,19 @@ export interface DropdownProps extends ComponentProps, PopupConstraintProps {
     open?: boolean
     placement?: PopupPlacement
     icon?: string
+    iconSrc?: string
 }
 
 /** Trigger, popup positioning and open-state behavior without choosing either renderer. */
 export abstract class DropdownBase<P extends DropdownProps = DropdownProps> extends Component<P> {
-    static observedAttributes = [...Component.observedAttributes, 'items', 'value', 'loading', 'open', 'placement', 'icon', ...popupConstraintAttributes]
+    static observedAttributes = [...Component.observedAttributes, 'items', 'value', 'loading', 'open', 'placement', 'icon', 'icon-src', ...popupConstraintAttributes]
     items: ActionItem[] = []
     value = ''
     loading = false
     open = false
     placement: PopupPlacement = 'bottom-start'
     icon = ''
+    iconSrc = ''
     popupMaxWidth: PopupLength = '320px'
     popupMaxHeight: PopupLength = '360px'
     private popupController?: PopupController

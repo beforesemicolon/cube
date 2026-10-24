@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, or, html, type Template } from '../../core/runtime.js'
 
@@ -13,7 +14,10 @@ export class PropertyGroup extends PropertyGroupBase {
                 label="${this.props.label}" accessible-label="${() => scalarText(this.accessibleLabel) || this.toggleLabel()}"
                 description="${this.props.description}" expanded="${this.props.expanded}"
                 disabled="${or(() => this.unavailable, isNot(this.props.collapsible))}" heading-level="3"
-                onexpansionchange="${(event: Event) => { event.stopPropagation(); this.toggle(event) }}">
+                onexpansionchange="${(event: Event) => {
+                    if (event.target !== event.currentTarget) return
+                    event.stopPropagation(); this.toggle(event)
+                }}">
                 <span slot="header-info" part="mixed" hidden="${or(isNot(this.props.mixed), isNot(this.props.mixedLabel))}">${this.props.mixedLabel}</span>
                 <cb-button slot="header-actions" part="reset" variant="ghost" icon="reset" icon-only="true"
                     accessible-label="${this.props.resetLabel}" hidden="${isNot(this.props.dirty)}"
@@ -25,3 +29,5 @@ export class PropertyGroup extends PropertyGroupBase {
 }
 export { PropertyGroupBase };
 export type { PropertyGroupProps } from './PropertyGroupBase.js';
+
+register('cb-property-group', PropertyGroup)

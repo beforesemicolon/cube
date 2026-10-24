@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { when, html, type Template } from '../../core/runtime.js'
 
@@ -13,7 +14,7 @@ export class SplitButton extends SplitButtonBase {
         return html`
             <div part="group" role="group" aria-label="${this.accessibleName}">
                 <cb-button part="primary" exportparts="control:primary-control,label:primary-label,icon:primary-icon,spinner:primary-spinner"
-                    label="${this.props.label}" accessible-label="${this.accessibleName}" disabled="${() => this.unavailable}" loading="${this.props.loading}" variant="primary"
+                    label="${this.props.label}" icon=${this.props.icon} icon-src=${this.props.iconSrc} accessible-label="${this.accessibleName}" disabled="${() => this.unavailable}" loading="${this.props.loading}" variant="primary"
                     onbeforeaction="${(event: Event) => event.stopPropagation()}"
                     onaction="${(event: Event) => { event.stopPropagation(); this.activatePrimary(event) }}"></cb-button>
             <cb-button ref="trigger" part="trigger" exportparts="control:trigger-control,label:trigger-label,icon:trigger-icon,spinner:trigger-spinner"
@@ -31,3 +32,5 @@ export class SplitButton extends SplitButtonBase {
 }
 export { SplitButtonBase };
 export type { SplitButtonProps } from './SplitButtonBase.js';
+
+register('cb-split-button', SplitButton)

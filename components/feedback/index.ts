@@ -1,11 +1,11 @@
-import { initializeRuntime, type CubeRuntime } from '../core/runtime.js'
-export type * from './register.js'
-
-export async function initializeFeedback(runtime: CubeRuntime): Promise<typeof import('./register.js')> {
-    initializeRuntime(runtime)
-    const category = await import('./register.js')
-    category.registerFeedback()
-    return category
-}
-
-export default initializeFeedback
+export * from './flashbar/index.js'
+export * from './MessageBase.js'
+export * from './ProgressIndicatorBase.js'
+export * from './status/index.js'
+export * from './empty-state/index.js'
+export * from './skeleton/index.js'
+export * from './progress/index.js'
+export * from './spinner/index.js'
+export * from './toast/index.js'
+export * from './alert/index.js'
+export * from './banner/index.js'

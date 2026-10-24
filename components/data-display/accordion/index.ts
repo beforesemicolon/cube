@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { when, isNot, is, or, html, repeat, type Template } from '../../core/runtime.js'
 
@@ -10,8 +11,16 @@ export class Accordion extends AccordionBase {
     stylesheet = componentStylesheet
 
     private readonly instanceId = uid('cb-accordion');
+    private readonly lazyContent = new WeakMap<AccordionItem, Template | Node>();
     private rendered(item: AccordionItem, index: number, actions = false): AccordionContent {
-        try { return (actions ? item.renderActions?.({ accordion: this, item, index }) : item.renderContent ? item.renderContent({ accordion: this, item, index }) : item.content) ?? ''; }
+        try {
+            if (actions) return item.renderActions?.({ accordion: this, item, index }) ?? '';
+            if (item.renderItem) {
+                if (!this.lazyContent.has(item) && this.itemExpanded(item.id)) this.lazyContent.set(item, item.renderItem());
+                return this.lazyContent.get(item) ?? '';
+            }
+            return (item.renderContent ? item.renderContent({ accordion: this, item, index }) : item.content) ?? '';
+        }
         catch (error) { this.onError(error); return null; }
     }
     render(): Template {
@@ -32,12 +41,12 @@ export class Accordion extends AccordionBase {
                         onaction=${(event: Event) => { event.stopPropagation(); this.toggle(item.id,event); }}
                         onkeydown=${(event: KeyboardEvent) => this.handleKey(item.id,event)}>
                         <span part="trigger-content"><span part="label">${() => item.label || item.id}</span>
-                            <span part="description" hidden=${isNot(item.description)}>${() => item.description}</span></span>
+                            <span part="description" hidden=${isNot(item.description)}>${() => item.description ?? ''}</span></span>
                         <cb-icon name="right" part="indicator icon" decorative></cb-icon>
                     </cb-button>
                 </div><div part="actions">
                     ${repeat(() => (item.actions ?? []).filter(action => action.id?.trim() && action.label?.trim()), action => html`
-                        <cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" icon-only=${is(action.icon)} icon=${() => action.icon ?? ''}
+                        <cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" icon-only=${or(action.icon, action.iconSrc)} icon=${() => action.icon ?? ''} icon-src=${action.iconSrc}
                             label=${() => action.label} accessible-label=${() => action.label}
                             disabled=${or(() => bool(action.disabled), () => this.itemDisabled(item))} variant=${() => action.variant ?? 'ghost'}
                             onaction=${(event: Event) => { event.stopPropagation(); this.emit('itemaction',{item,id:item.id,action,actionId:action.id,originalEvent:event}); }}></cb-button>
@@ -69,3 +78,5 @@ export class Accordion extends AccordionBase {
 }
 export { AccordionBase };
 export type { AccordionAction, AccordionBulkExpansionDetail, AccordionContent, AccordionExpansionChangeDetail, AccordionExpansionDetail, AccordionItem, AccordionItemContext, AccordionProps, AccordionVariant, } from './AccordionBase.js';
+
+register('cb-accordion', Accordion)

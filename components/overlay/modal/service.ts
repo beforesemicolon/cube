@@ -14,6 +14,7 @@ export interface ModalAction {
     id?: string
     label: string
     icon?: string
+    iconSrc?: string
     variant?: ButtonVariant
     value?: string
     disabled?: boolean
@@ -177,8 +178,8 @@ function applyRequest(record: ModalRecord): void {
                     finally { loading[1](false) }
                 }
                 return html`${when(action.href, () => html`<cb-link part="action" label=${action.label} accessible-label=${action.label}
-                    href=${action.href} target=${action.target ?? ''} icon=${action.icon ?? ''} variant=${action.variant ?? 'ghost'} disabled=${action.disabled ?? false}
-                    onnavigate=${(event:Event)=>{event.stopPropagation();if(action.dismiss ?? false)closeFromAction({...action,id:actionId});}}></cb-link>`, () => html`<cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" label=${action.label} accessible-label=${action.label} icon=${action.icon ?? ''}
+                    href=${action.href} target=${action.target ?? ''} icon=${action.icon ?? ''} icon-src=${action.iconSrc} variant=${action.variant ?? 'ghost'} disabled=${action.disabled ?? false}
+                    onnavigate=${(event:Event)=>{event.stopPropagation();if(action.dismiss ?? false)closeFromAction({...action,id:actionId});}}></cb-link>`, () => html`<cb-button part="action" exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description" label=${action.label} accessible-label=${action.label} icon=${action.icon ?? ''} icon-src=${action.iconSrc}
                         variant=${action.variant ?? (index === actionList.length-1?'primary':'secondary')} value=${action.value ?? ''}
                         disabled=${action.disabled ?? false} loading=${loading[0]} onaction=${run}></cb-button>`)}`
             })}

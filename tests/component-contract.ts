@@ -20,7 +20,8 @@ export function componentContract(tag: string, story: string, verify: (context: 
         })
         await page.goto(`http://127.0.0.1:6006/iframe.html?id=${story}&viewMode=story`)
         const host = page.locator(`${tag}[data-story-component]`)
-        await expect(host).toHaveCount(1)
+        // Cold Storybook imports must finish before component assertions begin.
+        await expect(host).toHaveCount(1, { timeout: 20_000 })
         await expect.poll(() => host.evaluate(node => node.shadowRoot?.adoptedStyleSheets.length ?? 0)).toBeGreaterThan(0)
         await verify({ page, host })
         expect(errors).toEqual([])

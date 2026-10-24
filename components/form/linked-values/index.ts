@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { pick, or, html, type Template } from '../../core/runtime.js'
 
@@ -27,3 +28,5 @@ export class LinkedValues extends LinkedValuesBase {
 }
 export { LinkedValuesBase };
 export type { LinkedValuesProps, LinkedValuesPair, LinkedValuesInput, LinkedValuesText, LinkedValuesChangeDetail } from './LinkedValuesBase.js';
+
+register('cb-linked-values', LinkedValues)

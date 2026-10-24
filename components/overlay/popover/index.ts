@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { html, type Template } from '../../core/runtime.js'
 
@@ -39,3 +40,5 @@ export class Popover extends PopoverBase {
 }
 export { PopoverBase };
 export type { PopoverProps } from './PopoverBase.js';
+
+register('cb-popover', Popover)

@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from '../view.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { mediaView } from '../view.js'
@@ -12,3 +13,5 @@ export class AudioPlayer extends AudioPlayerBase {
     protected playbackChanged(state: PlaybackState): void { this.view?.update(state); }
 }
 export { AudioPlayerBase };
+
+register('cb-audio-player', AudioPlayer)

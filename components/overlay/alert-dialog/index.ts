@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from '../modal/view.css?inline'
 import { isNot, or, html, type Template } from '../../core/runtime.js'
 import { bool, scalarText } from '../../core/value.js'
@@ -27,3 +28,5 @@ export class AlertDialog extends AlertDialogBase {
 }
 export { AlertDialogBase };
 export type { AlertDialogProps } from './AlertDialogBase.js';
+
+register('cb-alert-dialog', AlertDialog)

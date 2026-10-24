@@ -11,7 +11,7 @@ export const ColorPicker: Story = componentStory('cb-color-picker', {
     swatches: ['#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#16a34a','#0891b2','#111827','#ffffff'], recentColors: [], maxRecent: 8,
     hueLabel: 'Hue', saturationLabel: 'Saturation', valueLabel: 'Brightness', alphaLabel: 'Alpha', redLabel: 'Red', greenLabel: 'Green', blueLabel: 'Blue', hexLabel: 'HEX', planeLabel: 'Saturation and brightness',
     samplerLabel: 'Sample color from screen', closeLabel: 'Close color picker', swatchesLabel: 'Saved and recent colors',
-    addSwatchLabel: 'Add current color', removeSwatchLabel: 'Remove {color} with Delete or Backspace', transparentLabel: 'Transparent',
+    addSwatchLabel: 'Add current color', updateSwatchLabel: 'Update selected swatch', removeSwatchLabel: 'Remove {color} with Delete or Backspace', transparentLabel: 'Transparent',
 })
 
 export const GradientEditor: Story = componentStory('cb-gradient-editor', {
@@ -71,6 +71,7 @@ export const GradientEditor: Story = componentStory('cb-gradient-editor', {
     closeLabel: 'Close color picker',
     swatchesLabel: 'Saved and recent colors',
     addSwatchLabel: 'Add current color',
+    updateSwatchLabel: 'Update selected swatch',
     removeSwatchLabel: 'Remove {color} with Delete or Backspace',
     transparentLabel: 'Transparent',
 })

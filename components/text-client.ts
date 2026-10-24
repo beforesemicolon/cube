@@ -1,7 +1,4 @@
-import './core/browser.js'
-import { registerText } from './text/register.js'
-export * from './text/register.js'
+import createComponents from 'cube:client/text'
+import { browserRuntime } from './core/browser.js'
 
-registerText()
-
-export const ready = Promise.resolve()
+createComponents(browserRuntime())

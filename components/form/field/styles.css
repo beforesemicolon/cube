@@ -58,7 +58,11 @@
 }
 :host([data-invalid]) ::slotted(*) {
   --color-border:var(--color-danger);
+  --component-field-border:var(--color-danger);
+  --component-field-border-hover:var(--color-danger);
 }
 :host([data-success]) ::slotted(*) {
   --color-border:var(--color-success);
+  --component-field-border:var(--color-success);
+  --component-field-border-hover:var(--color-success);
 }

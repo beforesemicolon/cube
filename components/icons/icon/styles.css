@@ -5,6 +5,16 @@
   font-size: var(--component-icon-size,16px);
 }
 [part=icon] {
+  display: inline-flex;
+  flex: none;
   width: 1em;
   height: 1em;
+  fill: currentColor;
+  stroke: none;
+}
+[part=glyph], [part=image], ::slotted(svg) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }

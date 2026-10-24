@@ -1,7 +1,6 @@
-import './core/browser.js'
-import { registerOverlay } from './overlay/register.js'
-export * from './overlay/register.js'
+import createComponents from 'cube:client/overlay'
+import { browserRuntime } from './core/browser.js'
 
-registerOverlay()
-
-export const ready = Promise.resolve()
+const { showModal, hideModal, closeAllModals, configureModalHost, getModalHost } = createComponents(browserRuntime())
+const browser = globalThis as typeof globalThis & { BFS: { CUBE?: object } }
+browser.BFS.CUBE = { showModal, hideModal, closeAllModals, configureModalHost, getModalHost, ...browser.BFS.CUBE }

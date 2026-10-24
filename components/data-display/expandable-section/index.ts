@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { when, isNot, html, state, type Template } from '../../core/runtime.js'
 
@@ -51,3 +52,5 @@ export class ExpandableSection extends ExpandableSectionBase {
 }
 export { ExpandableSectionBase };
 export type { ExpandableSectionChangeDetail, ExpandableSectionProps, ExpandableSectionVariant } from './ExpandableSectionBase.js';
+
+register('cb-expandable-section', ExpandableSection)

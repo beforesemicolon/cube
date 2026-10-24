@@ -58,7 +58,7 @@ test('Empty State has one story with heading and icon props, not message variant
     await page.locator('#control-heading').press('Tab')
     await expect(empty.getByRole('heading', { name: 'A custom empty state' })).toBeVisible()
     await page.locator('#control-icon').selectOption('search')
-    await expect(empty.locator('cb-icon')).toHaveAttribute('name','search')
+    await expect(empty.locator('cb-row[part=icon-box] > cb-icon')).toHaveAttribute('name','search')
     expect(await empty.evaluate(node => ['value', 'status', 'tone'].filter(prop => prop in node))).toEqual([])
     for (const prop of ['value', 'status', 'tone']) await expect(page.locator(`#control-${prop}`)).toHaveCount(0)
 })

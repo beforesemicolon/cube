@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { type Template, html } from '../../core/runtime.js'
 import { DividerBase } from './DividerBase.js';
@@ -10,3 +11,5 @@ export class Divider extends DividerBase {
 }
 export { DividerBase };
 export type { DividerProps } from './DividerBase.js';
+
+register('cb-divider', Divider)

@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { or, html, repeat, type Template } from '../../core/runtime.js'
 
@@ -27,3 +28,5 @@ export class Pagination extends PaginationBase {
 }
 export { PaginationBase };
 export type { PaginationProps } from './PaginationBase.js';
+
+register('cb-pagination', Pagination)

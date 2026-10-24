@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, html, type Template } from '../../core/runtime.js'
 
@@ -29,3 +30,5 @@ export class Drawer extends DrawerBase {
 }
 export { DrawerBase };
 export type { DrawerProps } from './DrawerBase.js';
+
+register('cb-drawer', Drawer)

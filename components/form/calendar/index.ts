@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
 import { when, is, html, repeat, type Template } from '../../core/runtime.js'
@@ -61,3 +62,5 @@ export class Calendar extends CalendarBase {
 }
 export { CalendarBase };
 export type { CalendarProps } from './CalendarBase.js';
+
+register('cb-calendar', Calendar)

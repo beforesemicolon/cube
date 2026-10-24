@@ -1,6 +1,7 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
-import { pick, isNot, and, is, type Template, html, repeat, when, state } from '../../core/runtime.js'
+import { pick, isNot, and, or, is, type Template, html, repeat, when, state } from '../../core/runtime.js'
 
 import { iconPaths } from '../../icons/paths.js';
 import { bool } from '../../core/value.js';
@@ -32,16 +33,16 @@ export class LayerTree extends LayerTreeBase {
             data-hidden=${()=>bool(item.hidden)?'':null} data-locked=${()=>bool(item.locked)?'':null}
             draggable=${and(this.props.reorderable, isNot(item.draggable, false), isNot(item.disabled), isNot(() => this.unavailable))}
             onclick=${(event:MouseEvent)=>{
-                if(event.composedPath().some(node=>node!==event.currentTarget&&node instanceof Element&&(node.matches('button,input')||node.localName.startsWith('cb-'))))return;
+                if(this.isRowControl(event,event.currentTarget))return;
                 this.select(item.id,event.metaKey||event.ctrlKey,event);
-            }} ondblclick=${(event:MouseEvent)=>{if(bool(this.editable)&&item.renamable!==false){this.beginEdit(item);event.preventDefault();}}}
+            }} ondblclick=${(event:MouseEvent)=>{if(!this.isRowControl(event,event.currentTarget)&&bool(this.editable)&&item.renamable!==false){this.beginEdit(item);event.preventDefault();}}}
             ondragstart=${(event:DragEvent)=>{this.draggingId=item.id;event.dataTransfer?.setData('text/plain',item.id);if(event.dataTransfer)event.dataTransfer.effectAllowed='move';}}
             ondragover=${(event:DragEvent)=>{if(event.currentTarget instanceof HTMLElement)this.dragOver(event.currentTarget,event);}}
             ondragleave=${(event:DragEvent)=>{if(event.currentTarget instanceof HTMLElement)event.currentTarget.removeAttribute('data-drop');}}
             ondrop=${(event:DragEvent)=>{if(event.currentTarget instanceof HTMLElement)this.drop(item.id,event.currentTarget,event);}}>
             ${when(item.children?.length, () => this.actionTemplate('disclosure',()=>this.expandedIds.includes(item.id)?'down':'right',
                 ()=>this.itemLabel(this.expandedIds.includes(item.id)?this.collapseLabel:this.expandLabel,item),event=>this.toggleExpanded(item.id,event)), () => html`<span part="spacer"></span>`)}
-            <cb-icon name=${item.icon&&Object.hasOwn(iconPaths,item.icon)?item.icon:item.children?.length?'layers':'component'} part="type-icon icon" decorative></cb-icon>
+            <cb-icon name=${item.icon&&Object.hasOwn(iconPaths,item.icon)?item.icon:item.children?.length?'layers':'component'} src=${item.iconSrc} part="type-icon icon" decorative></cb-icon>
             ${when(is(() => this.editingId, item.id),()=>html`<span part="edit-row"><cb-text-input part="edit-input" ref="edit"
                 value=${this.draft[0]} accessible-label=${()=>this.itemLabel(this.renameLabel,item)}
                 onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();this.draft[1](event.detail.value);}}
@@ -49,6 +50,16 @@ export class LayerTree extends LayerTreeBase {
                 <cb-button part="save" exportparts="control:save-control,label:save-label,button-label:save-label,icon:save-icon,description:save-description" variant="ghost" size="sm" label=${this.props.saveLabel} onaction=${(event:Event)=>{event.stopPropagation();this.commitRename(item,event);}}></cb-button>
                 <cb-button part="cancel" exportparts="control:cancel-control,label:cancel-label,button-label:cancel-label,icon:cancel-icon,description:cancel-description" variant="ghost" size="sm" label=${this.props.cancelLabel} onaction=${(event:Event)=>{event.stopPropagation();this.editingId='';}}></cb-button></span>`,
                 ()=>html`<span part="copy"><span part="label">${item.label}</span><span part="description" hidden=${!item.description}>${item.description??''}</span></span><span part="actions">
+                    ${repeat(item.actions ?? [], action => html`<cb-button part="action node-action" data-action-id=${action.id}
+                        exportparts="control:action-control,icon:action-icon,label:action-label,button-label:action-label"
+                        icon=${action.icon} icon-src=${action.iconSrc} icon-only=${Boolean(action.icon || action.iconSrc)} name=${action.name} label=${action.label}
+                        accessible-label=${action.label} title=${action.label} variant="ghost" size="xs"
+                        disabled=${or(() => this.unavailable, item.disabled, action.disabled)}
+                        onpointerdown=${this.containEvent} onclick=${this.containEvent} ondblclick=${this.containEvent}
+                        onbeforeaction=${this.containEvent}
+                        onaction=${(event: CustomEvent<{ originalEvent?: Event }>) => {
+                            event.stopPropagation(); this.activateAction(item.id, action.id, event.detail.originalEvent)
+                        }}></cb-button>`, { key: action => action.id })}
                     ${when(this.props.showVisibility,()=>this.actionTemplate('action visibility',()=>bool(item.hidden)?'eyeOff':'eye',()=>this.itemLabel(bool(item.hidden)?this.showLabel:this.hideLabel,item),event=>this.toggleVisibility(item.id,event)))}
                     ${when(this.props.showLock,()=>this.actionTemplate('action lock',()=>bool(item.locked)?'lock':'unlock',()=>this.itemLabel(bool(item.locked)?this.unlockLabel:this.lockLabel,item),event=>this.toggleLock(item.id,event)))}
                     ${when(and(this.props.editable, isNot(item.renamable, false)),()=>this.actionTemplate('action rename',()=> 'text',()=>this.itemLabel(this.renameLabel,item),()=>this.beginEdit(item)))}
@@ -57,17 +68,24 @@ export class LayerTree extends LayerTreeBase {
     }
     private actionTemplate(part:string,icon:()=>string,label:()=>string,handler:(event:Event)=>void): Template {
         return html`<cb-button part=${part} icon-only icon=${icon} variant="ghost" size="xs" accessible-label=${label} disabled=${()=>this.unavailable}
-            onaction=${(event:Event)=>{event.stopPropagation();handler(event);}}></cb-button>`;
+            onbeforeaction=${this.containEvent} onaction=${(event:Event)=>{event.stopPropagation();handler(event);}}></cb-button>`;
     }
+    private containEvent = (event: Event): void => { event.stopPropagation() }
     private commitRename(item:LayerTreeItem,event:Event): void {if(this.rename(item.id,this.draft[0](),event))this.editingId='';}
     private findItem(items:readonly LayerTreeItem[],id:string): LayerTreeItem | undefined {
         for(const item of items){if(item.id===id)return item;const child=this.findItem(item.children??[],id);if(child)return child;}return undefined;
     }
     private rowNodes(): HTMLElement[] { return elementRefs(this.refs.rows); }
+    private isRowControl(event: Event, row: EventTarget | null): boolean {
+        const path = event.composedPath();
+        const boundary = path.indexOf(row as EventTarget);
+        return path.slice(0, Math.max(0, boundary)).some(node =>
+            node instanceof Element && (node.matches('button,input') || node.localName.startsWith('cb-')));
+    }
     private handleKey = (event: KeyboardEvent): void => {
         const rows = this.rowNodes();
         const current = event.composedPath().find(node => node instanceof HTMLElement && node.getAttribute('role') === 'treeitem') as HTMLElement | undefined;
-        if (!current || event.composedPath().some(node => node !== current && node instanceof Element && (node.matches('button,input') || node.localName.startsWith('cb-'))))
+        if (!current || this.isRowControl(event, current))
             return;
         const index = rows.indexOf(current);
         const id = current.dataset.id ?? '';
@@ -130,4 +148,6 @@ export class LayerTree extends LayerTreeBase {
     }
 }
 export { LayerTreeBase };
-export type { LayerTreeProps, LayerTreeItem, LayerDropPosition } from './LayerTreeBase.js';
+export type { LayerTreeProps, LayerTreeItem, LayerDropPosition, LayerTreeAction, LayerTreeActionDetail } from './LayerTreeBase.js';
+
+register('cb-layer-tree', LayerTree)

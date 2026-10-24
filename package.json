@@ -278,6 +278,12 @@
     "LICENSE"
   ],
   "sideEffects": [
+    "./components/index.ts",
+    "./components/**/index.ts",
+    "./dist/esm/index.js",
+    "./dist/esm/**/index.js",
+    "./dist/cjs/index.js",
+    "./dist/cjs/**/index.js",
     "./stories/setup.ts",
     "./components/core/browser.ts",
     "./components/client.ts",

@@ -1,8 +1,9 @@
-@import "../../theme/editor.css";
+@import "../../theme/field.css";
 :host {
   display: inline-block;
 }
 [part~=control] {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -16,6 +17,30 @@
   border-start-end-radius: var(--component-button-radius-start-end,var(--radius-sm,6px));
   border-end-end-radius: var(--component-button-radius-end-end,var(--radius-sm,6px));
   border-end-start-radius: var(--component-button-radius-end-start,var(--radius-sm,6px));
+}
+[part~=indicator] {
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline-end: 3px;
+  inline-size: 5px;
+  block-size: 5px;
+  border-radius: 50%;
+  background: var(--color-primary,#2563EB);
+  pointer-events: none;
+}
+:host([data-variant=secondary]:not([data-bare])) [part~=control] {
+  border-color: var(--cb-field-border);
+  background: var(--cb-field-background);
+  box-shadow: none;
+}
+:host([data-variant=secondary]:not([data-bare])) [part~=control]:hover:not(:disabled):not([aria-disabled=true]) {
+  border-color: var(--cb-field-border-hover);
+  background: var(--cb-field-hover);
+}
+:host([data-variant=secondary]:not([data-bare])) [part~=control]:is(:disabled,[aria-disabled=true]) {
+  border-color: var(--color-separator);
+  background: var(--color-surface-muted);
+  box-shadow: none;
 }
 :host([data-variant=primary]) [part~=control] {
   background: var(--color-primary,#2563EB);
@@ -38,6 +63,17 @@
 :host([data-icon-only]) [part~=control] {
   min-inline-size: var(--cb-height);
   padding-inline: var(--spacing-xs,4px);
+}
+:host([data-size=tiny]) {
+  --cb-height: var(--component-button-tiny-height,14px);
+  --component-icon-size: var(--component-button-tiny-icon-size,10px);
+}
+:host([data-size=tiny]) [part~=control] {
+  min-inline-size: var(--cb-height);
+  padding: 1px;
+  gap: 2px;
+  font-size: 10px;
+  line-height: 1;
 }
 :host([data-variant=destructive]) [part~=control] {
   color: var(--color-danger,#B4233C);

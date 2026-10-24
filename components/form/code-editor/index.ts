@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { pick, isNot, and, html, state, unsafeHTML, type Template } from '../../core/runtime.js'
 
@@ -85,3 +86,5 @@ export class CodeEditor extends CodeEditorBase {
 }
 export { CodeEditorBase }
 export type { CodeEditorProps, CodeEditorValue } from './CodeEditorBase.js'
+
+register('cb-code-editor', CodeEditor)

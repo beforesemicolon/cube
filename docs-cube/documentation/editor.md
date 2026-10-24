@@ -28,6 +28,8 @@ order: 30
 
 {{t.cube.editorPrimitivesBody}}
 
+`cb-viewport` supports `pan-tool="true"` for a hand-tool mode: its native input surface captures dragging across all canvas content, including embedded iframes, with `grab`/`grabbing` cursors. The default slot is unchanged and viewport zoom controls remain interactive. `pannable="false"` or `disabled` disables the hand surface. Wheel/trackpad panning remains available without enabling the hand tool. The optional `pan-surface` part is the native hand-tool input surface.
+
 ## API
 
 {{t.cube.studioCatalogApi}}

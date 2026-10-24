@@ -1,7 +1,4 @@
-import './core/browser.js'
-import { registerDataDisplay } from './data-display/register.js'
-export * from './data-display/register.js'
+import createComponents from 'cube:client/data-display'
+import { browserRuntime } from './core/browser.js'
 
-registerDataDisplay()
-
-export const ready = Promise.resolve()
+createComponents(browserRuntime())

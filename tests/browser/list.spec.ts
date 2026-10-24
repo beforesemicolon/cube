@@ -38,8 +38,8 @@ test('list renders arrays, Sets, Maps and one-shot iterables with the proper ind
 
 test('Markup templates stay reactive and renderer replacement works after mount', async ({ page }) => {
     await page.evaluate(async () => {
-        const runtimePath = '/components/core/runtime.ts'
-        const runtime: typeof import('../../components/core/runtime.js') = await import(runtimePath)
+        const runtimePath = '/components/core/browser.ts'
+        const runtime: typeof import('../../components/core/browser.js') = await import(runtimePath)
         const { html, state } = runtime.browserRuntime()
         const [suffix, setSuffix] = state('initial')
         const list = document.createElement('cb-list') as List<string>
@@ -55,8 +55,8 @@ test('Markup templates stay reactive and renderer replacement works after mount'
     await page.getByRole('button', { name: 'Update state' }).click()
     await expect(rows).toHaveText(['0: First updated', '1: Second updated'])
     await page.locator('cb-list').evaluate(async node => {
-        const runtimePath = '/components/core/runtime.ts'
-        const runtime: typeof import('../../components/core/runtime.js') = await import(runtimePath)
+        const runtimePath = '/components/core/browser.ts'
+        const runtime: typeof import('../../components/core/browser.js') = await import(runtimePath)
         const { html } = runtime.browserRuntime()
         ;(node as List<string>).renderItem = item => html`<strong>${item}</strong>`
     })
@@ -277,24 +277,38 @@ test('default-slot content participates in scrolling and horizontal RTL reaches 
     await expect(list.locator('[part=item]')).toHaveCount(0)
 })
 
-test('Storybook List is unstyled and live controls affect gap and direction', async ({ page }) => {
-    await page.goto('http://127.0.0.1:6006/?path=/story/data-display--list')
-    const list = page.frameLocator('#storybook-preview-iframe').locator('cb-list[data-story-component]')
-    await expect(list.getByRole('listitem')).toHaveCount(20)
-    for (const prop of ['value', 'multiple', 'emptyLabel']) await expect(page.locator(`#control-${prop}`)).toHaveCount(0)
-    await expect(page.getByRole('tabpanel', { name: /Controls/ })).toContainText('renderItem')
-    await page.locator('#control-gap').fill('20px'); await page.locator('#control-gap').press('Tab')
-    await expect(list.locator('[part=items]')).toHaveCSS('gap', '20px')
-    await page.locator('#control-orientation').selectOption('horizontal')
-    await expect(list.locator('[part=items]')).toHaveCSS('flex-direction', 'row')
-    await expect(list).toHaveCSS('border-top-width', '0px')
-    await page.getByRole('tab', { name: /Actions/ }).click()
-    await list.evaluate(node => { node.scrollLeft = node.scrollWidth })
-    const actions = page.getByRole('tabpanel', { name: /Actions/ })
-    await expect(actions).toContainText('loadmoreitems')
-    await expect(actions).toContainText('scroll:')
-    await expect(actions).not.toContainText('action:')
-})
+for (const delayed of [false, true]) {
+    test(`Storybook List is unstyled and live controls affect gap and direction${delayed ? ' after a delayed story load' : ''}`, async ({ page }) => {
+        let storyRequestDelayed = false
+        if (delayed) {
+            await page.route(url => /\/(?:stories|assets)\/data-display\.stories(?:\.ts|-[^/]+\.js)$/.test(url.pathname), async route => {
+                // Model a cold story import that outlasts ordinary value assertions.
+                storyRequestDelayed = true
+                await new Promise<void>(resolve => setTimeout(resolve, 6_000))
+                await route.continue()
+            })
+        }
+        await page.goto('http://127.0.0.1:6006/?path=/story/data-display--list')
+        const list = page.frameLocator('#storybook-preview-iframe').locator('cb-list[data-story-component]')
+        // Storybook bootstrapping gets its own budget; value checks stay strict.
+        await expect(list).toBeVisible({ timeout: 20_000 })
+        expect(storyRequestDelayed).toBe(delayed)
+        await expect(list.getByRole('listitem')).toHaveCount(20)
+        await expect(page.getByRole('tabpanel', { name: /Controls/ })).toContainText('renderItem', { timeout: 20_000 })
+        for (const prop of ['value', 'multiple', 'emptyLabel']) await expect(page.locator(`#control-${prop}`)).toHaveCount(0)
+        await page.locator('#control-gap').fill('20px'); await page.locator('#control-gap').press('Tab')
+        await expect(list.locator('[part=items]')).toHaveCSS('gap', '20px')
+        await page.locator('#control-orientation').selectOption('horizontal')
+        await expect(list.locator('[part=items]')).toHaveCSS('flex-direction', 'row')
+        await expect(list).toHaveCSS('border-top-width', '0px')
+        await page.getByRole('tab', { name: /Actions/ }).click()
+        await list.evaluate(node => { node.scrollLeft = node.scrollWidth })
+        const actions = page.getByRole('tabpanel', { name: /Actions/ })
+        await expect(actions).toContainText('loadmoreitems')
+        await expect(actions).toContainText('scroll:')
+        await expect(actions).not.toContainText('action:')
+    })
+}
 
 test('Infinite list example appends batches through the public event API', async ({ page }) => {
     await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--infinite-list&viewMode=story')

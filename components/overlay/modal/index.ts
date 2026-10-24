@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './view.css?inline'
 import { isNot, or, html, type Template } from '../../core/runtime.js'
 import { bool, scalarText } from '../../core/value.js'
@@ -27,3 +28,5 @@ export class Modal extends ModalBase {
 export { ModalBase };
 export type { ModalProps, ModalSize, ModalLayer, ModalCloseReason } from './ModalBase.js';
 export { showModal, hideModal, closeAllModals, configureModalHost, getModalHost, type ModalRequest, type ModalResult, type ModalAction, type ModalActionContext, type ModalContent, type ModalHandle, type ModalHostOptions } from './service.js';
+
+register('cb-modal', Modal)

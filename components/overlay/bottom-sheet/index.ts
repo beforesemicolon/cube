@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, html, type Template } from '../../core/runtime.js'
 
@@ -29,3 +30,5 @@ export class BottomSheet extends BottomSheetBase {
 }
 export { BottomSheetBase };
 export type { BottomSheetProps } from './BottomSheetBase.js';
+
+register('cb-bottom-sheet', BottomSheet)

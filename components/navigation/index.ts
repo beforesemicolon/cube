@@ -1,11 +1,6 @@
-import { initializeRuntime, type CubeRuntime } from '../core/runtime.js'
-export type * from './register.js'
-
-export async function initializeNavigation(runtime: CubeRuntime): Promise<typeof import('./register.js')> {
-    initializeRuntime(runtime)
-    const category = await import('./register.js')
-    category.registerNavigation()
-    return category
-}
-
-export default initializeNavigation
+export * from './link/index.js'
+export * from './segmented-control/index.js'
+export * from './tabs/index.js'
+export * from './breadcrumb/index.js'
+export * from './menu/index.js'
+export * from './pagination/index.js'

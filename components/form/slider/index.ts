@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { html, type Template } from '../../core/runtime.js'
 
@@ -28,3 +29,5 @@ export class Slider extends SliderBase {
 }
 export { SliderBase };
 export type { SliderProps } from './SliderBase.js';
+
+register('cb-slider', Slider)

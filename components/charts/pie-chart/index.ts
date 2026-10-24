@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from '../view.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { ChartView } from '../view.js'
@@ -13,3 +14,5 @@ export class PieChart extends PieChartBase {
 }
 export { PieChartBase };
 export type { PieChartProps } from './PieChartBase.js';
+
+register('cb-pie-chart', PieChart)

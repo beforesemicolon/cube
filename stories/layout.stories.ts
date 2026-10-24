@@ -28,6 +28,10 @@ export const Col: Story = componentStory('cb-col', { gap: '8px', align: 'stretch
 export const Grid: Story = componentStory('cb-grid', { columns: 'repeat(3,minmax(0,1fr))', rows: '', gap: '8px', autoFlow: 'row', align: 'stretch', justify: 'stretch' })
 
 export const Workspace: Story = componentStory('cb-workspace', {
+    variant: 'default', startValue: '', endValue: '', bottomValue: '',
+    startItems: [{ id: 'pages', name: 'Pages', description: 'Browse project pages.', iconName: 'file' }, { id: 'layers', name: 'Layers', description: 'Explore the active page structure.', iconName: 'layers' }],
+    endItems: [{ id: 'properties', name: 'Properties', iconName: 'settings' }, { id: 'styles', name: 'Styles', iconName: 'edit' }],
+    bottomItems: [{ id: 'timeline', name: 'Timeline' }, { id: 'console', name: 'Console' }],
     label: 'Editor workspace', accessibleLabel: 'Site editor workspace', startOpen: true, endOpen: true, bottomOpen: false,
     startSize: 240, endSize: 300, bottomSize: 180, minStartSize: 180, maxStartSize: 520, minEndSize: 220, maxEndSize: 640,
     minBottomSize: 140, maxBottomSize: 420, resizeStep: 16, mobileBreakpoint: 700, mobilePanel: '', persistKey: '',

@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, and, html, state, type Template } from '../../core/runtime.js'
 
@@ -10,6 +11,9 @@ export class Tooltip extends TooltipBase {
 
     private readonly tooltipId = uid('cb-tooltip')
     private readonly slottedContent = state(false)
+    private readonly anchorStyle = state('')
+    private bubbleObserver?: ResizeObserver
+    private positioningFrame?: number
     private describedElements = new Map<Element, string | null>()
     private get triggerSlot(): HTMLSlotElement | undefined { const node = this.refs.trigger?.[0]; return node instanceof HTMLSlotElement ? node : undefined }
     private get bubble(): HTMLElement | undefined { const node = this.refs.bubble?.[0]; return node instanceof HTMLElement ? node : undefined }
@@ -20,6 +24,8 @@ export class Tooltip extends TooltipBase {
                 <slot ref="trigger" part="trigger-content"></slot>
             </span>
             <span ref="bubble" id="${this.tooltipId}" part="tooltip" role="tooltip" onslotchange="${this.contentChanged}"
+                popover=${() => this.anchorRect ? 'manual' : null} data-anchored=${() => this.anchorRect ? '' : null}
+                style=${this.anchorStyle[0]}
                 hidden="${and(isNot(this.props.content), isNot(this.slottedContent[0]))}">
                 <slot ref="content" name="content" part="content">${this.props.content}</slot>
             </span>`
@@ -33,9 +39,79 @@ export class Tooltip extends TooltipBase {
         this.dataset.placement = ['top', 'right', 'bottom', 'left'].includes(this.placement ?? '') ? this.placement ?? 'top' : 'top'
         this.toggleAttribute('open', bool(this.open) && Boolean(scalarText(this.content) || this.slottedContent[0]()))
         this.linkTrigger()
+        this.schedulePosition()
+    }
+    protected mount(): void {
+        super.mount()
+        const view = this.ownerDocument.defaultView
+        if (view) this.listen(view, 'resize', this.schedulePosition)
+        if (view?.visualViewport) {
+            this.listen(view.visualViewport, 'resize', this.schedulePosition)
+            this.listen(view.visualViewport, 'scroll', this.schedulePosition)
+        }
+        if (this.bubble) {
+            this.bubbleObserver = new ResizeObserver(this.schedulePosition)
+            this.bubbleObserver.observe(this.bubble)
+        }
+    }
+    private schedulePosition = (): void => {
+        if (this.positioningFrame !== undefined) return
+        // Observed-property updates can run before Markup commits attributes.
+        // Position after that commit, not from inside a ResizeObserver delivery.
+        this.positioningFrame = this.ownerDocument.defaultView?.requestAnimationFrame(() => {
+            this.positioningFrame = undefined
+            this.positionBubble()
+        })
+    }
+    private positionBubble = (): void => {
+        const bubble = this.bubble, anchor = this.anchorRect
+        if (!bubble || !bubble.isConnected) return
+        if (!anchor || !this.hasAttribute('open')) {
+            if (bubble.matches(':popover-open')) bubble.hidePopover()
+            this.anchorStyle[1]('')
+            return
+        }
+        if (![anchor.left, anchor.top, anchor.right, anchor.bottom].every(Number.isFinite)) return
+        if (!bubble.matches(':popover-open')) bubble.showPopover()
+        const view = this.ownerDocument.defaultView
+        if (!view) return
+        const visual = view.visualViewport
+        const boundary = this.boundaryRect
+        if (boundary && ![boundary.left, boundary.top, boundary.right, boundary.bottom].every(Number.isFinite)) {
+            if (bubble.matches(':popover-open')) bubble.hidePopover()
+            return
+        }
+        const leftEdge = Math.max(visual?.offsetLeft ?? 0, boundary?.left ?? -Infinity) + 8
+        const topEdge = Math.max(visual?.offsetTop ?? 0, boundary?.top ?? -Infinity) + 8
+        const rightEdge = Math.min((visual?.offsetLeft ?? 0) + (visual?.width ?? view.innerWidth), boundary?.right ?? Infinity) - 8
+        const bottomEdge = Math.min((visual?.offsetTop ?? 0) + (visual?.height ?? view.innerHeight), boundary?.bottom ?? Infinity) - 8
+        if (rightEdge <= leftEdge || bottomEdge <= topEdge || boundary &&
+            (anchor.right <= boundary.left || anchor.left >= boundary.right || anchor.bottom <= boundary.top || anchor.top >= boundary.bottom)) {
+            if (bubble.matches(':popover-open')) bubble.hidePopover()
+            return
+        }
+        const { width, height } = bubble.getBoundingClientRect()
+        const gap = 6
+        let left = (anchor.left + anchor.right - width) / 2, top = anchor.top - height - gap
+        if (this.placement === 'bottom') {
+            top = anchor.bottom + gap
+            if (top + height > bottomEdge) top = anchor.top - height - gap
+        } else if (this.placement === 'left' || this.placement === 'right') {
+            top = (anchor.top + anchor.bottom - height) / 2
+            left = this.placement === 'left' ? anchor.left - width - gap : anchor.right + gap
+            if (left < leftEdge) left = anchor.right + gap
+            else if (left + width > rightEdge) left = anchor.left - width - gap
+        } else if (top < topEdge) top = anchor.bottom + gap
+        left = Math.max(leftEdge, Math.min(left, rightEdge - width))
+        top = Math.max(topEdge, Math.min(top, bottomEdge - height))
+        this.anchorStyle[1](`left:${left}px;top:${top}px;max-width:${Math.max(0, rightEdge - leftEdge)}px;max-height:${Math.max(0, bottomEdge - topEdge)}px`)
     }
     protected unmount(): void {
         super.unmount();
+        if (this.positioningFrame !== undefined) this.ownerDocument.defaultView?.cancelAnimationFrame(this.positioningFrame)
+        this.positioningFrame = undefined
+        this.bubbleObserver?.disconnect()
+        if (this.bubble?.matches(':popover-open')) this.bubble.hidePopover()
         this.restoreDescriptions();
     }
     private linkTrigger = (): void => {
@@ -68,4 +144,6 @@ export class Tooltip extends TooltipBase {
     }
 }
 export { TooltipBase };
-export type { TooltipProps } from './TooltipBase.js';
+export type { TooltipProps, TooltipAnchor } from './TooltipBase.js';
+
+register('cb-tooltip', Tooltip)

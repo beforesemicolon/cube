@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { is, html, repeat, when, type Template } from '../../core/runtime.js'
 
@@ -28,3 +29,5 @@ export class Skeleton extends SkeletonBase {
 }
 export { SkeletonBase };
 export type { SkeletonProps, SkeletonVariant } from './SkeletonBase.js';
+
+register('cb-skeleton', Skeleton)

@@ -8,6 +8,7 @@ import type { Pagination } from '../../components/navigation/pagination/index.js
 import type { PanelHeader } from '../../components/layout/panel-header/index.js'
 import type { EditableLabel } from '../../components/form/editable-label/index.js'
 import type { SelectionOverlay } from '../../components/editor/selection-overlay/index.js'
+import type { CubeRuntime } from '../../components/core/runtime.js'
 
 async function start(page: Page): Promise<void> {
     await page.goto('/tests/browser/fixture.html')
@@ -187,6 +188,91 @@ test('breadcrumbs contain internal events for buttons, links, and overflow expan
     await expect(page).toHaveURL(/#unchanged$/)
 })
 
+test('segmented controls support independent multiple choices with one cancelable change', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const host = document.createElement('cb-segmented-control') as SegmentedControl
+        Object.assign(host, { multiple: true, allowEmpty: true, iconOnly: true, accessibleLabel: 'Formatting',
+            items: [{ id: 'one', label: 'First', icon: 'uppercase' }, { id: 'two', label: 'Second', icon: 'fullWidth' }, { id: 'disabled', label: 'Unavailable', disabled: true }], values: [] } satisfies Partial<SegmentedControl>)
+        const changes: string[][] = []
+        host.dataset.events = '[]'
+        host.addEventListener('change', event => {
+            changes.push((event as CustomEvent<{ values: string[] }>).detail.values)
+            host.dataset.events = JSON.stringify(changes)
+        })
+        host.addEventListener('beforechange', event => {
+            if (host.hasAttribute('data-veto')) event.preventDefault()
+            const { value, values } = (event as CustomEvent<{ value: string; values: string[] }>).detail
+            if (host.hasAttribute('data-exclusive') && values.includes(value)) values.splice(0, values.length, value)
+        })
+        document.querySelector('#fixture')!.append(host)
+    })
+    const host = page.locator('cb-segmented-control'), group = host.getByRole('group', { name: 'Formatting', exact: true })
+    const first = group.getByRole('checkbox', { name: 'First', exact: true }), second = group.getByRole('checkbox', { name: 'Second', exact: true })
+    await expect(group.getByRole('checkbox', { name: 'Unavailable', exact: true })).toBeDisabled()
+    await expect(first).not.toBeChecked()
+    await first.click()
+    await second.click()
+    await expect(first).toBeChecked()
+    await expect(second).toBeChecked()
+    await first.click()
+    await expect(first).not.toBeChecked()
+    await expect(second).toBeChecked()
+    await second.press('Space')
+    await expect(group.locator('[aria-checked="true"]')).toHaveCount(0)
+    await expect(host).toHaveAttribute('data-events', JSON.stringify([['one'], ['one', 'two'], ['two'], []]))
+    await host.evaluate(node => { (node as SegmentedControl).values = ['one', 'two'] })
+    await expect(first).toBeChecked()
+    await expect(second).toBeChecked()
+    await host.evaluate(node => { (node as SegmentedControl).values = ['two'] })
+    await expect(first).not.toBeChecked()
+    await expect(second).toBeChecked()
+    await host.evaluate(node => { (node as SegmentedControl).values = [] })
+    await host.evaluate(node => node.setAttribute('data-veto', ''))
+    await first.click()
+    await expect(first).not.toBeChecked()
+    await expect(host).toHaveAttribute('data-events', JSON.stringify([['one'], ['one', 'two'], ['two'], []]))
+    await host.evaluate(node => { node.removeAttribute('data-veto'); node.setAttribute('data-exclusive', '') })
+    await first.click()
+    await second.click()
+    await expect(first).not.toBeChecked()
+    await expect(second).toBeChecked()
+    await expect(host).toHaveJSProperty('values', ['two'])
+})
+
+test('segmented controls can opt into cancelable mouse and keyboard deselection', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const host = document.createElement('cb-segmented-control') as SegmentedControl
+        Object.assign(host, { allowEmpty: true, items: [{ id: 'one', label: 'First' }, { id: 'two', label: 'Second' }] } satisfies Partial<SegmentedControl>)
+        const changes: string[] = []
+        host.dataset.events = '[]'
+        host.addEventListener('change', event => {
+            changes.push((event as CustomEvent<{ value: string }>).detail.value)
+            host.dataset.events = JSON.stringify(changes)
+        })
+        host.addEventListener('beforechange', event => { if (host.hasAttribute('data-veto')) event.preventDefault() })
+        document.querySelector('#fixture')!.append(host)
+    })
+    const host = page.locator('cb-segmented-control'), first = host.getByRole('radio', { name: 'First', exact: true })
+    await expect(host.locator('[aria-checked="true"]')).toHaveCount(0)
+    await expect(first).toHaveAttribute('tabindex', '0')
+    await first.click()
+    await expect(first).toHaveAttribute('aria-checked', 'true')
+    await first.click()
+    await expect(host.locator('[aria-checked="true"]')).toHaveCount(0)
+    await expect(host).toHaveAttribute('data-events', JSON.stringify(['one', '']))
+    await first.press('Space')
+    await expect(first).toHaveAttribute('aria-checked', 'true')
+    await first.press('Space')
+    await expect(host.locator('[aria-checked="true"]')).toHaveCount(0)
+    await first.click()
+    await host.evaluate(node => node.setAttribute('data-veto', ''))
+    await first.click()
+    await expect(first).toHaveAttribute('aria-checked', 'true')
+    await expect(host).toHaveAttribute('data-events', JSON.stringify(['one', '', 'one', '', 'one']))
+})
+
 test('segmented selection emits one meaningful outcome for mouse and keyboard activation', async ({ page }) => {
     await start(page)
     await page.evaluate(() => {
@@ -234,6 +320,62 @@ test('tabs contain button actions for selection and close outcomes', async ({ pa
     await expect(host).toHaveAttribute('data-events',JSON.stringify([{type:'change',value:'two'}]))
     await page.getByRole('button',{name:'Close Second',exact:true}).click()
     await expect(host).toHaveAttribute('data-events',JSON.stringify([{type:'change',value:'two'},{type:'close',value:'one'}]))
+})
+
+test('tabs render custom templates and nodes with label fallback and retain native selection and close', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const browser = globalThis as typeof globalThis & { BFS: { MARKUP: Pick<CubeRuntime, 'html'> } }
+        const { html } = browser.BFS.MARKUP
+        const host = document.createElement('cb-tabs') as Tabs
+        host.id = 'custom-tabs'
+        Object.assign(host, {
+            accessibleLabel: 'Documents', value: 'pages', closeLabel: 'Close {tab}',
+            items: [
+                { id: 'pages', label: 'Pages' },
+                { id: 'component', label: 'Component', closable: true,
+                    renderItem: () => html`<span data-template-header><b>Custom component</b><span aria-hidden="true"> *</span></span>` },
+                { id: 'node', label: 'Node', renderItem: () => {
+                    const node = document.createElement('em')
+                    node.textContent = 'Node header'
+                    return node
+                } },
+                { id: 'disabled', label: 'Disabled', disabled: true, renderItem: () => html`<span>Unavailable document</span>` },
+            ],
+        } satisfies Partial<Tabs>)
+        document.getElementById('fixture')!.append(host)
+    })
+    const host = page.locator('#custom-tabs')
+    const pages = host.getByRole('tab', { name: 'Pages', exact: true })
+    const component = host.getByRole('tab', { name: 'Component', exact: true })
+    const node = host.getByRole('tab', { name: 'Node', exact: true })
+    await expect(pages).toHaveText('Pages')
+    await expect(component).toContainText('Custom component')
+    await expect(node).toHaveText('Node header')
+    await component.click()
+    await expect(component).toHaveAttribute('aria-selected', 'true')
+    const close = host.getByRole('button', { name: 'Close Component', exact: true })
+    const closeBounds = (await close.boundingBox())!
+    const labelBounds = (await component.getByText('Custom component', { exact: true }).boundingBox())!
+    const iconBounds = (await close.locator('svg').boundingBox())!
+    expect(Math.abs(labelBounds.y + labelBounds.height / 2 - iconBounds.y - iconBounds.height / 2)).toBeLessThanOrEqual(1)
+    expect(closeBounds.x).toBeGreaterThan(labelBounds.x + labelBounds.width)
+    const header = await component.evaluate(element => {
+        const group = element.parentElement!
+        const marker = getComputedStyle(group, '::after')
+        return { left: group.getBoundingClientRect().left, width: Number.parseFloat(marker.width), color: marker.backgroundColor }
+    })
+    expect(header.left + header.width).toBeGreaterThanOrEqual(closeBounds.x + closeBounds.width - 1)
+    expect(header.color).not.toBe('rgba(0, 0, 0, 0)')
+    await component.focus()
+    await page.keyboard.press('ArrowRight')
+    await expect(node).toBeFocused()
+    await expect(node).toHaveAttribute('aria-selected', 'true')
+    await page.keyboard.press('ArrowRight')
+    await expect(pages).toBeFocused()
+    await close.click()
+    await expect(component).toHaveCount(0)
+    await expect(pages).toHaveAttribute('aria-selected', 'true')
 })
 
 for(const direction of ['ltr','rtl'] as const) for(const placement of ['start','end'] as const) {

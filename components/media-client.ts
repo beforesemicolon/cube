@@ -1,7 +1,4 @@
-import './core/browser.js'
-import { registerMedia } from './media/register.js'
-export * from './media/register.js'
+import createComponents from 'cube:client/media'
+import { browserRuntime } from './core/browser.js'
 
-registerMedia()
-
-export const ready = Promise.resolve()
+createComponents(browserRuntime())

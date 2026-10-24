@@ -3,7 +3,7 @@
     "title": "Cube par Before Semicolon",
     "intro": "Bibliothèque de composants web à logique indépendante du rendu et thèmes pour éditeurs visuels. Les composants sont organisés en actions, formulaires, mise en page, navigation, superpositions, retours, affichage des données, médias, graphiques, styles, éditeur, collaboration, icônes et thèmes.",
     "guide": "Installation et architecture",
-    "guideBody": "Initialisez le catalogue complet ou les catégories choisies avec le même runtime WebComponent. Les initialiseurs renvoient les classes concrètes et les bases sans présentation. La racine expose des utilitaires sans DOM et loadCategory. Le rendu et l’enregistrement nécessitent un DOM.",
+    "guideBody": "Importez Cube ou une catégorie pour enregistrer immédiatement ses composants. Les classes et bases sans présentation sont des exports nommés. Les modules utilisent le runtime WebComponent installé ; les scripts du navigateur utilisent BFS. Aucun appel d’initialisation ni promesse n’est nécessaire. Les composants nécessitent un DOM.",
     "runtime": "Chargez le runtime web-component en premier. Les graphiques nécessitent aussi ECharts ou un chargeur configureChartEngine. Les scripts multimédias ne chargent pas ECharts. Cette branche ne remplace pas la version publiée sur npm.",
     "theme": "Thèmes",
     "themeBody": "ThemeProvider accepte ThemeDefinitionV1 de site-builder via theme ou src. appearance accepte light, dark ou system. Les variables CSS gardent les noms site-builder ; les fournisseurs imbriqués créent des portées explicites. Les fichiers sont générés dans dist/themes.",
@@ -60,7 +60,7 @@
     "categoryEditor": "Éditeur",
     "categoryAssets": "Ressources",
     "categoryCollaboration": "Collaboration",
-    "studioCatalogBody": "Cette catégorie contient des éléments cb-* réutilisables enregistrés ensemble par un initialiseur ou un script de catégorie. Les composants utilisent des modèles Markup réactifs, des bases typées, des variables de thème, des parties CSS et des exemples Storybook interactifs. L’application charge les catégories nécessaires aux contrôles composés.",
-    "studioCatalogApi": "Fournissez les textes visibles et accessibles dans la langue de l’application. Les contrôles émettent beforechange ou beforeaction annulables avant change ou action. Initialisez la catégorie avec le runtime WebComponent partagé pour enregistrer ses balises et obtenir ses classes et bases."
+    "studioCatalogBody": "Importer cette catégorie ou charger son script enregistre immédiatement ses éléments cb-* réutilisables. Les composants utilisent des modèles Markup réactifs, des bases typées, des variables de thème, des parties CSS et des exemples Storybook interactifs. L’application charge les catégories nécessaires aux contrôles composés.",
+    "studioCatalogApi": "Fournissez les textes visibles et accessibles dans la langue de l’application. Les contrôles émettent beforechange ou beforeaction annulables avant change ou action. Importez un composant ou une catégorie pour enregistrer automatiquement ses balises. Les scripts du navigateur utilisent le runtime BFS existant ; BFS.CUBE expose des API utilitaires, pas les classes des composants."
   }
 }

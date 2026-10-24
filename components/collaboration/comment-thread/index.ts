@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from '../../studio/view.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { createStudioView, type StudioView } from '../../studio/view.js'
@@ -11,3 +12,5 @@ export class CommentThread extends CommentThreadBase {
 }
 export { CommentThreadBase };
 export type { CommentThreadProps } from './CommentThreadBase.js';
+
+register('cb-comment-thread', CommentThread)

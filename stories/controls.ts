@@ -33,10 +33,12 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 }
 
 const booleanProperties = new Set([
-    'allowAlpha', 'allowReorder', 'allowSampler', 'animated', 'autoplay', 'bottomOpen', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'dirty', 'disabled', 'dismissible', 'indeterminate',
+    'enabled',
+    'guidesEnabled', 'showGuides',
+    'allowAlpha', 'allowCustom', 'allowReorder', 'allowSampler', 'animated', 'autoplay', 'bottomOpen', 'busy', 'checked', 'closeOnBackdrop', 'collapsible', 'decorative', 'destructive', 'dirty', 'disabled', 'dismissible', 'indeterminate',
     'controls', 'disableContentPadding', 'expanded', 'formNoValidate', 'grid', 'iconOnly', 'invalid', 'inverted', 'loading', 'loop', 'multi', 'multiple', 'muted', 'native',
     'editable', 'editing', 'endOpen', 'guide', 'inline', 'lineNumbers', 'linked', 'mixed', 'movable', 'open', 'patterns', 'pinned', 'pressed', 'readOnly', 'reorderable', 'required', 'resizable', 'returnFocus', 'reverse', 'rotatable', 'rowActivation', 'stacked',
-    'pannable', 'playing', 'searchable', 'selectable', 'selected', 'selectOnEdit', 'showCancel', 'showChrome', 'showCursor', 'showDimensions', 'showLock', 'showOrientationControl', 'showSize', 'showVisibility', 'startOpen', 'stickyHeader', 'striped', 'submitOnBlur', 'success', 'unmask', 'wrap', 'zoomable',
+    'pannable', 'panTool', 'playing', 'searchable', 'selectable', 'selected', 'selectOnEdit', 'showCancel', 'showChrome', 'showCursor', 'showDimensions', 'showLock', 'showOrientationControl', 'showSize', 'showVisibility', 'startOpen', 'stickyHeader', 'striped', 'submitOnBlur', 'success', 'unmask', 'wrap', 'zoomable',
 ])
 
 const numberProperties = new Set([
@@ -46,9 +48,11 @@ const numberProperties = new Set([
 ])
 
 const objectProperties = new Set([
+    'anchorRect',
+    'actions',
     'collapsedGroupKeys', 'entries', 'expandedIds', 'expandedKeys', 'guides', 'handleLabels', 'items', 'messages', 'options', 'recentColors', 'rect', 'selectedIds', 'selectedKeys', 'series', 'swatches', 'targets', 'theme', 'tracks',
     'units', 'visibleSegments', 'visibleSeries',
-    'stops', 'xAxis', 'yAxis', 'values', 'fieldLabels', 'names',
+    'stops', 'xAxis', 'yAxis', 'values', 'fieldLabels', 'names', 'startItems', 'endItems', 'bottomItems',
 ])
 
 const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
@@ -72,9 +76,11 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
 }
 
 const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly ControlOption[]>>>> = {
+    'cb-flashbar': { position: ['top-start', 'top-center', 'top-end', 'bottom-start', 'bottom-end'] },
+    'cb-rich-text-editor': { variant: ['inline', 'box'] },
     'cb-list': { orientation: ['vertical', 'horizontal'] },
     'cb-avatar': { status: ['none', 'online', 'idle', 'busy', 'offline'] },
-    'cb-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
+    'cb-button': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'], size: ['tiny', 'xs', 'sm', 'md', 'lg'] },
     'cb-button-group': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
     'cb-heading': { variant: ['h2', 'h3', 'h4', 'h5', 'h6'] },
     'cb-link': { variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'] },
@@ -103,7 +109,7 @@ const tagOptions: Readonly<Record<string, Readonly<Record<string, readonly Contr
     'cb-grid': { variant: ['', 'cards', 'masonry', 'holy-grail', 'sidebar', 'header-main-footer'] },
     'cb-modal': { layer: ['top', 'document'] },
     'cb-masked-input': { autocomplete: ['off', 'on', 'tel', 'postal-code', 'cc-number'], inputMode: ['text', 'numeric', 'tel', 'decimal'] },
-    'cb-workspace': { mobilePanel: ['', 'start', 'end', 'bottom'] },
+    'cb-workspace': { variant: ['default', 'tabbed'], mobilePanel: ['', 'start', 'end', 'bottom'] },
 }
 
 const numberControls: Readonly<Record<string, NumberControl>> = {
@@ -181,6 +187,7 @@ const descriptions: Readonly<Record<string, string>> = {
     unmask: 'Submits only characters accepted by mask tokens while retaining the formatted display value.',
     firstDayOfWeek: 'Weekday used as the first calendar column, from 0 (Sunday) through 6 (Saturday).',
     icon: 'Icon name displayed by the control.',
+    iconSrc: 'Custom icon image URL. Takes precedence over the built-in icon name.',
     iconOnly: 'Displays only the icon while preserving the label as the accessible name. This can be combined with any visual variant.',
     items: 'Editable item collection. Add, remove, reorder, label, value, or disable entries here.',
     name: 'Form-control name used when the value is submitted.',
@@ -227,6 +234,7 @@ const descriptions: Readonly<Record<string, string>> = {
     maxZoom: 'Largest magnification allowed by the viewport.',
     zoomStep: 'Magnification changed by each zoom action.',
     pannable: 'Allows pointer, wheel, and keyboard panning.',
+    panTool: 'Enables a grab-cursor hand tool over all viewport content, including iframes. Native viewport controls remain interactive.',
     grid: 'Displays the viewport alignment grid.',
     controls: 'Displays the viewport zoom controls.',
     selected: 'Displays the artboard as selected.',
@@ -296,6 +304,12 @@ const descriptions: Readonly<Record<string, string>> = {
     startOpen: 'Controls the workspace start panel on larger containers.',
     endOpen: 'Controls the workspace end panel on larger containers.',
     bottomOpen: 'Controls the workspace bottom panel on larger containers.',
+    startItems: 'Tabbed start-panel items: { id, name, description?, iconName?, collapsedName?, renderContent }. Name and description appear in the panel header; rails use the icon or fall back to the name. Assign factories in JavaScript; this preview supplies them for the editable metadata.',
+    endItems: 'Tabbed end-panel items. Only the active, open item calls renderContent; switching or collapsing unmounts its content.',
+    bottomItems: 'Tabbed bottom-panel items, displayed as horizontal tabs. Factories return a Markup template or DOM Node.',
+    startValue: 'Active start-tab ID. An empty or missing ID falls back to the first valid item.',
+    endValue: 'Active end-tab ID. The last selection is retained while collapsed.',
+    bottomValue: 'Active bottom-tab ID. Only mounted when the bottom panel is open.',
     persistKey: 'Optional storage key used to restore workspace panel state and dimensions.',
     editable: 'Allows inline layer renaming.',
     reorderable: 'Allows layers to be repositioned with drag and drop.',
@@ -309,7 +323,7 @@ const descriptions: Readonly<Record<string, string>> = {
 
 const defaultSummaries: Readonly<Record<string, string>> = {
     activation: 'automatic', align: 'stretch', appearance: 'system', autoFlow: 'row', autocomplete: 'list',
-    allowAlpha: 'true', allowSampler: 'true', autoplay: 'false', busy: 'false', checked: 'false', closeOnBackdrop: 'true', collapseAt: "''",
+    allowAlpha: 'true', allowCustom: 'false', allowSampler: 'true', autoplay: 'false', busy: 'false', checked: 'false', closeOnBackdrop: 'true', collapseAt: "''",
     crossOrigin: "''", decorative: 'false', destructive: 'false', disabled: 'false', disableContentPadding: 'false', dismissible: 'true',
     expanded: 'false', firstDayOfWeek: '0', height: 'auto', initials: "''", invalid: 'false', items: '[]',
     loading: 'false', loop: 'false', max: '100', maxRecent: '8', maxVisible: '4', messages: '[]', min: '0',
@@ -329,7 +343,7 @@ const defaultSummaries: Readonly<Record<string, string>> = {
 }
 
 const primitiveDefaults: Readonly<Record<string, string | number | boolean | null>> = {
-    accessibleLabel: '', actionLabel: '', activation: 'automatic', align: 'stretch', allowAlpha: true, allowSampler: true, appearance: 'system',
+    accessibleLabel: '', actionLabel: '', activation: 'automatic', align: 'stretch', allowAlpha: true, allowCustom: false, allowSampler: true, appearance: 'system',
     angle: 90, autoFlow: 'row', autocomplete: 'list', autoplay: false, background: '', blockSize: '', border: '', busy: false, controls: true, currentTime: 0, cursorX: 0, cursorY: 0,
     cancelLabel: '', checked: false, closeLabel: '', closeOnBackdrop: true, code: '', codeLanguage: 'html', collapsible: false, collapseAt: '', columns: '',
     color: '', confirmLabel: '', content: '', copiedLabel: '', copyLabel: '', crossOrigin: '', decorative: false, delay: 0,
@@ -341,7 +355,7 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
     modalSize: 'md', multi: false, multiple: false, muted: false, name: '', native: false, open: false, orientation: 'landscape', originX: 0, originY: 0, overflowLabel: '',
     overflow: '', padding: '', page: 1, patterns: false, placement: 'bottom-start', placeholder: '', playbackRate: 1,
     position: 'top-end', poster: '', preload: 'metadata', searchLabel: '', searchable: 'auto', searchPlaceholder: '', searchThreshold: 10,
-    pannable: true, playing: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
+    pannable: true, panTool: false, playing: false, progress: 0, query: '', radius: '', readOnly: false, required: false, reverse: false, rows: '',
     seekStep: 10, shape: 'circle', siblings: 1, size: 'sm', src: '', status: '', statusLabel: '', step: 1, summary: '', target: '_self',
     selectable: true, selected: false, showCancel: true, showChrome: true, showCursor: true, showDimensions: true, showOrientationControl: true, snap: .1,
     tone: 'info', totalPages: 1, type: 'button', unit: '', unitLabel: '', value: '', valueText: '', width: 640, wrap: false, x: 0, x1: .25, x2: .25, y: 0, y1: .1, y2: 1, zoom: 100, zoomStep: 10, zoomable: false,
@@ -354,6 +368,9 @@ const primitiveDefaults: Readonly<Record<string, string | number | boolean | nul
 }
 
 const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue>>>> = {
+    'cb-tooltip': { anchorRect: null, placement: 'top', delay: 400 },
+    'cb-tooltip-provider': { enabled: true, delay: 400 },
+    'cb-artboard': { width: 0, height: 0, editable: true, resizable: true, minWidth: 1, minHeight: 1, resizeStep: 1, guidesEnabled: false, showGuides: true, guides: [], guideDistanceLabel: '{start}px · {end}px' },
     'cb-list': { gap: 0, orientation: 'vertical', offset: 100, renderItem: null },
     'cb-avatar': { status: 'none' },
     'cb-accordion': { variant: 'simple' },
@@ -380,6 +397,7 @@ const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue
     'cb-hover-card': { popupMaxWidth: '360px', popupMaxHeight: '480px' },
     'cb-color-picker': { popupMaxWidth: '344px', popupMaxHeight: '640px' },
     'cb-code-editor': { language: 'plaintext', lineNumbers: true, wrap: false, tabSize: 2, minLines: 8, maxLines: 32 },
+    'cb-rich-text-editor': { variant: 'inline', value: '', placeholder: '', toolbarLabel: '', boldLabel: '', italicLabel: '', underlineLabel: '', strikethroughLabel: '', superscriptLabel: '', subscriptLabel: '' },
     'cb-json-editor': { indent: 2, lineNumbers: true, wrap: false },
     'cb-editable-list': { minItems: 0, maxItems: 8, allowReorder: true },
     'cb-linked-values': { values: [320,180], linked: true, min: 0, max: 4096, step: 1 },
@@ -392,7 +410,7 @@ const taggedDefaults: Readonly<Record<string, Readonly<Record<string, StoryValue
     'cb-editable-label': { editing: false, selectOnEdit: true, submitOnBlur: false },
     'cb-property-group': { expanded: true, collapsible: true, dirty: false, mixed: false },
     'cb-selection-overlay': { rotation: 0, movable: true, resizable: true, rotatable: false, moveStep: 1, minWidth: 1, minHeight: 1, showSize: true },
-    'cb-workspace': { startOpen: true, endOpen: true, bottomOpen: false, startSize: 280, endSize: 360, bottomSize: 240, minStartSize: 180, maxStartSize: 560, minEndSize: 220, maxEndSize: 720, minBottomSize: 140, maxBottomSize: 640, resizeStep: 16, mobileBreakpoint: 860, mobilePanel: '' },
+    'cb-workspace': { variant: 'default', startItems: [], endItems: [], bottomItems: [], startValue: '', endValue: '', bottomValue: '', startOpen: true, endOpen: true, bottomOpen: false, startSize: 280, endSize: 360, bottomSize: 240, minStartSize: 180, maxStartSize: 560, minEndSize: 220, maxEndSize: 720, minBottomSize: 140, maxBottomSize: 640, resizeStep: 16, mobileBreakpoint: 860, mobilePanel: '' },
 }
 
 const numericValueTags = new Set([
@@ -418,6 +436,28 @@ function humanize(property: string): string {
 }
 
 function descriptionFor(tag: string, property: string): string {
+    if (tag === 'cb-combobox' && property === 'value') return 'String for single selection; an array of selected values with multi. Typed filter text is separate from multi selections; commas are ordinary characters.'
+    if (tag === 'cb-combobox' && property === 'removeLabel') return 'Accessible removal-button text; use {label} for the selected option, e.g. Remove {label}.'
+    if (tag === 'cb-combobox' && property === 'allowCustom') return 'Allow Enter to add a nonempty query with no matching options. Off by default; custom values do not modify options.'
+    if (tag === 'cb-button' && property === 'size') return 'tiny: compact contextual actions with 1px padding and 10px icons. Other sizes retain their standard dimensions.'
+    if (tag === 'cb-icon' && property === 'src') return 'Custom image URL (including SVG). A child SVG takes precedence, then src, then the built-in name.'
+    if (tag === 'cb-rich-text-editor' && property === 'value') return 'Sanitized HTML string. Supports strong, em, u, s, sup, sub and br; other tags/attributes are not rendered.'
+    if (tag === 'cb-rich-text-editor' && property === 'variant') return 'inline: single-row input (default); box: multiline, vertically resizable editing area.'
+    if (tag === 'cb-viewport' && property === 'actions') return 'Additional floating commands: id, icon, label, position (top-left, top-right, bottom-right), optional disabled and pressed. Emits action; pressed state is application-controlled. Existing zoom and coordinate controls are preserved.'
+    if (tag === 'cb-selection-overlay' && property === 'actions') return 'Selection commands: id, icon, label, optional button name and disabled. Emits action with the command and current selection.'
+    if (tag === 'cb-selection-overlay' && property === 'actionsLabel') return 'Accessible name of the viewport-aware selection toolbar.'
+    if (tag === 'cb-layer-tree' && property === 'items') return 'Layer nodes with optional per-node actions (id, icon, name, label, disabled). Each command emits action with its node and action.'
+    if (tag === 'cb-artboard') {
+        if (property === 'guidesEnabled') return 'Enables draggable guides created from the top and left edges.'
+        if (property === 'showGuides') return 'Shows guides and creation edges without removing saved guides.'
+        if (property === 'guides') return 'Artboard-local guides: unique id, axis (x: horizontal, y: vertical), and position in document pixels.'
+        if (property === 'guideDistanceLabel') return 'Distance text with {start} and {end} placeholders for opposing edges.'
+        if (property === 'name') return 'Editable artboard title displayed above the document surface.'
+        if (property === 'width' || property === 'height') return 'Explicit size in CSS pixels. Leave unset or use 0 to size this axis to the full content extent, without scrolling.'
+        if (property === 'editable') return 'Allows the artboard name to be edited. Changes are emitted only when confirmed.'
+        if (property === 'resizable') return 'Shows right, bottom, and corner resize handles while the artboard is selected. Resizing sets explicit dimensions.'
+        if (property === 'nameLabel') return 'Localized accessible label for the artboard name editor.'
+    }
     if (tag === 'cb-avatar' && property === 'name') return 'Person or entity name used for fallback initials and accessible text.'
     if (tag === 'cb-sidebar' && property === 'collapsible') return 'Allows the sidebar to collapse into a compact toggle rail.'
     return descriptions[property] ?? `Controls the ${humanize(property)} property.`
@@ -433,6 +473,7 @@ function optionsFor(tag: string, property: string): readonly ControlOption[] | u
 }
 
 function controlFor(tag: string, property: string): StoryControl['control'] {
+    if (tag === 'cb-combobox' && property === 'value') return 'object'
     if (tag === 'cb-list' && property === 'renderItem') return false
     if (tag === 'cb-list' && property === 'offset') return numberControl(property)
     if (property === 'valueFormatter') return 'select'
@@ -451,6 +492,9 @@ function controlFor(tag: string, property: string): StoryControl['control'] {
 }
 
 function typeSummary(tag: string, property: string, control: StoryControl['control'], options: readonly ControlOption[] | undefined): string {
+    if (tag === 'cb-combobox' && property === 'value') return 'string | string[]'
+    if (tag === 'cb-selection-overlay' && property === 'actions') return 'SelectionAction[]'
+    if (tag === 'cb-workspace' && ['startItems', 'endItems', 'bottomItems'].includes(property)) return 'WorkspaceItem[]'
     if (tag === 'cb-list' && property === 'renderItem') return '(item, indexOrKey) => Element | HtmlTemplate'
     if (tag === 'cb-list' && property === 'items') return 'Iterable<T> | ReadonlyMap<K, T>'
     if (tag === 'cb-list' && property === 'gap') return 'string | number'
@@ -467,10 +511,10 @@ function typeSummary(tag: string, property: string, control: StoryControl['contr
     if (property === 'theme') return 'ThemeDefinition | null'
     if (property === 'entries') return 'FileBrowserEntry[]'
     if (property === 'selectedIds') return 'string[]'
-    if (property === 'guides') return 'EditorGuide[]'
+    if (property === 'guides') return tag === 'cb-artboard' ? 'ArtboardGuide[]' : 'EditorGuide[]'
     if (property === 'targets') return 'MarqueeTarget[]'
     if (property === 'rect') return 'EditorRect'
-    if (property === 'handleLabels') return 'Partial<Record<SelectionHandle, string>>'
+    if (property === 'handleLabels') return tag === 'cb-artboard' ? 'Partial<Record<ArtboardResizeHandle, string>>' : 'Partial<Record<SelectionHandle, string>>'
     if (property === 'popupMaxWidth' || property === 'popupMaxHeight') return 'string | number'
     if (property === 'xAxis' || property === 'yAxis') return 'Axis | Axis[]'
     if (property === 'visibleSeries' || property === 'visibleSegments') return 'string[] | null'

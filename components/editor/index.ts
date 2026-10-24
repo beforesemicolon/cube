@@ -1,11 +1,10 @@
-import { initializeRuntime, type CubeRuntime } from '../core/runtime.js'
-export type * from './register.js'
-
-export async function initializeEditor(runtime: CubeRuntime): Promise<typeof import('./register.js')> {
-    initializeRuntime(runtime)
-    const category = await import('./register.js')
-    category.registerEditor()
-    return category
-}
-
-export default initializeEditor
+export * from './viewport/index.js'
+export * from './artboard/index.js'
+export * from './rulers/index.js'
+export * from './device-frame/index.js'
+export * from './bezier/index.js'
+export * from './timeline/index.js'
+export * from './property-group/index.js'
+export * from './selection-overlay/index.js'
+export * from './guide-overlay/index.js'
+export * from './marquee-selection/index.js'

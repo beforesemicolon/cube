@@ -1,7 +1,6 @@
-import './core/browser.js'
-import { registerFeedback } from './feedback/register.js'
-export * from './feedback/register.js'
+import createComponents from 'cube:client/feedback'
+import { browserRuntime } from './core/browser.js'
 
-registerFeedback()
-
-export const ready = Promise.resolve()
+const { showFlashbar, createFlashbar, updateFlashbar, hideFlashbar, clearFlashbars, configureFlashbarHost, getFlashbarHost } = createComponents(browserRuntime())
+const browser = globalThis as typeof globalThis & { BFS: { CUBE?: object } }
+browser.BFS.CUBE = { showFlashbar, createFlashbar, updateFlashbar, hideFlashbar, clearFlashbars, configureFlashbarHost, getFlashbarHost, ...browser.BFS.CUBE }

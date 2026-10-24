@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, type Template, html, state } from '../../core/runtime.js'
 
@@ -9,7 +10,7 @@ export class MarqueeSelection extends MarqueeSelectionBase {
 
     private readonly rectangle = state<EditorRect | null>(null);
     render(): Template {
-        return html`<div part="marquee"
+        return html`<div part="marquee selection"
             hidden=${isNot(this.rectangle[0])} style=${() => {
                 const rect = this.rectangle[0]();
                 return rect ? `left:${rect.x}px;top:${rect.y}px;width:${rect.width}px;height:${rect.height}px` : '';
@@ -38,3 +39,5 @@ export class MarqueeSelection extends MarqueeSelectionBase {
 }
 export { MarqueeSelectionBase };
 export type { MarqueeSelectionProps, MarqueeTarget, EditorPoint } from './MarqueeSelectionBase.js';
+
+register('cb-marquee-selection', MarqueeSelection)

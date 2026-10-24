@@ -1,7 +1,9 @@
 @import "../../theme/editor.css";
 :host {
   position: absolute;
-  z-index: var(--z-index-guides,15);
+  /* Do not create a host stacking context: labels must paint above sibling
+     selection outlines while lines remain underneath those outlines. */
+  z-index: auto;
   inset: 0;
   display: block;
   overflow: visible;
@@ -9,6 +11,7 @@
 }
 [part~=line] {
   position: absolute;
+  z-index: var(--z-index-guides,15);
   background: var(--component-guide-color,var(--color-primary));
   pointer-events: none;
 }
@@ -27,7 +30,11 @@
 }
 [part~=label] {
   position: absolute;
-  translate: -50% -50%;
+  z-index: var(--z-index-guide-labels,calc(var(--z-index-selection,20) + 10));
+  transform-origin: top left;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
   padding: 2px 5px;
   border-radius: 3px;
   background: var(--component-guide-label-background,var(--color-primary));

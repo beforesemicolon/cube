@@ -1,0 +1,4 @@
+@import "../../theme/editor.css";
+:host { display: inline-flex; }
+cb-toolbar::part(toolbar) { border: 0; border-radius: 0; padding: 2px; gap: 2px; }
+[part~=format] { min-inline-size: 26px; }

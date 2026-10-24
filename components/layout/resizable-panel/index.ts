@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { type Template, html } from '../../core/runtime.js'
 
@@ -67,3 +68,5 @@ export class ResizablePanel extends ResizablePanelBase {
 }
 export { ResizablePanelBase };
 export type { ResizablePanelProps } from './ResizablePanelBase.js';
+
+register('cb-resizable-panel', ResizablePanel)

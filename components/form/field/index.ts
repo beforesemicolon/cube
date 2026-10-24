@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, or, and, pick, type Template, html, state } from '../../core/runtime.js'
 
@@ -105,3 +106,5 @@ export class Field extends FieldBase {
 }
 export { FieldBase };
 export type { FieldProps } from './FieldBase.js';
+
+register('cb-field', Field)

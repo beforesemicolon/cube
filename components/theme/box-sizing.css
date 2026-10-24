@@ -1,0 +1,8 @@
+:host,
+:host::before,
+:host::after,
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

@@ -1,11 +1,5 @@
-import { initializeRuntime, type CubeRuntime } from '../core/runtime.js'
-export type * from './register.js'
-
-export async function initializeCharts(runtime: CubeRuntime): Promise<typeof import('./register.js')> {
-    initializeRuntime(runtime)
-    const category = await import('./register.js')
-    category.registerCharts()
-    return category
-}
-
-export default initializeCharts
+export * from './cartesian-chart/index.js'
+export * from './pie-chart/index.js'
+export * from './ChartBase.js'
+export * from './model.js'
+export * from './engine.js'

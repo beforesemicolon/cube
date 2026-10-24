@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import type { Alert } from '../../components/feedback/alert/index.js'
 import type { Progress } from '../../components/feedback/progress/index.js'
+import type { Flashbar } from '../../components/feedback/flashbar/index.js'
 
 async function start(page: Page): Promise<void> {
     await page.goto('/tests/browser/fixture.html')
@@ -141,6 +142,34 @@ test('skeleton renders visible text, card and table placeholders', async ({ page
     await expect(skeleton.locator('[part~=table]')).toHaveCSS('padding','16px')
     const audit = await new AxeBuilder({ page }).include('#fixture').analyze()
     expect(audit.violations).toEqual([])
+})
+
+test('flashbar top-center stays centered on desktop and mobile in both text directions', async ({ page }) => {
+    await start(page)
+    await page.evaluate(() => {
+        const flashbar = document.createElement('cb-flashbar') as Flashbar
+        flashbar.position = 'top-center'
+        flashbar.messages = [{ id: 'notice', type: 'danger', message: 'Could not save changes.', dismissLabel: 'Dismiss notification', duration: 0 }]
+        document.querySelector('#fixture')!.append(flashbar)
+    })
+    const flashbar = page.locator('cb-flashbar')
+    await expect(flashbar).toHaveAttribute('data-position', 'top-center')
+    for (const width of [1280, 375]) {
+        await page.setViewportSize({ width, height: 720 })
+        for (const direction of ['ltr', 'rtl']) {
+            await page.locator('html').evaluate((node, direction) => node.setAttribute('dir', direction), direction)
+            await expect.poll(async () => {
+                const rect = (await flashbar.boundingBox())!
+                return Math.abs(rect.x + rect.width / 2 - width / 2) < 1 && rect.x >= 8 && rect.x + rect.width <= width - 8 && rect.y === 16
+            }).toBe(true)
+        }
+    }
+    await flashbar.getByRole('button', { name: 'Dismiss notification', exact: true }).click()
+    await expect(flashbar.getByRole('alert')).toHaveCount(0)
+    for (const position of ['top-start', 'top-end', 'bottom-start', 'bottom-end'] as const) {
+        await flashbar.evaluate((node, position) => { (node as Flashbar).position = position }, position)
+        await expect(flashbar).toHaveAttribute('data-position', position)
+    }
 })
 
 test('flashbar composes its dismiss action from the shared icon-only button', async ({ page }) => {

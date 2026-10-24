@@ -1,9 +1,33 @@
-import { state } from '../../core/runtime.js'
+import { state, type Template } from '../../core/runtime.js'
 import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, clamp, finite, scalarText } from '../../core/value.js'
 
 export type WorkspacePanel = 'start' | 'end' | 'bottom'
+export interface WorkspaceItem {
+    readonly id: string
+    readonly name: string
+    readonly description?: string
+    readonly iconName?: string
+    readonly iconSrc?: string
+    readonly collapsedName?: string
+    readonly renderContent: () => Template | Node
+}
+export interface WorkspaceTabChangeDetail {
+    readonly panel: WorkspacePanel
+    readonly value: string
+    readonly previousValue: string
+    readonly open: boolean
+    readonly previousOpen: boolean
+    readonly originalEvent?: Event
+}
 export interface WorkspaceProps extends ComponentProps {
+    variant?: 'default' | 'tabbed'
+    startItems?: readonly WorkspaceItem[]
+    endItems?: readonly WorkspaceItem[]
+    bottomItems?: readonly WorkspaceItem[]
+    startValue?: string
+    endValue?: string
+    bottomValue?: string
     startOpen?: boolean
     endOpen?: boolean
     bottomOpen?: boolean
@@ -49,7 +73,15 @@ export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> e
         'resize-step', 'mobile-breakpoint', 'mobile-panel', 'persist-key', 'start-label', 'end-label', 'bottom-label',
         'open-start-label', 'close-start-label', 'open-end-label', 'close-end-label', 'open-bottom-label',
         'close-bottom-label', 'close-mobile-label',
+        'variant', 'start-items', 'end-items', 'bottom-items', 'start-value', 'end-value', 'bottom-value',
     ]
+    variant: WorkspaceProps['variant'] = 'default'
+    startItems: readonly WorkspaceItem[] = []
+    endItems: readonly WorkspaceItem[] = []
+    bottomItems: readonly WorkspaceItem[] = []
+    startValue = ''
+    endValue = ''
+    bottomValue = ''
     startOpen = true
     endOpen = true
     bottomOpen = false
@@ -97,6 +129,42 @@ export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> e
         return bool(panel === 'start' ? this.startOpen : panel === 'end' ? this.endOpen : this.bottomOpen)
     }
 
+    protected tabbed = (): boolean => this.variant === 'tabbed'
+    protected panelItems = (panel: WorkspacePanel): readonly WorkspaceItem[] => {
+        const items = panel === 'start' ? this.startItems : panel === 'end' ? this.endItems : this.bottomItems
+        const ids = new Set<string>()
+        return (Array.isArray(items) ? items : []).filter((item: WorkspaceItem) => {
+            if (!item || typeof item.id !== 'string' || !item.id.trim() || typeof item.name !== 'string' ||
+                !item.name.trim() || typeof item.renderContent !== 'function' || ids.has(item.id)) return false
+            ids.add(item.id)
+            return true
+        })
+    }
+    protected activeItem = (panel: WorkspacePanel): WorkspaceItem | undefined => {
+        const value = panel === 'start' ? this.startValue : panel === 'end' ? this.endValue : this.bottomValue
+        const items = this.panelItems(panel)
+        return items.find(item => item.id === value) ?? items[0]
+    }
+    protected panelExpanded = (panel: WorkspacePanel): boolean => this.mobile ? this.mobilePanel === panel : this.isPanelOpen(panel)
+
+    selectTab = (panel: WorkspacePanel, id: string, originalEvent?: Event): boolean => {
+        if (this.unavailable || !this.tabbed() || !this.panelItems(panel).some(item => item.id === id)) return false
+        const previousValue = this.activeItem(panel)?.id ?? ''
+        const previousOpen = this.panelExpanded(panel)
+        const open = previousValue !== id || !previousOpen
+        const detail: WorkspaceTabChangeDetail = { panel, value: id, previousValue, open, previousOpen, originalEvent }
+        if (!this.request('beforechange', detail)) return false
+        if (open !== previousOpen && !this.request('beforepaneltoggle', { panel, open, originalEvent })) return false
+        if (panel === 'start') this.startValue = id
+        else if (panel === 'end') this.endValue = id
+        else this.bottomValue = id
+        this.applyPanelOpen(panel, open)
+        this.persist()
+        this.syncView()
+        this.emit('change', detail)
+        return true
+    }
+
     panelSize(panel: WorkspacePanel): number {
         if (panel === 'start') return clamp(finite(this.startSize, 280), finite(this.minStartSize, 180), finite(this.maxStartSize, 560))
         if (panel === 'end') return clamp(finite(this.endSize, 360), finite(this.minEndSize, 220), finite(this.maxEndSize, 720))
@@ -107,10 +175,7 @@ export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> e
         if (this.unavailable) return false
         const detail = { panel, open, originalEvent }
         if (!this.request('beforepaneltoggle', detail)) return false
-        if (this.mobile) {
-            this.mobilePanel = open ? panel : ''
-            this.setAttribute('mobile-panel', this.mobilePanel)
-        } else this.setPanelOpen(panel, open)
+        this.applyPanelOpen(panel, open)
         this.persist()
         this.syncView()
         this.emit('paneltoggle', detail)
@@ -151,6 +216,13 @@ export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> e
         this.toggleAttribute(`data-${panel}-open`, open)
     }
 
+    private applyPanelOpen(panel: WorkspacePanel, open: boolean): void {
+        if (this.mobile) {
+            this.mobilePanel = open ? panel : ''
+            this.setAttribute('mobile-panel', this.mobilePanel)
+        } else this.setPanelOpen(panel, open)
+    }
+
     private clampedSize(panel: WorkspacePanel, size: number): number {
         if (panel === 'start') return clamp(size, finite(this.minStartSize, 180), finite(this.maxStartSize, 560))
         if (panel === 'end') return clamp(size, finite(this.minEndSize, 220), finite(this.maxEndSize, 720))
@@ -181,7 +253,9 @@ export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> e
             startOpen: this.isPanelOpen('start'), endOpen: this.isPanelOpen('end'), bottomOpen: this.isPanelOpen('bottom'),
             startSize: this.panelSize('start'), endSize: this.panelSize('end'), bottomSize: this.panelSize('bottom'),
         }
-        try { localStorage.setItem(key, [Number(state.startOpen), Number(state.endOpen), Number(state.bottomOpen), state.startSize, state.endSize, state.bottomSize].join(':')) } catch { /* Storage is optional. */ }
+        const values = [Number(state.startOpen), Number(state.endOpen), Number(state.bottomOpen), state.startSize, state.endSize, state.bottomSize].join(':')
+        const tabs = this.tabbed() ? ':' + (['start', 'end', 'bottom'] as const).map(panel => encodeURIComponent(this.activeItem(panel)?.id ?? '')).join(':') : ''
+        try { localStorage.setItem(key, values + tabs) } catch { /* Storage is optional. */ }
     }
 
     private restore(): void {
@@ -191,13 +265,21 @@ export abstract class WorkspaceBase<P extends WorkspaceProps = WorkspaceProps> e
         if (!key || typeof localStorage === 'undefined') return
         let value = ''
         try { value = localStorage.getItem(key) ?? '' } catch { return }
-        const parts = value.split(':').map(Number)
-        if (parts.length !== 6 || parts.some(part => !Number.isFinite(part))) return
+        const stored = value.split(':')
+        const parts = stored.slice(0, 6).map(Number)
+        if (![6, 9].includes(stored.length) || parts.some(part => !Number.isFinite(part))) return
         this.startOpen = parts[0] === 1
         this.endOpen = parts[1] === 1
         this.bottomOpen = parts[2] === 1
         this.startSize = this.clampedSize('start', parts[3] ?? this.startSize)
         this.endSize = this.clampedSize('end', parts[4] ?? this.endSize)
         this.bottomSize = this.clampedSize('bottom', parts[5] ?? this.bottomSize)
+        if (stored.length === 9) {
+            try {
+                this.startValue = decodeURIComponent(stored[6] ?? '')
+                this.endValue = decodeURIComponent(stored[7] ?? '')
+                this.bottomValue = decodeURIComponent(stored[8] ?? '')
+            } catch { /* Invalid tab IDs do not invalidate saved sizes. */ }
+        }
     }
 }

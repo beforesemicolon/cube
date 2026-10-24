@@ -1,9 +1,10 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
-import { isNot, or, type Template, html } from '../../core/runtime.js'
+import { isNot, or, repeat, when, type Template, html } from '../../core/runtime.js'
 
 import { finite } from '../../core/value.js';
 
-import { ViewportBase } from './ViewportBase.js';
+import { ViewportBase, type ViewportActionPosition } from './ViewportBase.js';
 
 interface PanState {
     readonly pointerId: number;
@@ -19,22 +20,27 @@ export class Viewport extends ViewportBase {
     private get surface(): HTMLElement | undefined { const node=this.refs.surface?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private pan?: PanState;
     render(): Template {
-        return html`<div part="viewport canvas control" ref="surface" role="region"
+        return html`<div part="viewport canvas" ref="surface" role="region"
             tabindex=${() => this.unavailable ? -1 : 0} aria-label=${this.accessibleName}
             aria-disabled=${() => this.unavailable || null} data-grid=${() => this.gridVisible() ? '' : null}
-            onwheel=${(event: WheelEvent) => {
-                if(this.unavailable) return;
-                event.preventDefault();
-                if(event.ctrlKey || event.metaKey) this.zoomBy((event.deltaY < 0 ? 1 : -1)*Math.abs(finite(this.zoomStep,10)),event,false);
-                else this.panBy(-event.deltaX,-event.deltaY,event,false);
-            }}
+            data-pan-tool=${() => this.panToolActive() ? '' : null}
+            onwheel=${this.onWheel}
             onpointerdown=${this.beginPan}
             onpointermove=${this.movePan}
             onpointerup=${this.endPan}
             onpointercancel=${this.endPan}
             onkeydown=${this.onKeydown}>
             <div part="world" style=${() => { const value=this.viewportState(); return `--cb-zoom:${value.zoom/100};--cb-pan-x:${value.x}px;--cb-pan-y:${value.y}px`; }}><slot part="content"></slot></div>
-            <div part="controls" hidden=${isNot(this.controlsVisible)}>
+            ${when(this.panToolActive, html`<div part="pan-surface" aria-hidden="true"></div>`)}
+            ${repeat(['top-left', 'top-right'] as const, position => html`
+                <div part=${`actions ${position}`} hidden=${() => !this.actionsAt(position).length}
+                    onpointerdown=${this.containEvent} onkeydown=${this.containEvent}>
+                    ${this.actionButtons(position)}
+                </div>`)}
+            <div part="controls" hidden=${() => !this.controlsVisible() && !this.actionsAt('bottom-right').length}
+                onpointerdown=${this.containEvent} onkeydown=${this.containEvent}>
+                ${this.actionButtons('bottom-right')}
+                ${when(this.controlsVisible, html`
                 <cb-button part="zoom-out" exportparts="control:zoom-out-control,label:zoom-out-label,button-label:zoom-out-label,icon:zoom-out-icon,description:zoom-out-description" icon-only icon="minus" variant="ghost" accessible-label=${() => this.text('zoomOutLabel')}
                     disabled=${or(() => this.unavailable, () => this.viewportState().zoom <= this.normalizedZoom(this.minZoom))}
                     onaction=${(event: Event) => { event.stopPropagation(); this.zoomBy(-Math.abs(finite(this.zoomStep,10)),event); }}></cb-button>
@@ -44,17 +50,72 @@ export class Viewport extends ViewportBase {
                 <cb-button part="zoom-in" exportparts="control:zoom-in-control,label:zoom-in-label,button-label:zoom-in-label,icon:zoom-in-icon,description:zoom-in-description" icon-only icon="plus" variant="ghost" accessible-label=${() => this.text('zoomInLabel')}
                     disabled=${or(() => this.unavailable, () => this.viewportState().zoom >= this.normalizedZoom(this.maxZoom))}
                     onaction=${(event: Event) => { event.stopPropagation(); this.zoomBy(Math.abs(finite(this.zoomStep,10)),event); }}></cb-button>
+                `)}
             </div><output part="position" hidden=${isNot(this.positionText)}>${this.positionText}</output>
         </div>`;
+    }
+    private containEvent = (event: Event): void => { event.stopPropagation() }
+    private actionButtons(position: ViewportActionPosition): Template {
+        return html`${repeat(() => this.actionsAt(position), action => html`
+            <cb-button part="action" data-action-id=${action.id}
+                exportparts="control:action-control,icon:action-icon,label:action-label,button-label:action-label"
+                icon=${action.icon} icon-src=${action.iconSrc} icon-only=${Boolean(action.icon || action.iconSrc)} label=${action.label}
+                accessible-label=${action.label} name=${action.name} size="sm" variant="ghost"
+                pressed=${action.pressed} disabled=${or(() => this.unavailable, action.disabled)}
+                onbeforeaction=${this.containEvent}
+                onaction=${(event: CustomEvent<{ originalEvent?: Event }>) => {
+                    event.stopPropagation(); this.activateAction(action.id, event.detail.originalEvent)
+                }}
+                onbeforechange=${(event: CustomEvent<{ originalEvent?: Event }>) => {
+                    event.preventDefault(); event.stopPropagation(); this.activateAction(action.id, event.detail.originalEvent)
+                }}></cb-button>`, { key: action => action.id })}`
     }
     private positionText = (): string => {
         const value=this.viewportState();
         return this.text('positionLabel').replace('{x}',String(Math.round(value.x))).replace('{y}',String(Math.round(value.y)));
     }
+    private onWheel = (event: WheelEvent): void => {
+        const surface = this.surface
+        if (this.unavailable || !surface) return
+        event.preventDefault()
+        if (!event.ctrlKey && !event.metaKey) {
+            this.panBy(-event.deltaX, -event.deltaY, event, false)
+            return
+        }
+        if (!event.deltaY) return
+        const bounds = surface.getBoundingClientRect()
+        const scaleX = bounds.width / surface.offsetWidth || 1
+        const scaleY = bounds.height / surface.offsetHeight || 1
+        this.zoomAround((event.deltaY < 0 ? 1 : -1) * Math.abs(finite(this.zoomStep, 10)),
+            (event.clientX - bounds.left - bounds.width / 2) / scaleX,
+            (event.clientY - bounds.top - bounds.height / 2) / scaleY,
+            event, false)
+    }
+    protected mount(): void {
+        super.mount()
+        this.listen(this, 'center', event => {
+            if (event instanceof CustomEvent) this.centerArtboard(event as CustomEvent<{ readonly originalEvent?: Event }>)
+        })
+    }
+    private centerArtboard = (event: CustomEvent<{ readonly originalEvent?: Event }>): void => {
+        const artboard = event.composedPath()[0]
+        const surface = this.surface
+        if (!(artboard instanceof HTMLElement) || artboard.localName !== 'cb-artboard' || !surface) return
+        const owner = event.composedPath().find(node => node instanceof HTMLElement && node.localName === 'cb-viewport')
+        if (owner !== this) return
+        const bounds = artboard.getBoundingClientRect(), viewport = surface.getBoundingClientRect()
+        const current = this.viewportState(), scale = current.zoom / 100
+        const x = (current.x + viewport.left + viewport.width / 2 - bounds.left - bounds.width / 2) / scale
+        const y = (current.y + viewport.top + viewport.height / 2 - bounds.top - bounds.height / 2) / scale
+        this.setViewport(100, x, y, event.detail.originalEvent)
+    }
     private beginPan = (event: PointerEvent): void => {
         if (!this.surface || !this.canPan() || event.button !== 0)
             return;
-        const interactive = event.composedPath().some(node => node instanceof HTMLElement && (node.matches('button,input,select,textarea,a') || node.localName.startsWith('cb-') && node !== this));
+        // Ancestors outside this surface (workspace, theme providers, etc.)
+        // are not controls within the viewport and must not block dragging.
+        const path = event.composedPath();
+        const interactive = path.slice(0, path.indexOf(this.surface)).some(node => node instanceof HTMLElement && (node.matches('button,input,select,textarea,a') || node.localName.startsWith('cb-')));
         if (interactive)
             return;
         this.pan = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, originX: finite(this.x), originY: finite(this.y), moved: false };
@@ -104,4 +165,6 @@ export class Viewport extends ViewportBase {
     }
 }
 export { ViewportBase };
-export type { ViewportProps } from './ViewportBase.js';
+export type { ViewportProps, ViewportAction, ViewportActionPosition, ViewportActionDetail } from './ViewportBase.js';
+
+register('cb-viewport', Viewport)

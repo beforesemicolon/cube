@@ -1,7 +1,4 @@
-import './core/browser.js'
-import { registerStyling } from './styling/register.js'
-export * from './styling/register.js'
+import createComponents from 'cube:client/styling'
+import { browserRuntime } from './core/browser.js'
 
-registerStyling()
-
-export const ready = Promise.resolve()
+createComponents(browserRuntime())

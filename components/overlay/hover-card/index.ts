@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { html, type Template } from '../../core/runtime.js'
 
@@ -32,3 +33,5 @@ export class HoverCard extends HoverCardBase {
 }
 export { HoverCardBase };
 export type { HoverCardProps } from './HoverCardBase.js';
+
+register('cb-hover-card', HoverCard)

@@ -1,4 +1,4 @@
-@import "../theme/editor.css";
+@import "../theme/field.css";
 :host {
   inline-size: var(--component-studio-inline-size,auto);
   min-inline-size: 0;
@@ -125,6 +125,34 @@ input[type=range][part~=control]:disabled {
   padding: 0;
   accent-color: var(--color-primary);
 }
+[part~=choice-control]:not(.visual-control) {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--cb-field-border);
+  border-radius: 4px;
+  background: var(--cb-field-background);
+  box-shadow: none;
+}
+[part~=choice]:hover [part~=choice-control]:not(.visual-control):not(:disabled):not(:checked):not(:indeterminate) {
+  border-color: var(--cb-field-border-hover);
+}
+[part~=choice-control]:not(.visual-control)::before {
+  content: "";
+  inline-size: 10px;
+  block-size: 10px;
+  background: var(--color-primary-foreground,#fff);
+  clip-path: polygon(12% 45%, 25% 32%, 43% 51%, 77% 15%, 91% 29%, 43% 80%);
+  scale: 0;
+}
+[part~=choice-control]:not(.visual-control):is(:checked,:indeterminate) {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  box-shadow: none;
+}
+[part~=choice-control]:not(.visual-control):is(:checked,:indeterminate)::before { scale: 1; }
+[part~=choice-control]:not(.visual-control):indeterminate::before { clip-path: inset(40% 8%); }
+[part~=choice-control]:not(.visual-control):disabled { opacity: var(--component-disabled-opacity,.5); }
 [part~=list] {
   display: grid;
   gap: 2px;
@@ -441,6 +469,8 @@ cb-button[part~=token]::part(control) {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-xs,4px);
+  min-block-size: var(--cb-height);
+  padding: var(--spacing-xs,4px);
 }
 [part~=status] {
   min-block-size: 1lh;
@@ -505,10 +535,22 @@ cb-button[part~=token]::part(control) {
 [part~=field-shell] {
   display: flex;
   align-items: stretch;
-  min-inline-size: 180px;
+  min-inline-size: 0;
 }
 [part~=field-shell] [part~=control] {
-  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  flex: 1;
+  min-inline-size: 0;
+  inline-size: 0;
+  border-radius: var(--cb-field-radius) 0 0 var(--cb-field-radius);
+}
+[part~=field-shell]:not([part~=stepper]) > input {
+  padding-inline: 6px;
+  appearance: textfield;
+}
+[part~=field-shell]:not([part~=stepper]) > input::-webkit-inner-spin-button,
+[part~=field-shell]:not([part~=stepper]) > input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
 }
 [part~=field-shell][part~=stepper] {
   isolation: isolate;
@@ -537,15 +579,15 @@ cb-button[part~=token]::part(control) {
   min-inline-size: var(--cb-height);
 }
 [part~=field-shell][part~=stepper] [part~=decrement-button] {
-  --component-button-radius-start-start:var(--radius-sm);
+  --component-button-radius-start-start:var(--cb-field-radius);
   --component-button-radius-start-end:0;
   --component-button-radius-end-end:0;
-  --component-button-radius-end-start:var(--radius-sm);
+  --component-button-radius-end-start:var(--cb-field-radius);
 }
 [part~=field-shell][part~=stepper] [part~=increment-button] {
   --component-button-radius-start-start:0;
-  --component-button-radius-start-end:var(--radius-sm);
-  --component-button-radius-end-end:var(--radius-sm);
+  --component-button-radius-start-end:var(--cb-field-radius);
+  --component-button-radius-end-end:var(--cb-field-radius);
   --component-button-radius-end-start:0;
 }
 [part~=field-shell][part~=stepper] > :hover {
@@ -564,18 +606,26 @@ cb-button[part~=token]::part(control) {
   place-items: center;
   min-inline-size: 42px;
   padding-inline: 8px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--cb-field-border);
   border-inline-start: 0;
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  background: var(--color-surface-muted);
+  border-radius: 0 var(--cb-field-radius) var(--cb-field-radius) 0;
+  background: var(--cb-field-background);
+  box-shadow: none;
   color: var(--color-muted-foreground);
 }
 [part~=unit-select] {
   --component-select-width:auto;
   display: block;
-  inline-size: auto;
-  min-inline-size: 58px;
+  inline-size: max-content;
+  min-inline-size: calc(3ch + 13px);
   flex: none;
+}
+[part~=unit-static] {
+  min-inline-size: calc(3ch + 13px);
+  padding-inline: 6px;
+}
+[part~=unit-select]::part(indicator) {
+  display: none;
 }
 [part~=unit-select]::part(root) {
   display: block;
@@ -587,24 +637,43 @@ cb-button[part~=token]::part(control) {
 [part~=unit-select]::part(trigger) {
   block-size: 100%;
   min-block-size: var(--cb-height);
-  padding-inline: 8px;
+  padding-inline: 0;
   border-inline-start: 0;
   border-start-start-radius: 0;
   border-end-start-radius: 0;
-  background: var(--color-surface-muted);
+  background: var(--cb-field-background);
   color: var(--color-muted-foreground);
+}
+[part~=unit-select]::part(trigger-control) {
+  padding-inline: 6px;
+}
+[part~=unit-select]::part(trigger-label) {
+  justify-content: center;
 }
 [part~=unit-select]::part(popup) {
   inline-size: max-content;
   min-inline-size: 88px;
 }
+/* Narrow inspector cells still need room for the numeric value. Long unit
+   labels retain their intrinsic width; only the short suffix padding shrinks. */
+@container (max-width:80px) {
+  [part~=field-shell]:not([part~=stepper]) > input {
+    padding-inline: 2px;
+  }
+  [part~=unit-select], [part~=unit-static] {
+    min-inline-size: calc(2ch + 4px);
+  }
+  [part~=unit-static], [part~=unit-select]::part(trigger-control) {
+    padding-inline: 2px;
+  }
+}
 [part~=field-affix][data-side=start] {
-  border-inline: 1px solid var(--color-border);
+  border-inline: 1px solid var(--cb-field-border);
   border-inline-end: 0;
-  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  border-radius: var(--cb-field-radius) 0 0 var(--cb-field-radius);
 }
 [part~=field-shell][data-prefix] [part~=control] {
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-radius: 0 var(--cb-field-radius) var(--cb-field-radius) 0;
 }
 [part~=suggestions] {
   margin-block-start: 4px;

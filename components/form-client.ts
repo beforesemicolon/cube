@@ -1,7 +1,6 @@
-import './core/browser.js'
-import { registerForm } from './form/register.js'
-export * from './form/register.js'
+import createComponents from 'cube:client/form'
+import { browserRuntime } from './core/browser.js'
 
-registerForm()
-
-export const ready = Promise.resolve()
+const { normalizeRange, normalizeOptions } = createComponents(browserRuntime())
+const browser = globalThis as typeof globalThis & { BFS: { CUBE?: object } }
+browser.BFS.CUBE = { normalizeRange, normalizeOptions, ...browser.BFS.CUBE }

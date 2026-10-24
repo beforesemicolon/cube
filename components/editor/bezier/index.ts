@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, type Template, html, repeat } from '../../core/runtime.js'
 
@@ -110,3 +111,5 @@ export class Bezier extends BezierBase {
 }
 export { BezierBase };
 export type { BezierProps, BezierValue } from './BezierBase.js';
+
+register('cb-bezier', Bezier)

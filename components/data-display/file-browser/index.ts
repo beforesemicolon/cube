@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, pick, is, or, type Template, html, repeat, when } from '../../core/runtime.js'
 
@@ -73,3 +74,5 @@ export class FileBrowser extends FileBrowserBase {
 }
 export { FileBrowserBase };
 export type { FileBrowserProps, FileBrowserEntry, FileBrowserPathItem, FileBrowserView, FileBrowserSelectionMode, FileBrowserSort, FileBrowserSortDirection } from './FileBrowserBase.js';
+
+register('cb-file-browser', FileBrowser)

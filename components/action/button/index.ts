@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './view.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { ButtonBase } from './ButtonBase.js';
@@ -25,3 +26,5 @@ export class Button extends ButtonBase {
 }
 export { ButtonBase };
 export type { ButtonProps, ButtonVariant } from './ButtonBase.js';
+
+register('cb-button', Button)

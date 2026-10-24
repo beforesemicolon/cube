@@ -39,6 +39,9 @@ test.beforeEach(async ({ page }) => {
 
 test('combines linear and radial geometry with interactive color stops', async ({ page }) => {
     const editor = page.locator('cb-gradient-editor')
+    await expect(editor.locator('cb-unit-input[part~=angle]')).toHaveAttribute('unit', 'deg')
+    await editor.getByRole('spinbutton', { name: 'Angle', exact: true }).fill('45')
+    await expect.poll(() => editor.evaluate(element => (element as GradientEditorElement).value)).toContain('45deg')
     await expect(editor.locator('[part~="preview-shell"]')).toHaveCount(0)
     await expect(editor.getByRole('slider')).toHaveCount(3)
     await expect(editor.locator('output[part~="value"]')).toHaveCount(0)

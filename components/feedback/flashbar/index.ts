@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { is, and, type Template, html, repeat, state, when } from '../../core/runtime.js'
 
@@ -37,3 +38,5 @@ export { FlashbarBase };
 export type { FlashbarProps, FlashbarMessage, NormalizedFlashbarMessage, FlashbarType, NormalizedFlashbarType, FlashbarPosition, FlashbarActionContext, FlashbarActionHandler } from './FlashbarBase.js';
 export { showFlashbar, createFlashbar, updateFlashbar, hideFlashbar, clearFlashbars, configureFlashbarHost, getFlashbarHost } from './service.js';
 export type { FlashbarHandle, FlashbarHostOptions } from './service.js';
+
+register('cb-flashbar', Flashbar)

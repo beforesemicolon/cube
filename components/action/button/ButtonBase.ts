@@ -7,17 +7,19 @@ export interface ActionAccessibilityProps {
 }
 export type ButtonVariant = 'primary'|'secondary'|'outline'|'ghost'|'destructive'
 export interface ButtonProps extends FormControlProps<string>, ActionAccessibilityProps {
-    variant?: ButtonVariant; loading?:boolean; icon?:string; iconOnly?:boolean; pressed?:boolean
+    variant?: ButtonVariant; loading?:boolean; icon?:string; iconSrc?:string; iconOnly?:boolean; pressed?:boolean
     type?:'button'|'submit'|'reset'
+    indicator?:boolean; indicatorLabel?:string
 }
 export abstract class ButtonBase<P extends ButtonProps = ButtonProps> extends FormControlBase<P> {
     static observedAttributes=[
         ...FormControlBase.observedAttributes,
-        'variant','loading','icon','icon-only','pressed','type',
+        'variant','loading','icon','icon-src','icon-only','pressed','type','indicator','indicator-label',
         'role','aria-haspopup','aria-expanded','aria-controls','aria-selected','aria-current','aria-checked',
         'aria-valuemin','aria-valuemax','aria-valuenow','aria-valuetext','aria-description','aria-keyshortcuts',
     ]
-    variant:ButtonProps['variant']='secondary';loading=false;icon='';iconOnly=false;pressed:boolean|undefined=undefined;type:ButtonProps['type']='button';value=''
+    variant:ButtonProps['variant']='secondary';loading=false;icon='';iconSrc='';iconOnly=false;pressed:boolean|undefined=undefined;type:ButtonProps['type']='button';value=''
+    indicator=false;indicatorLabel='Modified'
     protected abstract actionElement(): HTMLButtonElement | HTMLAnchorElement | undefined
     protected fieldElement(): HTMLButtonElement | undefined { const control=this.actionElement();return control instanceof HTMLButtonElement?control:undefined }
     protected captureValue(): string { return scalarText(this.value) }

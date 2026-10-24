@@ -1,4 +1,4 @@
-@import "../../theme/editor.css";
+@import "../../theme/field.css";
 :host {
   display: inline-block;
   inline-size: var(--component-date-picker-width,240px);

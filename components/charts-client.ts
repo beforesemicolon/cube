@@ -1,7 +1,6 @@
-import './core/browser.js'
-import { registerCharts } from './charts/register.js'
-export * from './charts/register.js'
+import createComponents from 'cube:client/charts'
+import { browserRuntime } from './core/browser.js'
 
-registerCharts()
-
-export const ready = Promise.resolve()
+const { configureChartEngine, chartEngine, cartesianModel, pieModel } = createComponents(browserRuntime())
+const browser = globalThis as typeof globalThis & { BFS: { CUBE?: object } }
+browser.BFS.CUBE = { configureChartEngine, chartEngine, cartesianModel, pieModel, ...browser.BFS.CUBE }

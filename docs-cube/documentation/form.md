@@ -42,11 +42,16 @@ order: 22
 | Editable list | `<cb-editable-list>` | `@beforesemicolon/cube/form` |
 | Code editor | `<cb-code-editor>` | `@beforesemicolon/cube/form` |
 | JSON editor | `<cb-json-editor>` | `@beforesemicolon/cube/form` |
+| Rich text editor | `<cb-rich-text-editor>` | `@beforesemicolon/cube/form` |
 | Linked values | `<cb-linked-values>` | `@beforesemicolon/cube/form` |
 
 {{t.cube.unitInputBody}}
 
 {{t.cube.selectBody}}
+
+`cb-combobox` accepts `multi` and an array `value` for multiple selection. Options become removable chips, the dropdown stays open after selection, and typing filters options without altering the selected values. Supply `remove-label="Remove {label}"` (translated by the application) for the × actions. Commas are ordinary characters, not selection separators. Each add/remove emits `change` with both `value` and `previousValue`; forms receive repeated entries under `name`.
+
+When filtering leaves one enabled option, it is highlighted and Enter or Space accepts it while the input retains focus. Set `allow-custom` (`allowCustom` in JavaScript) to accept unmatched text with Enter. It defaults to false; custom values are trimmed, deduplicated, and submitted like other selections without modifying `options`. Space remains ordinary text when no lone option is highlighted.
 
 {{t.cube.formCompositionBody}}
 

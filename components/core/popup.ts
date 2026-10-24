@@ -27,6 +27,18 @@ function cssLength(value: PopupLength | null | undefined, fallback: string, prop
     return typeof CSS === 'undefined' || CSS.supports(property, `min(${normalized}, 1px)`) ? normalized : fallback
 }
 
+function containsFocus(container: HTMLElement, doc: Document): boolean {
+    let focused = doc.activeElement
+    while (focused?.shadowRoot?.activeElement) focused = focused.shadowRoot.activeElement
+    let node: Node | null = focused
+    while (node) {
+        if (node === container) return true
+        node = node instanceof Element && node.assignedSlot ? node.assignedSlot
+            : node.parentNode ?? (node instanceof ShadowRoot ? node.host : null)
+    }
+    return false
+}
+
 /** Top-layer positioning, viewport constraints and light-dismiss. No document listeners survive close/dispose. */
 export class PopupController {
     private cleanup: Array<() => void> = []
@@ -103,6 +115,11 @@ export class PopupController {
             const path = event.composedPath()
             if (!path.includes(this.popup) && !path.includes(this.anchor)) this.onDismiss(event)
         }, true)
+        // Pointer events inside another browsing context never reach this document.
+        // Its focus transfer still blurs the window, even for cross-origin frames.
+        listen(view, 'blur', event => {
+            if (!containsFocus(this.popup, doc) && !containsFocus(this.anchor, doc)) this.onDismiss(event)
+        })
         listen(doc, 'keydown', event => {
             const keyboardEvent = event as KeyboardEvent
             if (keyboardEvent.key === 'Escape') {

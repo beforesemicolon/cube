@@ -1,7 +1,7 @@
 import { WebComponent } from './runtime.js'
 import { bool, scalarText } from './value.js'
 
-export type ControlSize = 'xs' | 'sm' | 'md' | 'lg'
+export type ControlSize = 'tiny' | 'xs' | 'sm' | 'md' | 'lg'
 export interface CommonProps {
     label?: string
     accessibleLabel?: string
@@ -33,7 +33,7 @@ export abstract class Component<P extends CommonProps = CommonProps> extends Web
             try { this.toggleAttribute('disabled', bool(this.disabled)) }
             finally { this.reflectingNativeState = false }
         }
-        this.dataset.size = ['xs', 'sm', 'md', 'lg'].includes(this.size) ? this.size : 'sm'
+        this.dataset.size = ['tiny', 'xs', 'sm', 'md', 'lg'].includes(this.size) ? this.size : 'sm'
         this.toggleAttribute('data-disabled', this.unavailable)
     }
     protected cleanup(fn: () => void): void { this.disposers.push(fn) }

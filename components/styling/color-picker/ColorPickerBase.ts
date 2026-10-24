@@ -25,6 +25,7 @@ export interface ColorPickerProps extends FieldControlProps, PopupConstraintProp
     closeLabel?: string
     swatchesLabel?: string
     addSwatchLabel?: string
+    updateSwatchLabel?: string
     removeSwatchLabel?: string
     transparentLabel?: string
 }
@@ -42,6 +43,7 @@ export interface ColorPickerSwatchDetail {
     readonly recentColors: readonly string[]
     readonly originalEvent?: Event
 }
+export interface ColorPickerSwatchUpdateDetail extends ColorPickerSwatchDetail { readonly previousValue: string }
 
 /** Renderer-independent color state, form behavior and cancelable interactions. */
 export abstract class ColorPickerBase extends FieldControlBase<ColorPickerProps> {
@@ -49,7 +51,7 @@ export abstract class ColorPickerBase extends FieldControlBase<ColorPickerProps>
         ...FieldControlBase.observedAttributes, 'value', 'native', 'open', 'allow-alpha', 'allow-sampler', 'swatches',
         'recent-colors', 'max-recent', 'hue-label', 'saturation-label', 'value-label', 'alpha-label', 'red-label',
         'green-label', 'blue-label', 'hex-label', 'plane-label', 'sampler-label', 'close-label', 'swatches-label',
-        'add-swatch-label', 'remove-swatch-label', 'transparent-label',
+        'add-swatch-label', 'update-swatch-label', 'remove-swatch-label', 'transparent-label',
         ...popupConstraintAttributes,
     ]
 
@@ -74,6 +76,7 @@ export abstract class ColorPickerBase extends FieldControlBase<ColorPickerProps>
     closeLabel = ''
     swatchesLabel = ''
     addSwatchLabel = ''
+    updateSwatchLabel = ''
     removeSwatchLabel = ''
     transparentLabel = ''
     popupMaxWidth: PopupLength = '344px'
@@ -138,6 +141,25 @@ export abstract class ColorPickerBase extends FieldControlBase<ColorPickerProps>
         return true
     }
 
+    updateSwatch(previousValue: string, value = this.normalizedValue(), originalEvent?: Event): boolean {
+        if (this.unavailable || bool(this.readOnly)) return false
+        const previous = parseHexColor(previousValue), next = parseHexColor(value)
+        if (!previous || !next) return false
+        const previousColor = colorToHex(previous), normalized = colorToHex(next)
+        const current = this.normalizedColors(this.swatches)
+        if (!current.includes(previousColor) || previousColor === normalized) return false
+        const detail: ColorPickerSwatchUpdateDetail = {
+            previousValue: previousColor, value: normalized,
+            swatches: this.normalizedColors(current.map(color => color === previousColor ? normalized : color)),
+            recentColors: this.normalizedColors(this.recentColors), originalEvent,
+        }
+        if (!this.request('beforeswatchupdate', detail)) return false
+        this.swatches = detail.swatches
+        this.syncView()
+        this.emit('swatchupdate', detail)
+        return true
+    }
+
     removeSwatch(value: string, originalEvent?: Event): boolean {
         if (this.unavailable || bool(this.readOnly)) return false
         const color = parseHexColor(value)
@@ -157,9 +179,10 @@ export abstract class ColorPickerBase extends FieldControlBase<ColorPickerProps>
         return true
     }
 
+    protected savedSwatches = (): readonly string[] => this.normalizedColors(this.props.swatches?.() || [])
     palette(): readonly string[] {
-        const limit = Math.max(0, Math.round(finite(this.maxRecent, 8)))
-        return this.normalizedColors([...this.swatches, ...this.recentColors.slice(0, limit)])
+        const limit = Math.max(0, Math.round(finite(this.props.maxRecent?.(), 8)))
+        return this.normalizedColors([...this.savedSwatches(), ...(this.props.recentColors?.() || []).slice(0, limit)])
     }
 
     private normalizedColors(source: readonly string[]): string[] {

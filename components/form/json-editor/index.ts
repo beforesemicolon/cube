@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { or, isNot, is, html, type Template } from '../../core/runtime.js'
 
@@ -41,3 +42,5 @@ export class JsonEditor extends JsonEditorBase {
 }
 export { JsonEditorBase }
 export type { JsonEditorProps, JsonPrimitive, JsonValue, JsonValidator } from './JsonEditorBase.js'
+
+register('cb-json-editor', JsonEditor)

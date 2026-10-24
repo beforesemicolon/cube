@@ -1,8 +1,13 @@
 import { ChoiceGroupBase, type ChoiceGroupProps } from '../ChoiceGroupBase.js'
 import type { ActionItem } from '../../core/items.js'
 import { scalarText } from '../../core/value.js'
+import type { Template } from '../../core/runtime.js'
 
-export interface TabItem extends ActionItem { closable?: boolean; dirty?: boolean }
+export interface TabItem extends ActionItem {
+    closable?: boolean
+    dirty?: boolean
+    renderItem?: () => Template | Node
+}
 export interface TabsProps extends Omit<ChoiceGroupProps, 'items'> { items?: TabItem[]; activation?: 'automatic' | 'manual'; closeLabel?: string }
 
 /** Headless tab selection and activation policy. */

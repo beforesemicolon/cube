@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './view.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { MenuBase } from './MenuBase.js';
@@ -16,3 +17,5 @@ export class Menu extends MenuBase {
 export { MenuBase };
 export type { MenuProps } from './MenuBase.js';
 export type { ActionItem } from '../../core/items.js';
+
+register('cb-menu', Menu)

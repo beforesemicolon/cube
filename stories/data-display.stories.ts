@@ -186,7 +186,10 @@ export const LayerTree: Story = componentStory('cb-layer-tree', {
         { id: 'page', label: 'Homepage', icon: 'layers', children: [
             { id: 'navigation', label: 'Navigation', icon: 'component', locked: true },
             { id: 'hero', label: 'Hero section', icon: 'layers', children: [
-                { id: 'hero-heading', label: 'Make better products.', description: 'Heading', icon: 'text' },
+                { id: 'hero-heading', label: 'Make better products.', description: 'Heading', icon: 'text', actions: [
+                    { id: 'duplicate', name: 'duplicate', icon: 'copy', label: 'Duplicate heading' },
+                    { id: 'inspect', name: 'inspect', label: 'Inspect heading' },
+                ] },
                 { id: 'hero-image', label: 'Product preview', description: 'Image', icon: 'image' },
             ] },
             { id: 'features', label: 'Feature grid', icon: 'grid', hidden: true },

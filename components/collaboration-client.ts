@@ -1,7 +1,4 @@
-import './core/browser.js'
-import { registerCollaboration } from './collaboration/register.js'
-export * from './collaboration/register.js'
+import createComponents from 'cube:client/collaboration'
+import { browserRuntime } from './core/browser.js'
 
-registerCollaboration()
-
-export const ready = Promise.resolve()
+createComponents(browserRuntime())

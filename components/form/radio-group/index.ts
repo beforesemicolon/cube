@@ -1,3 +1,4 @@
+import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, is, or, html, repeat, type Template } from '../../core/runtime.js'
 
@@ -41,3 +42,5 @@ export class RadioGroup extends RadioGroupBase {
 }
 export { RadioGroupBase };
 export type { RadioGroupProps } from './RadioGroupBase.js';
+
+register('cb-radio-group', RadioGroup)

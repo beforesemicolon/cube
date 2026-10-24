@@ -1,4 +1,4 @@
-@import "../../theme/editor.css";
+@import "../../theme/field.css";
 @import "./syntax.css";
 :host {
   display: block;
@@ -8,8 +8,8 @@
 }
 [part~=shell] {
   overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--cb-field-border);
+  border-radius: var(--cb-field-radius);
   background: var(--color-surface);
 }
 [part~=toolbar] {
@@ -48,6 +48,12 @@
   position: relative;
   min-inline-size: 0;
   overflow: hidden;
+}
+[part~=shell] [part~=control]:is(:hover,:focus) {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 [part~=highlight],
 [part~=control] {
