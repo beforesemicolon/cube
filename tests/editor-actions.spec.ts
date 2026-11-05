@@ -14,12 +14,18 @@ test('application actions preserve IDs and metadata without mutating data; inval
     assert.equal(actions.length, 4)
 })
 
-test('selection controls prefer above, flip below and clamp all edges for offscreen selections', () => {
-    const bounds = { x: 8, y: 8, width: 384, height: 284 }, size = { width: 120, height: 32 }
-    assert.deepEqual(positionControls({ x: 100, y: 100, width: 100, height: 100 }, size, bounds), { x: 90, y: 60, placement: 'above' })
-    assert.deepEqual(positionControls({ x: 0, y: 10, width: 50, height: 100 }, size, bounds), { x: 8, y: 118, placement: 'below' })
-    assert.deepEqual(positionControls({ x: 400, y: 400, width: 100, height: 100 }, size, bounds), { x: 272, y: 260, placement: 'above' })
-    assert.deepEqual(positionControls({ x: -400, y: -400, width: 100, height: 100 }, size, bounds), { x: 8, y: 8, placement: 'below' })
+test('selection controls stay attached above their object, including outside viewport edges', () => {
+    const size = { width: 120, height: 32 }
+    assert.deepEqual(positionControls({ x: 100, y: 100, width: 100, height: 100 }, size), { x: 90, y: 60, placement: 'above' })
+    assert.deepEqual(positionControls({ x: 0, y: 10, width: 50, height: 100 }, size), { x: -35, y: -30, placement: 'above' })
+    assert.deepEqual(positionControls({ x: 400, y: 400, width: 100, height: 100 }, size), { x: 390, y: 360, placement: 'above' })
+    assert.deepEqual(positionControls({ x: -400, y: -400, width: 100, height: 100 }, size), { x: -410, y: -440, placement: 'above' })
+    assert.deepEqual(positionControls({ x: 100, y: 100, width: 100, height: 100 }, size, 32), { x: 90, y: 36, placement: 'above' })
+    const boundary = { x: 8, y: 8, width: 384, height: 284 }
+    assert.deepEqual(positionControls({ x: 0, y: 10, width: 50, height: 100 }, size, 8, boundary), { x: 8, y: 118, placement: 'below' })
+    assert.deepEqual(positionControls({ x: 0, y: 10, width: 50, height: 100 }, size, 8, boundary, true), { x: 8, y: 8, placement: 'above' })
+    assert.deepEqual(positionControls({ x: 100, y: 100, width: 400, height: 100 }, size, 8, undefined, false, 'end'), { x: 380, y: 60, placement: 'above' })
+    assert.deepEqual(positionControls({ x: 100, y: 100, width: 400, height: 100 }, size, 8, undefined, false, 'start'), { x: 100, y: 60, placement: 'above' })
 })
 
 test('action indicators retain their accessible label without changing ordinary actions', () => {

@@ -7,6 +7,8 @@
 [part~=frame] {
   --artboard-selection-color: var(--color-primary, #2563EB);
   --artboard-selection-line-width: 3px;
+  /* Keep the border easy to target when the containing viewport is zoomed out. */
+  --artboard-edge-hit-size: max(var(--artboard-selection-line-width), calc(6px / var(--cb-zoom, 1)));
   position: relative;
   display: block;
   min-block-size: 0;
@@ -19,6 +21,10 @@
 [part~=frame][data-selected] {
   border-color: var(--artboard-selection-color);
   box-shadow: 0 0 0 calc(var(--artboard-selection-line-width) - 1px) var(--artboard-selection-color), 0 10px 32px color-mix(in srgb, var(--color-foreground, #20262B) 18%, transparent);
+}
+[part~=frame][data-viewport-sizing] { box-sizing: content-box; }
+[part~=frame][tabindex='0'] {
+  cursor: pointer;
 }
 [part~=content] {
   display: flow-root;
@@ -34,8 +40,33 @@
   overflow: clip;
   border-radius: inherit;
 }
-[part~=name] {
+[part~=content-viewport][data-device] { overflow: auto; }
+[part~=preview-controls] {
+  position: fixed;
+  z-index: 30;
+  inset: auto;
+  margin: 0;
+  overflow: visible;
+  inline-size: max-content;
+  max-inline-size: min(420px, calc(100vw - 32px));
+  padding: var(--spacing-xs, 4px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-foreground) 15%, transparent);
+}
+[part~=preview-controls][hidden] { display: none; }
+[part~=preview-row] { display: flex; gap: var(--spacing-xs, 4px); align-items: center; }
+[part~=preview-row] + [part~=preview-row] { margin-block-start: var(--spacing-xs, 4px); }
+[part~=preview-row] > cb-select { flex: 1; min-inline-size: 0; inline-size: clamp(100px, 26vw, 240px); }
+[part~=preview-row] > cb-segmented-control { flex: none; }
+[part~=header] {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  inline-size: 100%;
   position: absolute;
+  z-index: 20;
   inset-inline-start: 0;
   inset-block-end: calc(100% + 4px);
   max-inline-size: 100%;
@@ -65,20 +96,25 @@
 [part~=selection-edge] {
   position: absolute;
   z-index: 19;
-  --edge-outset: calc(0px - var(--artboard-selection-line-width));
+  --edge-outset: calc(-1px - var(--artboard-edge-hit-size));
 }
 [part~=selection-edge-n], [part~=selection-edge-s] {
   inset-inline: var(--edge-outset);
-  block-size: var(--artboard-selection-line-width);
+  block-size: calc(1px + var(--artboard-edge-hit-size));
 }
 [part~=selection-edge-e], [part~=selection-edge-w] {
   inset-block: var(--edge-outset);
-  inline-size: var(--artboard-selection-line-width);
+  inline-size: calc(1px + var(--artboard-edge-hit-size));
 }
 [part~=selection-edge-n] { inset-block-start: var(--edge-outset); }
 [part~=selection-edge-s] { inset-block-end: var(--edge-outset); }
 [part~=selection-edge-e] { inset-inline-end: var(--edge-outset); }
 [part~=selection-edge-w] { inset-inline-start: var(--edge-outset); }
+/* The existing border hit area is also the pointer resize target. Keep
+   keyboard handles small and visible only on hover/focus as before. */
+[part~=selection-edge][data-resizable] { touch-action: none; user-select: none; }
+[part~=selection-edge-n][data-resizable], [part~=selection-edge-s][data-resizable] { cursor: ns-resize; }
+[part~=selection-edge-e][data-resizable], [part~=selection-edge-w][data-resizable] { cursor: ew-resize; }
 [part~=guide-layer] {
   position: absolute;
   inset-block-start: -1px;
@@ -163,3 +199,12 @@
 :host([data-disabled]) [part~=frame] {
   opacity: var(--component-disabled-opacity,.5);
 }
+
+[part~=header] > [part~=name] { min-inline-size: 0; flex: 0 1 auto; }
+[part~=name-select] { font: inherit; color: inherit; }
+[part~=name-description] { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .85em; }
+[part~=header-actions] { margin-inline-start: auto; flex: none; }
+
+/* Empty header space must not mask the frame's six-pixel edge hit targets. */
+[part~=header] { pointer-events: none; }
+[part~=header] > [part~=name], [part~=header-actions] { pointer-events: auto; }

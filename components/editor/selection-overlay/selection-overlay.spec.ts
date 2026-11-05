@@ -12,6 +12,17 @@ componentContract('cb-selection-overlay', 'editor--selection-overlay', async ({ 
         ;(node as SelectionOverlay).actions = [{ id: 'inspect', label: 'Inspect selection' }]
         node.addEventListener('action', event => { node.dataset.lastAction = (event as CustomEvent<{ action: { id: string } }>).detail.action.id })
     })
+    const toolbar = host.locator('cb-toolbar[part~=controls]')
+    await host.evaluate(node => { (node as SelectionOverlay).rect = { x: 200, y: 180, width: 500, height: 120 } })
+    for (const align of ['start', 'center', 'end'] as const) {
+        await host.evaluate((node, align) => { (node as SelectionOverlay).actionsAlign = align }, align)
+        await expect.poll(async () => {
+            const selection = await host.boundingBox(), actions = await toolbar.boundingBox()
+            if (!selection || !actions) return Infinity
+            const expected = selection.x + (selection.width - actions.width) * (align === 'start' ? 0 : align === 'end' ? 1 : .5)
+            return Math.abs(actions.x - expected)
+        }).toBeLessThan(1)
+    }
     await host.getByRole('button', { name: 'Inspect selection', exact: true }).click()
     await expect(host).toHaveAttribute('data-last-action', 'inspect')
     await host.evaluate(node => { Object.assign(node, { movable: false } satisfies Partial<SelectionOverlay>) })

@@ -2,6 +2,8 @@ import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 import { state } from '../../core/runtime.js'
 import { equalGuides, normalizeGuides, type ArtboardGuide, type ArtboardGuideOperation } from './guides.js'
+import type { ArtboardPreviewMode, ArtboardPreviewPreset, ArtboardPreviewLabels, ArtboardPreviewValue, ArtboardPreviewDetail } from './preview.js'
+export type { ArtboardPreviewMode, ArtboardPreviewPreset, ArtboardPreviewLabels, ArtboardPreviewValue, ArtboardPreviewDetail } from './preview.js'
 
 export type { ArtboardGuide, ArtboardGuideOperation } from './guides.js'
 export interface ArtboardGuidesDetail {
@@ -14,6 +16,15 @@ export interface ArtboardGuidesDetail {
 export interface ArtboardGuideEndDetail extends ArtboardGuidesDetail { readonly cancelled: boolean }
 
 export interface ArtboardProps extends ComponentProps {
+    /** Dimensions describe the content viewport instead of including the editor border. */
+    viewportSizing?: boolean
+    showPreviewControls?: boolean
+    previewMode?: ArtboardPreviewMode
+    previewPresetId?: string
+    previewPresets?: readonly ArtboardPreviewPreset[]
+    previewLabels?: ArtboardPreviewLabels
+    previewLinked?: boolean
+    previewDefaultSize?: ArtboardSize
     width?: number
     height?: number
     background?: string
@@ -22,6 +33,10 @@ export interface ArtboardProps extends ComponentProps {
     showDimensions?: boolean
     dimensionsLabel?: string
     name?: string
+    /** Leading icon in a noneditable selectable header. */
+    nameIcon?: string
+    /** Secondary header text, such as a page route. */
+    nameDescription?: string
     editable?: boolean
     nameLabel?: string
     namePlaceholder?: string
@@ -52,12 +67,35 @@ export interface ArtboardResizeDetail { readonly value: ArtboardSize; readonly p
 export abstract class ArtboardBase extends Component<ArtboardProps> {
     static observedAttributes = [
         ...Component.observedAttributes, 'width', 'height', 'background', 'selected', 'selectable', 'show-dimensions', 'dimensions-label',
-        'name', 'editable', 'name-label', 'name-placeholder', 'save-label', 'cancel-label', 'resizable',
+        'show-preview-controls', 'preview-mode', 'preview-preset-id', 'preview-presets', 'preview-labels', 'preview-linked', 'preview-default-size', 'viewport-sizing',
+        'name', 'name-icon', 'name-description', 'editable', 'name-label', 'name-placeholder', 'save-label', 'cancel-label', 'resizable',
         'min-width', 'min-height', 'resize-step', 'resize-label', 'handle-labels',
         'guides-enabled', 'show-guides', 'guides', 'horizontal-guide-label', 'vertical-guide-label', 'guide-label', 'guide-distance-label',
     ]
 
     width: number | undefined = undefined
+    showPreviewControls = false
+    viewportSizing = false
+    previewMode: ArtboardPreviewMode = 'width'
+    previewPresetId = 'default'
+    previewPresets: readonly ArtboardPreviewPreset[] = []
+    previewLabels: ArtboardPreviewLabels = {}
+    previewLinked = false
+    previewDefaultSize: ArtboardSize | null = null
+    protected previewValue = (): ArtboardPreviewValue => ({ mode: this.previewMode === 'device' ? 'device' : 'width',
+        presetId: scalarText(this.previewPresetId, 'custom'), width: this.artboardWidth(), height: this.artboardHeight(), linked: bool(this.previewLinked) })
+    setPreview(value: ArtboardPreviewValue, originalEvent?: Event): boolean {
+        if (this.unavailable || !['width', 'device'].includes(value.mode) || !Number.isFinite(value.width) || !Number.isFinite(value.height) || value.width < 1 || value.height < 1) return false
+        const previousValue = this.previewValue()
+        const next = { ...value, width: Math.max(finite(this.minWidth, 1), value.width), height: Math.max(finite(this.minHeight, 1), value.height) }
+        if (JSON.stringify(next) === JSON.stringify(previousValue)) return false
+        const detail: ArtboardPreviewDetail = { value: next, previousValue, originalEvent }
+        if (!this.request('beforepreviewchange', detail)) return false
+        this.previewMode = next.mode; this.previewPresetId = next.presetId; this.previewLinked = next.linked
+        this.width = next.width; this.height = next.height
+        this.emit('previewchange', detail)
+        return true
+    }
     height: number | undefined = undefined
     background = ''
     selected = false
@@ -65,6 +103,8 @@ export abstract class ArtboardBase extends Component<ArtboardProps> {
     showDimensions = true
     dimensionsLabel = ''
     name = ''
+    nameIcon = ''
+    nameDescription = ''
     editable = true
     nameLabel = ''
     namePlaceholder = ''
@@ -83,7 +123,7 @@ export abstract class ArtboardBase extends Component<ArtboardProps> {
     verticalGuideLabel = ''
     guideLabel = ''
     guideDistanceLabel = '{start}px · {end}px'
-    protected readonly contentSize = state<ArtboardSize>({ width: 0, height: 0 })
+    protected readonly contentSize: ReturnType<typeof state<ArtboardSize>> = state<ArtboardSize>({ width: 0, height: 0 })
     protected normalizedGuides = (): readonly ArtboardGuide[] => normalizeGuides(this.guides)
     protected guidesVisible = (): boolean => bool(this.guidesEnabled) && bool(this.showGuides, true)
     protected canEditGuides = (): boolean => this.guidesVisible() && !this.unavailable
@@ -106,7 +146,7 @@ export abstract class ArtboardBase extends Component<ArtboardProps> {
     protected nameAccessibleName = (): string => scalarText(this.nameLabel) || this.accessibleName()
     protected nameActionLabel = (): string => [this.nameAccessibleName(), scalarText(this.name) || scalarText(this.namePlaceholder)].filter(Boolean).join(': ')
     protected canSelect(): boolean { return !this.unavailable && bool(this.selectable, true) }
-    protected handlesVisible = (): boolean => !this.unavailable && bool(this.selected) && bool(this.resizable, true)
+    protected handlesVisible = (): boolean => !this.unavailable && this.previewMode !== 'device' && bool(this.selected) && bool(this.resizable, true)
     protected dimensionsText = (): string => {
         return scalarText(this.dimensionsLabel).replace('{width}', String(Math.round(this.artboardWidth()))).replace('{height}', String(Math.round(this.artboardHeight())))
     }
@@ -141,7 +181,7 @@ export abstract class ArtboardBase extends Component<ArtboardProps> {
     })
 
     resize = (width: number, height: number, originalEvent?: Event): boolean => {
-        if (this.unavailable || !bool(this.resizable, true)) return false
+        if (this.unavailable || this.previewMode === 'device' || !bool(this.resizable, true)) return false
         const value: ArtboardSize = {
             width: Math.max(1, finite(this.minWidth, 1), finite(width, this.artboardWidth())),
             height: Math.max(1, finite(this.minHeight, 1), finite(height, this.artboardHeight())),

@@ -48,7 +48,8 @@
   touch-action: none;
 }
 [part~=controls],
-[part~=actions] {
+[part~=actions],
+[part~=top-center] {
   position: absolute;
   z-index: 2;
   inset-inline-end: var(--spacing-sm,8px);
@@ -111,3 +112,15 @@
     display: none;
   }
 }
+
+/* Consumer toolbar content stays in viewport coordinates, above the pan surface. */
+[part~=top-center] {
+  inset-block-start: var(--spacing-sm,8px);
+  inset-block-end: auto;
+  inset-inline-start: 50%;
+  inset-inline-end: auto;
+  transform: translateX(-50%);
+  flex-wrap: nowrap;
+  max-inline-size: max(100px, calc(100% - 224px));
+}
+[part~=top-center][hidden] { display: none; }

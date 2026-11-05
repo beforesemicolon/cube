@@ -3,6 +3,7 @@ import { bool, finite, scalarText } from '../../core/value.js'
 import { normalizeActions, type ComponentAction } from '../../core/actions.js'
 
 export type SelectionAction = ComponentAction
+export type SelectionActionsAlign = 'start' | 'center' | 'end'
 export interface SelectionActionDetail {
     readonly action: SelectionAction
     readonly rect: EditorRect
@@ -29,6 +30,7 @@ export interface SelectionOverlayProps extends ComponentProps {
     handleLabels?: Partial<Record<SelectionHandle, string>>
     actions?: readonly SelectionAction[]
     actionsLabel?: string
+    actionsAlign?: SelectionActionsAlign
 }
 
 const handles: readonly SelectionHandle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
@@ -42,7 +44,7 @@ function normalizedRect(rect: EditorRect | undefined): EditorRect {
 export abstract class SelectionOverlayBase<P extends SelectionOverlayProps = SelectionOverlayProps> extends Component<P> {
     static observedAttributes = [
         ...Component.observedAttributes, 'rect', 'rotation', 'movable', 'resizable', 'rotatable', 'move-step', 'min-width',
-        'min-height', 'show-size', 'move-label', 'resize-label', 'rotate-label', 'size-label', 'handle-labels', 'actions', 'actions-label',
+        'min-height', 'show-size', 'move-label', 'resize-label', 'rotate-label', 'size-label', 'handle-labels', 'actions', 'actions-label', 'actions-align',
     ]
     rect: EditorRect = { x: 0, y: 0, width: 120, height: 80 }
     rotation = 0
@@ -60,6 +62,7 @@ export abstract class SelectionOverlayBase<P extends SelectionOverlayProps = Sel
     handleLabels: Partial<Record<SelectionHandle, string>> = {}
     actions: readonly SelectionAction[] = []
     actionsLabel = ''
+    actionsAlign: SelectionActionsAlign = 'center'
     protected normalizedActions = (): readonly SelectionAction[] => normalizeActions(this.actions)
     activateAction = (id: string, originalEvent?: Event): boolean => {
         const action = this.normalizedActions().find(candidate => candidate.id === id)

@@ -1,6 +1,6 @@
 import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
-import { isNot, or, html, repeat, state, type Template } from '../../core/runtime.js'
+import { isNot, or, when, html, repeat, state, type Template } from '../../core/runtime.js'
 
 import { bool, finite, scalarText } from '../../core/value.js'
 import { token as v } from '../../theme/tokens.js'
@@ -8,17 +8,25 @@ import { ArtboardBase, type ArtboardResizeHandle, type ArtboardRenameDetail } fr
 import { uid } from '../../core/id.js'
 import { guideDistances, snapGuide, type ArtboardGuide, type ArtboardGuideOperation } from './guides.js'
 import type { EditorGuide } from '../guide-overlay/base.js'
+import type { ArtboardPreviewPreset } from './preview.js'
+import { SelectionControlsController } from '../selection-overlay/controls.js'
 
 const handles: readonly ArtboardResizeHandle[] = ['e', 's', 'se']
+const edges = ['n', 'e', 's', 'w'] as const
+type ResizeDirection = ArtboardResizeHandle | typeof edges[number]
 
 export class Artboard extends ArtboardBase {
     stylesheet = componentStylesheet
     private observer?: ResizeObserver
+    private previewController?: SelectionControlsController
+    private previewElement?: HTMLElement
+    private previewSyncPending = false
     private measureFrame?: number
     private releaseResize?: () => void
     private nameCenterTimer?: number
     private releaseGuide?: (cancel: boolean, event?: Event) => void
     private suppressGuideClick = false
+    private readonly embeddedFrames = new Map<HTMLIFrameElement, { readonly document: Document | null; readonly dispose: () => void }>()
     private readonly highlightedGuide = state('')
     private readonly guideScale = state({ x: 1, y: 1 })
 
@@ -33,27 +41,34 @@ export class Artboard extends ArtboardBase {
 
     render(): Template {
         return html`<div ref="frame" part="frame canvas canvas-marker control" role="region"
-            style=${this.frameStyle} data-selected=${() => bool(this.selected) ? '' : null}
+            style=${this.frameStyle} data-selected=${() => bool(this.selected) ? '' : null} data-viewport-sizing=${() => bool(this.viewportSizing) ? '' : null}
             tabindex=${() => this.canSelect() ? 0 : -1} aria-label=${this.accessibleName}
             aria-disabled=${() => this.unavailable ? 'true' : null}
             aria-current=${() => this.canSelect() && bool(this.selected) ? 'true' : null}
-            onpointerenter=${this.measureGuideScale} onpointerdown=${this.clearGuideClick}
-            onclick=${this.selectFrame} onkeydown=${this.selectKey} ondblclick=${this.centerFrame}>
-            <cb-editable-label part="name" value=${this.props.name} label=${this.nameAccessibleName}
+            onpointerenter=${this.measureGuideScale} onpointerdown=${[this.clearGuideClick, true]}
+            onclick=${[this.selectFrame, true]} onkeydown=${this.selectKey} ondblclick=${this.centerFrame}>
+            ${when(this.props.showPreviewControls, this.previewControls())}
+            <div ref="header" part="header" onpointerdown=${this.containEvent} onclick=${this.containEvent} ondblclick=${this.containEvent} onkeydown=${this.containEvent}>
+                ${when(this.props.editable, html`<cb-editable-label ref="name" part="name" value=${this.props.name} label=${this.nameAccessibleName}
                 edit-label=${this.nameActionLabel} empty-label=${this.props.namePlaceholder}
                 placeholder=${this.props.namePlaceholder} save-label=${this.props.saveLabel} cancel-label=${this.props.cancelLabel}
                 read-only=${isNot(this.props.editable)} disabled=${() => this.unavailable}
                 onbeforechange=${this.beforeRename} onchange=${this.nameChanged}
                 onbeforeedit=${this.beforeNameEdit} oneditstart=${this.containEvent}
                 onbeforeeditcancel=${this.containEvent} oneditend=${this.containEvent}
-                onclick=${this.containEvent} ondblclick=${this.containEvent} onkeydown=${this.containEvent}></cb-editable-label>
-            <div part="content-viewport"><div ref="content" part="content" style=${this.contentStyle} onslotchange=${this.contentChanged}>
+                onclick=${this.containEvent} ondblclick=${this.containEvent} onkeydown=${this.containEvent}></cb-editable-label>`, html`<cb-button ref="name" part="name name-select" variant="ghost" label=${this.props.name}
+                    icon=${this.props.nameIcon} accessible-label=${this.nameActionLabel} disabled=${() => !this.canSelect()}
+                    onaction=${this.activateHeader} ondblclick=${this.openHeader}><span part="name-label">${this.props.name}</span>${when(this.props.nameDescription, html`<span slot="suffix" part="name-description">${this.props.nameDescription}</span>`)}</cb-button>`)}
+                ${when(() => this.editable && this.nameDescription, html`<span part="name-description">${this.props.nameDescription}</span>`)}
+                <slot name="header-actions" part="header-actions" onpointerdown=${this.containEvent} onclick=${this.containEvent} ondblclick=${this.containEvent}></slot>
+            </div>
+            <div part="content-viewport" data-device=${() => this.previewMode === 'device' ? '' : null}><div ref="content" part="content" style=${this.contentStyle} onslotchange=${this.contentChanged}>
                 <slot ref="slot"></slot>
             </div></div>
-            <div part="guide-layer" style=${this.guideLayerStyle} hidden=${isNot(this.guidesVisible)}
+            <div ref="guides" part="guide-layer" style=${this.guideLayerStyle} hidden=${isNot(this.guidesVisible)}
                 onpointerenter=${this.measureGuideScale} ondblclick=${this.containEvent}>
-                <cb-guide-overlay part="guide-overlay" guides=${this.visualGuides} zoom="1"
-                    exportparts="line:guide-line,label:guide-distance"></cb-guide-overlay>
+                ${when(this.guidesVisible, html`<cb-guide-overlay part="guide-overlay" guides=${this.visualGuides} zoom="1"
+                    exportparts="line:guide-line,label:guide-distance"></cb-guide-overlay>`)}
                 ${repeat(this.visibleGuides, guide => html`<cb-button part="guide-handle" data-guide-id=${guide.id}
                     data-bare data-semantic-host role="slider" style=${() => this.guideHandleStyle(guide)}
                     disabled=${() => !this.canEditGuides()} accessible-label=${() => this.guideName(guide)}
@@ -73,15 +88,53 @@ export class Artboard extends ArtboardBase {
                     onaction=${(event: CustomEvent<{ originalEvent?: Event }>) => this.createGuideKey(axis, event)}></cb-button>`)}
             </div>
             <output part="dimensions" hidden=${or(isNot(this.props.showDimensions), isNot(this.dimensionsText))}>${this.dimensionsText}</output>
-            ${repeat(['n', 'e', 's', 'w'], edge => html`<div part=${`selection-edge selection-edge-${edge}`}
-                aria-hidden="true" hidden=${isNot(this.handlesVisible)}></div>`)}
-            ${repeat(handles, handle => html`<cb-button part=${`resize-handle handle-${handle}`} data-handle=${handle}
+            ${repeat(edges, edge => html`<div part=${`selection-edge selection-edge-${edge}`}
+                data-resizable=${() => this.handlesVisible() ? '' : null}
+                onpointerdown=${(event: PointerEvent) => { if (this.handlesVisible()) this.beginResize(edge, event) }}
+                aria-hidden="true" hidden=${isNot(or(() => this.canSelect(), this.handlesVisible))}></div>`)}
+            ${repeat(() => this.handlesVisible() ? handles : [], handle => html`<cb-button ref="resizeHandles" part=${`resize-handle handle-${handle}`} data-handle=${handle}
                 data-bare data-semantic-host hidden=${isNot(this.handlesVisible)} disabled=${() => this.unavailable}
                 accessible-label=${() => this.handleLabel(handle)} onbeforeaction=${this.containEvent} onaction=${this.containEvent}
                 onclick=${this.containEvent} onpointerdown=${(event: PointerEvent) => this.beginResize(handle, event)}
                 onkeydown=${(event: KeyboardEvent) => this.resizeKey(handle, event)}></cb-button>`, { key: handle => handle })}
         </div>`
     }
+    private activateHeader = (event: Event): void => {
+        event.stopPropagation()
+        if (!this.canSelect() || !bool(this.selected) && !this.select(true, event)) return
+        this.emit('headeractivate', { originalEvent: event })
+    }
+    private openHeader = (event: MouseEvent): void => {
+        event.stopPropagation()
+        if (!this.canSelect() || !bool(this.selected) && !this.select(true, event)) return
+        this.emit('headerdoubleactivate', { originalEvent: event })
+    }
+    private previewChoices = (): readonly ArtboardPreviewPreset[] => this.previewPresets.filter(preset =>
+        preset.id && Number.isFinite(preset.width) && preset.width >= 1 && Number.isFinite(preset.height) && preset.height >= 1)
+    private previewCategory = (): string => this.previewMode === 'device' ? this.previewChoices().find(preset => preset.id === this.previewPresetId)?.category || '' : ''
+    private choosePreview = (id: string, event: Event): void => {
+        const preset = this.previewChoices().find(item => item.id === id)
+        if (!preset && id !== 'default') return
+        if (preset && this.previewMode !== 'device') this.previewDefaultSize = { width: this.artboardWidth(), height: this.artboardHeight() }
+        const base = this.previewDefaultSize
+        this.setPreview({ ...this.previewValue(), mode: preset ? 'device' : 'width', presetId: preset?.id || 'default',
+            width: preset?.width || base?.width || this.artboardWidth(), height: preset?.height || base?.height || this.artboardHeight() }, event)
+    }
+    private previewControls = (): Template => html`<div ref="previewControls" part="preview-controls" role="group" aria-label=${() => this.previewLabels.controls || ''}
+        popover="manual" hidden onpointerdown=${this.containEvent} onclick=${this.containEvent} ondblclick=${this.containEvent} onkeydown=${this.containEvent}>
+        <div part="preview-row">
+            <cb-select accessible-label=${() => this.previewLabels.presets || ''}
+                value=${() => this.previewChoices().some(preset => preset.id === this.previewPresetId) ? this.previewPresetId : 'default'}
+                options=${() => [{ value: 'default', label: this.previewLabels.default || 'Artboard' }, ...this.previewChoices().map(preset => ({ value: preset.id, label: `${preset.label} · ${preset.width} × ${preset.height}` }))]}
+                size="sm" disabled=${() => this.unavailable} onchange=${(event: CustomEvent<{ value: string }>) => { event.stopPropagation(); this.choosePreview(event.detail.value, event) }}></cb-select>
+            <cb-segmented-control accessible-label=${() => this.previewLabels.size || ''} value=${this.previewCategory} icon-only="true" size="sm" allow-empty="true"
+                items=${() => (['mobile', 'tablet', 'desktop'] as const).map(id => ({ id, icon: id, label: this.previewLabels[id] || id, disabled: !this.previewChoices().some(preset => preset.category === id) }))}
+                disabled=${() => this.unavailable} onchange=${(event: CustomEvent<{ value: string }>) => {
+                    event.stopPropagation(); const id = this.previewChoices().find(item => item.category === event.detail.value)?.id; if (id || !event.detail.value) this.choosePreview(id || 'default', event)
+                }}></cb-segmented-control>
+        </div>
+        <slot name="preview-description"></slot>
+    </div>`
     private frameStyle = (): string => {
         const size = this.contentSize[0]()
         const width = this.explicitWidth() || size.width
@@ -116,7 +169,7 @@ export class Artboard extends ArtboardBase {
         const frame = this.frame
         if (!frame) return
         const bounds = frame.getBoundingClientRect()
-        const next = { x: Math.max(.01, bounds.width / this.artboardWidth()), y: Math.max(.01, bounds.height / this.artboardHeight()) }
+        const next = { x: Math.max(.01, bounds.width / frame.offsetWidth), y: Math.max(.01, bounds.height / frame.offsetHeight) }
         const previous = this.guideScale[0]()
         if (next.x !== previous.x || next.y !== previous.y) this.guideScale[1](next)
     }
@@ -203,6 +256,11 @@ export class Artboard extends ArtboardBase {
     }
     private clearGuideClick = (): void => { this.suppressGuideClick = false }
     private selectFrame = (event: Event): void => {
+        const path = event.composedPath()
+        if (path.find(node => node instanceof HTMLElement && node.localName === 'cb-artboard') !== this) return
+        // Capture content clicks before consumer controls stop propagation, while
+        // leaving the artboard's title editor and editing chrome in charge of their gestures.
+        if (['header', 'guides', 'resizeHandles', 'previewControls'].some(ref => this.refs[ref]?.some(node => path.includes(node)))) return
         // A cancelled drag releases capture before pointerup; its synthesized
         // click may target the frame instead of the original guide control.
         if (this.suppressGuideClick) { this.suppressGuideClick = false; event.preventDefault(); event.stopPropagation(); return }
@@ -251,24 +309,50 @@ export class Artboard extends ArtboardBase {
 
     protected mount(): void {
         super.mount()
+        this.syncPreviewControls()
         this.observer = new ResizeObserver(this.scheduleMeasure)
         const mutations = new MutationObserver(records => {
             if (records.some(record => record.target !== this || record.type !== 'attributes')) this.contentChanged()
         })
         mutations.observe(this, { childList: true, subtree: true, characterData: true, attributes: true })
-        this.addEventListener('load', this.scheduleMeasure, true)
+        this.addEventListener('load', this.contentChanged, true)
         this.cleanup(() => {
             this.cancelNameCenter()
+            this.previewController?.dispose()
+            this.previewController = undefined
+            this.previewElement = undefined
             this.observer?.disconnect()
             mutations.disconnect()
-            this.removeEventListener('load', this.scheduleMeasure, true)
+            this.removeEventListener('load', this.contentChanged, true)
             if (this.measureFrame !== undefined) this.ownerDocument.defaultView?.cancelAnimationFrame(this.measureFrame)
             this.measureFrame = undefined
             this.releaseResize?.()
             this.releaseGuide?.(true)
         })
         this.contentChanged()
+        const view = this.ownerDocument.defaultView
+        if (view) this.listen(view, 'blur', this.selectFocusedFrame)
+        this.cleanup(() => {
+            for (const frame of this.embeddedFrames.values()) frame.dispose()
+            this.embeddedFrames.clear()
+        })
     }
+    private syncPreviewControls = (): void => {
+        if (this.previewSyncPending) return
+        this.previewSyncPending = true
+        queueMicrotask(() => {
+            this.previewSyncPending = false
+            if (!this.isConnected) return
+            const controls = this.refs.previewControls?.find(node => node instanceof HTMLElement && node.isConnected)
+            if (controls !== this.previewElement) {
+                this.previewController?.dispose()
+                this.previewElement = controls instanceof HTMLElement ? controls : undefined
+                this.previewController = this.previewElement ? new SelectionControlsController(this, this.previewElement, () => bool(this.showPreviewControls), () => 48, true) : undefined
+            }
+            this.previewController?.refresh()
+        })
+    }
+    protected syncView(): void { this.syncPreviewControls() }
     protected update(name: string): void {
         super.update(name)
         if (['width', 'height'].includes(name)) this.scheduleMeasure()
@@ -277,8 +361,36 @@ export class Artboard extends ArtboardBase {
     private contentChanged = (): void => {
         this.observer?.disconnect()
         if (this.content) this.observer?.observe(this.content)
-        for (const element of this.contentElements()) this.observer?.observe(element)
+        const elements = this.contentElements()
+        for (const element of elements) this.observer?.observe(element)
+        this.syncEmbeddedFrames(elements)
         this.scheduleMeasure()
+    }
+    private syncEmbeddedFrames = (elements: readonly HTMLElement[]): void => {
+        const frames = new Set(elements.filter((element): element is HTMLIFrameElement =>
+            element instanceof HTMLIFrameElement && element.closest('cb-artboard') === this))
+        for (const [frame, binding] of this.embeddedFrames) {
+            if (frames.has(frame) && frame.contentDocument === binding.document) continue
+            binding.dispose()
+            this.embeddedFrames.delete(frame)
+        }
+        for (const frame of frames) {
+            if (this.embeddedFrames.has(frame)) continue
+            const doc = frame.contentDocument
+            const select = (event: MouseEvent): void => { this.select(true, event) }
+            doc?.addEventListener('click', select, true)
+            this.embeddedFrames.set(frame, { document: doc, dispose: () => doc?.removeEventListener('click', select, true) })
+        }
+    }
+    private selectFocusedFrame = (event: Event): void => {
+        queueMicrotask(() => {
+            if (!this.mounted || !this.ownerDocument.hasFocus()) return
+            let focused = this.ownerDocument.activeElement
+            while (focused?.shadowRoot?.activeElement) focused = focused.shadowRoot.activeElement
+            // Cross-origin frames cannot forward DOM clicks. Native focus transfer
+            // still identifies the owned frame without reading its document or blocking it.
+            if (focused instanceof HTMLIFrameElement && this.embeddedFrames.get(focused)?.document === null) this.select(true, event)
+        })
     }
     private contentElements = (): HTMLElement[] => {
         const elements: HTMLElement[] = []
@@ -312,11 +424,11 @@ export class Artboard extends ArtboardBase {
         }
         // Transformed bounds can contain tiny floating-point errors; they must
         // not change the document size when only viewport zoom changes.
-        const next = { width: Math.ceil(width - .001) + frame.offsetWidth - frame.clientWidth, height: Math.ceil(height - .001) + frame.offsetHeight - frame.clientHeight }
+        const next = { width: Math.ceil(width - .001) + (bool(this.viewportSizing) ? 0 : frame.offsetWidth - frame.clientWidth), height: Math.ceil(height - .001) + (bool(this.viewportSizing) ? 0 : frame.offsetHeight - frame.clientHeight) }
         const previous = this.contentSize[0]()
         if (next.width !== previous.width || next.height !== previous.height) this.contentSize[1](next)
     }
-    private beginResize = (handle: ArtboardResizeHandle, event: PointerEvent): void => {
+    private beginResize = (handle: ResizeDirection, event: PointerEvent): void => {
         event.stopPropagation()
         const button = event.currentTarget, frame = this.frame
         if (!(button instanceof HTMLElement) || !frame || event.button !== 0 || !this.handlesVisible()) return
@@ -326,11 +438,13 @@ export class Artboard extends ArtboardBase {
         const scaleX = bounds.width / frame.offsetWidth || 1, scaleY = bounds.height / frame.offsetHeight || 1
         const initialWidth = this.artboardWidth(), initialHeight = this.artboardHeight()
         const startX = event.clientX, startY = event.clientY
+        const horizontal = handle.includes('e') ? 1 : handle.includes('w') ? -1 : 0
+        const vertical = handle.includes('s') ? 1 : handle.includes('n') ? -1 : 0
         button.setPointerCapture(event.pointerId)
         const move = (next: PointerEvent): void => {
             if (next.pointerId !== event.pointerId || !this.handlesVisible()) return
-            this.resize(initialWidth + (handle.includes('e') ? (next.clientX - startX) / scaleX : 0),
-                initialHeight + (handle.includes('s') ? (next.clientY - startY) / scaleY : 0), next)
+            this.resize(initialWidth + horizontal * (next.clientX - startX) / scaleX,
+                initialHeight + vertical * (next.clientY - startY) / scaleY, next)
         }
         const release = (): void => {
             button.removeEventListener('pointermove', move)
@@ -357,6 +471,7 @@ export class Artboard extends ArtboardBase {
     }
 }
 export { ArtboardBase };
+export type { ArtboardPreviewMode, ArtboardPreviewPreset, ArtboardPreviewLabels, ArtboardPreviewValue, ArtboardPreviewDetail } from './preview.js';
 export type { ArtboardProps, ArtboardSize, ArtboardResizeHandle, ArtboardRenameDetail, ArtboardResizeDetail, ArtboardSelectDetail,
     ArtboardGuide, ArtboardGuideOperation, ArtboardGuidesDetail, ArtboardGuideEndDetail } from './ArtboardBase.js';
 

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page, type Locator } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import type { LayerTree, LayerTreeActionDetail } from '../../components/data-display/layer-tree/index.js'
 import type { SelectionOverlay, SelectionActionDetail } from '../../components/editor/selection-overlay/index.js'
@@ -57,10 +57,10 @@ async function putSelection(page: Page, x: number, y: number): Promise<void> {
         overlay.rect = { ...overlay.rect, x: overlay.rect.x + (boundary.left + x - current.left) / scale, y: overlay.rect.y + (boundary.top + y - current.top) / scale }
     }, { x, y })
 }
-async function expectContained(page: Page): Promise<void> {
+async function expectAttached(page: Page): Promise<void> {
     await expect.poll(async () => {
-        const bar = (await page.locator('[part~=controls][popover]').boundingBox())!, viewport = (await page.locator('cb-viewport').boundingBox())!
-        return bar.x >= viewport.x + 7 && bar.y >= viewport.y + 7 && bar.x + bar.width <= viewport.x + viewport.width - 7 && bar.y + bar.height <= viewport.y + viewport.height - 7
+        const bar = (await page.locator('[part~=controls][popover]').boundingBox())!, selection = (await page.locator('cb-selection-overlay').boundingBox())!
+        return Math.abs(bar.x + bar.width / 2 - selection.x - selection.width / 2) < 1 && Math.abs(bar.y + bar.height + 8 - selection.y) < 1
     }).toBe(true)
 }
 
@@ -78,8 +78,11 @@ test('arbitrary layer actions are node-scoped, keyboard accessible, cancelable a
         for (const type of ['selectionchange', 'itemschange', 'change']) tree.addEventListener(type, () => window.editorActionLeaks.push(type))
         document.querySelector('#fixture')!.append(tree)
     })
+    const row = (id: string): Locator => page.locator(`cb-layer-tree [part~=row][data-id="${id}"]`)
+    await row('one').hover()
     await page.getByRole('button', { name: 'Copy One', exact: true }).click()
     await page.getByRole('button', { name: 'Inspect One', exact: true }).press('Enter')
+    await row('two').focus()
     await page.getByRole('button', { name: 'Copy Two', exact: true }).press('Space')
     expect(await page.evaluate(() => window.editorActionDetails)).toMatchObject([
         { id: 'one', item: { id: 'one' }, action: { id: 'copy', name: 'duplicate', icon: 'copy', label: 'Copy One' } },
@@ -87,12 +90,15 @@ test('arbitrary layer actions are node-scoped, keyboard accessible, cancelable a
     ])
     expect(await page.evaluate(() => window.editorBeforeActions)).toBe(3)
     await expect(page.getByRole('button', { name: 'Blocked', exact: true })).toBeDisabled()
+    await row('disabled').hover()
     await expect(page.getByRole('button', { name: 'Disabled copy', exact: true })).toBeDisabled()
     await page.locator('cb-layer-tree').evaluate(node => node.addEventListener('beforeaction', event => event.preventDefault(), { once: true }))
+    await row('one').hover()
     await page.getByRole('button', { name: 'Copy One', exact: true }).click()
     expect(await page.evaluate(() => window.editorActionDetails.length)).toBe(3)
     await page.locator('cb-layer-tree').evaluate(node => { const tree = node as LayerTree; tree.items = [{ id: 'new', label: 'New', actions: [{ id: 'new-action', label: 'New action' }] }] })
     await expect(page.getByRole('button', { name: 'Copy One', exact: true })).toHaveCount(0)
+    await row('new').hover()
     await page.getByRole('button', { name: 'New action', exact: true }).click()
     expect(await page.evaluate(() => window.editorActionDetails.at(-1))).toMatchObject({ id: 'new', action: { id: 'new-action' } })
 })
@@ -117,29 +123,34 @@ test('selection commands emit one complete action and honor veto/disabled/reacti
     await expect(page.getByRole('button', { name: 'New command', exact: true })).toBeVisible()
 })
 
-for (const zoom of [50, 100, 200]) test(`selection controls flip and clamp inside the viewport at ${zoom}% zoom`, async ({ page }) => {
+for (const zoom of [50, 100, 200]) test(`selection controls stay attached rather than pinning to viewport edges at ${zoom}% zoom`, async ({ page }) => {
     await mountSelection(page, zoom)
     const bar = page.locator('[part~=controls][popover]')
     await putSelection(page, 100, 100)
     await expect(bar).toHaveAttribute('data-placement', 'above')
     const initial = (await bar.boundingBox())!
     for (const point of [{ x: 0, y: 0 }, { x: 480, y: 0 }, { x: -150, y: -100 }, { x: 480, y: 300 }]) {
-        await putSelection(page, point.x, point.y); await expectContained(page)
-        if (point.y === 0) await expect(bar).toHaveAttribute('data-placement', 'below')
+        await putSelection(page, point.x, point.y); await expectAttached(page)
+        await expect(bar).toHaveAttribute('data-placement', 'above')
+        const controls = (await bar.boundingBox())!, boundary = (await page.locator('cb-viewport').boundingBox())!
+        const outside = controls.x + controls.width <= boundary.x || controls.x >= boundary.x + boundary.width ||
+            controls.y + controls.height <= boundary.y || controls.y >= boundary.y + boundary.height
+        await expect(bar).toHaveJSProperty('inert', outside)
     }
     expect((await bar.boundingBox())!.width).toBeCloseTo(initial.width, 1)
     await page.locator('cb-viewport').evaluate(node => { Object.assign(node, { zoom: 150, x: -250, y: 100 }) })
-    await expectContained(page)
+    await expectAttached(page)
     await page.locator('cb-selection-overlay').evaluate(node => { (node as SelectionOverlay).rotation = 45 })
-    await expectContained(page)
+    await expectAttached(page)
     expect((await bar.boundingBox())!.height).toBeCloseTo(initial.height, 1)
-    await page.setViewportSize({ width: 500, height: 600 }); await expectContained(page)
+    await page.setViewportSize({ width: 500, height: 600 }); await expectAttached(page)
 })
 
 test('selection bar is constrained when oversized and cleaned up on disconnect', async ({ page }) => {
     await mountSelection(page)
     await page.locator('cb-selection-overlay').evaluate(node => { (node as SelectionOverlay).actions = Array.from({ length: 30 }, (_, index) => ({ id: `a${index}`, label: `Action ${index}` })) })
-    await expectContained(page)
+    await expectAttached(page)
+    expect((await page.locator('[part~=controls][popover]').boundingBox())!.width).toBeLessThanOrEqual((await page.locator('cb-viewport').boundingBox())!.width - 16)
     await page.locator('cb-selection-overlay').evaluate(node => node.remove())
     await expect(page.getByRole('toolbar')).toHaveCount(0)
     await page.mouse.wheel(0, 100)
@@ -157,12 +168,12 @@ test('standalone controls follow browser resize and page scroll without a cb-vie
     const bar = page.locator('[part~=controls][popover]')
     await expect.poll(async () => {
         const bounds = await bar.boundingBox()
-        return bounds !== null && bounds.y >= 8 && bounds.y + bounds.height <= page.viewportSize()!.height - 7
+        return !!bounds && bounds.y >= 8 && bounds.y + bounds.height <= page.viewportSize()!.height - 7
     }).toBe(true)
     await page.setViewportSize({ width: 320, height: 400 }); await page.evaluate(() => window.scrollTo(0, 0))
     await expect.poll(async () => {
         const bounds = await bar.boundingBox()
-        return bounds !== null && bounds.x >= 8 && bounds.x + bounds.width <= 313 && bounds.y >= 8 && bounds.y + bounds.height <= 393
+        return !!bounds && bounds.x >= 8 && bounds.x + bounds.width <= 313 && bounds.y >= 8 && bounds.y + bounds.height <= 393
     }).toBe(true)
 })
 

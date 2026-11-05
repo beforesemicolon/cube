@@ -4,6 +4,7 @@ import type { ComponentAction } from '../../core/actions.js'
 
 export type ViewportActionPosition = 'top-left' | 'top-right' | 'bottom-right'
 export interface ViewportAction extends ComponentAction {
+    readonly shortcut?: string
     readonly position: ViewportActionPosition
     readonly pressed?: boolean
 }
@@ -27,6 +28,9 @@ export interface ViewportProps extends ComponentProps {
     zoomInLabel?: string
     zoomOutLabel?: string
     resetLabel?: string
+    zoomInShortcut?: string
+    zoomOutShortcut?: string
+    resetShortcut?: string
     positionLabel?: string
     actions?: readonly ViewportAction[]
 }
@@ -42,7 +46,7 @@ export interface ViewportChangeDetail extends ViewportValue { readonly value: Vi
 export abstract class ViewportBase extends Component<ViewportProps> {
     static observedAttributes = [
         ...Component.observedAttributes, 'zoom', 'min-zoom', 'max-zoom', 'zoom-step', 'x', 'y', 'pannable', 'pan-tool', 'grid', 'controls',
-        'zoom-in-label', 'zoom-out-label', 'reset-label', 'position-label', 'actions',
+        'zoom-in-label', 'zoom-out-label', 'reset-label', 'position-label', 'actions', 'zoom-in-shortcut', 'zoom-out-shortcut', 'reset-shortcut',
     ]
 
     zoom = 100
@@ -56,6 +60,9 @@ export abstract class ViewportBase extends Component<ViewportProps> {
     grid = true
     controls = true
     zoomInLabel = ''
+    zoomInShortcut = ''
+    zoomOutShortcut = ''
+    resetShortcut = ''
     zoomOutLabel = ''
     resetLabel = ''
     positionLabel = ''

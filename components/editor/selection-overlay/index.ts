@@ -49,7 +49,7 @@ export class SelectionOverlay extends SelectionOverlayBase {
                 ${repeat(this.normalizedActions, action => html`<cb-button part="action" data-action-id=${action.id}
                     exportparts="control:action-control,icon:action-icon,label:action-label,button-label:action-label"
                     icon=${action.icon} icon-src=${action.iconSrc} icon-only=${Boolean(action.icon || action.iconSrc)} label=${action.label} accessible-label=${action.label}
-                    name=${action.name} title=${action.label} size="sm" variant="ghost"
+                    name=${action.name} title=${`${action.label}${action.shortcut ? ` (${action.shortcut})` : ''}`} aria-keyshortcuts=${action.shortcut || null} size="sm" variant="ghost"
                     indicator=${action.indicator} indicator-label=${action.indicatorLabel}
                     disabled=${or(() => this.unavailable, action.disabled)} onbeforeaction=${this.containEvent}
                     onaction=${(event: CustomEvent<{ originalEvent?: Event }>) => {
@@ -62,7 +62,7 @@ export class SelectionOverlay extends SelectionOverlayBase {
         super.mount()
         const bar = this.refs.controls?.[0]
         if (!(bar instanceof HTMLElement)) return
-        this.controlsController = new SelectionControlsController(this, bar, () => this.normalizedActions().length > 0, () => bool(this.rotatable) ? 32 : 8)
+        this.controlsController = new SelectionControlsController(this, bar, () => this.normalizedActions().length > 0, () => bool(this.rotatable) ? 32 : 8, false, () => this.actionsAlign)
         this.controlsController.refresh()
         this.cleanup(() => { this.controlsController?.dispose(); this.controlsController = undefined })
     }
@@ -143,6 +143,6 @@ export class SelectionOverlay extends SelectionOverlayBase {
     }
 }
 export { SelectionOverlayBase };
-export type { SelectionOverlayProps, EditorRect, SelectionHandle, SelectionAction, SelectionActionDetail } from './SelectionOverlayBase.js';
+export type { SelectionOverlayProps, EditorRect, SelectionHandle, SelectionAction, SelectionActionDetail, SelectionActionsAlign } from './SelectionOverlayBase.js';
 
 register('cb-selection-overlay', SelectionOverlay)

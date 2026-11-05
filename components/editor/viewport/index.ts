@@ -1,6 +1,6 @@
 import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
-import { isNot, or, repeat, when, type Template, html } from '../../core/runtime.js'
+import { isNot, or, repeat, state, when, type Template, html } from '../../core/runtime.js'
 
 import { finite } from '../../core/value.js';
 
@@ -19,6 +19,12 @@ export class Viewport extends ViewportBase {
 
     private get surface(): HTMLElement | undefined { const node=this.refs.surface?.[0]; return node instanceof HTMLElement ? node : undefined; }
     private pan?: PanState;
+    private readonly hasTopCenterContent = state(false)
+    private topCenterSlotChange = (event: Event): void => {
+        const slot = event.target
+        if (slot instanceof HTMLSlotElement) this.hasTopCenterContent[1](slot.assignedNodes({ flatten: true }).some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim())))
+    }
+
     render(): Template {
         return html`<div part="viewport canvas" ref="surface" role="region"
             tabindex=${() => this.unavailable ? -1 : 0} aria-label=${this.accessibleName}
@@ -32,6 +38,10 @@ export class Viewport extends ViewportBase {
             onkeydown=${this.onKeydown}>
             <div part="world" style=${() => { const value=this.viewportState(); return `--cb-zoom:${value.zoom/100};--cb-pan-x:${value.x}px;--cb-pan-y:${value.y}px`; }}><slot part="content"></slot></div>
             ${when(this.panToolActive, html`<div part="pan-surface" aria-hidden="true"></div>`)}
+            <div part="top-center" hidden=${isNot(this.hasTopCenterContent[0])}
+                onpointerdown=${this.containEvent} onkeydown=${this.containEvent} onwheel=${this.containEvent}>
+                <slot name="top-center" onslotchange=${this.topCenterSlotChange}></slot>
+            </div>
             ${repeat(['top-left', 'top-right'] as const, position => html`
                 <div part=${`actions ${position}`} hidden=${() => !this.actionsAt(position).length}
                     onpointerdown=${this.containEvent} onkeydown=${this.containEvent}>
@@ -42,12 +52,18 @@ export class Viewport extends ViewportBase {
                 ${this.actionButtons('bottom-right')}
                 ${when(this.controlsVisible, html`
                 <cb-button part="zoom-out" exportparts="control:zoom-out-control,label:zoom-out-label,button-label:zoom-out-label,icon:zoom-out-icon,description:zoom-out-description" icon-only icon="minus" variant="ghost" accessible-label=${() => this.text('zoomOutLabel')}
+                    title=${() => `${this.text('zoomOutLabel')}${this.zoomOutShortcut ? ` (${this.zoomOutShortcut})` : ''}`}
+                    data-shortcut=${this.props.zoomOutShortcut}
                     disabled=${or(() => this.unavailable, () => this.viewportState().zoom <= this.normalizedZoom(this.minZoom))}
                     onaction=${(event: Event) => { event.stopPropagation(); this.zoomBy(-Math.abs(finite(this.zoomStep,10)),event); }}></cb-button>
                 <cb-button part="reset" exportparts="control:reset-control,label:reset-label,button-label:reset-label,icon:reset-icon,description:reset-description" icon-only icon="reset" variant="ghost" accessible-label=${() => this.text('resetLabel')} disabled=${() => this.unavailable}
+                    title=${() => `${this.text('resetLabel')}${this.resetShortcut ? ` (${this.resetShortcut})` : ''}`}
+                    data-shortcut=${this.props.resetShortcut}
                     onaction=${(event: Event) => { event.stopPropagation(); this.reset(event); }}></cb-button>
                 <output part="status">${() => `${Math.round(this.viewportState().zoom)}%`}</output>
                 <cb-button part="zoom-in" exportparts="control:zoom-in-control,label:zoom-in-label,button-label:zoom-in-label,icon:zoom-in-icon,description:zoom-in-description" icon-only icon="plus" variant="ghost" accessible-label=${() => this.text('zoomInLabel')}
+                    title=${() => `${this.text('zoomInLabel')}${this.zoomInShortcut ? ` (${this.zoomInShortcut})` : ''}`}
+                    data-shortcut=${this.props.zoomInShortcut}
                     disabled=${or(() => this.unavailable, () => this.viewportState().zoom >= this.normalizedZoom(this.maxZoom))}
                     onaction=${(event: Event) => { event.stopPropagation(); this.zoomBy(Math.abs(finite(this.zoomStep,10)),event); }}></cb-button>
                 `)}
@@ -61,6 +77,8 @@ export class Viewport extends ViewportBase {
                 exportparts="control:action-control,icon:action-icon,label:action-label,button-label:action-label"
                 icon=${action.icon} icon-src=${action.iconSrc} icon-only=${Boolean(action.icon || action.iconSrc)} label=${action.label}
                 accessible-label=${action.label} name=${action.name} size="sm" variant="ghost"
+                title=${`${action.label}${action.shortcut && !action.label.endsWith(`(${action.shortcut})`) ? ` (${action.shortcut})` : ''}`}
+                aria-keyshortcuts=${action.shortcut || null}
                 pressed=${action.pressed} disabled=${or(() => this.unavailable, action.disabled)}
                 onbeforeaction=${this.containEvent}
                 onaction=${(event: CustomEvent<{ originalEvent?: Event }>) => {
@@ -77,6 +95,12 @@ export class Viewport extends ViewportBase {
     private onWheel = (event: WheelEvent): void => {
         const surface = this.surface
         if (this.unavailable || !surface) return
+        // Top-layer popups keep their composed ancestry inside the world.
+        // They own wheel input even at a scroll edge; preventing the event
+        // here would freeze the list and pan/zoom the canvas underneath it.
+        const path = event.composedPath()
+        if (path.slice(0, path.indexOf(surface)).some(node => node instanceof HTMLElement &&
+            node.matches('[popover],dialog[open],[role="dialog"],[role="listbox"],[role="menu"]'))) return
         event.preventDefault()
         if (!event.ctrlKey && !event.metaKey) {
             this.panBy(-event.deltaX, -event.deltaY, event, false)
@@ -106,7 +130,12 @@ export class Viewport extends ViewportBase {
         const bounds = artboard.getBoundingClientRect(), viewport = surface.getBoundingClientRect()
         const current = this.viewportState(), scale = current.zoom / 100
         const x = (current.x + viewport.left + viewport.width / 2 - bounds.left - bounds.width / 2) / scale
-        const y = (current.y + viewport.top + viewport.height / 2 - bounds.top - bounds.height / 2) / scale
+        // Center boards that fit at actual size. For taller pages, center only
+        // the first viewportful, leaving room above for the name/preview tools.
+        const height = bounds.height / scale
+        const topInset = Math.min(96, viewport.height / 4)
+        const focusHeight = height > viewport.height ? viewport.height - 2 * topInset : height
+        const y = (current.y + viewport.top + viewport.height / 2 - bounds.top) / scale - focusHeight / 2
         this.setViewport(100, x, y, event.detail.originalEvent)
     }
     private beginPan = (event: PointerEvent): void => {
