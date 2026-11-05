@@ -17,6 +17,7 @@ export interface StudioViewSource extends HTMLElement {
     description: string;
     disabled: boolean;
     value?: StudioValue;
+    displayValue?(): string;
     items?: readonly StudioItem[];
     placeholder?: string;
     status?: string;

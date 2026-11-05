@@ -16,10 +16,17 @@ export function editorSelection(editor: HTMLElement, inline: boolean): RichTextS
 }
 export function restoreEditorSelection(editor: HTMLElement, selection: RichTextSelection): void {
     const point = (position: number): { node: Node; offset: number } => {
-        const walker = editor.ownerDocument.createTreeWalker(editor, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT)
+        const walker = editor.ownerDocument.createTreeWalker(editor, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+            acceptNode: node => node.parentElement?.closest('[data-cb-reference]') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+        })
         let remaining = position
         for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-            if (node.nodeType === Node.TEXT_NODE) {
+            if (node.nodeType === 1 && (node as Element).hasAttribute('data-cb-reference') && node.parentNode) {
+                const length = node.textContent?.length || 0, parent = node.parentNode
+                const index = Array.from(parent.childNodes).indexOf(node as ChildNode)
+                if (remaining <= length) return { node: parent, offset: index + (remaining > 0 && remaining >= length / 2 ? 1 : 0) }
+                remaining -= length
+            } else if (node.nodeType === Node.TEXT_NODE) {
                 const length = node.textContent?.length ?? 0
                 if (remaining <= length) return { node, offset: remaining }
                 remaining -= length

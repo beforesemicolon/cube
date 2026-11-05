@@ -1,6 +1,7 @@
+import { MentionController, type MentionConfiguration } from '../../core/mentions.js'
 import { state } from '../../core/runtime.js'
-import { activeFormats, normalizeRuns, plainText, replaceRuns, serializeRuns, setFormat, sliceRuns, toggleRuns,
-    type RichTextFormat, type RichTextRun, type RichTextSelection } from './model.js'
+import { activeFormats, normalizeRuns, plainText, referenceSelection, replaceRuns, resolveReferences, serializeRuns, setFormat, sliceRuns, toggleRuns,
+    type RichTextFormat, type RichTextReference, type RichTextRun, type RichTextSelection } from './model.js'
 import { parseRichText, readRichText, syncEditorContent } from './html.js'
 import { editorSelection, restoreEditorSelection } from './selection.js'
 
@@ -12,6 +13,8 @@ const inputFormats: Readonly<Partial<Record<string, RichTextFormat>>> = {
 
 
 export interface RichTextControllerOptions {
+    references?: () => readonly RichTextReference[]
+    mentions?: () => MentionConfiguration | null | undefined
     value: () => string
     commit: (value: string, originalEvent: Event) => boolean
     blocked?: () => boolean
@@ -27,6 +30,7 @@ export class RichTextController {
     private readonly selected = state<RichTextSelection>({ start: 0, end: 0 })
     private readonly active = state<readonly RichTextFormat[]>([])
     private pendingFormats?: readonly RichTextFormat[]
+    private mentions?: MentionController
     private applying = false
     private composing = false
     private compositionEdit?: CompositionEdit
@@ -36,10 +40,11 @@ export class RichTextController {
     private historyIndex = -1
 
     private readonly listeners: AbortController
-    private readonly originalContent: Node[]
+    private readonly restoreContent: () => void
     private readonly originalAttributes: Map<string, string | null>
     private readonly wrapper?: HTMLElement
     private readonly editor: HTMLElement
+    private readonly originalWhiteSpace: { value: string; priority: string; hadStyle: boolean }
     private readonly ownerDocument: Document
     constructor(target: HTMLElement | Text, private readonly options: RichTextControllerOptions) {
         this.ownerDocument = target.ownerDocument
@@ -58,7 +63,26 @@ export class RichTextController {
             this.wrapper = wrapper
             this.editor = wrapper
         } else this.editor = target.nodeType === 3 ? parent! : target as HTMLElement
-        this.originalContent = Array.from(this.editor.childNodes, node => node.cloneNode(true))
+        // Keep the actual nodes: framework bindings may still reference them.
+        // Editing uses a temporary DOM, then restores those same nodes and values.
+        const capture = (node: Node): (() => void) => {
+            const children = Array.from(node.childNodes), value = node.nodeValue
+            const restore = children.map(capture)
+            return () => {
+                if (node.nodeValue !== value) node.nodeValue = value
+                restore.forEach(reset => reset())
+                children.forEach((child, index) => {
+                    if (node.childNodes[index] !== child) node.insertBefore(child, node.childNodes[index] || null)
+                })
+                const keep = new Set(children)
+                Array.from(node.childNodes).forEach(child => { if (!keep.has(child)) node.removeChild(child) })
+            }
+        }
+        this.restoreContent = capture(this.editor)
+        this.originalWhiteSpace = { value: this.editor.style.getPropertyValue('white-space'), priority: this.editor.style.getPropertyPriority('white-space'), hadStyle: this.editor.hasAttribute('style') }
+        // Keep spaces visible and selectable instead of collapsing trailing
+        // spaces out of the caret/selection range between transactions.
+        this.editor.style.setProperty('white-space', 'break-spaces', 'important')
         this.originalAttributes = new Map(['contenteditable', 'spellcheck', 'tabindex'].map(name => [name, this.editor.getAttribute(name)]))
         const ViewAbort = this.ownerDocument.defaultView?.AbortController ?? AbortController
         this.listeners = new ViewAbort()
@@ -79,6 +103,15 @@ export class RichTextController {
         this.editor.addEventListener('compositionend', this.compositionEnd, { signal })
         this.ownerDocument.addEventListener('selectionchange', this.rememberSelection, { signal })
         this.syncView()
+        this.mentions = new MentionController({ element: this.editor, text: () => plainText(this.runs()),
+            selection: () => editorSelection(this.editor, this.inlineMode()) ?? null, blocked: () => !this.canChangeValue(),
+            replace: (range, text, event) => {
+                const before = this.snapshot(), replacement = resolveReferences([{ text, formats: activeFormats(this.runs(), range) }], this.references(), this.inlineMode())
+                const caret = range.start + plainText(replacement).length
+                return this.commitEdit(replaceRuns(this.runs(), range, replacement), { start: caret, end: caret }, event, before)
+            },
+            caretRect: () => { const selection = this.ownerDocument.getSelection(); return selection?.rangeCount ? selection.getRangeAt(0).getBoundingClientRect() : this.editor.getBoundingClientRect() },
+        }, () => this.options.mentions?.())
     }
     private get value(): string { return this.options.value() }
     private inlineMode = (): boolean => typeof this.options.inline === 'function' ? this.options.inline() : this.options.inline ?? false
@@ -117,16 +150,21 @@ export class RichTextController {
         this.updateActive()
     }
     dispose = (restore = true): void => {
+        this.mentions?.dispose()
         this.listeners.abort()
-        if (restore) this.editor.replaceChildren(...this.originalContent)
+        if (restore) this.restoreContent()
         for (const [name, value] of this.originalAttributes) {
             if (value === null) this.editor.removeAttribute(name)
             else this.editor.setAttribute(name, value)
         }
+        if (this.originalWhiteSpace.value) this.editor.style.setProperty('white-space', this.originalWhiteSpace.value, this.originalWhiteSpace.priority)
+        else this.editor.style.removeProperty('white-space')
+        if (!this.originalWhiteSpace.hadStyle && !this.editor.style.length) this.editor.removeAttribute('style')
         if (this.wrapper) this.wrapper.replaceWith(...this.wrapper.childNodes)
     }
     private snapshot = (): Snapshot => ({ value: this.value, selection: this.selected[0]() })
-    private runs = (): readonly RichTextRun[] => parseRichText(this.value, this.ownerDocument, this.inlineMode())
+    private references = (): readonly RichTextReference[] => this.options.references?.() || []
+    private runs = (): readonly RichTextRun[] => parseRichText(this.value, this.ownerDocument, this.inlineMode(), this.references())
     private updateActive = (): void => {
         const next = this.pendingFormats ?? activeFormats(this.runs(), this.selected[0]())
         if (next.join() !== this.active[0]().join()) { this.active[1](next); this.options.formatsChanged?.(next) }
@@ -147,7 +185,7 @@ export class RichTextController {
         this.updateActive()
     }
     private commitEdit = (runs: readonly RichTextRun[], selection: RichTextSelection, event: Event, before = this.snapshot()): boolean => {
-        const normalized = normalizeRuns(this.options.plainText ? runs.map(run => ({ text: run.text, formats: [] })) : runs, this.inlineMode())
+        const normalized = normalizeRuns(this.options.plainText ? runs.map(run => ({ ...run, formats: [] })) : runs, this.inlineMode())
         const next = serializeRuns(normalized)
         this.applying = true
         let accepted = false
@@ -166,7 +204,7 @@ export class RichTextController {
     }
     private insert = (replacement: readonly RichTextRun[], event: Event): void => {
         this.rememberSelection()
-        const selection = this.selected[0](), normalized = normalizeRuns(replacement, this.inlineMode())
+        const selection = referenceSelection(this.runs(), this.selected[0]()), normalized = normalizeRuns(replacement, this.inlineMode())
         const caret = selection.start + plainText(normalized).length
         this.commitEdit(replaceRuns(this.runs(), selection, normalized), { start: caret, end: caret }, event)
     }
@@ -200,7 +238,7 @@ export class RichTextController {
         const editor = this.editor
         if (!editor) return
         const selection = editorSelection(editor, this.inlineMode()) ?? this.selected[0]()
-        let runs = readRichText(editor, this.inlineMode(), true)
+        let runs = readRichText(editor, this.inlineMode(), true, this.references())
         const composition = this.compositionEdit
         if (this.composing && composition) {
             const end = Math.max(composition.selection.start, plainText(runs).length - (composition.length - composition.selection.end))
@@ -212,6 +250,15 @@ export class RichTextController {
     }
     private keydown = (event: KeyboardEvent): void => {
         if (event.isComposing || !this.canChangeValue()) return
+        // Native buttons reserve Space for activation even while contenteditable.
+        // Insert through the same transaction as beforeinput and cancel that
+        // default action so the edit neither loses the space nor clicks the button.
+        if (this.editor.tagName === 'BUTTON' && event.key === ' ' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+            event.preventDefault()
+            this.rememberSelection()
+            this.insert([{ text: ' ', formats: this.active[0]() }], event)
+            return
+        }
         if (event.ctrlKey || event.metaKey) {
             const key = event.key.toLowerCase()
             const format = key === 'b' ? 'bold' : key === 'i' ? 'italic' : key === 'u' ? 'underline' : undefined
@@ -236,7 +283,7 @@ export class RichTextController {
         event.preventDefault()
         if (!this.canChangeValue() || !event.clipboardData) return
         const html = event.clipboardData.getData('text/html')
-        const runs = html ? parseRichText(html, this.ownerDocument, this.inlineMode()) : [{ text: event.clipboardData.getData('text/plain'), formats: this.active[0]() }]
+        const runs = html ? parseRichText(html, this.ownerDocument, this.inlineMode(), this.references()) : [{ text: event.clipboardData.getData('text/plain'), formats: this.active[0]() }]
         if (plainText(runs)) this.insert(runs, event)
     }
     private allowDrop = (event: DragEvent): void => { event.preventDefault() }
@@ -244,7 +291,7 @@ export class RichTextController {
         event.preventDefault()
         if (!this.canChangeValue() || !event.dataTransfer) return
         const html = event.dataTransfer.getData('text/html')
-        const runs = html ? parseRichText(html, this.ownerDocument, this.inlineMode()) : [{ text: event.dataTransfer.getData('text/plain'), formats: [] }]
+        const runs = html ? parseRichText(html, this.ownerDocument, this.inlineMode(), this.references()) : [{ text: event.dataTransfer.getData('text/plain'), formats: [] }]
         if (plainText(runs)) this.insert(runs, event)
     }
     private compositionStart = (): void => {

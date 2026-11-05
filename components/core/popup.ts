@@ -10,6 +10,8 @@ export const popupConstraintAttributes = ['popup-max-width', 'popup-max-height']
 
 export interface PopupControllerOptions {
     readonly placement?: () => PopupPlacement
+    /** Optional viewport bounds for caret-anchored or virtual reference popups. */
+    readonly anchorBounds?: () => DOMRect
     readonly matchAnchorWidth?: boolean
     readonly maxWidth?: () => PopupLength
     readonly maxHeight?: () => PopupLength
@@ -71,7 +73,7 @@ export class PopupController {
         this.authoredMaxHeight = authoredStyle.maxHeight
 
         const place = (): void => {
-            const rect = this.anchor.getBoundingClientRect()
+            const rect = this.options.anchorBounds?.() ?? this.anchor.getBoundingClientRect()
             const placement = this.options.placement?.() ?? 'bottom-start'
             const view = this.popup.ownerDocument.defaultView ?? window
             const viewportWidth = Math.max(0, view.innerWidth - 16)
@@ -122,12 +124,12 @@ export class PopupController {
         })
         listen(doc, 'keydown', event => {
             const keyboardEvent = event as KeyboardEvent
-            if (keyboardEvent.key === 'Escape') {
+            if (keyboardEvent.key === 'Escape' && !keyboardEvent.defaultPrevented) {
                 keyboardEvent.preventDefault()
                 this.onDismiss(keyboardEvent)
                 this.anchor.focus()
             }
-        }, true)
+        })
         listen(view, 'resize', place)
         listen(doc, 'scroll', place, true)
         if (typeof ResizeObserver !== 'undefined') {

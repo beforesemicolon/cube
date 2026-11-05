@@ -250,3 +250,28 @@ No npm release, production deployment or main-branch merge is performed by this 
 Artboard headers accept `nameIcon` and `nameDescription` (for example, a page type icon and route). With `editable=false`, the name and description form a selectable button with no inline editor. Pointer or keyboard activation honors the normal selection veto, selects the artboard, and emits `headeractivate` even when it was already selected. Applications can open their own Details inspector from this event. Double-clicking the non-editable name emits `headerdoubleactivate`, honoring the same selection veto, so applications can open a focused editing view. The `header-actions` slot aligns an application's menu at the opposite end of the existing header; it does not select, center, rename, or resize the artboard. Empty header space remains transparent to border hit testing. Existing `editable=true` consumers retain inline renaming.
 
 `cb-viewport` accepts a `top-center` slot for consumer toolbars. Slotted content stays fixed in viewport coordinates through pan and zoom, above the hand-tool capture surface. The `top-center` part provides the same raised control surface as positioned actions and is hidden when its slot is empty. Pointer, keyboard and wheel interactions in this slot do not pan the viewport.
+
+### Mentions
+
+Text inputs, textareas and rich text editors accept an optional `mentions` property. Options are data, never executable expressions:
+
+```js
+field.mentions = {
+  trigger: '@',
+  options: [{ id: 'total', label: 'Total', group: 'State', insertText: '{{state.total}}' }],
+  onSelect: ({ option, range }) => console.log(option.id, range)
+}
+```
+
+Typing a trigger at a word boundary opens the default accessible suggestion list. Arrow keys navigate, Enter inserts, Escape or Tab dismisses; email addresses and composition input are left alone. The popup follows the caret and fits the viewport. Disabled/read-only fields do not insert mentions. Rich-text insertion preserves formatting and joins the controller's Undo/Redo history. Values remain ordinary serialized strings. To show resolved reference labels while preserving source strings, supply `references` to text inputs, textareas or rich-text editors:
+
+```ts
+field.references = [{ value: '{{data.version}}', text: '1.3.6' }]
+field.value = 'Version {{data.version}}' // displays “Version 1.3.6”
+```
+
+The application supplies and refreshes these labels; Cube does not evaluate expressions. Native fields preserve reference identities during surrounding edits, mention insertion, deletion and Undo/Redo, and emit/submit source strings. Rich text also preserves references through formatting.
+
+For an existing rich editing surface, pass `mentions: () => configuration` to `RichTextController`. For another editor, import `MentionController` and `MentionAdapter` from `@beforesemicolon/cube/core`; the adapter supplies text, selection, transactional replacement, caret bounds and a blocked predicate. A custom view callback can replace the default suggestion renderer. Call `dispose()` when detaching. Configuration may change dynamically; `refresh()` updates an open list. Applications own context, expression syntax, type validation and persistence.
+
+Rich text supports host-resolved references through `references: [{ value: '{{data.version}}', text: '1.3.6' }]` on `cb-rich-text-editor`, or a `references` supplier on `RichTextController`. The editor shows `text` in an inline reference span while its public value and change events retain the original `value`. References keep identity through formatting, Undo/Redo, deletion and same-context paste. Selecting part of a reference formats or replaces that whole value. Cube never evaluates expressions; hosts supply resolved text, which is escaped before display.

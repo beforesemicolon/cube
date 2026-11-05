@@ -1,5 +1,5 @@
 export { RichTextEditorBase } from './RichTextEditorBase.js'
 export { RichTextController } from './controller.js'
 export type { RichTextControllerOptions } from './controller.js'
-export type { RichTextFormat } from './model.js'
+export type { RichTextFormat, RichTextReference } from './model.js'
 export type { RichTextEditorProps, RichTextEditorVariant } from './RichTextEditorBase.js'

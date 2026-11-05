@@ -310,3 +310,52 @@ for (const appearance of ['light', 'dark']) test(`rich text is accessible and fi
     expect((await host(page).boundingBox())!.width).toBeLessThanOrEqual(220)
     expect((await new AxeBuilder({ page }).include('cb-rich-text-editor').analyze()).violations).toEqual([])
 })
+
+test('external editing restores original DOM nodes and keeps reactive text bindings live', async ({ page }) => {
+    const result = await page.evaluate(async () => {
+        const controllerPath = '/components/form/rich-text-editor/controller.ts', runtimePath = '/components/core/runtime.ts'
+        const { RichTextController } = await import(controllerPath) as typeof import('../../components/form/rich-text-editor/controller.js')
+        const { html, state } = await import(runtimePath) as typeof import('../../components/core/runtime.js')
+        const [value, setValue] = state('Original wording')
+        const target = document.createElement('p')
+        document.body.append(target)
+        const template = html`<strong>${value}</strong>`.render(target)
+        const strong = target.firstElementChild!, original = Array.from(strong.childNodes)
+        const controller = new RichTextController(target, { value: () => '<em>Temporary draft</em>', commit: () => true })
+        controller.dispose()
+        const sameElement = target.firstElementChild === strong
+        const sameChildren = original.every((node, index) => strong.childNodes[index] === node)
+        const restored = target.textContent
+        setValue('Updated after editing')
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+        const updated = target.textContent
+        template.unmount(); target.remove()
+        return { sameElement, sameChildren, restored, updated }
+    })
+    expect(result).toEqual({ sameElement: true, sameChildren: true, restored: 'Original wording', updated: 'Updated after editing' })
+})
+
+test('external native button editing preserves typed spaces between words', async ({ page }) => {
+    await page.evaluate(async () => {
+        const controllerPath = '/components/form/rich-text-editor/controller.ts'
+        const { RichTextController } = await import(controllerPath) as typeof import('../../components/form/rich-text-editor/controller.js')
+        const target = document.createElement('button')
+        target.id = 'spacing-target'; target.textContent = 'Clickme'
+        target.style.cssText = 'white-space:normal;padding:20px'
+        document.body.append(target)
+        target.addEventListener('click', () => { target.dataset.clicks = String(Number(target.dataset.clicks || '0') + 1) })
+        let value = 'Clickme'
+        new RichTextController(target, { value: () => value, commit: next => { value = next; return true } }).focus()
+    })
+    const target = page.locator('#spacing-target')
+    await target.press('ControlOrMeta+a')
+    await target.pressSequentially('Click me now')
+    expect(await target.textContent()).toBe('Click me now')
+    await target.press('End'); await target.pressSequentially('  again ')
+    expect(await target.textContent()).toBe('Click me now  again ')
+    await expect(target).not.toHaveAttribute('data-clicks')
+    await target.press('Backspace')
+    expect(await target.textContent()).toBe('Click me now  again')
+    await target.press('ControlOrMeta+z')
+    expect(await target.textContent()).toBe('Click me now  again ')
+})

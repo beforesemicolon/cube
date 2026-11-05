@@ -55,6 +55,8 @@ export class RichTextEditor extends RichTextEditorBase {
         const editor = this.editor, control = this.fieldElement()
         if (!editor || !control) return
         if (!this.controller) this.controller = new RichTextController(editor, {
+            references: () => this.references,
+            mentions: () => this.mentions,
             value: () => this.value, commit: (value, event) => this.setValue(value, event),
             blocked: () => !this.canChangeValue(), inline: this.inlineMode,
             formatsChanged: this.active[1], submit: () => this.form?.requestSubmit(),
@@ -85,5 +87,5 @@ export class RichTextEditor extends RichTextEditorBase {
 export { RichTextEditorBase, RichTextController }
 export type { RichTextControllerOptions } from './controller.js'
 export type { RichTextEditorProps, RichTextEditorVariant } from './RichTextEditorBase.js'
-export type { RichTextFormat } from './model.js'
+export type { RichTextFormat, RichTextReference } from './model.js'
 register('cb-rich-text-editor', RichTextEditor)

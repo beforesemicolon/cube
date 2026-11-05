@@ -14,7 +14,7 @@ export function studioTemplates(source: StudioViewSource): Template {
     const label = () => scalarText(source.label)
     const accessibleName = () => scalarText(source.accessibleLabel) || label()
     const description = () => scalarText(source.description)
-    const value = () => Array.isArray(source.value) ? source.value.join(', ') : scalarText(source.value)
+    const value = () => source.displayValue?.() ?? (Array.isArray(source.value) ? source.value.join(', ') : scalarText(source.value))
     const items = () => Array.isArray(source.items) ? source.items : []
     const disabled = () => source.controlUnavailable?.() ?? bool(source.disabled)
     const readOnly = () => bool(source.readOnly)

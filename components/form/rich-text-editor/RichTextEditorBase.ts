@@ -1,11 +1,18 @@
-import { FieldControlBase, type FieldControlProps, type FormRestoreValue } from '../FormControlBase.js'
+import type { MentionConfiguration } from '../../core/mentions.js'
+import {
+    FieldControlBase,
+    type FieldControlProps,
+    type FormRestoreValue,
+} from '../FormControlBase.js'
 import { SourceValueController } from '../source-value.js'
 import { scalarText } from '../../core/value.js'
 import { parseRichText } from './html.js'
-import { serializeRuns } from './model.js'
+import { serializeRuns, type RichTextReference } from './model.js'
 
 export type RichTextEditorVariant = 'inline' | 'box'
 export interface RichTextEditorProps extends FieldControlProps<string> {
+    references?: readonly RichTextReference[]
+    mentions?: MentionConfiguration | null
     variant?: RichTextEditorVariant
     placeholder?: string
     toolbarLabel?: string
@@ -17,9 +24,23 @@ export interface RichTextEditorProps extends FieldControlProps<string> {
     subscriptLabel?: string
 }
 export abstract class RichTextEditorBase extends FieldControlBase<RichTextEditorProps> {
-    static observedAttributes = [...FieldControlBase.observedAttributes, 'variant', 'placeholder', 'toolbar-label',
-        'bold-label', 'italic-label', 'underline-label', 'strikethrough-label', 'superscript-label', 'subscript-label']
+    static observedAttributes = [
+        ...FieldControlBase.observedAttributes,
+        'mentions',
+        'references',
+        'variant',
+        'placeholder',
+        'toolbar-label',
+        'bold-label',
+        'italic-label',
+        'underline-label',
+        'strikethrough-label',
+        'superscript-label',
+        'subscript-label',
+    ]
     declare value: string
+    references: readonly RichTextReference[] = []
+    mentions: MentionConfiguration | null = null
     variant: RichTextEditorVariant = 'inline'
     placeholder = ''
     toolbarLabel = ''
