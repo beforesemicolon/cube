@@ -13,7 +13,10 @@ export class JsonEditor extends JsonEditorBase {
         return node?.localName === 'cb-code-editor' ? node as CodeEditor : undefined
     }
     render(): Template {
-        const error = () => scalarText(this.errorText) || this.parse().error
+        const error = () => {
+            const parsed = this.parse()
+            return scalarText(this.props.errorText?.()) || parsed.error
+        }
         const status = () => {
             const invalid = scalarText(this.invalidLabel), message = error()
             return message ? message === invalid ? invalid.replaceAll('{error}', '').trim() : invalid ? invalid.replaceAll('{error}', message) : message : scalarText(this.validLabel)
