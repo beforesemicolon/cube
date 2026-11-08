@@ -38,9 +38,9 @@ export class Viewport extends ViewportBase {
             onkeydown=${this.onKeydown}>
             <div part="world" style=${() => { const value=this.viewportState(); return `--cb-zoom:${value.zoom/100};--cb-pan-x:${value.x}px;--cb-pan-y:${value.y}px`; }}><slot part="content"></slot></div>
             ${when(this.panToolActive, html`<div part="pan-surface" aria-hidden="true"></div>`)}
-            <div part="top-center" hidden=${isNot(this.hasTopCenterContent[0])}
+            <div part="top-center" hidden=${isNot(this.hasTopCenterContent[0])} onslotchange=${this.topCenterSlotChange}
                 onpointerdown=${this.containEvent} onkeydown=${this.containEvent} onwheel=${this.containEvent}>
-                <slot name="top-center" onslotchange=${this.topCenterSlotChange}></slot>
+                <slot name="top-center"></slot>
             </div>
             ${repeat(['top-left', 'top-right'] as const, position => html`
                 <div part=${`actions ${position}`} hidden=${() => !this.actionsAt(position).length}

@@ -1,4 +1,3 @@
-import '../../icons/icon/index.js'
 import { register } from '../../core/Component.js'
 import { html, is, isNot, state, when, type Template } from '../../core/runtime.js'
 import { scalarText } from '../../core/value.js'

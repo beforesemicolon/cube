@@ -216,8 +216,10 @@ const objectProperties = new Set([
     'handleLabels',
     'items',
     'messages',
+    'mentions',
     'options',
     'recentColors',
+    'references',
     'rect',
     'selectedIds',
     'selectedKeys',
@@ -1075,6 +1077,8 @@ const taggedDefaults: Readonly<
     'cb-pie-chart': { status: 'finished', variant: 'pie' },
     'cb-skeleton': { variant: 'text', rows: 3, columns: 3 },
     'cb-grid': { columns: 'minmax(0, 1fr)', autoFlow: 'row', variant: '' },
+    'cb-resizable-panel': { variant: 'panel' },
+    'cb-css-value-input': { expandFunctions: true },
     'cb-select': {
         variant: 'secondary',
         caretPosition: 'end',
@@ -1088,6 +1092,7 @@ const taggedDefaults: Readonly<
     'cb-time-picker': { popupMaxWidth: '240px', popupMaxHeight: '240px' },
     'cb-dropdown': {
         variant: 'secondary',
+        caretPosition: '',
         iconOnly: false,
         iconOnlyAt: '',
         wrap: false,
@@ -1569,6 +1574,7 @@ function defaultValueFor(
     const tagged = taggedDefaults[tag]?.[property]
     if (tagged !== undefined) return tagged
     if (property === 'valueFormatter') return null
+    if (property === 'mentions') return null
     if (property === 'value' && numericValueTags.has(tag)) return 0
     if (property === 'value' && colorValueTags.has(tag)) return '#000000'
     if (

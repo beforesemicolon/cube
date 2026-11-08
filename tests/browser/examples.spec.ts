@@ -79,8 +79,8 @@ test('rich resource table keeps custom cells aligned and nested rows compact', a
     }
     const rowHeights = await table.locator('[part~="data-row"]').evaluateAll(rows => rows.map(row => row.getBoundingClientRect().height))
     expect(Math.max(...rowHeights)).toBeLessThanOrEqual(48)
-    const parentX = await table.locator('tr[data-row-key="website"] [part~="cell-content"]').evaluate(element => element.getBoundingClientRect().x)
-    const childX = await table.locator('tr[data-row-key="home"] [part~="cell-content"]').evaluate(element => element.getBoundingClientRect().x)
+    const parentX = await table.locator('tr[data-row-key="website"] td[data-column-id="name"] [part~="cell-content"]').evaluate(element => element.getBoundingClientRect().x)
+    const childX = await table.locator('tr[data-row-key="home"] td[data-column-id="name"] [part~="cell-content"]').evaluate(element => element.getBoundingClientRect().x)
     expect(childX - parentX).toBeGreaterThanOrEqual(24)
 })
 

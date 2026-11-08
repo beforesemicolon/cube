@@ -1,6 +1,7 @@
 import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
+import { TableCellMounts } from './cell-content.js'
 import {
     pick,
     isNot,
@@ -19,8 +20,6 @@ import { bool, finite, scalarText } from '../../core/value.js'
 
 import {
     TableBase,
-    type TableCellContent,
-    type TableCellRenderable,
     type TableColumn,
     type TableRowModel,
 } from './TableBase.js'
@@ -47,10 +46,7 @@ export class Table extends TableBase {
     private readonly widths = state<ReadonlyMap<string, number>>(new Map())
     private readonly offsets = state<ReadonlyMap<number, number>>(new Map())
     private readonly liveText = state('')
-    private readonly mountedCellContent = new Map<
-        HTMLElement,
-        { content: TableCellContent; cleanup?: () => void }
-    >()
+    private readonly cellMounts = new TableCellMounts(error => this.onError(error))
     private get columnWidths(): ReadonlyMap<string, number> {
         return this.widths[0]()
     }
@@ -537,33 +533,33 @@ export class Table extends TableBase {
                                                   part="tree-spacer"
                                               ></span>`
                                     }
-                                    <span
-                                        part="cell-content"
-                                        ref="cellContent"
-                                        data-row-key=${row.key}
-                                        data-column-id=${column.id}
-                                    ></span>
+                                    ${this.cellTemplate(column, row, index)}
                                 </div>`,
-                            () =>
-                                html`<span
-                                    part="cell-content"
-                                    ref="cellContent"
-                                    data-row-key=${row.key}
-                                    data-column-id=${column.id}
-                                ></span>`
+                            () => this.cellTemplate(column, row, index)
                         )}
                     </td>`,
                 { key: (column) => column.id }
             )}
         </tr>`
     }
+    private cellTemplate(column: TableColumn, row: TableRowModel, index: number): Template {
+        if (typeof column.cell === 'function') {
+            return html`<span part="cell-content" ref="cellContent"
+                data-row-key=${row.key} data-column-id=${column.id}></span>`
+        }
+        return html`<span part="cell-content" data-row-key=${row.key}
+            data-column-id=${column.id}>${() => this.cellContent(column, row, index)}</span>`
+    }
     protected mount(): void {
         super.mount()
         queueMicrotask(this.renderCellContents)
     }
     protected unmount(): void {
-        for (const container of this.mountedCellContent.keys())
-            this.clearCellContent(container)
+        this.cellMounts.dispose()
+    }
+    protected update(name: string): void {
+        super.update(name)
+        queueMicrotask(this.renderCellContents)
     }
     protected syncView(): void {
         this.dataset.density = this.normalizedDensity()
@@ -571,16 +567,11 @@ export class Table extends TableBase {
         this.toggleAttribute('data-wrap', bool(this.wrap))
         this.toggleAttribute('data-sticky-header', bool(this.stickyHeader))
         this.liveText[1](this.announcement)
-        queueMicrotask(() => {
-            this.renderCellContents()
-            this.applyStickyOffsets()
-        })
+        queueMicrotask(() => this.applyStickyOffsets())
     }
     private renderCellContents = (): void => {
-        const containers = elementRefs(this.refs.cellContent),
-            current = new Set(containers)
-        for (const container of this.mountedCellContent.keys())
-            if (!current.has(container)) this.clearCellContent(container)
+        const containers = elementRefs(this.refs.cellContent)
+        this.cellMounts.retain(new Set(containers))
         const rows = new Map<string, { row: TableRowModel; index: number }>()
         for (const group of this.groupedRows())
             group.rows.forEach((row, index) =>
@@ -593,73 +584,14 @@ export class Table extends TableBase {
             const entry = rows.get(container.dataset.rowKey ?? ''),
                 column = columns.get(container.dataset.columnId ?? '')
             if (!entry || !column) {
-                this.clearCellContent(container)
+                this.cellMounts.mount(container, undefined)
                 continue
             }
-            this.mountCellContent(
+            this.cellMounts.mount(
                 container,
                 this.cellContent(column, entry.row, entry.index)
             )
         }
-    }
-    private mountCellContent(
-        container: HTMLElement,
-        content: TableCellContent
-    ): void {
-        const previous = this.mountedCellContent.get(container)
-        if (previous?.content === content) return
-        this.clearCellContent(container)
-        if (content === null || content === undefined) {
-            container.replaceChildren()
-            return
-        }
-        if (content instanceof Node) {
-            container.replaceChildren(content)
-            this.mountedCellContent.set(container, { content })
-            return
-        }
-        if (this.isCellRenderable(content)) {
-            try {
-                container.replaceChildren()
-                content.render(container)
-                this.mountedCellContent.set(container, {
-                    content,
-                    cleanup:
-                        typeof content.unmount === 'function'
-                            ? () => {
-                                  content.unmount?.()
-                              }
-                            : undefined,
-                })
-            } catch (error) {
-                this.onError(error)
-                container.replaceChildren()
-            }
-            return
-        }
-        container.textContent = String(content)
-        this.mountedCellContent.set(container, { content })
-    }
-    private clearCellContent(container: HTMLElement): void {
-        const mounted = this.mountedCellContent.get(container)
-        if (mounted?.cleanup)
-            try {
-                mounted.cleanup()
-            } catch (error) {
-                this.onError(error)
-            }
-        this.mountedCellContent.delete(container)
-        container.replaceChildren()
-    }
-    private isCellRenderable(
-        content: TableCellContent
-    ): content is TableCellRenderable {
-        return (
-            typeof content === 'object' &&
-            content !== null &&
-            'render' in content &&
-            typeof content.render === 'function'
-        )
     }
     private resizeKey(column: TableColumn, event: KeyboardEvent): void {
         if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key))

@@ -56,12 +56,12 @@ export class Dropdown extends DropdownBase {
                 ref="anchor"
                 part="trigger trigger-anchor"
                 onclick="${() => this.toggle()}"
+                onslotchange="${this.syncTrigger}"
             >
                 <slot
                     ref="triggerSlot"
                     name="trigger"
                     part="trigger-slot"
-                    onslotchange="${this.syncTrigger}"
                 >
                     <cb-button
                         ref="defaultTrigger"

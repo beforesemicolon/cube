@@ -1,6 +1,4 @@
 import { register } from '../../core/Component.js'
-import '../../action/button/index.js'
-import '../../icons/icon/index.js'
 import componentStylesheet from '../../studio/view.css?inline'
 import { html, is, isNot, or, type Template } from '../../core/runtime.js'
 import { scalarText } from '../../core/value.js'

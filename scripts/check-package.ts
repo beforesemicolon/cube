@@ -67,6 +67,7 @@ try {
     await writeFile(resolve(directory, 'package.json'), JSON.stringify({ name: 'cube-release-consumer', private: true, type: 'module' }))
     execFileSync('npm', ['install', archive, '--ignore-scripts', '--omit=dev', '--no-audit', '--no-fund'], { cwd: directory, stdio: 'inherit' })
     const entries = ['theme/tokens', 'media/controller', 'charts/model'].map(path => `${manifest.name}/dist/esm/${path}.js`)
+    const allTags = [...componentEntries.map(entry => `cb-${entry.name}`), 'cb-modal-renderer'].sort()
     const smoke = `
         import assert from 'node:assert/strict';
         import { createRequire } from 'node:module';
@@ -91,7 +92,7 @@ try {
         assert.equal(registry.size, ${componentEntries.filter(entry => entry.path.startsWith('form/')).length}, 'A category import registers only its own category');
         assert.equal(registry.get('cb-text-input'), form.TextInput);
         const esm = await import(${JSON.stringify(manifest.name)});
-        assert.equal(registry.size, ${componentEntries.length}, 'ESM import registers immediately');
+        assert.deepEqual([...registry.keys()].sort(), ${JSON.stringify(allTags)}, 'ESM import registers immediately');
         assert.equal(typeof esm.TextInput, 'function');
         assert(!('initializeCube' in esm)); assert(!('ready' in esm));
         registry.clear();
@@ -101,7 +102,7 @@ try {
         require(${JSON.stringify(manifest.name + '/form')});
         assert.equal(registry.size, ${componentEntries.filter(entry => entry.path.startsWith('form/')).length});
         const cjs = require(${JSON.stringify(manifest.name)});
-        assert.equal(registry.size, ${componentEntries.length}, 'CJS require registers immediately');
+        assert.deepEqual([...registry.keys()].sort(), ${JSON.stringify(allTags)}, 'CJS require registers immediately');
         assert.equal(typeof cjs.TextInput, 'function');
         assert(!('initializeCube' in cjs)); assert(!('ready' in cjs));
         assert.equal((await import(${JSON.stringify(manifest.name + '/package.json')}, {with:{type:'json'}})).default.version, ${JSON.stringify(manifest.version)});

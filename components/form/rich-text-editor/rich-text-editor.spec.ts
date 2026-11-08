@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 import type { Template } from '../../core/runtime.js'
-import { RichTextEditorBase, type RichTextEditorProps } from './base.js'
+import type { RichTextEditorBase, RichTextEditorProps } from './base.js'
 import type { RichTextEditor } from './index.js'
 import { componentContract } from '../../../tests/component-contract.js'
 
@@ -8,13 +8,17 @@ interface ExtendedRichTextProps extends RichTextEditorProps {
     documentMode?: 'message' | 'template'
 }
 
-abstract class ExtendedRichTextEditor extends RichTextEditorBase<ExtendedRichTextProps> {
-    documentMode: ExtendedRichTextProps['documentMode'] = 'message'
-    protected cleanValue = (value: string): string => value
-    abstract render(): Template
+// Typecheck the extension contract without importing a DOM class in Playwright's Node runner.
+function extendEditor(Base: typeof RichTextEditorBase) {
+    abstract class ExtendedRichTextEditor extends Base<ExtendedRichTextProps> {
+        documentMode: ExtendedRichTextProps['documentMode'] = 'message'
+        protected cleanValue = (value: string): string => value
+        abstract render(): Template
+    }
+    return ExtendedRichTextEditor
 }
 
-void ExtendedRichTextEditor
+void extendEditor
 
 componentContract('cb-rich-text-editor', 'form--rich-text-editor', async ({ host }) => {
     await host.evaluate(node => { (node as RichTextEditor).value = 'Hello' })

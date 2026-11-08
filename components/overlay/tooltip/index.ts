@@ -1,7 +1,6 @@
 import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { isNot, and, html, state, when, type Template } from '../../core/runtime.js'
-import '../../text/shortcut/index.js'
 
 import { uid } from '../../core/id.js'
 import { bool, scalarText } from '../../core/value.js'

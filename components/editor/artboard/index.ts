@@ -60,7 +60,7 @@ export class Artboard extends ArtboardBase {
                     icon=${this.props.nameIcon} accessible-label=${this.nameActionLabel} disabled=${() => !this.canSelect()}
                     onaction=${this.activateHeader} ondblclick=${this.openHeader}><span part="name-label">${this.props.name}</span>${when(this.props.nameDescription, html`<span slot="suffix" part="name-description">${this.props.nameDescription}</span>`)}</cb-button>`)}
                 ${when(() => this.editable && this.nameDescription, html`<span part="name-description">${this.props.nameDescription}</span>`)}
-                <slot name="header-actions" part="header-actions" onpointerdown=${this.containEvent} onclick=${this.containEvent} ondblclick=${this.containEvent}></slot>
+                <slot name="header-actions" part="header-actions"></slot>
             </div>
             <div part="content-viewport" data-device=${() => this.previewMode === 'device' ? '' : null}><div ref="content" part="content" style=${this.contentStyle} onslotchange=${this.contentChanged}>
                 <slot ref="slot"></slot>
