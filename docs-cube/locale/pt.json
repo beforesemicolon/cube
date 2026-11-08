@@ -36,7 +36,6 @@
     "cartesianBody": "Um componente para visualizações cartesianas comuns, baseado em Apache ECharts. A referência funcional é o gráfico cartesiano Cloudscape; não é um adaptador React nem uma cópia visual exata.",
     "pie": "PieChart e donut",
     "pieBody": "Um componente para setores e anéis, com filtros, detalhes e conteúdo central opcional. ECharts só é carregado quando um gráfico com dados é montado.",
-    "figma": "Os painéis Studio em design/figma-layers são a referência visual; o Storybook fornece a referência executável dos componentes.",
     "categoryAction": "Ações",
     "categoryText": "Texto",
     "categoryForm": "Formulários",

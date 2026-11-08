@@ -243,7 +243,7 @@ Provider hints reuse `cb-tooltip` with its optional `anchorRect` (`{ left, top, 
 
 ## Scope and status
 
-This is an alpha increment of the Cube rewrite. The 216-item Studio design-reference inventory is indexed in `components/studio/catalog.ts`; only the audited reusable subset is published as components. Storybook provides interaction-ready component stories plus a separate application-composition gallery, and the localized documentation site provides category-level visualizers. The source boards in `design/figma-layers/Studio` remain the visual acceptance reference. Legacy `src/`, the old `docs/`, and their unused tooling have been removed; current source and documentation live in `components/` and `docs-cube/`.
+This is an alpha increment of the Cube rewrite. The Studio inventory is indexed in `components/studio/catalog.ts`; only the audited reusable subset is published as components. Storybook provides interaction-ready component stories plus a separate application-composition gallery, and the localized documentation site provides category-level visualizers. Legacy `src/`, the old `docs/`, and their unused tooling have been removed; current source and documentation live in `components/` and `docs-cube/`.
 
 No npm release, production deployment or main-branch merge is performed by this implementation.
 

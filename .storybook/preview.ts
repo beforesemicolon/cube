@@ -20,7 +20,7 @@ const preview: Preview = {
         layout: 'padded',
         options: { storySort: { order: [
             'Action', 'Text', 'Form', 'Layout', 'Navigation', 'Overlay', 'Feedback', 'Data display', 'Media', 'Charts',
-            'Styling', 'Editor', 'Collaboration', 'Icons', 'Theme', 'Design references', 'Examples',
+            'Styling', 'Editor', 'Collaboration', 'Icons', 'Theme', 'Examples',
         ] } },
     },
     globalTypes: { appearance: { description: 'Component appearance', toolbar: { icon: 'circlehollow', items: ['light','dark','system'] } } },

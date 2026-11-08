@@ -36,7 +36,6 @@
     "cartesianBody": "基于 Apache ECharts 的单一组件，覆盖常见笛卡尔图表。功能参考 Cloudscape，但不使用 React 包装器，也不逐像素复制其外观。",
     "pie": "PieChart 与环形图",
     "pieBody": "一个组件实现饼图和环形图，支持筛选、片段详情及可选中心内容。仅在挂载有数据的图表时加载 ECharts。",
-    "figma": "design/figma-layers 中的 Studio 设计板是视觉依据；Storybook 提供可运行的组件参考。",
     "categoryAction": "操作",
     "categoryText": "文本",
     "categoryForm": "表单",

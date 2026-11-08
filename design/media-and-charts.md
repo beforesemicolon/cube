@@ -2,9 +2,9 @@
 
 ## Source of truth
 
-Use the user-uploaded references in `design/figma-layers/Studio`, especially `01/Actions.png`, `02/Inputs.png`, and `03/Color & style.png`. Live Figma access is not required. The exported sheets cover the original editor families; dedicated media/chart sheets are not present in this upload. Do not claim a pixel-for-pixel media/chart sign-off based only on these files.
+Storybook's interactive media and chart stories are the runnable component reference. The browser tests verify playback, chart interactions, accessibility, and responsive layout.
 
-Storybook exposes the uploaded sheets under **Design references**, the working primitives under **Shared controls**, and runtime compositions under **Media**, **Charts**, and **Examples**. Runtime screenshots are generated from the actual components in browser tests, not substituted static mockups.
+Storybook exposes working components by category and compositions under **Examples**. Runtime screenshots are generated from the actual components in browser tests, not substituted static mockups.
 
 ## Eight required chart options, two public components
 
