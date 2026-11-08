@@ -22,6 +22,11 @@ const items = [
     { id: 'three', label: 'Disabled item', disabled: true },
 ]
 
+export const VerificationCode: Story = componentStory('cb-verification-code', {
+    label: 'Verification code', accessibleLabel: 'Verification code', name: 'otp_code',
+    length: 6, mode: 'numeric', pin: false, autocomplete: 'one-time-code', value: '', required: true,
+})
+
 export const TextInput: Story = componentStory('cb-text-input', {
     label: 'Text input',
     value: '12 px',

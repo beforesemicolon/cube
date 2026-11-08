@@ -46,6 +46,7 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 }
 
 const booleanProperties = new Set([
+    'pin',
     'expandFunctions',
     'enabled',
     'guidesEnabled',
@@ -396,6 +397,10 @@ const tagOptions: Readonly<
         autocomplete: ['off', 'on', 'tel', 'postal-code', 'cc-number'],
         inputMode: ['text', 'numeric', 'tel', 'decimal'],
     },
+    'cb-verification-code': {
+        mode: ['numeric', 'alphabetic', 'alphanumeric', 'mixed'],
+        autocomplete: ['one-time-code', 'off'],
+    },
     'cb-workspace': {
         variant: ['default', 'tabbed'],
         mobilePanel: ['', 'start', 'end', 'bottom'],
@@ -403,6 +408,7 @@ const tagOptions: Readonly<
 }
 
 const numberControls: Readonly<Record<string, NumberControl>> = {
+    length: { type: 'number', min: 1, max: 32, step: 1 },
     offset: { type: 'number', min: 0, step: 10 },
     delay: { type: 'number', min: 0, max: 5000, step: 50 },
     firstDayOfWeek: { type: 'number', min: 0, max: 6, step: 1 },
@@ -1015,6 +1021,7 @@ const taggedDefaults: Readonly<
     Record<string, Readonly<Record<string, StoryValue>>>
 > = {
     'cb-tooltip': { anchorRect: null, placement: 'top', delay: 400 },
+    'cb-verification-code': { length: 6, mode: 'numeric', pin: false, autocomplete: 'one-time-code' },
     'cb-tooltip-provider': { enabled: true, delay: 400 },
     'cb-artboard': {
         width: 0,

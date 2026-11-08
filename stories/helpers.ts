@@ -8,6 +8,7 @@ type PreviewValue = string | number | boolean | null | object | undefined
 type PreviewArgs = Record<string, PreviewValue>
 
 export const fieldControlTags = new Set([
+    'cb-verification-code',
     'cb-rich-text-editor',
     'cb-text-input', 'cb-textarea', 'cb-number-input', 'cb-unit-input', 'cb-css-value-input', 'cb-combobox', 'cb-range-slider', 'cb-stepper',
     'cb-date-picker', 'cb-time-picker', 'cb-file-picker', 'cb-token-input', 'cb-masked-input', 'cb-select', 'cb-slider',

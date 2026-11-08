@@ -1,0 +1,52 @@
+@import "../../theme/field.css";
+:host { display: inline-block; max-inline-size: 100%; min-inline-size: 0; }
+[part=control] {
+    position: relative;
+    inline-size: calc(var(--cb-code-length) * var(--component-verification-code-cell-size,36px) + (var(--cb-code-length) - 1) * var(--spacing-sm,8px));
+    max-inline-size: 100%;
+    min-block-size: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+}
+[part=input] {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    min-block-size: 0;
+    opacity: 0;
+    cursor: text;
+    padding: 0;
+}
+[part=cells] { display: grid; grid-template-columns: repeat(var(--cb-code-length),minmax(0,1fr)); gap: var(--spacing-sm,8px); pointer-events: none; }
+[part=cell] {
+    position: relative;
+    display: grid;
+    place-items: center;
+    block-size: max(var(--cb-height),var(--component-verification-code-cell-size,36px));
+    min-inline-size: 0;
+    border: 1px solid var(--cb-field-border);
+    border-radius: var(--cb-field-radius);
+    background: var(--cb-field-background);
+    color: var(--color-foreground);
+    font-size: var(--component-verification-code-font-size,16px);
+    font-variant-numeric: tabular-nums;
+}
+[part=control]:hover [part=cell]:not([data-active],[data-valid],[data-invalid]) { border-color: var(--cb-field-border-hover); }
+[part=cell][data-valid] { border: 2px solid var(--color-success,#16803c); }
+[part=cell][data-invalid] { border: 2px solid var(--color-danger,#b4233c); }
+[part=cell][data-active] {
+    border-color: var(--color-focus,#2563eb);
+    outline: var(--focus-ring,2px solid var(--color-focus,#2563eb));
+    outline-offset: var(--focus-ring-offset,2px);
+}
+[part=cell][data-active][data-empty]::after {
+    content: '';
+    inline-size: 2px;
+    block-size: 1em;
+    background: currentColor;
+}
+:host([data-disabled]) { opacity: var(--component-disabled-opacity,.5); }
+@media (forced-colors: active) { [part=cell] { border-color: ButtonText; } [part=cell][data-active] { outline: 2px solid Highlight; } }

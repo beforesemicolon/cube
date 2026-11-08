@@ -1,6 +1,7 @@
 import { studioEntries, studioGroups } from '../components/studio/catalog.js'
 
 const foundationEntries = [
+    {path:'form/verification-code',name:'verification-code',className:'VerificationCode'},
     {path:'action/button',name:'button',className:'Button'},
     {path:'navigation/link',name:'link',className:'Link'},
     {path:'action/split-button',name:'split-button',className:'SplitButton'},
