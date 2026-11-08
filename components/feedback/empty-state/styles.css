@@ -3,6 +3,7 @@
   display: block;
   inline-size: min(100%, 480px);
   min-inline-size: 0;
+  margin-inline: auto;
   text-align: center;
 }
 [part=icon-box] {

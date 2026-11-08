@@ -35,7 +35,7 @@ test('false disabled attributes re-enable form-associated controls',async({page}
 test('all value controls use the shared native form-control contract',async({page})=>{
     await start(page)
     const formAssociated=await page.evaluate(()=>{
-        const tags=['cb-text-input','cb-textarea','cb-number-input','cb-unit-input','cb-combobox','cb-checkbox','cb-switch','cb-range-slider','cb-stepper','cb-date-picker','cb-time-picker','cb-file-picker','cb-token-input','cb-slider','cb-select','cb-radio-group','cb-calendar','cb-editable-list','cb-code-editor','cb-json-editor','cb-linked-values','cb-editable-label','cb-masked-input','cb-color-picker','cb-gradient-editor']
+        const tags=['cb-text-input','cb-textarea','cb-number-input','cb-unit-input','cb-combobox','cb-checkbox','cb-radio','cb-switch','cb-range-slider','cb-stepper','cb-date-picker','cb-time-picker','cb-file-picker','cb-token-input','cb-slider','cb-select','cb-radio-group','cb-calendar','cb-editable-list','cb-code-editor','cb-json-editor','cb-linked-values','cb-editable-label','cb-masked-input','cb-color-picker','cb-gradient-editor']
         return Object.fromEntries(tags.map(tag=>[tag,Reflect.get(customElements.get(tag)??{},'formAssociated')]))
     })
     expect(Object.values(formAssociated).every(Boolean)).toBe(true)

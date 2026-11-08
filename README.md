@@ -6,6 +6,14 @@ The eleven Studio boards contain 216 visual references. The audited component ca
 
 ## Develop
 
+`Artboard` provides opt-in preview controls with `showPreviewControls`, `previewMode` (`width` or `device`), `previewPresets` (`id`, `label`, `width`, `height`, optional `category`), `previewPresetId`, `previewLinked`, `previewDefaultSize`, and translated `previewLabels`. Controls are a sizes selector (Artboard plus supplied presets) followed by Mobile/Tablet/Desktop icon shortcuts. Presets automatically select fixed, scrollable device dimensions; resize handles and `resize()` are disabled in device mode. Artboard restores free sizing and remembers the size before switching devices. The UI has no Custom option, mode switch or numeric dimensions; existing serialized preview inputs and `setPreview` remain supported. Clicking the active device icon again returns to Artboard. The `preview-description` slot can explain the host's styling scope. `setPreview(value)` and the native controls emit cancelable `beforepreviewchange`, then `previewchange` with `{ value, previousValue, originalEvent }`. `viewportSizing` makes dimensions describe the content viewport rather than the editor border. The floating controls stay unscaled and bounded while panning/zooming. Consumers own iframe full-page measurement, media-query mapping, and persistence; switching previews does not author CSS by itself. Import the segmented-control, select, tooltip, icon, and button registrations when composing the controls from individual modules.
+
+`FileBrowser` supports optional create-folder, upload, and refresh toolbar actions. Configure them with the corresponding `*Enabled`, `*Label`, `*Disabled`, and loading properties; the component emits `createfolderrequest`, `uploadrequest`, and `refreshrequest` with `{ folderId, originalEvent }`. Consumers own transport and refresh `entries` after success. `toolbarEnabled` can hide the whole toolbar for picker compositions. Explicit `pathItems` support server-loaded folders whose ancestors are not present in `entries`, and flat entry arrays remain visible for any `currentFolderId`.
+
+Entries can provide semantic `icon`, `selectable`, `actions`, application `data`, and an optional `metadata` string array. Grid cards append normalized metadata to their existing description/type line, and search includes those strings; Table keeps its dedicated size and modified columns. `selectionMode="actions"` combines multiple selection with a bulk action menu. Global `actions` are enabled only when every selected entry exposes the same action; entry and selection activation emit one `action` event containing the action, scope, selected IDs, normalized selected entries, optional entry, and original event. Selectable folders use single-click selection and double-click navigation; folders remain navigation-only by default.
+
+`FileBrowser` also owns cross-folder selection and preserves click order in both Grid and Table. `maxSelections` (`max-selections`) limits multiple selection; `0` means unlimited and single mode always permits one entry, replacing the previous choice. `selectionCount`, `selectionLimit`, and `selectedEntries()` expose the current selection. Supplying `selectionCountLabel` (`{count}`) enables the compact footer; `selectionLimitLabel` supports `{count}` and `{max}`. `selectedFilesLabel`, `clearSelectionLabel`, and `removeSelectionLabel` (`{entry}`) label the removable selection chips and Clear action. Limit checks also cover table Select all and `setSelection()`, and reject oversized multi-selections before events or state changes. The `selection`, `selection-toolbar`, `selection-count`, `selected-files`, `selected-file`, `clear-selection`, and `selection-check` parts style this anatomy; `--component-file-browser-height` optionally creates a bounded, independently scrolling browser. Search, actions and view controls share a row, with a two-row compact toolbar in narrow containers.
+
 Use Node 24.11+ (or Node 22.18+) with npm. The lockfile pins the verified toolchain.
 
 ```sh
@@ -58,7 +66,10 @@ Build the package first. These are distribution paths, not a claim that this alp
 <script src="https://unpkg.com/@beforesemicolon/web-component/dist/client.js"></script>
 <script src="https://unpkg.com/@beforesemicolon/cube/dist/client.js"></script>
 <cb-theme-provider appearance="dark">
-  <cb-audio-player src="/media/recording.mp3" media-title="Recording"></cb-audio-player>
+    <cb-audio-player
+        src="/media/recording.mp3"
+        media-title="Recording"
+    ></cb-audio-player>
 </cb-theme-provider>
 ```
 
@@ -76,6 +87,14 @@ The public categories are `action`, `text`, `form`, `layout`, `navigation`, `ove
 
 Anchored menus and pickers size themselves to their content and stay within the viewport. Use `popupMaxWidth` and `popupMaxHeight` with a CSS length or a numeric pixel value to override a component’s defaults; constrained content scrolls inside the popup.
 
+### CSS value input
+
+`cb-css-value-input` (`@beforesemicolon/cube/form/css-value-input`) edits one CSS property value as a string. Supply `css-property` (default `width`), `suggestions` (strings or select options), `units`, `default-unit`, and accessible `unit-label` / `argument-label` (`{index}` placeholder). Numeric values reveal the unit selector; non-numeric drafts offer suggestions. Selecting `min()` / `max()` opens two arguments, and `clamp()` opens three, in one horizontal row with the function selector. Existing nested expressions and additional min/max operands are preserved. Nested arguments, `calc()` and `var()` remain text-editable in their own cell. Set `expand-functions=false` to retain math expressions as text rather than expanding their argument controls (default true). Include `{ value: '', label: '×' }` in `units` for unitless values such as line height, and use `default-unit=""` when new numbers should be unitless. Narrow cells automatically compact padding and hide the unit chevron while retaining the accessible unit selector. Invalid property values stay as drafts and do not emit a committed change.
+
+`input` reports `{ value, valid, originalEvent }` for every draft; `beforechange` / `change` use the standard field value contract and commit only browser-valid values (or empty to clear). Incomplete function arguments and focused drafts survive source echoes; accepted external values restore the control after focus leaves. Standard disabled, read-only, required, form reset and cancellation behavior applies. Suggestions use a keyboard-accessible anchored listbox with contained scrolling. Parts: `control`, `input`, `unit`, `toggle`, `arguments`, `argument`, `popup`, `option`. The control does not combine separate width/min-width/max-width properties.
+
+For numeric values, Up/Down increases/decreases by `step` (default `1`) without changing the unit or moving focus. Shift uses ten steps; Alt uses one tenth of a step. Function arguments support the same controls. Invalid CSS results are not applied, and expressions remain text-editable. For nonnumeric values, Up/Down continues to navigate suggestions.
+
 Menus and popups also light-dismiss when focus moves into an outside iframe, including cross-origin frames. An iframe embedded inside the popup remains interactive without dismissing it.
 
 The WebComponent runtime is **external**, not compiled into Cube's browser scripts. Chart scripts also keep ECharts external: load `echarts/dist/echarts.min.js` before mounting a chart, or configure a promise-based loader with `BFS.CUBE.configureChartEngine`. Module consumers lazily import the ECharts dependency on the first chart render. Media-only scripts never load charting code.
@@ -86,17 +105,34 @@ The WebComponent runtime is **external**, not compiled into Cube's browser scrip
 
 The standalone `cb-rich-text-toolbar` accepts `activeFormats`, `disabled`, an accessible label and the six formatting labels. It emits one `format` event with `{ format, originalEvent }`. Its default slot accepts extra actions. Import the toolbar, button and toolbar/layout dependencies explicitly. The full `cb-rich-text-editor` now composes this toolbar and controller, retaining its form value, validation, variants, selection and input events. For source-backed page authoring, keep revision checks, source ownership and save/cancel outside Cube.
 
+`RichTextEditorBase<Props>` accepts an extended props interface for custom renderers. Override its protected `cleanValue` boundary when an application-owned document engine must retain nodes outside Cube's built-in inline allowlist, then compose the standalone toolbar with slotted Cube controls. Keep commands in the renderer and drive `activeFormats`, `pressed`, and selected values from the document engine; the controls continue to communicate through their standard `format`, `change`, and `action` events.
+
 ## Custom tab headers
 
-`cb-accordion` items accept an optional `renderItem: () => HtmlTemplate | Node` factory for lazy panel content. It runs once on first expansion; loaded content remains mounted while collapsed so field values and focusable controls are retained (but hidden and inert). Use `multiple` to allow several panels open at once. Assign items containing factories through the JavaScript `items` property, not JSON attributes. Without `renderItem`, existing `renderContent` and `content` behavior is unchanged. Replacing an item object creates fresh lazy content; `renderItem` takes precedence over either fallback.
+`cb-accordion` items accept an optional `renderItem: () => HtmlTemplate | Node` factory for lazy panel content. It runs once on first expansion; loaded content remains mounted while collapsed so field values and focusable controls are retained (but hidden and inert). Item `label` and `description` values may be strings or reactive string getters, allowing header copy to update without replacing the item or remounting its panel. Use `multiple` to allow several panels open at once. Assign items containing factories through the JavaScript `items` property, not JSON attributes. Without `renderItem`, existing `renderContent` and `content` behavior is unchanged. Replacing an item object creates fresh lazy content; `renderItem` takes precedence over either fallback.
+
+Accordion item actions reflow below the heading in containers up to 420px wide so long labels and descriptions retain the available reading width.
+
+`cb-alert` accepts rich default-slot content in addition to `label`, `value`, `status`, and `description`; place independent controls in its named `actions` slot. Warning and danger alerts use assertive alert semantics, while other tones remain polite status messages. Theme alert width with `--component-alert-width`, falling back to the shared feedback width.
+
+`cb-empty-state` centers its bounded content within the available inline space and accepts the BOS empty-state icon vocabulary through Cube's icon registry, including loading, file, people, collection, chart, palette, and translation glyphs.
+
+`cb-popover` dismisses when focus moves outside its trigger and panel in the same document, while preserving focus interactions inside the panel and embedded browsing contexts.
+
+`cb-tooltip` supports centered `top`, `bottom`, `left`, and `right` placements plus edge-aligned `top-start`, `top-end`, `bottom-start`, and `bottom-end` placements.
 
 `cb-tabs` items accept an optional `renderItem: () => HtmlTemplate | Node` factory. Omit it to display `label`. Keep `label` as the accessible tab name even when the header contains icons or badges. Cube retains selection, disabled state, keyboard navigation, dirty markers and `closable` actions; the active indicator spans the whole header, including its close button. Render non-interactive label content with the factory and use `closable` for the native close action rather than nesting buttons inside a tab.
 
 ```ts
 tabs.items = [
     { id: 'pages', label: 'Pages' },
-    { id: 'component', label: 'HelloWorld', closable: true,
-        renderItem: () => html`<span>HelloWorld <small>Component</small></span>` },
+    {
+        id: 'component',
+        label: 'HelloWorld',
+        closable: true,
+        renderItem: () =>
+            html`<span>HelloWorld <small>Component</small></span>`,
+    },
 ]
 ```
 
@@ -115,8 +151,18 @@ const workspace = document.createElement('cb-workspace') as Workspace
 workspace.variant = 'tabbed'
 workspace.startLabel = 'Navigation panels'
 workspace.startItems = [
-    { id: 'pages', name: 'Pages', iconName: 'file', renderContent: () => html`<p>Pages</p>` },
-    { id: 'layers', name: 'Layers', iconName: 'layers', renderContent: () => document.createElement('div') },
+    {
+        id: 'pages',
+        name: 'Pages',
+        iconName: 'file',
+        renderContent: () => html`<p>Pages</p>`,
+    },
+    {
+        id: 'layers',
+        name: 'Layers',
+        iconName: 'layers',
+        renderContent: () => document.createElement('div'),
+    },
 ]
 document.body.append(workspace)
 ```
@@ -129,17 +175,34 @@ Only each open panel's active factory is called. Switching tabs or collapsing un
 
 ```html
 <cb-theme-provider src="/themes/brand.json" appearance="system">
-  <cb-video-player
-    src="/media/film.mp4"
-    play-label="Reproduzir"
-    pause-label="Pausar"
-  ></cb-video-player>
+    <cb-video-player
+        src="/media/film.mp4"
+        play-label="Reproduzir"
+        pause-label="Pausar"
+    ></cb-video-player>
 </cb-theme-provider>
 ```
 
 Theme JSON follows site-builder's `schemaVersion: "1.0"`, `name`, `tokens` contract, including mode-aware leaves and uppercase `DEFAULT` scales. Built outputs include `themes/cube.json`, `light.json`, `dark.json` and CSS equivalents. Nested providers scope variables; an explicit inner theme defines its own palette. External theme loads are abortable and stale responses cannot replace a newer theme. Token files reject stylesheet/network injection; use authored stylesheets for fonts, images and `@keyframes`.
 
+The theme's `zIndex` group defines application layers: `root: 0`, `popup: 100`,
+`overlay: 200`, `flashbar: 250`, `modal: 300`, `tooltip: 400`, and `top: 10000`.
+They become `--z-index-root`, `--z-index-popup`, etc. Dropdown and popover surfaces
+fall back to the popup token; optional `--z-index-dropdown` and
+`--z-index-popover` overrides take precedence independently. Editor selection,
+marquee, and guide tokens remain local to the isolated editor viewport. Override
+these variables globally or inside a theme scope; the gaps allow intermediate
+application layers without extreme z-index values.
+
+CSS z-index orders document stacking contexts, not the browser's native top layer.
+Flashbars intentionally remain behind an open modal. Applications should render
+modal-local errors as inline alerts and close a modal before showing a global
+flashbar. `--z-index-top` does not override native modal ordering or disable modal
+focus containment.
+
 Fields use flat white backgrounds and soft grayscale borders in light mode, with equivalent neutral surfaces in dark mode. Resting and hover states have no inset shading or accent tint; accent color is reserved for focus and checked/active states. The `component.field` theme group controls `background`, `hover`, `border`, `borderHover`, and `radius` (CSS: `--component-field-*`). Applications can override these tokens. This treatment preserves control sizing and is scoped to input surfaces and neutral buttons, not layout panels or editor canvases; opt-in native selectors retain their native behavior.
+
+Clickable controls use pointer cursors, including semantic custom-element hosts and selectable rows. Disabled controls use `not-allowed`; text editing, panning, dragging, and resizing retain their meaningful cursors. Segmented controls have neutral idle, hover, and pressed surfaces, with a raised selected segment.
 
 Cube is localization-agnostic: it does not own a `locale` attribute, translation catalog, or dependency on `@beforesemicolon/intl`. Applications provide final translated visible and ARIA text through the component’s explicit text properties. Native number, date, and time formatting uses the document’s `lang` as a formatting hint. The documentation itself is available in five languages and uses the `fading-citrus` site-builder theme as Markup. The `:::cube component-name` markdown extension renders a fixed, safe example visualizer; it does not evaluate arbitrary pasted code. Markdown highlighting uses site-builder's existing highlight.js integration.
 
@@ -157,7 +220,9 @@ Use `<cb-button size="tiny" icon="close" icon-only accessible-label="Remove item
 
 ```html
 <cb-icon accessible-label="Company mark">
-  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M2 2h20v20H2z" /></svg>
+    <svg viewBox="0 0 24 24">
+        <path fill="currentColor" d="M2 2h20v20H2z" />
+    </svg>
 </cb-icon>
 <cb-icon src="/icons/company.svg" accessible-label="Company mark"></cb-icon>
 <cb-button icon-src="/icons/company.svg" label="Company"></cb-button>
@@ -177,7 +242,14 @@ Simple native media with play/pause, stop, configurable backward/forward seeking
 player.seekStep = 15
 player.backwardLabel = 'Back 15 seconds'
 player.forwardLabel = 'Ahead 15 seconds'
-player.tracks = [{ src: '/captions/en.vtt', language: 'en', label: 'English', default: true }]
+player.tracks = [
+    {
+        src: '/captions/en.vtt',
+        language: 'en',
+        label: 'English',
+        default: true,
+    },
+]
 await player.play() // false on a rejected play attempt; the error event reports the cause
 player.stop()
 ```
@@ -204,24 +276,32 @@ Provide `accessible-label`, `toolbar-label`, `bold-label`, `italic-label`, `unde
 
 Layer-tree nodes accept `actions: [{ id, icon, name, label, disabled }]` (only `id` and `label` are required). Actions are application-owned commands; `name` is the button name and `label` is its accessible text, also shown when no icon is supplied. Listen to `action` on `cb-layer-tree`: `detail` contains `{ id, item, action, originalEvent }`. These commands do not select, rename, or drag the node. Cancel `beforeaction` to veto a command. Existing visibility/lock/rename controls remain available independently.
 
-Selection overlays accept the same `actions` array and an `actionsLabel` for the toolbar's accessible name. Their `action` detail is `{ action, rect, rotation, originalEvent }`. The toolbar flips above/below and shifts sideways within the nearest `cb-viewport` (intersected with the browser viewport). It stays unscaled and upright during zoom, pan, rotation, resizing, and scrolling; oversized action lists scroll. With no actions, no toolbar is shown. Load the `action` and `layout` categories alongside `editor` for the composed toolbar and buttons.
+Selection overlays accept the same `actions` array and an `actionsLabel` for the toolbar's accessible name. Their `action` detail is `{ action, rect, rotation, originalEvent }`. The toolbar stays centered above its selection and moves with it instead of pinning to viewport edges. Artboard preview controls likewise remain above their artboard. Controls are clipped to the nearest `cb-viewport` (intersected with the browser viewport), and fully offscreen bars cannot receive focus or input. They stay unscaled and upright during zoom, pan, rotation, resizing, and scrolling; oversized action lists scroll. With no actions, no toolbar is shown. Load the `action` and `layout` categories alongside `editor` for the composed toolbar and buttons.
+
+Standalone controls outside a `cb-viewport` retain browser-boundary placement so view-filling component artboards remain usable without a pan surface.
 
 Selection borders are CSS-customizable, not a fixed set of variant props. Both `cb-selection-overlay` and `cb-marquee-selection` expose `::part(selection)`; existing `::part(outline)` and `::part(marquee)` remain available. For example:
 
 ```css
-cb-selection-overlay::part(selection) { border-style: dashed; border-color: #be185d; }
-cb-marquee-selection::part(selection) { border-style: dotted; border-color: #0891b2; }
+cb-selection-overlay::part(selection) {
+    border-style: dashed;
+    border-color: #be185d;
+}
+cb-marquee-selection::part(selection) {
+    border-style: dotted;
+    border-color: #0891b2;
+}
 /* Or theme all selection chrome, including handles and size labels: */
 cb-selection-overlay {
-  --component-selection-border-style: solid;
-  --component-selection-color: #7c3aed;
-  --component-selection-width: 2px;
+    --component-selection-border-style: solid;
+    --component-selection-color: #7c3aed;
+    --component-selection-width: 2px;
 }
 ```
 
 Style the selection toolbar with `::part(controls)` and `::part(toolbar)`; its actions expose `action`, `action-control`, `action-icon`, and `action-label`. Node commands expose the same action parts on `cb-layer-tree` plus `node-action`.
 
-Artboards size themselves to the full content extent by default, without internal scrolling. Set `name` for the editable title; provide `nameLabel`, `saveLabel`, and `cancelLabel` for its controls. Selected artboards show right, bottom, and corner resize handles. Resizing fixes both dimensions; clear `width` and `height` (or set them to `0`) to return to content sizing. Confirmed name edits emit `change` with `value` and `previousValue`; resizing emits `resize` with previous and next size objects. Single-click the name to select and center the artboard at 100% zoom inside `cb-viewport`; double-click the name (or press F2) to edit it. Double-clicking the artboard surface also centers it. Composed artboards require the `form` and `action` categories for their name editor and handles.
+Artboards size themselves to the full content extent by default, without internal scrolling. Set `name` for the editable title; provide `nameLabel`, `saveLabel`, and `cancelLabel` for its controls. Click any content or border to select the artboard, without blocking consumer controls. An invisible target extends six screen pixels outside each border, including before selection and when zoomed out in `cb-viewport`, without changing layout or document dimensions. Same-origin iframe clicks also select it; cross-origin iframe focus transfers select its owning artboard without accessing the embedded document. `beforeselect`, `selectable`, and `disabled` still govern selection. Selected artboards show right, bottom, and corner resize handles. Resizing fixes both dimensions; clear `width` and `height` (or set them to `0`) to return to content sizing. Confirmed name edits emit `change` with `value` and `previousValue`; resizing emits `resize` with previous and next size objects. Single-click the name to select and focus the artboard at 100% zoom inside `cb-viewport`: boards that fit are centered in full, while taller pages start near the top with room for their name and preview tools. Double-click the name (or press F2) to edit it. Double-clicking the artboard surface uses the same size-aware focus. Composed artboards require the `form` and `action` categories for their name editor and handles.
 
 Enable artboard guides with `guidesEnabled`; `showGuides` hides the UI without deleting saved guides. Supply `guides` as `{ id, axis, position }[]` in document pixels (`x`: horizontal line, `y`: vertical line). Provide `horizontalGuideLabel`, `verticalGuideLabel`, and `guideLabel` (supports `{id}`, `{axis}`, `{position}`) for accessible controls. Drag from the top/left edge to create, drag a line to reposition, or drag past an edge to remove. Lines snap to edges, the center, and other parallel guides. Escape restores the starting guides. Focused guides support arrows (Shift: 10px), Home, End, and Delete; activating a creation edge by keyboard adds a centered guide. `guideDistanceLabel` supports `{start}` and `{end}` distances from opposing edges. `guideschange` reports live `value`, `previousValue`, `guide`, and `operation`; `guideend` reports the completed gesture, its original `previousValue`, and `cancelled`. Persist `event.detail.value` to restore guides later. Programmatic assignment emits no interaction event. Guides use the editor category's `cb-guide-overlay` and the action category's `cb-button`.
 
@@ -233,19 +313,24 @@ Import concrete classes and headless bases directly, for example `import { MenuB
 
 Action parts include semantic surfaces such as `control`, `trigger`, `popup`, `menu`, `item`, `tab`, `navigation`, `page`, `tooltip`, `shortcut` and `key`. Layout primitives expose `content` or `line`; overlay parts include `dialog`, `header`, `heading`, `description`, `body`, `footer`, `message` and `message-actions`. Media and chart parts retain their documented control and data surfaces. Use `::part` for structural overrides and theme variables for appearance. Third-party engine descendants are not stable Cube parts.
 
+### Button label wrapping
+
+Button labels stay on one line by default, including buttons used inside segmented controls. Set `wrap="true"` (or the `wrap` property) to allow multiline labels; `wrap="false"` restores the default. This applies to regular and semantic button labels without changing the text direction.
+
 ### Automatic button tooltips
 
 Opt in by wrapping an application or panel in `<cb-tooltip-provider>`. Register both `@beforesemicolon/cube/overlay/tooltip-provider` and `@beforesemicolon/cube/overlay/tooltip` when using individual imports. The provider uses existing accessible labels, button labels, or native titles, including buttons rendered inside composed Cube components. It does not change button layout, actions, or selection styling. Website content inside an iframe is outside the scope.
 
 The provider supports pointer hover, keyboard navigation, disabled controls, and dynamic buttons. `delay` defaults to 400ms; set `enabled="false"` to disable the scope. Escape, activation, focus blur, document scrolling, window blur, and removal dismiss hints. Composed hover/focus ownership is also checked while a hint is active, so entering an iframe or a trimmed shadow-boundary event cannot retain stale hints. Original titles and accessibility descriptions are restored on dismissal; explicit `cb-tooltip` wrappers and nested providers take precedence. Supply labels for icon-only controls, as usual.
 
-Provider hints reuse `cb-tooltip` with its optional `anchorRect` (`{ left, top, right, bottom }` in viewport pixels). The provider supplies `boundaryRect` in the same shape, intersecting the visual viewport with composed `overflow:auto`/`scroll` ancestors (including shadow roots and slots). Anchored hints flip and shift inside those visible scrollports, remain unscaled in the browser top layer, and dismiss when their trigger scrolls fully outside. Decorative `overflow:hidden` wrappers do not create a scroll boundary. Standalone anchored tooltips can supply `boundary-rect` explicitly; ordinary slotted tooltips retain their existing placement and API.
+All `cb-tooltip` bubbles use the browser top layer, including ordinary slotted triggers and provider hints. `placement` is a preference: bubbles flip and shift within the visual viewport, reflow after resizing, and track moving or scrolling triggers without being clipped or scaled by ancestor containers. Scrollports (including shadow roots and slots) determine whether a trigger is still visible; a small scrolling toolbar does not truncate its tooltip. `anchorRect` optionally supplies explicit viewport-pixel coordinates (`{ left, top, right, bottom }`), and `boundaryRect` in the same shape can explicitly constrain either tooltip kind. A tooltip hides when its trigger leaves its visible scrollports or its anchor leaves an explicit boundary. Decorative `overflow:hidden` wrappers do not create a scroll boundary.
 
 ## Scope and status
 
 This is an alpha increment of the Cube rewrite. The Studio inventory is indexed in `components/studio/catalog.ts`; only the audited reusable subset is published as components. Storybook provides interaction-ready component stories plus a separate application-composition gallery, and the localized documentation site provides category-level visualizers. Legacy `src/`, the old `docs/`, and their unused tooling have been removed; current source and documentation live in `components/` and `docs-cube/`.
 
 No npm release, production deployment or main-branch merge is performed by this implementation.
+
 
 Artboard headers accept `nameIcon` and `nameDescription` (for example, a page type icon and route). With `editable=false`, the name and description form a selectable button with no inline editor. Pointer or keyboard activation honors the normal selection veto, selects the artboard, and emits `headeractivate` even when it was already selected. Applications can open their own Details inspector from this event. Double-clicking the non-editable name emits `headerdoubleactivate`, honoring the same selection veto, so applications can open a focused editing view. The `header-actions` slot aligns an application's menu at the opposite end of the existing header; it does not select, center, rename, or resize the artboard. Empty header space remains transparent to border hit testing. Existing `editable=true` consumers retain inline renaming.
 

@@ -1,16 +1,21 @@
 import { register } from '../../core/Component.js'
-import componentStylesheet from '../../studio/view.css?inline'
-import { type Template } from '../../core/runtime.js'
-import { createStudioView, type StudioView } from '../../studio/view.js'
-import { BadgeBase } from './BadgeBase.js';
+import componentStylesheet from './styles.css?inline'
+import { html, type Template } from '../../core/runtime.js'
+import { BadgeBase } from './BadgeBase.js'
 export class Badge extends BadgeBase {
     stylesheet = componentStylesheet
 
-    private view?: StudioView;
-    render(): Template { this.view = createStudioView(this); return this.view.root; }
-    protected syncView(): void { this.view?.update(); }
+    render(): Template {
+        return html`<span
+            part="display token badge"
+            data-tone="${() => this.badgeTone}"
+            role="status"
+            aria-label="${() => this.accessibleName() || null}"
+            ><slot part="content">${() => this.badgeText}</slot></span
+        >`
+    }
 }
-export { BadgeBase };
-export type { BadgeProps } from './BadgeBase.js';
+export { BadgeBase }
+export type { BadgeProps, BadgeTone } from './BadgeBase.js'
 
 register('cb-badge', Badge)

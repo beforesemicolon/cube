@@ -52,6 +52,21 @@
   font-size: 12px;
   line-height: 16px;
 }
+[part~=content] {
+  margin-block-start: 8px;
+  color: var(--color-foreground);
+  font-size: 12px;
+  line-height: 16px;
+}
+[part~=content][hidden] {
+  display: none;
+}
+[part~=content] ::slotted(:first-child) {
+  margin-block-start: 0;
+}
+[part~=content] ::slotted(:last-child) {
+  margin-block-end: 0;
+}
 [part~=actions] {
   display: flex;
   flex-wrap: wrap;
@@ -129,18 +144,29 @@
 [part~=spinner-ring] {
   display: inline-block;
   flex: none;
-  inline-size: 16px;
-  block-size: 16px;
-  border: 2px solid var(--color-primary);
+  inline-size: var(--component-spinner-size-sm,16px);
+  block-size: var(--component-spinner-size-sm,16px);
+  border: var(--component-spinner-stroke-sm,2px) solid var(--color-primary);
   border-inline-end-color: transparent;
   border-radius: 50%;
   rotate: -45deg;
   animation: cb-feedback-spin .8s linear infinite;
 }
-:host([data-size=md]) [part~=spinner-ring],
+:host([data-size=tiny]) [part~=spinner-ring],
+:host([data-size=xs]) [part~=spinner-ring] {
+  inline-size: var(--component-spinner-size-xs,12px);
+  block-size: var(--component-spinner-size-xs,12px);
+  border-width: var(--component-spinner-stroke-xs,2px);
+}
+:host([data-size=md]) [part~=spinner-ring] {
+  inline-size: var(--component-spinner-size-md,24px);
+  block-size: var(--component-spinner-size-md,24px);
+  border-width: var(--component-spinner-stroke-md,3px);
+}
 :host([data-size=lg]) [part~=spinner-ring] {
-  inline-size: 24px;
-  block-size: 24px;
+  inline-size: var(--component-spinner-size-lg,40px);
+  block-size: var(--component-spinner-size-lg,40px);
+  border-width: var(--component-spinner-stroke-lg,4px);
 }
 [data-component=spinner] [part~=status-title] {
   font-size: 12px;

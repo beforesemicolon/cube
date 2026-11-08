@@ -1,4 +1,5 @@
 @import "./box-sizing.css";
+@import "./interaction.css";
 :host {
   display: inline-block;
   max-inline-size: 100%;
@@ -42,11 +43,12 @@ textarea,
 }
 button,
 [part~=control] {
-  min-block-size: var(--cb-height);
+  min-block-size: var(--toolbar-control-height, var(--cb-height));
   border: 1px solid var(--color-border, #8A959F);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--toolbar-control-radius, var(--radius-sm, 6px));
   background: var(--color-surface-muted, #F5F6F5);
-  padding: var(--spacing-xs,4px) var(--spacing-md,12px);
+  padding: var(--toolbar-control-padding-block, var(--spacing-xs,4px)) var(--toolbar-control-padding-inline, var(--spacing-md,12px));
+  font-size: var(--toolbar-control-font-size, inherit);
   margin: 0;
 }
 button,
@@ -115,6 +117,12 @@ button,
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+@media (pointer: coarse) {
+  :host,
+  :host([data-size]) {
+    --cb-height: var(--component-control-touch-height, 44px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   *,

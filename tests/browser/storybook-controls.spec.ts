@@ -5,6 +5,34 @@ async function start(page: Page): Promise<void> {
     await page.waitForFunction(() => Boolean(customElements.get('cb-theme-provider')))
 }
 
+test('File Browser upload flags have boolean controls and false defaults in Storybook', async ({ page }) => {
+    await start(page)
+    const metadata = await page.evaluate(async () => {
+        const { controlsFor, storyArgsFor } = await import('../../stories/controls.js')
+        const controls = controlsFor('cb-file-browser'), args = storyArgsFor('cb-file-browser', {})
+        return ['uploadEnabled', 'uploading'].map(property => ({ property, control: controls[property]?.control,
+            type: controls[property]?.table.type.summary, defaultSummary: controls[property]?.table.defaultValue.summary, value: args[property] }))
+    })
+    expect(metadata).toEqual(['uploadEnabled', 'uploading'].map(property => ({ property, control: 'boolean', type: 'boolean', defaultSummary: 'false', value: false })))
+})
+
+test('File Browser Storybook boolean switches show the upload action and control its busy state', async ({ page }) => {
+    await page.goto('http://127.0.0.1:6006/?path=/story/data-display--file-browser')
+    const upload = page.frameLocator('#storybook-preview-iframe').getByRole('button', { name: 'Upload files', exact: true })
+    await expect(page.locator('#control-uploadEnabled')).toHaveAttribute('role', 'switch')
+    await expect(page.locator('#control-uploading')).toHaveAttribute('role', 'switch')
+    await expect(upload).toBeHidden()
+    await page.locator('label[for="control-uploadEnabled"]').click()
+    await expect(upload).toBeVisible()
+    await expect(upload).toBeEnabled()
+    await page.locator('label[for="control-uploading"]').click()
+    await expect(upload).toBeDisabled()
+    await page.locator('label[for="control-uploading"]').click()
+    await expect(upload).toBeEnabled()
+    await page.locator('label[for="control-uploadEnabled"]').click()
+    await expect(upload).toBeHidden()
+})
+
 test('Description Row is absent from Storybook and asset examples use native metadata', async ({ page }) => {
     const response = await page.request.get('http://127.0.0.1:6006/index.json')
     const catalog: { entries: Record<string, { id: string }> } = await response.json()

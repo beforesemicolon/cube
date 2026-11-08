@@ -13,6 +13,16 @@ export interface TextInputProps extends FieldControlProps<string> {
     references?: readonly RichTextReference[]
     mentions?: MentionConfiguration | null
     placeholder?: string
+    type?: string
+    autocomplete?: string
+    pattern?: string
+    minLength?: number
+    maxLength?: number
+    min?: string
+    max?: string
+    step?: string
+    inputMode?: string
+    icon?: string
 }
 
 /** Headless behavior for the Text input component. */
@@ -22,6 +32,16 @@ export abstract class TextInputBase extends FieldControlBase<TextInputProps> {
         'mentions',
         'references',
         'placeholder',
+        'type',
+        'autocomplete',
+        'pattern',
+        'min-length',
+        'max-length',
+        'min',
+        'max',
+        'step',
+        'input-mode',
+        'icon',
     ]
     value = ''
     references: readonly RichTextReference[] = []
@@ -40,6 +60,16 @@ export abstract class TextInputBase extends FieldControlBase<TextInputProps> {
     }
     protected update(name: string): void { super.update(name); this.mentionController?.refresh() }
     placeholder = ''
+    type = 'text'
+    autocomplete = ''
+    pattern = ''
+    minLength: number | string = ''
+    maxLength: number | string = ''
+    min = ''
+    max = ''
+    step = ''
+    inputMode = ''
+    icon = ''
     readonly componentName = 'text-input'
     readonly componentKind: StudioKind = 'text'
     protected fieldElement(): HTMLInputElement | undefined {

@@ -1,0 +1,33 @@
+/* Clickable semantics, not generic focusability: text fields and editor drag
+   surfaces keep their own cursors. Component-specific gesture rules win. */
+:where(
+  button, a[href], area[href], summary, select, label,
+  input[type=button], input[type=submit], input[type=reset], input[type=image],
+  input[type=checkbox], input[type=radio], input[type=range], input[type=color], input[type=file],
+  [role=button], [role=link], [role=checkbox], [role=radio], [role=switch],
+  [role=tab], [role=option], [role=menuitem], [role=menuitemcheckbox],
+  [role=menuitemradio], [role=treeitem]
+) {
+  cursor: pointer;
+}
+:host(:is(
+  [role=button], [role=link], [role=checkbox], [role=radio], [role=switch],
+  [role=tab], [role=option], [role=menuitem], [role=menuitemcheckbox],
+  [role=menuitemradio], [role=treeitem]
+)) {
+  cursor: pointer;
+}
+:disabled, [aria-disabled=true], label:has(:disabled) {
+  cursor: not-allowed;
+}
+:host(:is([data-disabled], [aria-disabled=true])) {
+  cursor: not-allowed;
+}
+:host([data-disabled]) :where(
+  button, a[href], summary, select, label, input,
+  [role=button], [role=link], [role=checkbox], [role=radio], [role=switch],
+  [role=tab], [role=option], [role=menuitem], [role=menuitemcheckbox],
+  [role=menuitemradio], [role=treeitem]
+) {
+  cursor: not-allowed;
+}

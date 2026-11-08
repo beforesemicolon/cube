@@ -1,6 +1,6 @@
 import { NumericInputBase, type NumericInputProps } from '../NumericInputBase.js'
 import type { StudioKind } from '../../studio/types.js'
-import { normalizeOptions, type SelectOption } from '../model.js'
+import { normalizeOptions, type SelectOption, type NormalizedSelectOption } from '../model.js'
 import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength } from '../../core/popup.js'
 import { bool } from '../../core/value.js'
 
@@ -25,7 +25,7 @@ export abstract class UnitInputBase extends NumericInputBase<UnitInputProps> {
     readonly componentName = 'unit-input'
     readonly componentKind: StudioKind = 'number'
 
-    get normalizedUnits(): ReadonlyArray<Required<SelectOption>> {
+    get normalizedUnits(): readonly NormalizedSelectOption[] {
         return normalizeOptions(this.units)
     }
 

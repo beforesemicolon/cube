@@ -4,6 +4,7 @@ import { bool, clamp, finite, scalarText } from '../../core/value.js'
 
 export type WorkspacePanel = 'start' | 'end' | 'bottom'
 export interface WorkspaceItem {
+    readonly shortcut?: string
     readonly id: string
     readonly name: string
     readonly description?: string

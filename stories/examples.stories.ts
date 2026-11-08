@@ -692,3 +692,27 @@ export const GlobalFlashbarSystem: Story = {
         return root
     },
 }
+
+export const ModalActionNotifications: Story = {
+    name: 'Feedback / Modal action errors',
+    render: () => {
+        const root = compactSurface()
+        const launcher = component('cb-button', { label: 'Open publish dialog', variant: 'primary' })
+        launcher.addEventListener('action', () => {
+            configureFlashbarHost({ parent: root, accessibleLabel: 'Application notifications', position: 'top-end' })
+            showModal({
+                heading: 'Publish project', description: 'An action error stays visible above the modal backdrop.',
+                body: 'Try publishing, then retry or dismiss the notification without closing this dialog.', cancelLabel: 'Cancel',
+                actions: [{ label: 'Publish', dismiss: false, onAction: () => {
+                    const notice = createFlashbar({
+                        id: 'modal-publish-error', type: 'danger', heading: 'Publish failed', message: 'Check the connection and try again.',
+                        dismissLabel: 'Dismiss publish error', actionLabel: 'Retry', duration: 0,
+                        action: () => { notice.update({ type: 'success', heading: 'Published', message: 'The project is live.', actionLabel: '', duration: 5000 }) },
+                    })
+                } }],
+            })
+        })
+        root.append(launcher)
+        return root
+    },
+}

@@ -44,6 +44,12 @@ export class JsonEditor extends JsonEditorBase {
     focus(options?: FocusOptions): void { this.editor?.focus(options) }
 }
 export { JsonEditorBase }
-export type { JsonEditorProps, JsonPrimitive, JsonValue, JsonValidator } from './JsonEditorBase.js'
+export type {
+    JsonEditorProps,
+    JsonPrimitive,
+    JsonValue,
+    JsonValidationIssue,
+    JsonParseResult,
+} from './JsonEditorBase.js'
 
 register('cb-json-editor', JsonEditor)

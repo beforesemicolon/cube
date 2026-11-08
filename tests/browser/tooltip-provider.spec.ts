@@ -66,6 +66,26 @@ test('opt-in button hints support hover, disabled controls, focus, dismissal and
     await expect(page.locator('#save')).toHaveAttribute('title', 'Save document')
 })
 
+test('explicit shortcut hints override the tooltip but preserve the accessible control name', async ({ page }) => {
+    await page.evaluate(() => {
+        const provider = document.createElement('cb-tooltip-provider') as TooltipProvider
+        provider.delay = 0
+        const button = document.createElement('cb-button') as Button
+        button.accessibleLabel = 'Style'
+        button.title = 'Style (Shift+R)'
+        button.dataset.shortcut = 'Shift+R'
+        provider.append(button)
+        document.getElementById('fixture')!.append(provider)
+    })
+    const button = page.getByRole('button', { name: 'Style', exact: true })
+    await button.hover()
+    await expect(page.getByRole('tooltip')).toContainText('Style')
+    await expect(page.getByRole('tooltip').locator('cb-shortcut kbd')).toHaveText(['Shift', 'R'])
+    await expect(button).toHaveAccessibleName('Style')
+    await page.keyboard.press('Escape')
+    await expect(page.locator('cb-tooltip-provider > cb-button')).toHaveAttribute('title', 'Style (Shift+R)')
+})
+
 test('blur dismisses hovered/focused hints and iframe entry cannot retain a stale hover', async ({ page }) => {
     await page.evaluate(() => {
         const provider = document.createElement('cb-tooltip-provider') as TooltipProvider
@@ -228,6 +248,7 @@ test('composed tree and rich-text buttons receive hints without component-specif
         document.getElementById('fixture')!.append(provider)
     })
     const action = page.getByRole('button', { name: 'Edit heading', exact: true })
+    await page.locator('cb-layer-tree').getByRole('treeitem').hover()
     await action.hover()
     await expect(page.getByRole('tooltip')).toHaveText('Edit heading')
     await expect(page.getByRole('tooltip')).toBeVisible()

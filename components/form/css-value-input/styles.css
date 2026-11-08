@@ -1,0 +1,38 @@
+@import "../../theme/field.css";
+:host { display: block; inline-size: var(--component-css-value-input-width,320px); max-inline-size: 100%; min-inline-size: 0; container-type: inline-size; }
+[part~=control] { display: grid; padding: 0; overflow: hidden; border: 1px solid var(--cb-field-border); border-radius: var(--cb-field-radius); background: var(--cb-field-background); }
+[part~=control]:focus-within { border-color: var(--color-focus,#2563eb); }
+/* Numbers need room for digits, not the full inspector or Storybook canvas.
+   Unstructured text/expressions retain the available width. */
+[part~=control]:has(> [part~=value] > [part~=unit]) { max-inline-size: calc(8ch + var(--component-css-value-input-unit-width,64px) + 20px); }
+[part~=value] { display: flex; min-inline-size: 0; align-items: stretch; }
+[part~=input] { inline-size: 100%; min-inline-size: 0; flex: 1; block-size: calc(var(--cb-height) - 2px); padding: 0 10px; outline: 0; }
+[part~=control] [part~=input]:is(input,:hover,:focus) { border: 0; border-radius: var(--cb-field-radius); background: transparent; box-shadow: none; }
+[part~=unit] { flex: 0 0 var(--component-css-value-input-unit-width,64px); inline-size: var(--component-css-value-input-unit-width,64px); min-inline-size: 0; border-inline-start: 1px solid var(--cb-field-border); }
+[part~=unit]::part(trigger), [part~=unit]::part(control) { border: 0; border-radius: 0; background: transparent; min-inline-size: 0; min-block-size: 0; block-size: calc(var(--cb-height) - 2px); padding: 0; }
+[part~=unit]::part(trigger-control) { padding: 0 4px; min-block-size: 0; block-size: 100%; gap: 3px; }
+[part~=unit]::part(trigger-label) { padding: 0; gap: 3px; }
+[part~=toggle] { flex: none; align-self: center; block-size: calc(var(--cb-height) - 2px); }
+[part~=toggle]::part(control) { border: 0; background: transparent; border-radius: 0; min-block-size: 0; block-size: 100%; }
+[part~=control][data-function] { display: flex; align-items: center; max-inline-size: var(--component-css-value-input-function-width,320px); }
+[data-function] > [part~=value] { flex: 0 0 68px; }
+[data-function] > [part~=value] [part~=input] { padding-inline: 6px 0; }
+[part~=arguments] { display: flex; flex: 1; min-inline-size: 0; align-items: center; border-inline-start: 1px solid var(--cb-field-border); }
+[part~=argument] { flex: 1 1 0; min-inline-size: 0; --component-css-value-input-unit-width: 44px; }
+[part~=argument] + [part~=argument] { border-inline-start: 1px solid var(--cb-field-border); }
+[part~=argument]::part(control) { border: 0; border-radius: 0; background: transparent; }
+[part~=argument]::part(input) { padding-inline: 6px; }
+[part~=popup] { padding: 4px; border: 1px solid var(--cb-field-border); border-radius: var(--cb-field-radius); background: var(--color-surface,#fff); color: var(--color-foreground); overflow: auto; overscroll-behavior: contain; box-shadow: var(--shadow-md); }
+[part~=option] { display: block; inline-size: 100%; min-block-size: var(--cb-height); border-radius: var(--radius-sm,6px); background: transparent; text-align: start; cursor: pointer; }
+[part~=option]::part(control) { display: flex; justify-content: flex-start; padding: var(--spacing-xs,4px) var(--spacing-md,12px); }
+[part~=option]:is(:hover,:focus-visible), [part~=option][aria-selected=true] { background: var(--color-selection); color: var(--color-signal-text); }
+/* Linked sides and compact inspector cells still need readable values. The
+   unit remains a labelled, keyboard-accessible selector without its chevron. */
+@container (max-width: 96px) {
+    [part~=input] { padding-inline: 2px; }
+    [part~=unit] { flex-basis: 24px; inline-size: 24px; }
+    [part~=unit]::part(indicator) { display: none; }
+    [part~=unit]::part(trigger-control), [part~=unit]::part(trigger-label) { padding-inline: 1px; gap: 0; }
+    [part~=toggle] { inline-size: 12px; }
+    [part~=toggle]::part(control) { min-inline-size: 0; inline-size: 100%; padding: 0; }
+}

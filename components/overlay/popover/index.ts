@@ -23,6 +23,7 @@ export class Popover extends PopoverBase {
         const panel = this.refs.panel?.[0], anchor = this.refs.anchor?.[0]
         if (panel instanceof HTMLElement && anchor instanceof HTMLElement) this.popup = new PopupController(panel, anchor, () => this.close(), {
             placement: () => this.validPlacement(), maxWidth: () => this.popupMaxWidth, maxHeight: () => this.popupMaxHeight,
+            dismissOnFocusOutside: true,
         })
         super.mount()
     }

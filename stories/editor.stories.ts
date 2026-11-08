@@ -28,6 +28,16 @@ export const Artboard: Story = componentStory('cb-artboard', {
     handleLabels: { e: 'Resize right', s: 'Resize bottom', se: 'Resize corner' },
 })
 
+export const ArtboardPreview: Story = componentStory('cb-artboard', {
+    accessibleLabel: 'Responsive page preview', name: 'Page', width: 840, height: 560, viewportSizing: true, showPreviewControls: true,
+    previewDefaultSize: { width: 840, height: 560 }, previewMode: 'width', previewPresetId: 'default', previewLinked: false,
+    selected: true, handleLabels: { e: 'Resize right', s: 'Resize bottom', se: 'Resize corner' }, resizeLabel: '{handle}',
+    previewLabels: { controls: 'Page preview', size: 'Preview device', default: 'Artboard', mobile: 'Mobile', tablet: 'Tablet', desktop: 'Desktop', presets: 'Preview size' },
+    previewPresets: [{ id: 'mobile', category: 'mobile', label: 'Mobile', width: 390, height: 844 },
+        { id: 'tablet', category: 'tablet', label: 'Tablet', width: 768, height: 1024 },
+        { id: 'desktop', category: 'desktop', label: 'Desktop', width: 1440, height: 900 }],
+})
+
 export const Rulers: Story = componentStory('cb-rulers', {
     label: 'Rulers', accessibleLabel: 'Measured design surface', zoom: 100, originX: 0, originY: 0, majorStep: 100,
     minorDivisions: 10, cursorX: 280, cursorY: 160, showCursor: true, unit: 'px', coordinateLabel: '{x}, {y} {unit}',
@@ -62,6 +72,7 @@ export const PropertyGroup: Story = componentStory('cb-property-group', {
 })
 
 export const SelectionOverlay: Story = componentStory('cb-selection-overlay', {
+    actionsAlign: 'center',
     actionsLabel: 'Selection actions', actions: [
         { id: 'duplicate', name: 'duplicate', icon: 'copy', label: 'Duplicate selection' },
         { id: 'delete', name: 'delete', icon: 'close', label: 'Delete selection' },

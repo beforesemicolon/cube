@@ -1,4 +1,4 @@
 @import "../view.css";
 :host {
-  inline-size: min(100%, var(--component-feedback-width,320px));
+  inline-size: min(100%, var(--component-alert-width,var(--component-feedback-width,320px)));
 }

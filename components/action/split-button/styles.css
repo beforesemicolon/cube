@@ -29,7 +29,7 @@
   z-index: 1;
 }
 [part=popup] {
-  z-index: var(--z-index-dropdown,40);
+  z-index: var(--z-index-dropdown,var(--z-index-popup,100));
   inline-size: max-content;
   box-sizing: border-box;
   max-inline-size: 100%;

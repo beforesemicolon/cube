@@ -2,14 +2,17 @@ import { FieldControlBase, type FieldControlProps } from '../FormControlBase.js'
 import { normalizeOptions, type SelectOption } from '../model.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 import { popupConstraintAttributes, type PopupConstraintProps, type PopupLength } from '../../core/popup.js'
+import type { ButtonVariant } from '../../action/button/ButtonBase.js'
 export type SelectSearchMode = 'auto' | boolean
-export interface SelectProps extends FieldControlProps<string|string[]>, PopupConstraintProps { options?:SelectOption[]; value?:string|string[]; multi?:boolean; placeholder?:string; native?:boolean; open?:boolean; searchable?:SelectSearchMode; searchThreshold?:number; searchLabel?:string; searchPlaceholder?:string; emptyLabel?:string }
+export interface SelectProps extends FieldControlProps<string|string[]>, PopupConstraintProps { options?:SelectOption[]; value?:string|string[]; multi?:boolean; placeholder?:string; native?:boolean; open?:boolean; searchable?:SelectSearchMode; searchThreshold?:number; searchLabel?:string; searchPlaceholder?:string; emptyLabel?:string; variant?: ButtonVariant; caretPosition?: 'start' | 'end' }
 export abstract class SelectBase extends FieldControlBase<SelectProps, string|string[]> {
-    static observedAttributes=[...FieldControlBase.observedAttributes,'options','value','multi','placeholder','native','open','searchable','search-threshold','search-label','search-placeholder','empty-label',...popupConstraintAttributes]
+    static observedAttributes=[...FieldControlBase.observedAttributes,'options','value','multi','placeholder','native','open','searchable','search-threshold','search-label','search-placeholder','empty-label','variant','caret-position',...popupConstraintAttributes]
     options:SelectOption[]=[];value:string|string[]='';multi=false;placeholder='';native=false;open=false;searchable:SelectSearchMode='auto';searchThreshold=10;searchLabel='';searchPlaceholder='';emptyLabel=''
     popupMaxWidth: PopupLength = '320px'; popupMaxHeight: PopupLength = '280px'
-    get normalizedOptions(){return normalizeOptions(this.options)}
-    get selection():string[]{const values=(Array.isArray(this.value)?this.value:[this.value]).map(v=>scalarText(v));const selected=values.filter(v=>this.normalizedOptions.some(o=>o.value===v));return bool(this.multi)?selected:selected.slice(0,1)}
+    variant: ButtonVariant = 'secondary'
+    caretPosition: 'start' | 'end' = 'end'
+    get normalizedOptions(){return normalizeOptions(this.props.options?.())}
+    get selection():string[]{const value=this.props.value?.();const values=(Array.isArray(value)?value:[value]).map(v=>scalarText(v));const selected=values.filter(v=>this.normalizedOptions.some(o=>o.value===v));return bool(this.multi)?selected:selected.slice(0,1)}
     get searchEnabled():boolean{return this.searchable===true||(this.searchable==='auto'&&this.normalizedOptions.length>Math.max(0,finite(this.searchThreshold,10)))}
     protected captureValue():string|string[]{return Array.isArray(this.value)?[...this.value]:this.value}
     protected restoreValue(value:string|string[]|File|FormData|null):void{this.value=value instanceof FormData?value.getAll(this.name).filter((v):v is string=>typeof v==='string'):Array.isArray(value)?[...value]:scalarText(value)}

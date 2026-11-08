@@ -20,6 +20,7 @@ function containsComposed(container: HTMLElement, node: EventTarget | null): boo
 export class TooltipProvider extends TooltipProviderBase {
     stylesheet = componentStylesheet
     private readonly content = state('')
+    private readonly shortcut = state('')
     private readonly anchor = state<TooltipAnchor | null>(null)
     private readonly shown = state(false)
     private hover?: ButtonTarget
@@ -32,7 +33,7 @@ export class TooltipProvider extends TooltipProviderBase {
 
     render(): Template {
         return html`<slot></slot>
-            <cb-tooltip content=${this.content[0]} anchor-rect=${this.anchor[0]} open=${this.shown[0]}></cb-tooltip>`
+            <cb-tooltip content=${this.content[0]} shortcut=${this.shortcut[0]} anchor-rect=${this.anchor[0]} open=${this.shown[0]}></cb-tooltip>`
     }
 
     protected mount(): void {
@@ -72,13 +73,20 @@ export class TooltipProvider extends TooltipProviderBase {
     private name = (target: ButtonTarget): string => {
         const control = target.control
         const labelledBy = control.ariaLabelledByElements?.map(element => element.textContent).join(' ').trim()
-        return (labelledBy || control.getAttribute('aria-label') ||
+        // Explicit help may include shortcut hints while the accessible name
+        // remains concise. Retain it while native title bubbles are suppressed.
+        return (control.getAttribute('title') || this.titles.find(item => item.element === control)?.value || labelledBy || control.getAttribute('aria-label') ||
             ('accessibleLabel' in control && typeof control.accessibleLabel === 'string' ? control.accessibleLabel : '') ||
-            control.getAttribute('accessible-label') || control.getAttribute('title') ||
-            this.titles.find(item => item.element === control)?.value ||
+            control.getAttribute('accessible-label') ||
             ('label' in control && typeof control.label === 'string' ? control.label : '') ||
             control.getAttribute('label') || target.semantic.getAttribute('aria-label') ||
             (control instanceof HTMLInputElement ? control.value : control.textContent) || '').trim()
+    }
+    private updateHint = (target: ButtonTarget): void => {
+        const keys = target.control.getAttribute('data-shortcut') || target.control.getAttribute('aria-keyshortcuts') || ''
+        const name = this.name(target), suffix = ` (${keys})`
+        this.shortcut[1](keys)
+        this.content[1](keys && name.endsWith(suffix) ? name.slice(0, -suffix.length) : name)
     }
     private pointerOver = (event: PointerEvent): void => {
         if (event.pointerType === 'touch') return
@@ -118,14 +126,15 @@ export class TooltipProvider extends TooltipProviderBase {
             this.titles.push({ element: node, value: node.getAttribute('title') ?? '' })
             node.setAttribute('title', '')
         }
-        this.content[1](this.name(next))
+        this.updateHint(next)
         this.timer = setTimeout(() => {
             this.timer = undefined
             this.track()
             if (this.active?.control !== next.control) return
             this.shown[1](true)
             const previous = next.semantic.getAttribute('aria-description')
-            const value = [previous, this.content[0]()].filter(Boolean).join(' ')
+            const hint = `${this.content[0]()}${this.shortcut[0]() ? ` (${this.shortcut[0]()})` : ''}`
+            const value = [previous, hint].filter(Boolean).join(' ')
             this.described = { element: next.semantic, previous, value }
             next.semantic.setAttribute('aria-description', value)
         }, Math.max(0, finite(this.delay, 400)))
@@ -145,7 +154,7 @@ export class TooltipProvider extends TooltipProviderBase {
             this.dismiss()
             return
         }
-        this.content[1](this.name(active))
+        this.updateHint(active)
         const previous = this.anchor[0]()
         if (!previous || previous.left !== rect.left || previous.right !== rect.right || previous.top !== rect.top || previous.bottom !== rect.bottom)
             this.anchor[1]({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom })

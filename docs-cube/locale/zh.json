@@ -23,7 +23,7 @@
     "mediaApi": "两个播放器都支持 src、mediaTitle、muted、autoplay、loop、preload、seekStep 和 playbackRate。视频另支持 poster 和 tracks。应用通过 playLabel、errorText 等明确的文本属性提供最终翻译后的控件与状态文字。所有属性都可省略，默认不自动播放。方法包括 play、pause、stop、seek、backward、forward、setVolume、setMuted 和 setRate。浏览器允许时可使用 fullscreen。",
     "chartApi": "CartesianChart 支持 series、xAxis、yAxis、inverted、stacking 和 zoomable。系列类型包括 line、spline、area、areaspline、bar、column、scatter、bubble、errorbar、x-threshold 和 y-threshold。请使用稳定 ID；第二数值轴通过 ID 指定。Null 保留空缺，无效值触发 error，不会编造数据。",
     "pieApi": "PieChart 支持包含命名片段的 series，以及 variant（pie 或 donut）、innerTitle 和 innerDescription。片段具有 id、name、value（或 y）。全零数据呈现空状态。负数与非有限数会被安全拒绝。百分比以可见数据之和为分母。",
-    "commonCharts": "两个图表都支持 heading、description、height、status 和 valueFormatter。应用通过明确的文本属性提供最终翻译后的状态、操作、表格与无障碍文字。设置 visibleSeries 或 visibleSegments 后，筛选由调用方控制；否则组件自行管理。修改数据后请重新赋值。select 表示选择，visibilitychange 表示筛选，retry 请求重试，error 报告可恢复错误。",
+    "commonCharts": "两个图表都支持 heading、description、height、status 和 valueFormatter。应用通过类型化 messages 对象提供最终翻译后的状态、操作、表格与无障碍文字；现有的单独文本属性仍受支持并具有优先级。设置 visibleSeries 或 visibleSegments 后，筛选由调用方控制；否则组件自行管理。修改数据后请重新赋值。select 表示选择，visibilitychange 表示筛选，retry 请求重试，error 报告可恢复错误。",
     "access": "无障碍与样式",
     "accessBody": "使用原生按钮、滑块和选择框，标签可注入翻译。图表提供键盘点导航、可见图例、持续显示的详情和数据表，并尊重减少动态效果设置。作者应提供有意义的数据名称、字幕与文字稿。自动测试不能替代屏幕阅读器及可用性评估。",
     "parts": "媒体样式部件：player、media、title、controls、play、stop、backward、forward、seek、time、volume、mute、rate、captions、fullscreen、status、transcript。图表部件：chart、title、description、legend、legend-item、plot、graphic、navigator、details、data、table、table-cell。使用主题变量与 ::part，不要依赖引擎私有标记。",

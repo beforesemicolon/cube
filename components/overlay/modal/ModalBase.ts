@@ -83,7 +83,8 @@ export abstract class ModalBase<P extends ModalProps = ModalProps> extends Compo
     }
 
     protected handleBackdrop = (event: MouseEvent): void => {
-        if (event.target === this.dialogElement() && bool(this.closeOnBackdrop)) this.dismiss('backdrop', event)
+        const dialog = this.dialogElement()
+        if (event.composedPath()[0] === dialog && bool(this.closeOnBackdrop)) this.dismiss('backdrop', event)
     }
 
     protected closeText = (): string => { return scalarText(this.closeLabel) }

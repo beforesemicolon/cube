@@ -32,6 +32,28 @@ test('writing, orientation and decoration glyphs are available and distinct', ()
     assert.equal(new Set(names.map(name => iconPaths[name])).size, names.length)
 })
 
+test('flex spread, direction, stretch and baseline glyphs distinguish both axes', () => {
+    const names = ['layoutRow', 'layoutColumn', ...['Horizontal', 'Vertical'].flatMap(axis =>
+        ['Start', 'Center', 'End', 'Between', 'Around', 'Evenly'].map(spread => `spread${axis}${spread}`)),
+        'alignVerticalStretch', 'alignHorizontalStretch', 'alignVerticalBaseline', 'alignHorizontalBaseline']
+    for (const name of names) assert.ok(iconPaths[name], name)
+    assert.equal(new Set(names.map(name => iconPaths[name])).size, names.length)
+})
+
+test('appearance glyphs provide distinct sun, moon, and system icons', () => {
+    const names = ['sun', 'moon', 'system']
+    for (const name of names) assert.ok(iconPaths[name])
+    assert.equal(new Set(names.map(name => iconPaths[name])).size, names.length)
+})
+
+test('application glyphs cover tabular views, rich text, people, attachments and state actions', () => {
+    const names = ['table', 'list', 'listOrdered', 'quote', 'calendarRange', 'users', 'userAdd', 'attachment', 'checkCircle', 'expand', 'asterisk']
+    for (const name of names) assert.ok(iconPaths[name])
+    assert.equal(new Set(names.map(name => iconPaths[name])).size, names.length)
+    assert.notEqual(iconPaths.table, iconPaths.grid)
+    assert.notEqual(iconPaths.users, iconPaths.userAdd)
+})
+
 test('icon sources accept image URLs without interpreting markup or executable protocols', () => {
     const base = 'https://example.com/app/'
     for (const value of ['/custom.svg', './custom.svg', 'https://cdn.example.com/icon.svg', 'blob:https://example.com/id', 'data:image/svg+xml,%3Csvg/%3E']) {

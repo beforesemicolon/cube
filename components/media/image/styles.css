@@ -1,0 +1,80 @@
+@import '../../theme/editor.css';
+
+:host {
+    position: relative;
+    display: inline-block;
+    inline-size: var(--component-image-width, auto);
+    block-size: var(--component-image-height, auto);
+    aspect-ratio: var(--component-image-aspect-ratio, auto);
+    overflow: hidden;
+    vertical-align: middle;
+}
+
+:host([data-variant='thumbnail']) {
+    inline-size: var(--component-image-thumbnail-size, 40px);
+    block-size: var(--component-image-thumbnail-size, 40px);
+    aspect-ratio: 1;
+    border: var(--component-image-thumbnail-border, 1px solid var(--color-separator));
+    border-radius: var(--component-image-thumbnail-radius, var(--radius-sm, 6px));
+    background: var(--component-image-thumbnail-background, var(--color-surface-muted));
+}
+
+:host([data-variant='thumbnail'][data-size='tiny']) {
+    --component-image-thumbnail-size: var(--component-image-thumbnail-tiny-size, 20px);
+}
+
+:host([data-variant='thumbnail'][data-size='xs']) {
+    --component-image-thumbnail-size: var(--component-image-thumbnail-xs-size, 28px);
+}
+
+:host([data-variant='thumbnail'][data-size='sm']) {
+    --component-image-thumbnail-size: var(--component-image-thumbnail-sm-size, 32px);
+}
+
+:host([data-variant='thumbnail'][data-size='md']) {
+    --component-image-thumbnail-size: var(--component-image-thumbnail-md-size, 40px);
+}
+
+:host([data-variant='thumbnail'][data-size='lg']) {
+    --component-image-thumbnail-size: var(--component-image-thumbnail-lg-size, 56px);
+}
+
+:host([data-variant='thumbnail'][data-size='xl']) {
+    --component-image-thumbnail-size: var(--component-image-thumbnail-xl-size, 88px);
+}
+
+[part~='image'],
+[part~='loading'],
+[part~='fallback'] {
+    inline-size: 100%;
+    block-size: 100%;
+}
+
+[part~='image'] {
+    display: block;
+    object-fit: var(--component-image-fit, cover);
+    object-position: var(--component-image-position, center);
+}
+
+[part~='loading'],
+[part~='fallback'] {
+    display: grid;
+    place-items: center;
+    color: var(--component-image-placeholder-color, var(--color-muted-foreground));
+    background: var(--component-image-placeholder-background, var(--color-surface-muted));
+}
+
+[part~='spinner'] {
+    inline-size: var(--component-image-spinner-size, 18px);
+    block-size: var(--component-image-spinner-size, 18px);
+    border: 2px solid currentColor;
+    border-inline-end-color: transparent;
+    border-radius: 50%;
+    animation: cb-image-spin 0.8s linear infinite;
+}
+
+@keyframes cb-image-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

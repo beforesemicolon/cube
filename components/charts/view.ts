@@ -40,13 +40,14 @@ export class ChartView {
     private zoomRange:[number,number]=[0,100];
     private statusText = ():string => {
         const model=this.model;
-        return this.owner.status==='error'||this.failure?this.owner.errorText:this.owner.status==='loading'||this.loadingEngine?this.owner.loadingText:model?.empty?this.owner.emptyText:model?.noMatch?this.owner.noMatchText:'';
+        return this.owner.status==='error'||this.failure?this.owner.message('errorText'):this.owner.status==='loading'||this.loadingEngine?this.owner.message('loadingText'):model?.empty?this.owner.message('emptyText'):model?.noMatch?this.owner.message('noMatchText'):'';
     }
     private unavailable():boolean{return Boolean(this.statusText())||!this.model?.points.some(point=>point.y!==null);}
     private zoomVisible = ():boolean=> {return !this.model?.pie&&bool(this.owner.zoomable)&&!this.statusText();}
     private detailsText = ():string => {
         const point=this.model?this.owner.selected(this.model):undefined;
-        return point?`${this.owner.pinned&&this.owner.pinnedText?this.owner.pinnedText+': ':''}${this.owner.pointText(point)}`:'';
+        const pinnedText=this.owner.message('pinnedText');
+        return point?`${this.owner.pinned&&pinnedText?pinnedText+': ':''}${this.owner.pointText(point)}`:'';
     }
     constructor(private owner:ChartBase) {
         const id=`cb-chart-${++nextId}`;
@@ -54,11 +55,11 @@ export class ChartView {
             <cb-button part=${part} label=${label} accessible-label=${label} icon-only=${Boolean(icon)} icon=${icon??''} variant="ghost" size="sm" hidden=${hidden}
                 onaction=${(event:Event)=>{event.stopPropagation();action();}}></cb-button>`;
         this.root=html`<section part="chart" ref="group" role="group"
-            aria-label=${()=>text(owner.heading)||owner.accessibleLabel} aria-describedby=${`${id}-description`}
+            aria-label=${()=>text(owner.heading)||owner.message('accessibleLabel')} aria-describedby=${`${id}-description`}
             aria-busy=${when(or(is(() => owner.status, 'loading'), () => this.loadingEngine), 'true', 'false')}>
             <div part="title" id=${`${id}-title`} hidden=${isNot(() => text(owner.heading))}>${()=>text(owner.heading)}</div>
             <p part="description" id=${`${id}-description`} hidden=${isNot(() => text(owner.description))}>${()=>text(owner.description)}</p>
-            <div part="legend" role="group" aria-label=${()=>owner.legendLabel}>
+            <div part="legend" role="group" aria-label=${()=>owner.message('legendLabel')}>
                 ${repeat(()=>this.model?.legend??[],item=>html`<cb-button part="legend-item" exportparts="control:legend-item-control,label:legend-item-label,button-label:legend-item-label,icon:legend-item-icon,description:legend-item-description" variant="ghost" size="sm" pressed=${item.visible}
                     label=${item.name} accessible-label=${item.name} onchange=${(event:Event)=>{event.stopPropagation();owner.setItemVisible(item.id,!item.visible,this.model?.legend.map(item=>item.id)??[]);}}>
                     <span part="legend-swatch" slot="prefix" aria-hidden="true" style=${`background-color:${item.color}`}></span>
@@ -68,9 +69,9 @@ export class ChartView {
                 style=${()=>typeof owner.height==='number'&&Number.isFinite(owner.height)?`height:${clamp(owner.height,160,1200)}px`:null}></div>
             <p part="status" role="status" hidden=${isNot(this.statusText)}>${this.statusText}</p>
             <div part="actions">
-                <cb-button part="navigator" exportparts="control:navigator-control,label:navigator-label,button-label:navigator-label,icon:navigator-icon,description:navigator-description" variant="ghost" size="sm" pressed=${()=>owner.pinned} label=${()=>owner.navigateLabel}
-                    accessible-label=${()=>{const selected=this.model?owner.selected(this.model):undefined;return selected?`${owner.navigateLabel}: ${owner.pointText(selected)}`:owner.navigateLabel;}}
-                    description=${()=>owner.instructionsText} disabled=${()=>this.unavailable()}
+                <cb-button part="navigator" exportparts="control:navigator-control,label:navigator-label,button-label:navigator-label,icon:navigator-icon,description:navigator-description" variant="ghost" size="sm" pressed=${()=>owner.pinned} label=${()=>owner.message('navigateLabel')}
+                    accessible-label=${()=>{const selected=this.model?owner.selected(this.model):undefined,navigateLabel=owner.message('navigateLabel');return selected?`${navigateLabel}: ${owner.pointText(selected)}`:navigateLabel;}}
+                    description=${()=>owner.message('instructionsText')} disabled=${()=>this.unavailable()}
                     onchange=${(event:Event)=>{event.stopPropagation();this.pin();}}
                     onfocusin=${()=>{this.keyboardActive=true;this.showDetails(true);}}
                     onfocusout=${()=>{this.keyboardActive=false;if(!owner.pinned&&!this.hoverActive)this.instance?.dispatchAction({type:'downplay'});}}
@@ -79,19 +80,19 @@ export class ChartView {
                         if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)){event.preventDefault();event.stopPropagation();owner.navigate(this.model,event.key);this.showDetails(true);}
                         else if(event.key==='Escape'){event.preventDefault();event.stopPropagation();owner.pinned=false;this.showDetails();}
                     }}></cb-button>
-                ${button('unpin',()=>owner.unpinLabel,()=>{owner.pinned=false;this.showDetails();},isNot(() => owner.pinned))}
-                ${button('show-all',()=>owner.showAllLabel,()=>owner.showAll(this.model?.legend.map(item=>item.id)??[]),isNot(() => this.model?.legend.some(item=>!item.visible)))}
-                ${button('retry',()=>owner.retryLabel,()=>{this.failure=false;owner.emit('retry');this.refresh();},and(isNot(() => this.failure), isNot(() => owner.status, 'error')))}
-                ${button('zoom-in',()=>owner.zoomInLabel,()=>this.zoom(.75),isNot(this.zoomVisible),'plus')}
-                ${button('zoom-out',()=>owner.zoomOutLabel,()=>this.zoom(1.25),isNot(this.zoomVisible),'minus')}
-                ${button('reset-zoom',()=>owner.resetZoomLabel,()=>this.zoom(0),isNot(this.zoomVisible),'reset')}
-            </div><p part="instructions" id=${`${id}-keys`} hidden=${or(() => this.unavailable(), isNot(() => this.keyboardActive))}>${()=>owner.instructionsText}</p>
+                ${button('unpin',()=>owner.message('unpinLabel'),()=>{owner.pinned=false;this.showDetails();},isNot(() => owner.pinned))}
+                ${button('show-all',()=>owner.message('showAllLabel'),()=>owner.showAll(this.model?.legend.map(item=>item.id)??[]),isNot(() => this.model?.legend.some(item=>!item.visible)))}
+                ${button('retry',()=>owner.message('retryLabel'),()=>{this.failure=false;owner.emit('retry');this.refresh();},and(isNot(() => this.failure), isNot(() => owner.status, 'error')))}
+                ${button('zoom-in',()=>owner.message('zoomInLabel'),()=>this.zoom(.75),isNot(this.zoomVisible),'plus')}
+                ${button('zoom-out',()=>owner.message('zoomOutLabel'),()=>this.zoom(1.25),isNot(this.zoomVisible),'minus')}
+                ${button('reset-zoom',()=>owner.message('resetZoomLabel'),()=>this.zoom(0),isNot(this.zoomVisible),'reset')}
+            </div><p part="instructions" id=${`${id}-keys`} hidden=${or(() => this.unavailable(), isNot(() => this.keyboardActive))}>${()=>owner.message('instructionsText')}</p>
             <p part="details" role="status" hidden=${or(is(this.statusText), isNot(or(() => owner.pinned, () => this.keyboardActive, () => this.hoverActive)))}>${this.detailsText}</p>
             <cb-expandable-section part="data" exportparts="trigger:data-trigger,label:data-label,counter:data-counter,panel:data-panel,content:data-content"
-                variant="default" heading-level="2" disable-content-padding label=${()=>owner.tableLabel}
+                variant="default" heading-level="2" disable-content-padding label=${()=>owner.message('tableLabel')}
                 counter=${()=>this.model?.points.length?String(this.model.points.length):''} hidden=${isNot(() => this.model?.points.length)}>
                 <cb-table part="data-table" exportparts="root:data-table-root,table:data-table-grid,head:data-table-head,row:data-table-row,cell:data-table-cell"
-                    density="compact" resizable="false" wrap label=${()=>owner.tableLabel} empty-label=${()=>owner.emptyText} loading-label=${()=>owner.loadingText}
+                    density="compact" resizable="false" wrap label=${()=>owner.message('tableLabel')} empty-label=${()=>owner.message('emptyText')} loading-label=${()=>owner.message('loadingText')}
                     items=${pick(this.tableData, "rows")} columns=${pick(this.tableData, "columns")} item-key="id"></cb-table>
             </cb-expandable-section><span ref="probe" part="color-probe" hidden></span>
         </section>`;
@@ -243,21 +244,21 @@ export class ChartView {
             series: point.seriesName,
             category: String(point.x),
             value: this.owner.format(point.y),
-            range: point.low !== undefined && point.high !== undefined ? `${this.owner.format(point.low)}–${this.owner.format(point.high)}` : this.owner.missingText,
+            range: point.low !== undefined && point.high !== undefined ? `${this.owner.format(point.low)}–${this.owner.format(point.high)}` : this.owner.message('missingText'),
             size: this.owner.format(point.size),
-            percentage: point.percentage !== undefined ? `${this.owner.format(point.percentage)}%` : this.owner.missingText,
+            percentage: point.percentage !== undefined ? `${this.owner.format(point.percentage)}%` : this.owner.message('missingText'),
         }));
         const columns: TableColumn[] = [
-            { id: 'series', header: this.owner.seriesLabel, field: 'series', minWidth: 140 },
-            { id: 'category', header: this.owner.categoryLabel, field: 'category', minWidth: 120 },
-            { id: 'value', header: this.owner.valueLabel, field: 'value', minWidth: 100, align: 'end' },
+            { id: 'series', header: this.owner.message('seriesLabel'), field: 'series', minWidth: 140 },
+            { id: 'category', header: this.owner.message('categoryLabel'), field: 'category', minWidth: 120 },
+            { id: 'value', header: this.owner.message('valueLabel'), field: 'value', minWidth: 100, align: 'end' },
         ];
         if (points.some(point => point.low !== undefined || point.high !== undefined))
-            columns.push({ id: 'range', header: this.owner.rangeLabel, field: 'range', minWidth: 120, align: 'end' });
+            columns.push({ id: 'range', header: this.owner.message('rangeLabel'), field: 'range', minWidth: 120, align: 'end' });
         if (points.some(point => point.size !== undefined))
-            columns.push({ id: 'size', header: this.owner.sizeLabel, field: 'size', minWidth: 100, align: 'end' });
+            columns.push({ id: 'size', header: this.owner.message('sizeLabel'), field: 'size', minWidth: 100, align: 'end' });
         if (points.some(point => point.percentage !== undefined))
-            columns.push({ id: 'percentage', header: this.owner.percentageLabel, field: 'percentage', minWidth: 110, align: 'end' });
+            columns.push({ id: 'percentage', header: this.owner.message('percentageLabel'), field: 'percentage', minWidth: 110, align: 'end' });
         return {rows,columns};
     }
     private zoom(factor: number): void {

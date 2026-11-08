@@ -3,6 +3,7 @@
   display: block;
   inline-size: 100%;
   min-inline-size: 0;
+  container-type: inline-size;
 }
 [part~=root] {
   display: grid;
@@ -116,6 +117,19 @@
 [part~=action] {
   --component-control-height:28px;
   align-self: center;
+}
+@container (max-width: 420px) {
+  [part~=root][data-wrap-actions] [part~=header] {
+    flex-wrap: wrap;
+  }
+  [part~=root][data-wrap-actions] [part~=heading] {
+    flex-basis: 100%;
+  }
+  [part~=root][data-wrap-actions] [part~=actions] {
+    flex-basis: 100%;
+    justify-content: flex-end;
+    padding: 0 var(--spacing-sm,8px) var(--spacing-sm,8px);
+  }
 }
 [part~=panel] {
   display: grid;

@@ -14,6 +14,7 @@ export class Avatar extends AvatarBase {
             <span part="avatar root" role="${() => this.avatarDecorative ? 'presentation' : this.avatarLabel ? 'img' : null}"
                 aria-hidden="${() => this.avatarDecorative ? 'true' : null}"
                 aria-label="${() => this.avatarDecorative ? null : this.avatarLabel || null}"
+                data-color-index="${() => this.avatarColorIndex}"
                 style="${() => this.avatarColor ? '--cb-avatar-color:' + this.avatarColor : null}">
                 <span part="surface">
                     <img part="image" alt="" decoding="async" loading="lazy" src="${() => this.avatarSource || null}" hidden="${isNot(showsImage)}"

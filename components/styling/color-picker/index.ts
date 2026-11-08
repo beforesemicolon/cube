@@ -32,9 +32,9 @@ interface ChannelDefinition {
 }
 const channels: readonly ChannelDefinition[] = [
     { name: 'hue', min: 0, max: 360, step: 1 }, { name: 'saturation', min: 0, max: 100, step: 1 },
-    { name: 'value', min: 0, max: 100, step: 1 }, { name: 'alpha', min: 0, max: 100, step: 1 },
+    { name: 'value', min: 0, max: 100, step: 1 },
     { name: 'red', min: 0, max: 255, step: 1 }, { name: 'green', min: 0, max: 255, step: 1 },
-    { name: 'blue', min: 0, max: 255, step: 1 },
+    { name: 'blue', min: 0, max: 255, step: 1 }, { name: 'alpha', min: 0, max: 100, step: 1 },
 ];
 export class ColorPicker extends ColorPickerBase {
     stylesheet = componentStylesheet
@@ -71,7 +71,7 @@ export class ColorPicker extends ColorPickerBase {
     private removable(color: string): boolean { return color !== '#00000000' && this.palette().includes(color); }
     render(): Template {
         const blocked = or(() => this.unavailable, this.props.readOnly);
-        const channelFields=(rgb: boolean): Template => html`${repeat(() => channels.filter(channel => ['red','green','blue'].includes(channel.name) === rgb), definition => html`
+        const channelFields=(rgb: boolean): Template => html`${repeat(() => channels.filter(channel => channel.name === 'alpha' || ['red','green','blue'].includes(channel.name) === rgb), definition => html`
             <label part=${`channel-field ${definition.name}-field`} hidden=${and(is(definition.name, 'alpha'), isNot(this.props.allowAlpha))}>
                 <span part="channel-label">${() => this.channelLabel(definition.name)}</span>
                 <input part=${`channel-input ${definition.name}-input control`} type="number" min=${definition.min} max=${definition.max} step=${definition.step} inputmode="decimal"
@@ -113,10 +113,10 @@ export class ColorPicker extends ColorPickerBase {
                         aria-label=${this.props.hexLabel} value=${() => this.hexDraft[0]() ?? colorToHex(this.color())}
                         oninput=${(event: Event) => { this.hexDraft[1](this.hexInput?.value ?? ''); this.updateFromHex(false,event); }}
                         onblur=${() => this.hexDraft[1](null)}></label>
-                    <cb-button part="sampler" exportparts="control:sampler-control,label:sampler-label,button-label:sampler-label,icon:sampler-icon,description:sampler-description" icon-only icon="eye" variant="ghost" size="sm" accessible-label=${this.props.samplerLabel}
+                    <cb-button part="sampler" exportparts="control:sampler-control,label:sampler-label,button-label:sampler-label,icon:sampler-icon,description:sampler-description" icon-only icon="eyedropper" variant="ghost" size="sm" accessible-label=${this.props.samplerLabel} title=${this.props.samplerLabel}
                         hidden=${or(isNot(this.props.allowSampler), isNot(this.props.samplerLabel), isNot(this.samplerAvailable))} disabled=${blocked}
                         onaction=${(event: Event) => { event.stopPropagation(); void this.sample(event); }}></cb-button>
-                    <cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" icon-only icon="close" variant="ghost" size="sm" accessible-label=${this.props.closeLabel} hidden=${isNot(this.props.closeLabel)}
+                    <cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" icon-only icon="close" variant="ghost" size="sm" accessible-label=${this.props.closeLabel} title=${this.props.closeLabel} hidden=${isNot(this.props.closeLabel)}
                         onaction=${(event: Event) => { event.stopPropagation(); if(this.setOpen(false,event)) this.trigger?.focus(); }}></cb-button>
                 </div><div part="channels hsv-channels">${channelFields(false)}</div><div part="channels rgb-channels">${channelFields(true)}</div>
                 <div part="palette-group" hidden=${and(isNot(pick(this.paletteColors, "length")), isNot(this.props.addSwatchLabel))}>
@@ -135,10 +135,10 @@ export class ColorPicker extends ColorPickerBase {
                                 if(this.removeSwatch(color,event)) { event.preventDefault(); if(this.selectedSwatch[0]() === color) this.selectedSwatch[1](null); queueMicrotask(() => this.focusPaletteItem(Math.max(0,index))); }
                             }}><span part="swatch-preview"><span part="swatch-color" style=${`--cb-swatch-color:${color}`}></span></span></cb-button>`,{key:color=>color})}
                         <cb-button part="add-swatch" exportparts="control:add-swatch-control,label:add-swatch-label,button-label:add-swatch-label,icon:add-swatch-icon,description:add-swatch-description" ref="addSwatch" icon-only icon="plus" variant="outline" size="sm"
-                            accessible-label=${this.props.addSwatchLabel} hidden=${isNot(this.props.addSwatchLabel)} disabled=${blocked}
+                            accessible-label=${this.props.addSwatchLabel} title=${this.props.addSwatchLabel} hidden=${isNot(this.props.addSwatchLabel)} disabled=${blocked}
                             onpointerdown=${(event: PointerEvent) => event.preventDefault()}
                             onaction=${(event: Event) => { event.stopPropagation(); const value=this.normalizedValue(); if(this.addSwatch(value,event)) { this.selectedSwatch[1](value); queueMicrotask(() => this.focusSwatch(value)); } }}></cb-button>
-                        <cb-button part="update-swatch" icon-only icon="edit" variant="outline" size="sm" accessible-label=${this.props.updateSwatchLabel}
+                        <cb-button part="update-swatch" icon-only icon="edit" variant="outline" size="sm" accessible-label=${this.props.updateSwatchLabel} title=${this.props.updateSwatchLabel}
                             hidden=${() => !this.props.updateSwatchLabel?.() || !this.selectedSwatch[0]() || !this.savedSwatches().includes(this.selectedSwatch[0]() || '')}
                             disabled=${or(blocked, () => this.selectedSwatch[0]() === this.normalizedValue())}
                             onpointerdown=${(event: PointerEvent) => event.preventDefault()}
@@ -162,20 +162,26 @@ export class ColorPicker extends ColorPickerBase {
     }
     focus(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.trigger)?.focus(options); }
     focusEditor(options?: FocusOptions): void { (bool(this.native) ? this.nativeControl : this.hexInput)?.focus(options); }
+    // Choosing a color from None must create visible paint. Explicit alpha,
+    // HEX, swatch and programmatic values keep their authored transparency.
+    private editingColor(): HSVAColor {
+        const color = this.color();
+        return color.alpha === 0 ? { ...color, alpha: 1 } : color;
+    }
     private updateFromPlane(event: PointerEvent, commit: boolean): void {
         if (!this.plane)
             return;
         const bounds = this.plane.getBoundingClientRect();
         const saturation = clamp((event.clientX - bounds.left) / Math.max(1, bounds.width) * 100, 0, 100);
         const value = 100 - clamp((event.clientY - bounds.top) / Math.max(1, bounds.height) * 100, 0, 100);
-        const next = { ...this.color(), saturation, value };
+        const next = { ...this.editingColor(), saturation, value };
         if (commit)
             this.changeColor(next, event);
         else
             this.inputColor(next, event);
     }
     private handlePlaneKey = (event: KeyboardEvent): void => {
-        const amount = event.shiftKey ? 10 : 1, color = this.color();
+        const amount = event.shiftKey ? 10 : 1, color = this.editingColor();
         let next: HSVAColor | null = null;
         if (event.key === 'ArrowLeft')
             next = { ...color, saturation: clamp(color.saturation - amount, 0, 100) };
@@ -191,7 +197,7 @@ export class ColorPicker extends ColorPickerBase {
         }
     }
     private updateHue(commit: boolean, event: Event): void {
-        const next = { ...this.color(), hue: clamp(finite(this.hueSlider?.valueAsNumber), 0, 360) };
+        const next = { ...this.editingColor(), hue: clamp(finite(this.hueSlider?.valueAsNumber), 0, 360) };
         if (commit)
             this.changeColor(next, event);
         else
@@ -216,7 +222,7 @@ export class ColorPicker extends ColorPickerBase {
     private updateFromChannel(name: ChannelName, source: number, commit: boolean, event: Event): void {
         if (!Number.isFinite(source))
             return;
-        const color = this.color(), rgba = hsvaToRgba(color);
+        const color = name === 'alpha' ? this.color() : this.editingColor(), rgba = hsvaToRgba(color);
         let next: HSVAColor;
         if (name === 'hue')
             next = { ...color, hue: clamp(source, 0, 360) };

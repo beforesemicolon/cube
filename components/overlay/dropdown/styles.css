@@ -1,14 +1,21 @@
-@import "../../theme/editor.css";
+@import '../../theme/editor.css';
 :host {
-  display: inline-block;
+    display: inline-block;
 }
-[part=popup] {
-  z-index: var(--z-index-dropdown,40);
-  inline-size: max-content;
-  box-sizing: border-box;
-  max-inline-size: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  overflow: auto;
+[part~='trigger-anchor'] {
+    display: inline-block;
+    inline-size: 100%;
+}
+[part~='trigger-content'] { display: inline-flex; align-items: center; gap: var(--spacing-sm, 8px); min-inline-size: 0; }
+[part~='caret'] { flex: none; }
+[part~='trigger-content'][data-caret-position='start'] [part~='caret'] { order: -1; }
+[part='popup'] {
+    z-index: var(--z-index-dropdown, var(--z-index-popup, 100));
+    inline-size: max-content;
+    box-sizing: border-box;
+    max-inline-size: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: auto;
 }

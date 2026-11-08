@@ -7,7 +7,7 @@
   display: inline-flex;
 }
 [part~=card] {
-  z-index: var(--z-index-popover,50);
+  z-index: var(--z-index-popover,var(--z-index-popup,100));
   inline-size: var(--component-hover-card-width,300px);
   box-sizing: border-box;
   overflow: auto;

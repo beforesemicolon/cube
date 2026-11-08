@@ -15,7 +15,7 @@ export function mediaView(owner:MediaBase,kind:'audio'|'video') {
     const timeText=():string=>`${clock(playback[0]().position)} / ${Number.isFinite(playback[0]().duration)?clock(playback[0]().duration):playback[0]().duration===Infinity?owner.liveText:'0:00'}`;
     const status=():string=>owner.hasPlaybackError||playback[0]().error?owner.errorText:!source()?owner.emptyText:playback[0]().buffering?owner.bufferingText:'';
     const action=(part:string,icon:()=>string,label:()=>string,handler:()=>void,disabled=()=>false,variant='ghost'):Template=>html`
-        <cb-button part=${part} icon-only icon=${icon} variant=${variant} size="sm" label=${label} accessible-label=${label} disabled=${disabled}
+        <cb-button part=${part} icon-only icon=${icon} variant=${variant} size="sm" label=${label} accessible-label=${label} title=${label} disabled=${disabled}
             onaction=${(event:Event)=>{event.stopPropagation();handler();}}></cb-button>`;
     const tracks=():Template=>html`${repeat(()=>Array.isArray(owner.tracks)?owner.tracks.filter(track=>track&&text(track.src)):[],track=>html`
         <track part="track" kind="captions" src=${()=>mediaURL(track.src,owner.baseURI)} srclang=${()=>text(track.language)} label=${()=>text(track.label,text(track.language))} default=${()=>bool(track.default)}>`)}`;
@@ -40,15 +40,15 @@ export function mediaView(owner:MediaBase,kind:'audio'|'video') {
             ${action('mute',()=>playback[0]().muted?'muted':'volume',()=>playback[0]().muted?owner.unmuteLabel:owner.muteLabel,()=>owner.setMuted(!playback[0]().muted))}
             <cb-slider part="volume" exportparts="control:volume-control" min="0" max="1" step="0.05" value=${pick(playback[0], "volume")} accessible-label=${()=>owner.volumeLabel}
                 onchange=${(event:CustomEvent<{value:number}>)=>{event.stopPropagation();owner.setVolume(Number(event.detail.value));}}></cb-slider>
-            <cb-select part="rate" exportparts="control:rate-control" accessible-label=${()=>owner.rateLabel} value=${()=>String(playback[0]().rate)}
+            <cb-select part="rate" exportparts="control:rate-control" accessible-label=${()=>owner.rateLabel} title=${()=>owner.rateLabel} value=${()=>String(playback[0]().rate)}
                 options=${()=>[.5,.75,1,1.25,1.5,2].map(value=>({value:String(value),label:`${value}×`}))}
                 onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();owner.setRate(Number(event.detail.value));}}></cb-select>
-            ${when(kind==='video', () => html`<cb-select part="captions" exportparts="control:captions-control" accessible-label=${()=>owner.captionsLabel}
+            ${when(kind==='video', () => html`<cb-select part="captions" exportparts="control:captions-control" accessible-label=${()=>owner.captionsLabel} title=${()=>owner.captionsLabel}
                 hidden=${isNot(() => owner.tracks.length)} value=${()=>{playback[0]();return String(Array.from(media()?.textTracks??[]).findIndex(track=>track.mode==='showing'));}}
                 options=${()=>[{value:'-1',label:owner.captionsOffLabel},...owner.tracks.map((track,index)=>({value:String(index),label:track.label||track.language||''}))]}
                 onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();Array.from(media()?.textTracks??[]).forEach((track,index)=>track.mode=index===Number(event.detail.value)?'showing':'disabled');}}></cb-select>
                 <cb-button part="fullscreen" exportparts="control:fullscreen-control,label:fullscreen-label,button-label:fullscreen-label,icon:fullscreen-icon,description:fullscreen-description" icon-only icon="fullscreen" variant="ghost" size="sm" hidden=${or(isNot(document.fullscreenEnabled), isNot(() => owner.requestFullscreen))}
-                    accessible-label=${()=>fullscreen[0]()?owner.exitFullscreenLabel:owner.fullscreenLabel} label=${()=>fullscreen[0]()?owner.exitFullscreenLabel:owner.fullscreenLabel}
+                    accessible-label=${()=>fullscreen[0]()?owner.exitFullscreenLabel:owner.fullscreenLabel} label=${()=>fullscreen[0]()?owner.exitFullscreenLabel:owner.fullscreenLabel} title=${()=>fullscreen[0]()?owner.exitFullscreenLabel:owner.fullscreenLabel}
                     onaction=${(event:Event)=>{event.stopPropagation();void owner.fullscreen();}}></cb-button>`, () => '')}
         </div></div><p part="status" role="status" hidden=${isNot(status)}>${status}</p><slot name="transcript" part="transcript"></slot>
     </section>`;

@@ -32,4 +32,9 @@ order: 30
 
 ## API
 
+`cb-selection-overlay` accepts `actions-align="start|center|end"` to anchor its
+action toolbar to the selection's left edge, midpoint, or right edge. The
+default is `center`. Alignment follows the selection during pan and zoom;
+existing viewport clipping and standalone boundary handling are unchanged.
+
 {{t.cube.studioCatalogApi}}

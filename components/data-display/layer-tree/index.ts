@@ -53,7 +53,7 @@ export class LayerTree extends LayerTreeBase {
                     ${repeat(item.actions ?? [], action => html`<cb-button part="action node-action" data-action-id=${action.id}
                         exportparts="control:action-control,icon:action-icon,label:action-label,button-label:action-label"
                         icon=${action.icon} icon-src=${action.iconSrc} icon-only=${Boolean(action.icon || action.iconSrc)} name=${action.name} label=${action.label}
-                        accessible-label=${action.label} title=${action.label} variant="ghost" size="xs"
+                        accessible-label=${action.label} title=${`${action.label}${action.shortcut ? ` (${action.shortcut})` : ''}`} aria-keyshortcuts=${action.shortcut || null} variant="ghost" size="xs"
                         disabled=${or(() => this.unavailable, item.disabled, action.disabled)}
                         onpointerdown=${this.containEvent} onclick=${this.containEvent} ondblclick=${this.containEvent}
                         onbeforeaction=${this.containEvent}

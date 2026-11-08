@@ -1,24 +1,62 @@
 import { FieldControlBase, type FieldControlProps, type FormRestoreValue } from '../FormControlBase.js'
 import type { StudioKind } from '../../studio/types.js'
+import type { ButtonVariant } from '../../action/button/ButtonBase.js'
 
 export type FilePickerValue = string | readonly string[]
+export type FilePickerCapture = '' | 'user' | 'environment'
+export type FilePickerPresentation = 'dropzone' | 'button'
 
 export interface FilePickerProps extends FieldControlProps<FilePickerValue> {
     fileLabel?: string
     fileRequirements?: string
     multiple?: boolean
+    accept?: string
+    capture?: FilePickerCapture
+    presentation?: FilePickerPresentation
+    variant?: ButtonVariant
+    icon?: string
+    loading?: boolean
 }
 
 /** Headless behavior for the File picker component. */
 export abstract class FilePickerBase extends FieldControlBase<FilePickerProps, FilePickerValue> {
-    static observedAttributes = [...FieldControlBase.observedAttributes, 'file-label', 'file-requirements', 'multiple']
+    static observedAttributes = [
+        ...FieldControlBase.observedAttributes,
+        'file-label',
+        'file-requirements',
+        'multiple',
+        'accept',
+        'capture',
+        'presentation',
+        'variant',
+        'icon',
+        'loading',
+    ]
     value: FilePickerValue = ''
     fileLabel = ''
     fileRequirements = ''
     multiple = false
+    accept = '*/*'
+    capture: FilePickerCapture = ''
+    presentation: FilePickerPresentation = 'dropzone'
+    variant: ButtonVariant = 'secondary'
+    icon = ''
+    loading = false
     files: readonly File[] = []
     readonly componentName = 'file-picker'
     readonly componentKind: StudioKind = 'file'
+    /** Open the native chooser from a user activation without exposing internals. */
+    pickFiles(accept = this.accept): boolean {
+        const control = this.fieldElement()
+        if (this.unavailable || this.readOnly || !control) return false
+        control.accept = accept
+        control.value = ''
+        control.click()
+        return true
+    }
+    protected get unavailable(): boolean {
+        return super.unavailable || this.loading
+    }
     protected fieldElement(): HTMLInputElement | undefined { return this.refs.control?.[0] instanceof HTMLInputElement ? this.refs.control[0] : undefined }
     protected captureValue(): FilePickerValue { return Array.isArray(this.value) ? [...this.value] : this.value }
     setFiles(files: readonly File[], originalEvent?: Event): boolean {

@@ -1,131 +1,162 @@
-@import "../../theme/field.css";
+@import '../../theme/field.css';
 :host {
-  display: inline-block;
-  inline-size: var(--component-combobox-width,280px);
+    display: inline-block;
+    inline-size: var(--component-combobox-width, 280px);
 }
-[part~=root] {
-  position: relative;
-  display: grid;
+[part~='root'] {
+    position: relative;
+    display: grid;
 }
-[part~=input-shell] {
-  display: flex;
-  align-items: center;
-  block-size: var(--cb-height);
-  min-block-size: var(--cb-height);
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid var(--cb-field-border);
-  border-radius: var(--cb-field-radius);
-  background: var(--cb-field-background);
+[part~='input-shell'] {
+    display: flex;
+    align-items: center;
+    block-size: var(--cb-height);
+    min-block-size: var(--cb-height);
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--cb-field-border);
+    border-radius: var(--cb-field-radius);
+    background: var(--cb-field-background);
 }
-[part~=values] {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  min-inline-size: 0;
-  align-self: stretch;
+[part~='values'] {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-inline-size: 0;
+    align-self: stretch;
 }
-[part~=input] {
-  flex: 1;
-  inline-size: 100%;
-  min-inline-size: 0;
-  block-size: calc(var(--cb-height) - 2px);
-  padding: var(--spacing-xs,4px) var(--spacing-sm,8px);
-  border: 0;
-  background: transparent;
-  outline: 0;
-  border-radius: 0;
-  box-shadow: none;
+[part~='input-shell'][data-variant='outline'] { background: transparent; }
+[part~='input-shell'][data-variant='ghost'] { border-color: transparent; background: transparent; }
+[part~='input-shell'][data-variant='ghost']:hover { background: var(--color-active); }
+[part~='input-shell'][data-variant='ghost']:focus-within { outline: var(--focus-ring); outline-offset: -1px; }
+[part~='input-shell'][data-caret-position='start'] [part~='toggle'] { order: -1; }
+[part~='input-shell'][data-caret-position='start'] [part~='toggle']::part(control) { border-radius: var(--cb-field-radius) 0 0 var(--cb-field-radius); }
+[part~='input'] {
+    cursor: text;
+    flex: 1;
+    inline-size: 100%;
+    min-inline-size: 0;
+    block-size: calc(var(--cb-height) - 2px);
+    padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+    border: 0;
+    background: transparent;
+    outline: 0;
+    border-radius: 0;
+    box-shadow: none;
 }
-[part~=input-shell][data-multi] {
-  block-size: auto;
+:host([data-disabled]) [part~='values'] {
+    cursor: not-allowed;
 }
-[data-multi] [part~=values] {
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 2px 4px;
+[part~='input-shell'][data-multi] {
+    block-size: auto;
 }
-[data-multi] [part~=input] {
-  flex: 1 0 4ch;
-  inline-size: 4ch;
-  max-inline-size: 100%;
-  min-inline-size: 4ch;
-  block-size: calc(var(--cb-height) - 6px);
-  padding: 0 2px;
+[data-multi] [part~='values'] {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 2px 4px;
 }
-[part~=selection] {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  max-inline-size: 100%;
-  min-block-size: 20px;
-  padding: 1px 3px 1px 6px;
-  border: 1px solid var(--cb-field-border);
-  border-radius: var(--radius-sm,6px);
-  background: var(--cb-field-background);
+[data-multi] [part~='input'] {
+    flex: 1 0 4ch;
+    inline-size: 4ch;
+    max-inline-size: 100%;
+    min-inline-size: 4ch;
+    block-size: calc(var(--cb-height) - 6px);
+    padding: 0 2px;
 }
-[part~=selection-label] {
-  min-inline-size: 0;
-  overflow-wrap: anywhere;
+[part~='selection'] {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-inline-size: 100%;
+    min-block-size: 20px;
+    padding: 1px 3px 1px 6px;
+    border: 1px solid var(--cb-field-border);
+    border-radius: var(--radius-sm, 6px);
+    background: var(--cb-field-background);
 }
-[part~=remove] {
-  flex: none;
+[part~='selection-label'] {
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
 }
-[part~=input-shell] [part~=input]:is(:hover,:focus) {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+[part~='remove'] {
+    flex: none;
 }
-[part~=toggle] {
-  display: block;
-  align-self: stretch;
-  flex: none;
+[part~='input-shell'] [part~='input']:is(:hover, :focus) {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
 }
-[part~=toggle]::part(control) {
-  block-size: 100%;
-  min-block-size: 0;
-  border-radius: 0 var(--cb-field-radius) var(--cb-field-radius) 0;
+[part~='toggle'] {
+    display: block;
+    align-self: stretch;
+    flex: none;
 }
-[part~=popup] {
-  z-index: var(--z-index-dropdown,1000);
-  inline-size: max-content;
-  box-sizing: border-box;
-  overflow: auto;
-  padding: 4px;
-  border: 1px solid var(--cb-field-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-foreground);
-  box-shadow: var(--shadow-md,0 12px 32px rgba(0,0,0,.14));
+[part~='toggle']::part(control) {
+    block-size: 100%;
+    min-block-size: 0;
+    border-radius: 0 var(--cb-field-radius) var(--cb-field-radius) 0;
 }
-[part~=option] {
-  display: block;
-  inline-size: 100%;
-  min-block-size: var(--cb-height);
-  border-color: transparent;
-  background: transparent;
-  text-align: start;
+[part~='popup'] {
+    text-align: start;
+    z-index: var(--z-index-dropdown, var(--z-index-popup, 100));
+    inline-size: max-content;
+    box-sizing: border-box;
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 4px;
+    border: 1px solid var(--cb-field-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-foreground);
+    box-shadow: var(--shadow-md, 0 12px 32px rgba(0, 0, 0, 0.14));
 }
-[part~=option]::part(control) {
-  justify-content: flex-start;
-  padding: var(--spacing-xs,4px) var(--spacing-md,12px);
-  text-align: inherit;
+[part~='option'] {
+    display: block;
+    inline-size: 100%;
+    min-block-size: var(--cb-height);
+    border-color: transparent;
+    background: transparent;
+    text-align: start;
 }
-[part~=option]::part(button-label) {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  inline-size: 100%;
+[part~='option']::part(control) {
+    justify-content: flex-start;
+    padding: var(--spacing-xs, 4px) var(--spacing-md, 12px);
+    text-align: inherit;
 }
-[part~=option][aria-selected=true],
-[part~=option][data-highlighted=true] {
-  background: var(--color-selection);
-  box-shadow: inset 2px 0 0 var(--color-primary);
+[part~='option']::part(button-label) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    inline-size: 100%;
 }
-[part~=empty] {
-  display: block;
-  padding: 10px;
-  color: var(--color-muted-foreground);
+[part~='option-copy'] {
+    display: grid;
+    min-inline-size: 0;
+    flex: 1;
+}
+[part~='option-description'] {
+    color: var(--color-muted-foreground);
+    font-size: var(--component-caption-font-size, 11px);
+}
+[part~='option-badge'],
+[part~='option-icon'],
+[part~='check'] {
+    flex: none;
+}
+[part~='loading'] {
+    display: block;
+    margin: var(--spacing-sm, 8px) auto;
+}
+[part~='option'][aria-selected='true'],
+[part~='option'][data-highlighted='true'] {
+    background: var(--color-selection);
+    box-shadow: inset 2px 0 0 var(--color-primary);
+}
+[part~='empty'] {
+    display: block;
+    padding: 10px;
+    color: var(--color-muted-foreground);
 }

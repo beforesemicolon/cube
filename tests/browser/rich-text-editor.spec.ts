@@ -56,6 +56,59 @@ test('formatting toolbar escapes clipped ancestors, stays in the viewport and pr
     await expect(toolbar).toBeHidden()
 })
 
+test('toolbar extension controls preserve selection and emit their own canonical events once', async ({ page }) => {
+    await mount(page, { variant: 'box' })
+    const editor = page.locator('cb-rich-text-editor')
+    await editor.evaluate(node => {
+        const toolbar = (node as RichTextEditor).contentRoot.querySelector('cb-rich-text-toolbar')
+        if (!toolbar) throw new Error('Expected rich-text toolbar')
+
+        const heading = document.createElement('cb-select') as HTMLElement & {
+            options: Array<{ value: string; label: string }>
+            value: string
+        }
+        heading.setAttribute('accessible-label', 'Block style')
+        heading.options = [
+            { value: 'paragraph', label: 'Paragraph' },
+            { value: 'heading', label: 'Heading' },
+        ]
+        heading.value = 'paragraph'
+
+        const list = document.createElement('cb-button') as HTMLElement & { pressed: boolean }
+        list.setAttribute('label', 'Numbered list')
+        list.pressed = false
+
+        const clear = document.createElement('cb-button')
+        clear.setAttribute('label', 'Clear formatting')
+        clear.setAttribute('variant', 'ghost')
+
+        const link = document.createElement('cb-text-input')
+        link.setAttribute('accessible-label', 'Link URL')
+
+        for (const control of [heading, list, clear, link]) toolbar.append(control)
+        for (const [name, control] of [['heading', heading], ['list', list], ['clear', clear]] as const) {
+            control.addEventListener(name === 'clear' ? 'action' : 'change', () => window.richLeaks.push(name))
+        }
+    })
+
+    await select(page, 0, 5)
+    await editor.getByRole('button', { name: 'Numbered list', exact: true }).click()
+    await editor.getByRole('button', { name: 'Clear formatting', exact: true }).click()
+    await editor.evaluate(node => {
+        const heading = (node as RichTextEditor).contentRoot.querySelector('cb-select') as
+            | (HTMLElement & { choose(value: string, originalEvent?: Event): boolean })
+            | null
+        heading?.choose('heading', new Event('change'))
+    })
+
+    expect(await page.evaluate(() => window.richLeaks)).toEqual(['list', 'clear', 'heading'])
+    await editor.getByRole('button', { name: 'Bold', exact: true }).click()
+    await expect(editor).toHaveJSProperty('value', '<strong>Hello</strong> world')
+    await editor.locator('cb-text-input[accessible-label="Link URL"]').click()
+    await expect(editor.locator('cb-text-input[accessible-label="Link URL"]')).toBeFocused()
+    await page.evaluate(() => { window.richLeaks = [] })
+})
+
 async function mount(page: Page, props: RichTextEditorProps = {}): Promise<void> {
     await page.evaluate(props => {
         const form = document.createElement('form'), fieldset = document.createElement('fieldset')

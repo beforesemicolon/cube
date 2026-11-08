@@ -1,0 +1,104 @@
+@import '../../theme/editor.css';
+:host {
+    display: inline-block;
+    max-inline-size: 100%;
+    vertical-align: middle;
+}
+[part~='badge'] {
+    display: inline-flex;
+    align-items: center;
+    max-inline-size: 100%;
+    min-block-size: var(--component-badge-height-sm, 20px);
+    padding: var(--component-badge-padding-block-sm, 2px)
+        var(--component-badge-padding-inline-sm, 7px);
+    overflow-wrap: anywhere;
+    border: 1px solid var(--component-badge-border, var(--color-separator));
+    border-radius: var(--component-badge-radius, 5px);
+    background: var(--component-badge-background, var(--color-surface-muted));
+    color: var(--component-badge-foreground, var(--color-foreground));
+    font-size: var(--component-badge-font-size-sm, 11px);
+    font-weight: var(--component-badge-font-weight, 600);
+    line-height: var(--component-badge-line-height, 1.2);
+}
+:host([data-size='tiny']) [part~='badge'],
+:host([data-size='xs']) [part~='badge'] {
+    min-block-size: var(--component-badge-height-xs, 16px);
+    padding: var(--component-badge-padding-block-xs, 1px)
+        var(--component-badge-padding-inline-xs, 5px);
+    font-size: var(--component-badge-font-size-xs, 10px);
+}
+:host([data-size='md']) [part~='badge'] {
+    min-block-size: var(--component-badge-height-md, 24px);
+    padding: var(--component-badge-padding-block-md, 3px)
+        var(--component-badge-padding-inline-md, 8px);
+    font-size: var(--component-badge-font-size-md, 12px);
+}
+:host([data-size='lg']) [part~='badge'] {
+    min-block-size: var(--component-badge-height-lg, 28px);
+    padding: var(--component-badge-padding-block-lg, 4px)
+        var(--component-badge-padding-inline-lg, 10px);
+    font-size: var(--component-badge-font-size-lg, 14px);
+}
+[part~='badge'][data-tone='info'] {
+    --component-badge-background: var(
+        --component-badge-info-background,
+        var(--color-selection)
+    );
+    --component-badge-foreground: var(
+        --component-badge-info-foreground,
+        var(--color-signal-text)
+    );
+    --component-badge-border: var(
+        --component-badge-info-border,
+        color-mix(in srgb, var(--color-primary) 32%, transparent)
+    );
+}
+[part~='badge'][data-tone='success'] {
+    --component-badge-background: var(
+        --component-badge-success-background,
+        color-mix(in srgb, var(--color-success) 14%, var(--color-surface))
+    );
+    --component-badge-foreground: var(
+        --component-badge-success-foreground,
+        var(--color-success)
+    );
+    --component-badge-border: var(
+        --component-badge-success-border,
+        color-mix(in srgb, var(--color-success) 32%, transparent)
+    );
+}
+[part~='badge'][data-tone='warning'] {
+    --component-badge-background: var(
+        --component-badge-warning-background,
+        color-mix(in srgb, var(--color-warning) 16%, var(--color-surface))
+    );
+    --component-badge-foreground: var(
+        --component-badge-warning-foreground,
+        var(--color-warning)
+    );
+    --component-badge-border: var(
+        --component-badge-warning-border,
+        color-mix(in srgb, var(--color-warning) 32%, transparent)
+    );
+}
+[part~='badge'][data-tone='danger'] {
+    --component-badge-background: var(
+        --component-badge-danger-background,
+        var(--color-danger-soft)
+    );
+    --component-badge-foreground: var(
+        --component-badge-danger-foreground,
+        var(--color-danger)
+    );
+    --component-badge-border: var(
+        --component-badge-danger-border,
+        color-mix(in srgb, var(--color-danger) 32%, transparent)
+    );
+}
+@media (forced-colors: active) {
+    [part~='badge'] {
+        border-color: CanvasText;
+        background: Canvas;
+        color: CanvasText;
+    }
+}

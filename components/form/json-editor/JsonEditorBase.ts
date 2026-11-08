@@ -4,11 +4,20 @@ import { SourceValueController } from '../source-value.js'
 
 export type JsonPrimitive = string | number | boolean | null
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
-export type JsonValidator = (value: JsonValue) => string
+export interface JsonValidationIssue {
+    message: string
+    path?: string
+}
+export interface JsonParseResult {
+    value?: JsonValue
+    error: string
+    syntaxValid: boolean
+    issues: readonly JsonValidationIssue[]
+}
 export interface JsonEditorProps extends FieldControlProps<string | JsonValue> {
     value?: string | JsonValue
     indent?: number
-    validator?: JsonValidator
+    validationIssues?: readonly JsonValidationIssue[]
     formatLabel?: string
     validLabel?: string
     invalidLabel?: string
@@ -30,12 +39,12 @@ function isJsonValue(value: unknown): value is JsonValue {
 export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps> extends FieldControlBase<P, string, string | JsonValue> {
     static observedAttributes = [
         ...FieldControlBase.observedAttributes, 'value', 'indent', 'format-label', 'valid-label', 'invalid-label', 'placeholder',
-        'line-numbers', 'wrap', 'position-label',
+        'line-numbers', 'wrap', 'position-label', 'validation-issues',
     ]
     declare value: string | JsonValue
     private readonly sourceValue: SourceValueController<string | JsonValue>
     indent = 2
-    validator?: JsonValidator
+    validationIssues: readonly JsonValidationIssue[] = []
     formatLabel = ''
     validLabel = ''
     invalidLabel = ''
@@ -79,21 +88,76 @@ export abstract class JsonEditorBase<P extends JsonEditorProps = JsonEditorProps
         super.update(name)
     }
 
-    parse(): { value?: JsonValue; error: string } {
-        const source = this.sourceText().trim()
-        if (!source) return bool(this.required) ? { error: scalarText(this.invalidLabel) } : { value: null, error: '' }
+    private issues(): readonly JsonValidationIssue[] {
+        return Array.isArray(this.validationIssues)
+            ? this.validationIssues.filter(
+                  (issue) =>
+                      Boolean(issue) &&
+                      typeof issue.message === 'string' &&
+                      issue.message.trim().length > 0
+              )
+            : []
+    }
+
+    protected parseSource(sourceText: string): JsonParseResult {
+        const source = sourceText.trim()
+        const issues = this.issues()
+        if (!source)
+            return bool(this.required)
+                ? {
+                      error: scalarText(this.invalidLabel),
+                      syntaxValid: false,
+                      issues,
+                  }
+                : {
+                      value: null,
+                      error: issues[0]?.message ?? '',
+                      syntaxValid: true,
+                      issues,
+                  }
         try {
             const parsed: unknown = JSON.parse(source)
-            if (!isJsonValue(parsed)) return { error: scalarText(this.invalidLabel) }
-            const validation = this.validator?.(parsed) ?? ''
-            return validation ? { value: parsed, error: validation } : { value: parsed, error: '' }
-        } catch (cause) { return { error: cause instanceof Error ? cause.message : scalarText(this.invalidLabel) } }
+            if (!isJsonValue(parsed))
+                return {
+                    error: scalarText(this.invalidLabel),
+                    syntaxValid: false,
+                    issues,
+                }
+            return {
+                value: parsed,
+                error: issues[0]?.message ?? '',
+                syntaxValid: true,
+                issues,
+            }
+        } catch (cause) {
+            return {
+                error:
+                    cause instanceof Error
+                        ? cause.message
+                        : scalarText(this.invalidLabel),
+                syntaxValid: false,
+                issues,
+            }
+        }
+    }
+
+    parse(): JsonParseResult {
+        return this.parseSource(this.sourceText())
     }
 
     setValue(value: string, originalEvent?: Event): boolean {
         const next = scalarText(value)
         if(next===this.sourceText())return false
-        return this.commitValue(next,originalEvent,{},changed=>this.sourceValue.set(changed,false))
+        const parsed = this.parseSource(next)
+        return this.commitValue(
+            next,
+            originalEvent,
+            {
+                json: parsed.value,
+                syntaxValid: parsed.syntaxValid,
+            },
+            changed=>this.sourceValue.set(changed,false)
+        )
     }
 
     format(originalEvent?: Event): boolean {

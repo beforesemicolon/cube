@@ -23,6 +23,11 @@ order: 29
 
 ## API
 
+When a color is fully transparent, choosing a new color through the color plane,
+hue slider, or HSV/RGB channels makes it opaque. Partially transparent colors
+retain their alpha. Alpha controls, HEX input, swatches, and programmatic values
+continue to support explicit full transparency.
+
 {{t.cube.studioCatalogApi}}
 
 ### Shared color swatches

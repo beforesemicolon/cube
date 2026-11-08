@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import type { Icon } from '../../components/icons/icon/index.js'
+import type { Button, ButtonVariant } from '../../components/action/button/index.js'
 import type { WorkspaceProps } from '../../components/layout/workspace/WorkspaceBase.js'
 import type { LayerTreeProps } from '../../components/data-display/layer-tree/LayerTreeBase.js'
 import type { AccordionProps } from '../../components/data-display/accordion/AccordionBase.js'
@@ -12,6 +13,62 @@ const source = '/tests/browser/fixtures/custom-icon.svg'
 test.beforeEach(async ({ page }) => {
     await page.goto('/tests/browser/fixture.html')
     await page.waitForFunction(() => Boolean(customElements.get('cb-icon')))
+})
+
+for (const appearance of ['light', 'dark']) test(`button icons inherit the text color across variants and states (${appearance})`, async ({ page }) => {
+    await page.locator('#theme').evaluate((node, value) => node.setAttribute('appearance', value), appearance)
+    await page.evaluate(() => {
+        const button = document.createElement('cb-button') as Button
+        Object.assign(button, { label: 'Button', icon: 'plus', variant: 'primary', size: 'lg' } satisfies Partial<Button>)
+        document.getElementById('fixture')!.append(button)
+    })
+    const host = page.locator('cb-button'), button = host.getByRole('button'), label = host.locator('[part~=label]'), icon = host.locator('cb-icon')
+    const matchesText = async (): Promise<void> => {
+        const color = await label.evaluate(node => getComputedStyle(node).color)
+        await expect(icon).toHaveCSS('color', color)
+        await expect(icon.locator('svg path')).toHaveCSS('stroke', color)
+    }
+    for (const variant of ['primary', 'secondary', 'outline', 'ghost', 'destructive'] satisfies ButtonVariant[]) {
+        await host.evaluate((node, variant) => { Object.assign(node, { variant, disabled: false, pressed: undefined } satisfies Partial<Button>) }, variant)
+        await page.locator('h1').hover()
+        await matchesText()
+        await button.hover()
+        await matchesText()
+        await button.focus()
+        await matchesText()
+        await host.evaluate(node => { (node as Button).pressed = true })
+        await matchesText()
+        await host.evaluate(node => { (node as Button).disabled = true })
+        await matchesText()
+    }
+    // Theme overrides remain the source of truth; no white/black icon override.
+    await host.evaluate(node => {
+        Object.assign(node, { variant: 'primary', disabled: false, pressed: undefined } satisfies Partial<Button>)
+        ;(node as HTMLElement).style.setProperty('--color-primary-foreground', 'rgb(240, 230, 200)')
+    })
+    await expect(label).toHaveCSS('color', 'rgb(240, 230, 200)')
+    await matchesText()
+    await host.evaluate(node => { (node as HTMLElement).style.removeProperty('--color-primary-foreground') })
+    await page.locator('h1').hover()
+    await host.screenshot({ path: `/tmp/cube-button-icon-${appearance}.png` })
+})
+
+test('named and slotted SVG icons inherit surrounding text color while explicit icon colors still override it', async ({ page }) => {
+    await page.evaluate(() => {
+        const text = document.createElement('span')
+        text.id = 'colored-text'
+        text.style.color = 'rgb(130, 40, 160)'
+        text.innerHTML = '<cb-icon name="plus"></cb-icon><cb-icon><svg viewBox="0 0 24 24"><path d="M2 2h20v20H2z" fill="currentColor"/></svg></cb-icon>'
+        document.getElementById('fixture')!.append(text)
+    })
+    const icons = page.locator('#colored-text cb-icon')
+    for (const icon of await icons.all()) await expect(icon).toHaveCSS('color', 'rgb(130, 40, 160)')
+    await expect(icons.first().locator('svg path')).toHaveCSS('stroke', 'rgb(130, 40, 160)')
+    await expect(icons.last().locator('svg path[fill=currentColor]')).toHaveCSS('fill', 'rgb(130, 40, 160)')
+    await page.locator('#colored-text').evaluate(node => { (node as HTMLElement).style.color = 'rgb(15, 120, 70)' })
+    for (const icon of await icons.all()) await expect(icon).toHaveCSS('color', 'rgb(15, 120, 70)')
+    await icons.first().evaluate(node => { (node as HTMLElement).style.color = 'rgb(200, 30, 50)' })
+    await expect(icons.first().locator('svg path')).toHaveCSS('stroke', 'rgb(200, 30, 50)')
 })
 
 test('icon supports reactive names, file sources and live SVG children with one accessible name', async ({ page }) => {

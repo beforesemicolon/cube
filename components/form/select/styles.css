@@ -3,6 +3,9 @@
   display: inline-block;
   inline-size: var(--component-select-width,240px);
 }
+:host([data-field-control]) {
+  inline-size: 100%;
+}
 [part~=root] {
   position: relative;
   display: grid;
@@ -25,6 +28,13 @@
 [part~=trigger]::part(control) {
   padding: var(--spacing-xs,4px) var(--spacing-md,12px);
 }
+[part~=root]:not([data-variant=secondary]) [part~=trigger] {
+  border: 0;
+  background: transparent;
+}
+[part~=root][data-caret-position=start] [part~=indicator] { order: -1; }
+[part~=indicator], [part~=selected-icon] { flex: none; }
+[part~=value-content] { display: flex; align-items: center; gap: 8px; flex: 1; min-inline-size: 0; }
 [part~=value][data-placeholder] {
   color: var(--color-muted-foreground);
 }
@@ -54,7 +64,8 @@
   margin-block-start: 2px;
 }
 [part~=popup] {
-  z-index: var(--z-index-dropdown,1000);
+  text-align: start;
+  z-index: var(--z-index-dropdown,var(--z-index-popup,100));
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 4px;
@@ -92,6 +103,7 @@
   min-block-size: 0;
   max-block-size: 220px;
   overflow: auto;
+  overscroll-behavior: contain;
 }
 [part~=option] {
   display: block;

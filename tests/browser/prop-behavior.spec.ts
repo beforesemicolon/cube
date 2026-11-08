@@ -13,6 +13,35 @@ interface NumericField extends HTMLElement {
     required: boolean
 }
 
+for (const name of ['number-input', 'unit-input', 'stepper'] as const) test(`${name}: disabling an invalid field does not mirror barred native validity`, async ({ page }) => {
+    const errors: string[] = []
+    page.on('pageerror', error => errors.push(error.message))
+    await page.goto('/tests/browser/fixture.html')
+    await page.waitForFunction(() => Boolean(customElements.get('cb-unit-input')))
+    await page.evaluate(name => {
+        const field = document.createElement('cb-field')
+        const control = document.createElement(`cb-${name}`) as NumericField
+        Object.assign(control, { value: 1.5, step: 1, accessibleLabel: 'Fractional value' })
+        field.append(control)
+        document.querySelector('#fixture')?.append(field)
+    }, name)
+    const host = page.locator(`cb-${name}`)
+    const control = host.locator('input').first()
+    await expect.poll(() => control.evaluate(node => (node as HTMLInputElement).validity.stepMismatch)).toBe(true)
+    for (let index = 0; index < 3; index++) {
+        await page.locator('cb-field').evaluate(node => node.setAttribute('disabled', ''))
+        await expect(control).toBeDisabled()
+        await page.locator('cb-field').evaluate(node => node.removeAttribute('disabled'))
+        await expect(control).toBeEnabled()
+        await host.evaluate(node => { (node as NumericField).readOnly = true })
+        await expect(control).not.toBeEditable()
+        await host.evaluate(node => { (node as NumericField).readOnly = false })
+        await expect(control).toBeEditable()
+    }
+    await expect.poll(() => control.evaluate(node => (node as HTMLInputElement).validity.stepMismatch)).toBe(true)
+    expect(errors).toEqual([])
+})
+
 for (const name of studioFields) test(`${name}: custom error props affect validity, accessible description and invalid styling`, async ({ page }) => {
     await page.goto('/tests/browser/fixture.html')
     await page.waitForFunction(() => Boolean(customElements.get('cb-text-input')))

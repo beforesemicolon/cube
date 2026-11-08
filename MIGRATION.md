@@ -24,6 +24,8 @@ Editable-label keeps drafts separate from its committed/form value. Confirming w
 
 Icon-only buttons now use the boolean `icon-only` attribute (or `iconOnly` property) alongside a normal visual `variant`. Replace `variant="icon"` with `icon-only variant="ghost"` to preserve the former transparent appearance, or combine `icon-only` with any other button variant.
 
+Grid now accepts `empty` for centered, full-track empty content. Avatar adds 20px `tiny` and 64px `xl` sizes plus deterministic theme-token fallback colors. Badge now accepts slotted content and `tone="neutral|info|success|warning|danger"`; Spinner's `lg` size is a distinct 40px token-backed ring. Action Bar accepts `wrap`, an `actions-only` mode, named `start` and `actions` composition, and a final `overflow` slot, while Segmented Control accepts `icon-only-at="sm|md|lg"`. The icon registry adds `table`, `list`, `calendarRange`, `users`, `userAdd`, `attachment`, `checkCircle`, `expand`, and `asterisk`.
+
 The broad `InputBase` and `InputProps` exports were removed. Text, textarea, and file-picker bases now extend `FieldControlBase` directly, while numeric controls share `NumericInputBase`, whose value is typed as `number | null`.
 
 `Toolbar` and `ActionBar` are layout components. Their imports moved from `@beforesemicolon/cube/action/toolbar` and `@beforesemicolon/cube/action/action-bar` to `@beforesemicolon/cube/layout/toolbar` and `@beforesemicolon/cube/layout/action-bar`. The `<cb-toolbar>` and `<cb-action-bar>` tag names are unchanged.
@@ -89,8 +91,8 @@ layout and icon categories used by its composition at application level.
 
 ```html
 <cb-empty-state icon="search" heading="No matching pages">
-  <p>Try another search or clear your filters.</p>
-  <cb-button>Clear filters</cb-button>
+    <p>Try another search or clear your filters.</p>
+    <cb-button>Clear filters</cb-button>
 </cb-empty-state>
 ```
 

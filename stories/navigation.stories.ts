@@ -6,8 +6,13 @@ const meta: Meta = { title: 'Navigation', tags: ['autodocs'], parameters: { docs
 export default meta
 type Story = StoryObj
 const items = [{ id:'one',label:'Primary item' },{ id:'two',label:'Secondary item' },{ id:'three',label:'Disabled item',disabled:true }]
+const segmentedItems = [
+    { id: 'one', label: 'Grid view', icon: 'grid' },
+    { id: 'two', label: 'Table view', icon: 'table' },
+    { id: 'three', label: 'List view', icon: 'list', disabled: true },
+]
 
-export const SegmentedControl: Story = componentStory('cb-segmented-control', { label: 'View', value: 'one', items, stacked: false })
+export const SegmentedControl: Story = componentStory('cb-segmented-control', { label: 'View', value: 'one', items: segmentedItems, stacked: false })
 
 export const Tabs: Story = componentStory('cb-tabs', { label: 'Workspace', value: 'one', items, stacked: false, activation: 'automatic' })
 

@@ -13,6 +13,11 @@ export interface TextareaProps extends FieldControlProps<string> {
     references?: readonly RichTextReference[]
     mentions?: MentionConfiguration | null
     placeholder?: string
+    rows?: number
+    maxRows?: number
+    minLength?: number
+    maxLength?: number
+    autocomplete?: string
 }
 
 /** Headless behavior for the Textarea component. */
@@ -22,6 +27,10 @@ export abstract class TextareaBase extends FieldControlBase<TextareaProps> {
         'mentions',
         'references',
         'placeholder',
+        'rows',
+        'max-rows',
+        'min-length',
+        'max-length',
         'autocomplete',
     ]
     value = ''
@@ -41,6 +50,11 @@ export abstract class TextareaBase extends FieldControlBase<TextareaProps> {
     }
     protected update(name: string): void { super.update(name); this.mentionController?.refresh() }
     placeholder = ''
+    rows = 3
+    maxRows: number | string = ''
+    minLength: number | string = ''
+    maxLength: number | string = ''
+    autocomplete = ''
     readonly componentName = 'textarea'
     readonly componentKind: StudioKind = 'textarea'
     protected fieldElement(): HTMLTextAreaElement | undefined {

@@ -23,7 +23,9 @@ export interface RichTextEditorProps extends FieldControlProps<string> {
     superscriptLabel?: string
     subscriptLabel?: string
 }
-export abstract class RichTextEditorBase extends FieldControlBase<RichTextEditorProps> {
+export abstract class RichTextEditorBase<
+    P extends RichTextEditorProps = RichTextEditorProps,
+> extends FieldControlBase<P> {
     static observedAttributes = [
         ...FieldControlBase.observedAttributes,
         'mentions',
@@ -53,21 +55,53 @@ export abstract class RichTextEditorBase extends FieldControlBase<RichTextEditor
     private readonly source: SourceValueController<string>
     constructor() {
         super()
-        this.source = new SourceValueController(this, '', value => this.cleanValue(scalarText(value)), value => value,
-            () => { this.syncView(); this.syncFormValue() })
+        this.source = new SourceValueController(
+            this,
+            '',
+            (value) => this.cleanValue(scalarText(value)),
+            (value) => value,
+            () => {
+                this.syncView()
+                this.syncFormValue()
+            }
+        )
     }
     protected inlineMode = (): boolean => this.variant !== 'box'
-    protected cleanValue = (value: string): string => serializeRuns(parseRichText(scalarText(value), this.ownerDocument, this.inlineMode()))
-    protected normalizeValue(value: string): string { return this.cleanValue(value) }
-    protected captureValue(): string { return this.cleanValue(this.value) }
+    protected cleanValue = (value: string): string =>
+        serializeRuns(
+            parseRichText(
+                scalarText(value),
+                this.ownerDocument,
+                this.inlineMode()
+            )
+        )
+    protected normalizeValue(value: string): string {
+        return this.cleanValue(value)
+    }
+    protected captureValue(): string {
+        return this.cleanValue(this.value)
+    }
     protected restoreValue(value: string | FormRestoreValue): void {
-        this.source.set(this.cleanValue(value instanceof FormData ? scalarText(value.get(this.name)) : value instanceof File ? value.name : scalarText(value)), false)
+        this.source.set(
+            this.cleanValue(
+                value instanceof FormData
+                    ? scalarText(value.get(this.name))
+                    : value instanceof File
+                      ? value.name
+                      : scalarText(value)
+            ),
+            false
+        )
     }
     protected normalizeSource = (): void => {
         const value = this.cleanValue(this.value)
         if (value !== this.value) this.source.set(value, false)
     }
-    protected mount(): void { this.source.mount(); this.normalizeSource(); super.mount() }
+    protected mount(): void {
+        this.source.mount()
+        this.normalizeSource()
+        super.mount()
+    }
     protected update(name: string): void {
         if (name === 'value') {
             if (this.source.isReflecting) return
@@ -75,5 +109,8 @@ export abstract class RichTextEditorBase extends FieldControlBase<RichTextEditor
         }
         super.update(name)
     }
-    setValue = (value: string, originalEvent?: Event): boolean => this.commitValue(value, originalEvent, {}, next => { this.source.set(next, false) })
+    setValue = (value: string, originalEvent?: Event): boolean =>
+        this.commitValue(value, originalEvent, {}, (next) => {
+            this.source.set(next, false)
+        })
 }

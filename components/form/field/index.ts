@@ -94,6 +94,7 @@ export class Field extends FieldBase {
             aria(fieldControl, 'aria-description', description || null);
             aria(fieldControl, 'aria-invalid', invalid ? true : null);
         }
+        control.toggleAttribute('data-field-control', true);
         control.toggleAttribute('data-field-invalid', invalid);
         control.toggleAttribute('data-field-success', this.isSuccess());
         control.toggleAttribute('data-field-disabled', disabled);

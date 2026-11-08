@@ -1,17 +1,19 @@
 import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
-import { isNot, and, html, state, type Template } from '../../core/runtime.js'
+import { isNot, and, html, state, when, type Template } from '../../core/runtime.js'
+import '../../text/shortcut/index.js'
 
 import { uid } from '../../core/id.js'
 import { bool, scalarText } from '../../core/value.js'
 import { TooltipBase } from './TooltipBase.js'
+import { tooltipScrollBoundary } from './bounds.js'
 
 export class Tooltip extends TooltipBase {
     stylesheet = componentStylesheet
 
     private readonly tooltipId = uid('cb-tooltip')
     private readonly slottedContent = state(false)
-    private readonly anchorStyle = state('')
+    private readonly anchorStyle = state('left:-10000px;top:-10000px')
     private bubbleObserver?: ResizeObserver
     private positioningFrame?: number
     private describedElements = new Map<Element, string | null>()
@@ -19,15 +21,16 @@ export class Tooltip extends TooltipBase {
     private get bubble(): HTMLElement | undefined { const node = this.refs.bubble?.[0]; return node instanceof HTMLElement ? node : undefined }
     render(): Template {
         return html`
-            <span part="trigger" onslotchange="${this.linkTrigger}" onpointerenter="${() => this.schedule(true)}" onpointerleave="${() => this.schedule(false)}"
+            <span ref="triggerSurface" part="trigger" onslotchange="${this.linkTrigger}" onpointerenter="${() => this.schedule(true)}" onpointerleave="${() => this.schedule(false)}"
                 onfocus="${[() => this.schedule(true), true]}" onblur="${[() => this.schedule(false), true]}">
                 <slot ref="trigger" part="trigger-content"></slot>
             </span>
             <span ref="bubble" id="${this.tooltipId}" part="tooltip" role="tooltip" onslotchange="${this.contentChanged}"
-                popover=${() => this.anchorRect ? 'manual' : null} data-anchored=${() => this.anchorRect ? '' : null}
+                popover="manual" data-anchored
                 style=${this.anchorStyle[0]}
                 hidden="${and(isNot(this.props.content), isNot(this.slottedContent[0]))}">
                 <slot ref="content" name="content" part="content">${this.props.content}</slot>
+                ${when(this.props.shortcut, html`<cb-shortcut keys=${this.props.shortcut}></cb-shortcut>`)}
             </span>`
     }
     private contentChanged = (): void => {
@@ -36,7 +39,7 @@ export class Tooltip extends TooltipBase {
         this.syncTooltip()
     }
     protected syncTooltip(): void {
-        this.dataset.placement = ['top', 'right', 'bottom', 'left'].includes(this.placement ?? '') ? this.placement ?? 'top' : 'top'
+        this.dataset.placement = ['top', 'top-start', 'top-end', 'right', 'bottom', 'bottom-start', 'bottom-end', 'left'].includes(this.placement ?? '') ? this.placement ?? 'top' : 'top'
         this.toggleAttribute('open', bool(this.open) && Boolean(scalarText(this.content) || this.slottedContent[0]()))
         this.linkTrigger()
         this.schedulePosition()
@@ -61,18 +64,27 @@ export class Tooltip extends TooltipBase {
         this.positioningFrame = this.ownerDocument.defaultView?.requestAnimationFrame(() => {
             this.positioningFrame = undefined
             this.positionBubble()
+            // A trigger can move through nested shadow-root scrolling,
+            // transforms or animation without a document scroll event.
+            if (this.isConnected && this.hasAttribute('open')) this.schedulePosition()
         })
     }
     private positionBubble = (): void => {
-        const bubble = this.bubble, anchor = this.anchorRect
+        const bubble = this.bubble, trigger = this.refs.triggerSurface?.[0]
         if (!bubble || !bubble.isConnected) return
-        if (!anchor || !this.hasAttribute('open')) {
+        if (!this.hasAttribute('open')) {
             if (bubble.matches(':popover-open')) bubble.hidePopover()
-            this.anchorStyle[1]('')
             return
         }
+        const anchor = this.anchorRect || (trigger instanceof HTMLElement ? trigger.getBoundingClientRect() : this.getBoundingClientRect())
         if (![anchor.left, anchor.top, anchor.right, anchor.bottom].every(Number.isFinite)) return
-        if (!bubble.matches(':popover-open')) bubble.showPopover()
+        // Scrollports govern trigger visibility. The top-layer bubble may
+        // escape a small toolbar; an explicit boundary still constrains it.
+        const visible = !this.anchorRect && trigger instanceof HTMLElement ? tooltipScrollBoundary(trigger) : this.boundaryRect
+        if (visible && (anchor.right <= visible.left || anchor.left >= visible.right || anchor.bottom <= visible.top || anchor.top >= visible.bottom)) {
+            if (bubble.matches(':popover-open')) bubble.hidePopover()
+            return
+        }
         const view = this.ownerDocument.defaultView
         if (!view) return
         const visual = view.visualViewport
@@ -90,21 +102,26 @@ export class Tooltip extends TooltipBase {
             if (bubble.matches(':popover-open')) bubble.hidePopover()
             return
         }
+        if (!bubble.matches(':popover-open')) bubble.showPopover()
         const { width, height } = bubble.getBoundingClientRect()
         const gap = 6
-        let left = (anchor.left + anchor.right - width) / 2, top = anchor.top - height - gap
-        if (this.placement === 'bottom') {
+        const placement = this.placement ?? 'top'
+        let left = placement.endsWith('-start') ? anchor.left
+            : placement.endsWith('-end') ? anchor.right - width
+                : (anchor.left + anchor.right - width) / 2
+        let top = anchor.top - height - gap
+        if (placement.startsWith('bottom')) {
             top = anchor.bottom + gap
             if (top + height > bottomEdge) top = anchor.top - height - gap
-        } else if (this.placement === 'left' || this.placement === 'right') {
+        } else if (placement === 'left' || placement === 'right') {
             top = (anchor.top + anchor.bottom - height) / 2
-            left = this.placement === 'left' ? anchor.left - width - gap : anchor.right + gap
+            left = placement === 'left' ? anchor.left - width - gap : anchor.right + gap
             if (left < leftEdge) left = anchor.right + gap
             else if (left + width > rightEdge) left = anchor.left - width - gap
         } else if (top < topEdge) top = anchor.bottom + gap
         left = Math.max(leftEdge, Math.min(left, rightEdge - width))
         top = Math.max(topEdge, Math.min(top, bottomEdge - height))
-        this.anchorStyle[1](`left:${left}px;top:${top}px;max-width:${Math.max(0, rightEdge - leftEdge)}px;max-height:${Math.max(0, bottomEdge - topEdge)}px`)
+        this.anchorStyle[1](`left:${left}px;top:${top}px;max-width:min(280px,${Math.max(0, rightEdge - leftEdge)}px);max-height:${Math.max(0, bottomEdge - topEdge)}px`)
     }
     protected unmount(): void {
         super.unmount();
@@ -144,6 +161,6 @@ export class Tooltip extends TooltipBase {
     }
 }
 export { TooltipBase };
-export type { TooltipProps, TooltipAnchor } from './TooltipBase.js';
+export type { TooltipProps, TooltipAnchor, TooltipPlacement } from './TooltipBase.js';
 
 register('cb-tooltip', Tooltip)

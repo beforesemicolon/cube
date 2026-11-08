@@ -1,6 +1,7 @@
 @import "../../theme/editor.css";
 :host {
   display: inline-flex;
+  color: inherit;
   line-height: 1;
   font-size: var(--component-icon-size,16px);
 }

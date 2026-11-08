@@ -36,6 +36,7 @@ test('field wraps controls without becoming a second control shell', async ({ pa
     await expect(field.locator('[part~="help"]')).toHaveText('Choose a recognizable name.')
     await expect(field.locator('[part~="success"]')).toHaveText('The name is available.')
     await expect(control.locator('[part~="label"]')).toHaveCount(0)
+    await expect(control).toHaveAttribute('data-field-control')
 
     const shellStyles = await field.evaluate(node => {
         const host = getComputedStyle(node)
@@ -103,6 +104,8 @@ test('field labels delegate focus through composite controls', async ({ page }) 
 
     await page.locator('#select-field [id^="cb-field-label"]').click()
     await expect(page.locator('#select-field cb-select').getByRole('button', { name: /Device/ })).toBeFocused()
+    await page.locator('#select-field').evaluate(node => { (node as HTMLElement).style.inlineSize = '320px' })
+    await expect.poll(() => page.locator('#select-field cb-select').evaluate(node => node.getBoundingClientRect().width)).toBe(320)
     await page.locator('#list-field [id^="cb-field-label"]').click()
     await expect(page.locator('#list-field').getByRole('textbox', { name: 'New redirect path' })).toBeFocused()
     await page.locator('#linked-field [id^="cb-field-label"]').click()

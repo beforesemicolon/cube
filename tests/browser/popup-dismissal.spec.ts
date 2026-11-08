@@ -53,3 +53,27 @@ test('popup dismissal preserves interaction with an iframe inside its own slotte
     await popover.locator('iframe').contentFrame().getByRole('textbox').fill('Keep this popup open')
     await expect(popover.getByRole('dialog')).toBeVisible()
 })
+
+test('popover stays open for internal focus and closes when focus moves elsewhere in the document', async ({ page }) => {
+    await page.evaluate(() => {
+        const popover = document.createElement('cb-popover') as Popover
+        popover.id = 'focus-popover'
+        const trigger = document.createElement('button')
+        trigger.slot = 'trigger'
+        trigger.textContent = 'Open filters'
+        const field = document.createElement('input')
+        field.setAttribute('aria-label', 'Filter name')
+        const outside = document.createElement('button')
+        outside.textContent = 'Outside action'
+        popover.append(trigger, field)
+        document.getElementById('fixture')!.append(popover, outside)
+    })
+
+    const popover = page.locator('#focus-popover')
+    await page.getByRole('button', { name: 'Open filters' }).click()
+    await popover.getByRole('textbox', { name: 'Filter name' }).focus()
+    await expect(popover.getByRole('dialog')).toBeVisible()
+    await page.getByRole('button', { name: 'Outside action' }).focus()
+    await expect(popover.getByRole('dialog')).toBeHidden()
+    await expect(popover).not.toHaveAttribute('open')
+})

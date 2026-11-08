@@ -29,12 +29,12 @@ export class Timeline extends TimelineBase {
         return html`<section part="root editor" aria-label=${this.accessibleName}>
             <div part="toolbar" role="toolbar">
                 <cb-button part="rewind" exportparts="control:rewind-control,label:rewind-label,button-label:rewind-label,icon:rewind-icon,description:rewind-description" icon-only icon="reset" variant="ghost" size="sm" accessible-label=${() => this.text('rewindLabel')} disabled=${or(() => this.unavailable, () => this.timelineTime()<=0)}
-                    onaction=${(event: Event) => { event.stopPropagation(); this.seek(0,event); }}></cb-button>
+                    title=${() => this.text('rewindLabel')} onaction=${(event: Event) => { event.stopPropagation(); this.seek(0,event); }}></cb-button>
                 <cb-button part="play" exportparts="control:play-control,label:play-label,button-label:play-label,icon:play-icon,description:play-description" icon-only icon=${() => this.playing ? 'pause' : 'play'} variant="ghost" size="sm"
-                    accessible-label=${() => this.text(this.playing ? 'pauseLabel' : 'playLabel')} disabled=${() => this.unavailable}
+                    accessible-label=${() => this.text(this.playing ? 'pauseLabel' : 'playLabel')} title=${() => this.text(this.playing ? 'pauseLabel' : 'playLabel')} disabled=${() => this.unavailable}
                     onaction=${(event: Event) => { event.stopPropagation(); this.setPlaying(!this.playing,event); }}></cb-button>
                 <cb-button part="add-keyframe" exportparts="control:add-keyframe-control,label:add-keyframe-label,button-label:add-keyframe-label,icon:add-keyframe-icon,description:add-keyframe-description" icon-only icon="plus" variant="ghost" size="sm" accessible-label=${() => this.text('addKeyframeLabel')}
-                    disabled=${or(() => this.unavailable, isNot(() => this.timelineTracks().some(track=>!track.disabled)))}
+                    title=${() => this.text('addKeyframeLabel')} disabled=${or(() => this.unavailable, isNot(() => this.timelineTracks().some(track=>!track.disabled)))}
                     onaction=${(event: Event) => { event.stopPropagation(); this.addKeyframe(undefined,event); }}></cb-button>
                 <output part="time">${() => this.text('timeLabel').replace('{current}',this.formatTime(this.timelineTime())).replace('{duration}',this.formatTime(this.timelineDuration()))}</output>
             </div><div part="editor" style=${() => `--cb-playhead:${this.timelineTime()/this.timelineDuration()};--cb-duration:${Math.max(1,Math.ceil(this.timelineDuration()))}`}>
@@ -58,6 +58,7 @@ export class Timeline extends TimelineBase {
                             style=${() => `--cb-keyframe-position:calc(7px + (100% - 14px) * ${this.timelineTime(this.keyframe(trackId,id).time)/this.timelineDuration()})`}
                             pressed=${is(this.props.selectedKeyframeId, id)} data-selected=${() => this.selectedKeyframeId===id ? '' : null}
                             accessible-label=${() => this.text('keyframeLabel').replace('{track}',this.track(trackId).label).replace('{time}',this.formatTime(this.keyframe(trackId,id).time))}
+                            title=${() => this.text('keyframeLabel').replace('{track}',this.track(trackId).label).replace('{time}',this.formatTime(this.keyframe(trackId,id).time))}
                             disabled=${or(() => this.unavailable, () => bool(this.track(trackId).disabled), () => bool(this.keyframe(trackId,id).disabled))}
                             onchange=${(event: Event) => { event.stopPropagation(); this.selectKeyframe(trackId,id,event); }}
                             onpointerdown=${(event: PointerEvent) => {

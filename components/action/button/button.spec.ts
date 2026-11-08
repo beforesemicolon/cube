@@ -2,7 +2,11 @@ import { expect } from '@playwright/test'
 import type { Button } from './index.js'
 import { componentContract } from '../../../tests/component-contract.js'
 
-componentContract('cb-button', 'action--button', async ({ host }) => {
+componentContract('cb-button', 'action--button', async ({ page, host }) => {
+    await host.evaluate(node => { Object.assign(node, { label: 'Button', icon: 'plus', variant: 'primary' } satisfies Partial<Button>) })
+    const textColor = await host.locator('[part~=label]').evaluate(node => getComputedStyle(node).color)
+    await expect(host.locator('cb-icon')).toHaveCSS('color', textColor)
+    await expect(host.locator('cb-icon svg path')).toHaveCSS('stroke', textColor)
     await host.evaluate(node => { Object.assign(node, { size: 'tiny', icon: 'close', iconOnly: true, accessibleLabel: 'Close', variant: 'ghost', pressed: false } satisfies Partial<Button>) })
     const tiny = host.getByRole('button', { name: 'Close', exact: true })
     await expect(tiny).toHaveCSS('padding', '1px')
@@ -18,6 +22,23 @@ componentContract('cb-button', 'action--button', async ({ host }) => {
     await expect(host.locator('[part="indicator"]')).toHaveCSS('width', '5px')
     await host.evaluate(node => { Object.assign(node, { indicator: false } satisfies Partial<Button>) })
     await expect(host.locator('[part="indicator"]')).toBeHidden()
-    await host.evaluate(node => { Object.assign(node, {"label":"Release action","loading":true} satisfies Partial<Button>) })
-    await expect(host.getByRole('button', { name: 'Release action' })).toBeDisabled()
+    await host.evaluate(node => { Object.assign(node, { label: 'Responsive action', icon: 'save', iconOnlyAt: 'md', wrap: true } satisfies Partial<Button>) })
+    await expect(host).toHaveAttribute('data-icon-only-at', 'md')
+    await expect(host).toHaveAttribute('data-wrap', '')
+    await page.setViewportSize({ width: 600, height: 720 })
+    await expect(host.locator('[part~=label]')).toHaveCSS('position', 'absolute')
+    await expect(host.getByRole('button', { name: 'Responsive action' })).toBeVisible()
+    await page.setViewportSize({ width: 1024, height: 720 })
+    await expect(host.locator('[part~=label]')).not.toHaveCSS('position', 'absolute')
+    await host.evaluate(node => { Object.assign(node, { label: 'Release action', loading: false } satisfies Partial<Button>) })
+    const width = (await host.getByRole('button', { name: 'Release action' }).boundingBox())?.width
+    await host.evaluate(node => { (node as Button).loading = true })
+    const loadingButton = host.getByRole('button', { name: 'Release action' })
+    await expect(loadingButton).toBeDisabled()
+    await expect(host.locator('[part~=spinner]')).toBeVisible()
+    await expect.poll(async () => (await loadingButton.boundingBox())?.width).toBe(width)
+    await host.evaluate(node => { Object.assign(node, { label: 'Open details', loading: false, variant: 'link', size: 'sm' } satisfies Partial<Button>) })
+    const linkAction = host.getByRole('button', { name: 'Open details' })
+    await expect(linkAction).toHaveCSS('text-decoration-line', 'underline')
+    await expect(linkAction).toHaveCSS('min-width', '0px')
 })

@@ -2,6 +2,33 @@ import { Component, type CommonProps } from '../core/Component.js'
 import { state } from '../core/runtime.js'
 import { record, text } from '../core/value.js'
 import type { ChartModel, ChartPoint, ChartSkin } from './model.js'
+
+export interface ChartMessages {
+    accessibleLabel: string
+    loadingText: string
+    emptyText: string
+    noMatchText: string
+    errorText: string
+    retryLabel: string
+    showAllLabel: string
+    legendLabel: string
+    tableLabel: string
+    seriesLabel: string
+    categoryLabel: string
+    valueLabel: string
+    rangeLabel: string
+    sizeLabel: string
+    percentageLabel: string
+    missingText: string
+    navigateLabel: string
+    instructionsText: string
+    pinnedText: string
+    unpinLabel: string
+    zoomInLabel: string
+    zoomOutLabel: string
+    resetZoomLabel: string
+}
+
 export interface ChartProps extends CommonProps {
     heading?: string; description?: string; status?: 'finished' | 'loading' | 'error'
     height?: number; visibleSeries?: string[] | null; visibleSegments?: string[] | null; zoomable?: boolean
@@ -11,13 +38,14 @@ export interface ChartProps extends CommonProps {
     seriesLabel?: string; categoryLabel?: string; valueLabel?: string; rangeLabel?: string; sizeLabel?: string
     percentageLabel?: string; missingText?: string; navigateLabel?: string; instructionsText?: string
     pinnedText?: string; unpinLabel?: string; zoomInLabel?: string; zoomOutLabel?: string; resetZoomLabel?: string
+    messages?: Partial<ChartMessages> | null
 }
 export abstract class ChartBase<P extends ChartProps = ChartProps> extends Component<P> {
     static observedAttributes = [...Component.observedAttributes, 'heading', 'description', 'status', 'height', 'visible-series', 'visible-segments', 'zoomable', 'value-formatter','patterns',
         'accessible-label', 'loading-text', 'empty-text', 'no-match-text', 'error-text', 'retry-label', 'show-all-label',
         'legend-label', 'table-label', 'series-label', 'category-label', 'value-label', 'range-label', 'size-label',
         'percentage-label', 'missing-text', 'navigate-label', 'instructions-text', 'pinned-text', 'unpin-label',
-        'zoom-in-label', 'zoom-out-label', 'reset-zoom-label']
+        'zoom-in-label', 'zoom-out-label', 'reset-zoom-label', 'messages']
     heading = ''; description = ''; status: 'finished' | 'loading' | 'error' = 'finished'; height: number | undefined = undefined
     visibleSeries: string[] | null = null; visibleSegments: string[] | null = null; zoomable = false
     valueFormatter: ((value: number) => string) | null = null
@@ -27,6 +55,7 @@ export abstract class ChartBase<P extends ChartProps = ChartProps> extends Compo
     seriesLabel = ''; categoryLabel = ''; valueLabel = ''; rangeLabel = ''; sizeLabel = ''
     percentageLabel = ''; missingText = ''; navigateLabel = ''; instructionsText = ''
     pinnedText = ''; unpinLabel = ''; zoomInLabel = ''; zoomOutLabel = ''; resetZoomLabel = ''
+    messages: Partial<ChartMessages> | null = null
     private hiddenItems = new Set<string>()
     private readonly selectionKey = state<string | null>(null)
     private get currentKey(): string | null { return this.selectionKey[0]() }
@@ -90,14 +119,17 @@ export abstract class ChartBase<P extends ChartProps = ChartProps> extends Compo
         this.select(points[index]); return points[index]
     }
     format(value: number | null | undefined): string {
-        if (value === null || value === undefined) return this.missingText
+        if (value === null || value === undefined) return this.message('missingText')
         try { return this.valueFormatter ? text(this.valueFormatter(value), String(value)) : new Intl.NumberFormat(this.documentLanguage(), { maximumFractionDigits: 6 }).format(value) }
         catch (error) { this.onError(error); return String(value) }
     }
     pointText(point: ChartPoint): string {
-        const extra = point.low !== undefined && point.high !== undefined ? `; ${this.rangeLabel}: ${this.format(point.low)}–${this.format(point.high)}` : point.size !== undefined ? `; ${this.sizeLabel}: ${this.format(point.size)}` : ''
-        const percent = point.percentage !== undefined ? `; ${this.percentageLabel}: ${this.format(point.percentage)}%` : ''
-        return `${point.seriesName}; ${String(point.x)}; ${this.valueLabel}: ${this.format(point.y)}${extra}${percent}`
+        const extra = point.low !== undefined && point.high !== undefined ? `; ${this.message('rangeLabel')}: ${this.format(point.low)}–${this.format(point.high)}` : point.size !== undefined ? `; ${this.message('sizeLabel')}: ${this.format(point.size)}` : ''
+        const percent = point.percentage !== undefined ? `; ${this.message('percentageLabel')}: ${this.format(point.percentage)}%` : ''
+        return `${point.seriesName}; ${String(point.x)}; ${this.message('valueLabel')}: ${this.format(point.y)}${extra}${percent}`
+    }
+    message(key: keyof ChartMessages): string {
+        return text(this[key]) || text(this.messages?.[key])
     }
     enginePoint(model: ChartModel, input: unknown): ChartPoint | undefined {
         const event = record(input)

@@ -19,12 +19,15 @@
   color: inherit;
   font: inherit;
   text-align: start;
-  cursor: text;
+  cursor: pointer;
 }
 [part~=display]::part(control) {
   padding: var(--spacing-xs,4px) var(--spacing-sm,8px);
   text-align: inherit;
   cursor: inherit;
+}
+[part~=display][aria-disabled=true] {
+  cursor: not-allowed;
 }
 [part~=display]:hover {
   border-color: var(--color-separator);

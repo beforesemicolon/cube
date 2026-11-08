@@ -32,6 +32,15 @@ function safeImageSource(value: string, base: string): string {
     return ''
 }
 
+function colorIndex(value: string): number {
+    let hash = 2166136261
+    for (const character of Array.from(value.trim().toLocaleLowerCase())) {
+        hash ^= character.codePointAt(0) ?? 0
+        hash = Math.imul(hash, 16777619)
+    }
+    return Math.abs(hash) % 6
+}
+
 /** Headless identity, fallback and presence-state behavior shared by Avatar renderers. */
 export abstract class AvatarBase extends Component<AvatarProps> {
     static observedAttributes = [
@@ -66,5 +75,6 @@ export abstract class AvatarBase extends Component<AvatarProps> {
     get avatarStatus(): AvatarStatus { return avatarStatuses.has(this.status) ? this.status : 'none' }
     get avatarStatusLabel(): string { return scalarText(this.statusLabel) }
     get avatarColor(): string { return scalarText(this.color).trim() }
+    get avatarColorIndex(): number { return colorIndex(scalarText(this.name) || this.avatarInitials) }
     get avatarDecorative(): boolean { return bool(this.decorative) }
 }

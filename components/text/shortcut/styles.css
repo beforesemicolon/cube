@@ -8,6 +8,7 @@
   gap: 2px;
 }
 [part=key] {
+  color: var(--color-foreground,#20262b);
   display: inline-grid;
   place-items: center;
   min-inline-size: 18px;

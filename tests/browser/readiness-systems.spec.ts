@@ -116,11 +116,13 @@ test('file browser and layer tree support navigation, view changes, selection, a
     await expect(browser).toHaveJSProperty('selectedIds', ['logo'])
 
     const tree = page.locator('cb-layer-tree')
+    await tree.getByRole('treeitem', { name: /Main heading/ }).hover()
     await tree.getByRole('button', { name: 'Rename Main heading' }).click()
     const rename = tree.getByRole('textbox', { name: 'Rename Main heading' })
     await rename.fill('Hero title')
     await rename.press('Enter')
     await expect(tree.getByRole('treeitem', { name: /Hero title/ })).toBeVisible()
+    await tree.getByRole('treeitem', { name: /Hero title/ }).hover()
     await tree.getByRole('button', { name: 'Hide Hero title' }).click()
     expect(await tree.evaluate((node: HTMLElement & { items: Array<{ children?: Array<{ label: string; hidden?: boolean }> }> }) => node.items[0]?.children?.[0])).toMatchObject({ label: 'Hero title', hidden: true })
 })
@@ -236,10 +238,15 @@ test('code, JSON, property, and canvas primitives are interactive and render mea
 test('global modal and flashbar services support asynchronous application workflows', async ({ page }) => {
     await start(page)
     await page.evaluate(async () => {
-        const launcher = document.createElement('button'); launcher.textContent = 'Launch workflow'; document.querySelector('#fixture')?.append(launcher)
-        const { showModal } = await import('/components/overlay/modal/service.ts')
+        const fixture = document.querySelector('#fixture') as HTMLElement
+        const launcher = document.createElement('button'); launcher.textContent = 'Launch workflow'
+        const modalRenderer = document.createElement('cb-modal-renderer')
+        const flashbarRenderer = document.createElement('cb-flashbar')
+        fixture.append(launcher, modalRenderer, flashbarRenderer)
+        const { showModal, configureModalHost } = await import('/components/overlay/modal/service.ts')
         const { createFlashbar, configureFlashbarHost } = await import('/components/feedback/flashbar/service.ts')
-        configureFlashbarHost({ parent: document.querySelector('#fixture') as HTMLElement, accessibleLabel: 'Application notifications' })
+        configureModalHost({ renderer: modalRenderer as import('../../components/overlay/modal/renderer.js').ModalRenderer })
+        configureFlashbarHost({ renderer: flashbarRenderer as import('../../components/feedback/flashbar/index.js').Flashbar, accessibleLabel: 'Application notifications' })
         launcher.addEventListener('click', async () => {
             const handle = showModal({
                 heading: 'Publish project',
@@ -256,6 +263,7 @@ test('global modal and flashbar services support asynchronous application workfl
     await launcher.focus()
     await launcher.click()
     await expect(page.getByRole('dialog', { name: 'Publish project' })).toBeVisible()
+    await expect(page.locator('cb-modal-renderer > cb-modal')).toHaveCount(1)
     await page.getByRole('button', { name: 'Publish', exact: true }).click()
     await expect(page.getByRole('dialog', { name: 'Publish project' })).toBeHidden()
     await expect(page.getByRole('status').filter({ hasText: 'Published' })).toBeVisible()
@@ -292,4 +300,117 @@ test('global modal and flashbar services support asynchronous application workfl
     })
     await page.getByRole('link', { name: 'Open review' }).click()
     await expect(page.locator('cb-flashbar [data-id="linked-action"]')).toHaveCount(0)
+})
+
+test('modal service binds reactive action state and close label through its renderer', async ({ page }) => {
+    await start(page)
+    await page.evaluate(async () => {
+        const fixture = document.querySelector('#fixture') as HTMLElement
+        const modalRenderer = document.createElement('cb-modal-renderer')
+        fixture.append(modalRenderer)
+        const { state } = await import('/components/core/runtime.ts')
+        const { showModal, configureModalHost } = await import('/components/overlay/modal/service.ts')
+        const [disabled, setDisabled] = state(true)
+        const [loading, setLoading] = state(false)
+        configureModalHost({ renderer: modalRenderer as import('../../components/overlay/modal/renderer.js').ModalRenderer })
+        showModal({
+            id: 'reactive-modal',
+            heading: 'Reactive modal',
+            closeLabel: 'Close reactive modal',
+            showCancel: false,
+            actions: [{
+                id: 'save',
+                label: 'Save changes',
+                disabled,
+                loading,
+                dismiss: false,
+            }],
+        })
+        Object.assign(window, { setModalDisabled: setDisabled, setModalLoading: setLoading })
+    })
+
+    const modal = page.locator('cb-modal-renderer > cb-modal')
+    const actionHost = modal.locator('cb-button[part~="action"]')
+    const action = actionHost.getByRole('button', { name: 'Save changes' })
+    await expect(modal).toHaveCount(1)
+    await expect(action).toBeDisabled()
+    await expect(modal.getByRole('button', { name: 'Close reactive modal' })).toBeVisible()
+
+    await page.evaluate(() => (Reflect.get(window, 'setModalDisabled') as (value: boolean) => void)(false))
+    await expect(action).toBeEnabled()
+    await page.evaluate(() => (Reflect.get(window, 'setModalLoading') as (value: boolean) => void)(true))
+    await expect(action).toBeDisabled()
+    await expect(actionHost).toHaveJSProperty('loading', true)
+})
+
+test('modal service ignores close events from nested controls', async ({ page }) => {
+    await start(page)
+    await page.evaluate(async () => {
+        const fixture = document.querySelector('#fixture') as HTMLElement
+        const modalRenderer = document.createElement('cb-modal-renderer')
+        fixture.append(modalRenderer)
+        const select = document.createElement('cb-select') as HTMLElement & {
+            accessibleLabel: string
+            value: string
+            options: Array<{ label: string; value: string }>
+        }
+        select.accessibleLabel = 'Visibility'
+        select.value = 'private'
+        select.options = [
+            { label: 'Private', value: 'private' },
+            { label: 'Public', value: 'public' },
+        ]
+        const { showModal, configureModalHost } = await import(
+            '/components/overlay/modal/service.ts'
+        )
+        configureModalHost({
+            renderer:
+                modalRenderer as import('../../components/overlay/modal/renderer.js').ModalRenderer,
+        })
+        showModal({
+            heading: 'Nested controls',
+            closeLabel: 'Close nested controls',
+            body: select,
+        })
+    })
+
+    const modal = page.locator('cb-modal-renderer > cb-modal')
+    const select = modal.locator('cb-select')
+    await select.locator('cb-button[part~="trigger"]').click()
+    await select.locator('cb-button[data-value="public"]').click()
+    await expect(modal).toHaveCount(1)
+    await expect(page.getByRole('dialog', { name: 'Nested controls' })).toBeVisible()
+    await expect(select).toHaveAttribute('value', 'public')
+    await modal.getByRole('button', { name: 'Close nested controls' }).click()
+    await expect(modal).toHaveCount(0)
+})
+
+test('global renderers move when their host parent is configured after creation', async ({ page }) => {
+    await start(page)
+    const result = await page.evaluate(async () => {
+        const { configureModalHost, getModalHost } = await import('/components/overlay/modal/service.ts')
+        const { configureFlashbarHost, getFlashbarHost } = await import('/components/feedback/flashbar/service.ts')
+        const modalRenderer = getModalHost()
+        const flashbarRenderer = getFlashbarHost()
+        const parent = document.createElement('section')
+        parent.id = 'application-renderers'
+        document.querySelector('#fixture')?.append(parent)
+
+        configureModalHost({ parent })
+        configureFlashbarHost({ parent })
+
+        return {
+            modalMoved: modalRenderer.parentElement === parent,
+            flashbarMoved: flashbarRenderer.parentElement === parent,
+            modalStable: getModalHost() === modalRenderer,
+            flashbarStable: getFlashbarHost() === flashbarRenderer,
+        }
+    })
+
+    expect(result).toEqual({
+        modalMoved: true,
+        flashbarMoved: true,
+        modalStable: true,
+        flashbarStable: true,
+    })
 })

@@ -13,9 +13,9 @@ order: 20
 :::cube studio-action
 :::
 
-| Component | Custom element | Category entry |
-| --- | --- | --- |
-| Button | `<cb-button>` | `@beforesemicolon/cube/action` |
+| Component    | Custom element      | Category entry                 |
+| ------------ | ------------------- | ------------------------------ |
+| Button       | `<cb-button>`       | `@beforesemicolon/cube/action` |
 | Split button | `<cb-split-button>` | `@beforesemicolon/cube/action` |
 | Button group | `<cb-button-group>` | `@beforesemicolon/cube/action` |
 
@@ -26,5 +26,7 @@ Set `indicator` to show a small theme-colored status dot on `<cb-button>`, and p
 ## API
 
 `<cb-button size="tiny" icon="close" icon-only accessible-label="Remove item"></cb-button>` provides a compact contextual action with 1px padding and 10px icons. Its default height is 14px; ordinary variants, keyboard focus, disabled and pressed states remain available.
+
+Use `icon-only-at="sm|md|lg"` to visually collapse the label at a viewport breakpoint while preserving its accessible name. Use `wrap` when a long visible label may span lines; the button keeps its minimum control height while allowing the content to grow. Loading keeps the accessible name and the button's layout footprint stable while centering the progress spinner.
 
 {{t.cube.studioCatalogApi}}

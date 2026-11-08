@@ -16,21 +16,28 @@ export function messageView(source: MessageBase, kind: MessageKind): Template {
     const copy = () => [...new Set([kind !== 'status' && scalarText(source.value) !== title() ? scalarText(source.value) : '',scalarText(source.status) !== title() ? scalarText(source.status) : ''].filter(Boolean))].join(' · ')
     const tone = () => toneFor(source.tone)
     const actions = state(false)
+    const content = state(false)
     const syncActions = (): void => {
         const slot = root.refs.actions?.[0]
         actions[1](slot instanceof HTMLSlotElement && slot.assignedNodes().some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim())))
     }
+    const syncContent = (): void => {
+        const slot = root.refs.content?.[0]
+        content[1](slot instanceof HTMLSlotElement && slot.assignedNodes().some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim())))
+    }
     const root = html`<div part="display status-display" data-component=${kind} data-tone=${tone}
-        role=${() => kind === 'alert' && tone() === 'danger' ? 'alert' : 'status'}>
+        role=${() => kind === 'alert' && ['warning', 'danger'].includes(tone()) ? 'alert' : 'status'}
+        aria-live=${() => kind === 'alert' && ['warning', 'danger'].includes(tone()) ? 'assertive' : 'polite'}>
         <div part="status-card">
-            <div part="status-content"><span part="value status-title"><span part="indicator status-icon" aria-hidden="true"></span>${title}</span>
+            <div part="status-content">${when(title, html`<span part="value status-title"><span part="indicator status-icon" aria-hidden="true"></span>${title}</span>`)}
                 ${when(copy, html`<div part="status-copy">${copy}</div>`)}
                 ${when(() => scalarText(source.description), html`<p part="description">${() => scalarText(source.description)}</p>`)}
+                <div part="content" hidden=${isNot(content[0])} onslotchange=${syncContent}><slot ref="content"></slot></div>
                 <div part="actions" hidden=${isNot(actions[0])} onslotchange=${syncActions}><slot ref="actions"></slot></div>
             </div>
         </div>
     </div>`
-    return root.onMount(syncActions)
+    return root.onMount(() => { syncContent(); syncActions() })
 }
 
 export function progressView(source: ProgressIndicatorBase): Template {

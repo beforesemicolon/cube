@@ -1,41 +1,144 @@
-@import "../../theme/editor.css";
+@import '../../theme/editor.css';
 :host {
-  display: block;
+    display: block;
+    container-type: inline-size;
+    margin-block-end: var(--component-action-bar-margin-block-end, 0);
+    --cb-action-bar-control-height: var(
+        --component-action-bar-control-height-sm,
+        28px
+    );
+    --component-control-height: var(--cb-action-bar-control-height);
+    --component-control-height-xs: var(--cb-action-bar-control-height);
+    --component-control-height-sm: var(--cb-action-bar-control-height);
+    --component-control-height-md: var(--cb-action-bar-control-height);
+    --component-control-height-lg: var(--cb-action-bar-control-height);
+    --component-segmented-control-group-padding: 0;
+    --component-segmented-control-group-border: 0;
+    --component-segmented-control-item-min-height: var(
+        --cb-action-bar-control-height
+    );
+    --toolbar-control-height: var(--cb-action-bar-control-height);
+    --toolbar-control-padding-block: var(
+        --component-action-bar-control-padding-block,
+        0px
+    );
+    --toolbar-control-padding-inline: var(
+        --component-action-bar-control-padding-inline,
+        12px
+    );
+    --toolbar-control-font-size: var(
+        --component-action-bar-control-font-size,
+        var(--component-font-size, 12px)
+    );
+    --toolbar-control-radius: var(
+        --component-action-bar-control-radius,
+        var(--radius-sm, 6px)
+    );
 }
-[part=bar] {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-md,12px);
-  min-block-size: var(--component-control-height-md,36px);
-  padding: var(--spacing-xs,4px) var(--spacing-sm,8px);
-  border: 1px solid var(--color-separator,#dae0e4);
-  border-radius: var(--radius-sm,6px);
-  background: var(--color-surface,#fff);
+:host([data-size='tiny']),
+:host([data-size='xs']) {
+    --cb-action-bar-control-height: var(
+        --component-action-bar-control-height-xs,
+        24px
+    );
 }
-[part=start],
-[part=actions] {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs,4px);
-  min-inline-size: 0;
+:host([data-size='md']) {
+    --cb-action-bar-control-height: var(
+        --component-action-bar-control-height-md,
+        36px
+    );
 }
-[part=start] {
-  flex: 1;
+:host([data-size='lg']),
+:host([data-size='xl']) {
+    --cb-action-bar-control-height: var(
+        --component-action-bar-control-height-lg,
+        44px
+    );
 }
-[part=actions] {
-  flex: none;
+[part='bar'] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--component-action-bar-gap, var(--spacing-md, 12px));
+    min-block-size: var(
+        --component-action-bar-min-height,
+        var(--component-control-height-md, 36px)
+    );
+    padding: var(--component-action-bar-padding-block, var(--spacing-xs, 4px))
+        var(--component-action-bar-padding-inline, var(--spacing-sm, 8px));
+    border: var(
+        --component-action-bar-border,
+        1px solid var(--color-separator, #dae0e4)
+    );
+    border-radius: var(--component-action-bar-radius, var(--radius-sm, 6px));
+    background: var(
+        --component-action-bar-background,
+        var(--color-surface, #fff)
+    );
+}
+[part='start'],
+[part='actions'] {
+    display: flex;
+    align-items: center;
+    gap: var(--component-action-bar-item-gap, var(--spacing-xs, 4px));
+    min-inline-size: 0;
+}
+slot {
+    display: contents;
+}
+[part='start'] {
+    flex: 1 1 var(--component-action-bar-start-basis, auto);
+    max-inline-size: var(--component-action-bar-start-max-inline-size, none);
+}
+[part='actions'] {
+    flex: none;
+}
+:host([data-wrap]) [part='bar'],
+:host([data-wrap]) [part='actions'] {
+    flex-wrap: wrap;
+}
+:host([data-wrap]) [part='actions'] {
+    flex: 0 1 auto;
+    justify-content: flex-end;
+}
+:host([data-actions-only]) [part='bar'] {
+    justify-content: flex-end;
+    min-block-size: var(
+        --component-action-bar-actions-only-min-height,
+        var(--cb-action-bar-control-height)
+    );
+}
+:host([data-actions-only]) {
+    display: inline-block;
+    vertical-align: top;
+    container-type: normal;
+    max-inline-size: 100%;
+    margin-block-end: 0;
+}
+:host([data-actions-only]) [part='start'] {
+    display: none;
+}
+@media (pointer: coarse) {
+    :host([data-size]) {
+        --cb-action-bar-control-height: var(
+            --component-action-bar-touch-control-height,
+            44px
+        );
+    }
 }
 @container (max-width:420px) {
-  [part=bar] {
-    align-items: stretch;
-    flex-direction: column;
-  }
-  [part=start],
-  [part=actions] {
-    inline-size: 100%;
-  }
-  [part=actions] {
-    overflow: auto;
-  }
+    [part='bar'] {
+        align-items: stretch;
+        flex-direction: column;
+    }
+    [part='start'],
+    [part='actions'] {
+        inline-size: 100%;
+    }
+    [part='actions'] {
+        overflow: auto;
+    }
+    :host([data-wrap]) [part='actions'] {
+        overflow: visible;
+    }
 }

@@ -15,6 +15,7 @@ order: 28
 
 | Component | Custom element | Category entry |
 | --- | --- | --- |
+| Image | `<cb-image>` | `@beforesemicolon/cube/media/image` |
 | Audio player | `<cb-audio-player>` | `@beforesemicolon/cube/media` |
 | Video player | `<cb-video-player>` | `@beforesemicolon/cube/media` |
 

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { createRequire } from 'node:module'
 import test from 'node:test'
 import { parse } from '@babel/parser'
 import { isClassProperty, isIdentifier, isImportDeclaration, isImportDefaultSpecifier, traverseFast } from '@babel/types'
@@ -56,8 +57,10 @@ test('nested CSS imports preserve cascade and work in browser, ESM and CJS build
         await assert.rejects(readFile(resolve(output, 'cjs/middle.css.js')), { code: 'ENOENT' })
         const esm: { default: string } = await import(pathToFileURL(resolve(output, 'esm/component.css.js')).href)
         assert.equal(esm.default, css)
+        const require = createRequire(import.meta.url)
+        assert.equal(require(resolve(output, 'cjs/component.css.js')), css)
         const cjs = await readFile(resolve(output, 'cjs/component.css.js'), 'utf8')
-        assert.equal(cjs, `module.exports = ${JSON.stringify(css)};\n`)
+        assert.match(cjs, /sharedStylesheet/)
     } finally { await rm(directory, { recursive: true, force: true }) }
 })
 

@@ -9,7 +9,7 @@ type PreviewArgs = Record<string, PreviewValue>
 
 export const fieldControlTags = new Set([
     'cb-rich-text-editor',
-    'cb-text-input', 'cb-textarea', 'cb-number-input', 'cb-unit-input', 'cb-combobox', 'cb-range-slider', 'cb-stepper',
+    'cb-text-input', 'cb-textarea', 'cb-number-input', 'cb-unit-input', 'cb-css-value-input', 'cb-combobox', 'cb-range-slider', 'cb-stepper',
     'cb-date-picker', 'cb-time-picker', 'cb-file-picker', 'cb-token-input', 'cb-masked-input', 'cb-select', 'cb-slider',
     'cb-code-editor', 'cb-json-editor', 'cb-editable-list', 'cb-linked-values', 'cb-color-picker', 'cb-gradient-editor',
 ])

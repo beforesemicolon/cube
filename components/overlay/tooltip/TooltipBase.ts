@@ -2,12 +2,14 @@ import { Component, type CommonProps } from '../../core/Component.js'
 import { finite } from '../../core/value.js'
 
 export interface TooltipAnchor { left: number; top: number; right: number; bottom: number }
-export interface TooltipProps extends CommonProps { content?: string; placement?: 'top' | 'right' | 'bottom' | 'left'; delay?: number; open?: boolean; anchorRect?: TooltipAnchor | null; boundaryRect?: TooltipAnchor | null }
+export type TooltipPlacement = 'top' | 'top-start' | 'top-end' | 'right' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left'
+export interface TooltipProps extends CommonProps { content?: string; shortcut?: string; placement?: TooltipPlacement; delay?: number; open?: boolean; anchorRect?: TooltipAnchor | null; boundaryRect?: TooltipAnchor | null }
 
 /** Hover/focus timing and visibility behavior without prescribing tooltip markup. */
 export abstract class TooltipBase<P extends TooltipProps = TooltipProps> extends Component<P> {
-    static observedAttributes = [...Component.observedAttributes, 'content', 'placement', 'delay', 'open', 'anchor-rect', 'boundary-rect']
+    static observedAttributes = [...Component.observedAttributes, 'content', 'shortcut', 'placement', 'delay', 'open', 'anchor-rect', 'boundary-rect']
     content = ''
+    shortcut = ''
     placement: TooltipProps['placement'] = 'top'
     delay = 400
     open = false

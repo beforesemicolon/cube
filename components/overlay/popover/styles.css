@@ -5,9 +5,13 @@
 }
 [part~=anchor] {
   display: inline-flex;
+  cursor: pointer;
+}
+:host([data-disabled]) [part~=anchor] {
+  cursor: not-allowed;
 }
 [part~=popover] {
-  z-index: var(--z-index-popover,50);
+  z-index: var(--z-index-popover,var(--z-index-popup,100));
   inline-size: var(--component-popover-width,max-content);
   box-sizing: border-box;
   overflow: auto;

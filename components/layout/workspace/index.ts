@@ -73,7 +73,8 @@ export class Workspace extends WorkspaceBase {
                 ${repeat(() => this.panelItems(panel), item => html`<cb-button part="workspace-tab" ref=${`${panel}Tabs`}
                     data-bare data-semantic-host role="tab" data-label=${item.name} id=${tabId(item.id)}
                     label=${scalarText(item.collapsedName) || item.name} icon=${item.iconName} icon-src=${item.iconSrc}
-                    icon-only=${Boolean(scalarText(item.iconName) || scalarText(item.iconSrc))} title=${item.name}
+                    icon-only=${Boolean(scalarText(item.iconName) || scalarText(item.iconSrc))} title=${`${item.name}${item.shortcut ? ` (${item.shortcut})` : ''}`}
+                    aria-keyshortcuts=${item.shortcut || null}
                     accessible-label=${scalarText(item.iconName) || scalarText(item.iconSrc) || !scalarText(item.collapsedName) ? item.name : `${item.collapsedName}: ${item.name}`}
                     disabled=${() => this.unavailable}
                     aria-controls=${panelId} aria-selected=${() => expanded() && active() === item.id ? 'true' : 'false'}

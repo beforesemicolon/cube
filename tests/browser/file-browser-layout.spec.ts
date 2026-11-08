@@ -9,7 +9,7 @@ for (const appearance of ['light','dark']) for (const width of [1100,360]) {
         await expect(browser.locator('[part~=entry]')).toHaveCount(4)
         for (const entry of await browser.locator('[part~=entry]').all()) {
             const preview = entry.locator('[part~=entry-preview]')
-            const svg = entry.locator('cb-icon svg')
+            const svg = entry.locator('cb-icon[part~="entry-icon"] svg')
             await expect(preview).toHaveCSS('min-height','80px')
             await expect(svg).toHaveCSS('width','32px')
             await expect(svg).toHaveCSS('height','32px')
@@ -26,7 +26,10 @@ for (const appearance of ['light','dark']) for (const width of [1100,360]) {
 
 test('a tall thumbnail fills the preview without inflating every tile in the row', async ({ page }) => {
     await page.setViewportSize({ width: 1100, height: 800 })
-    await page.route('**/file-browser-thumbnail.png', route => route.fulfill({ path: 'design/figma-layers/Studio/05/Data & feedback.png' }))
+    await page.route('**/file-browser-thumbnail.png', route => route.fulfill({
+        contentType: 'image/svg+xml',
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="600"><rect width="100" height="600" fill="#777"/></svg>',
+    }))
     await page.goto('http://127.0.0.1:6006/iframe.html?id=data-display--file-browser&viewMode=story')
     const browser = page.locator('cb-file-browser[data-story-component]')
     await expect(browser.locator('[part~=entry]')).toHaveCount(4)

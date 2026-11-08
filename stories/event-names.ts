@@ -1,6 +1,9 @@
 /** Public Cube events surfaced in Storybook's Actions panel. */
 export const cubeEventNames = [
     'action',
+    'beforepreviewchange',
+    'previewchange',
+    'uploadrequest',
     'beforeaction',
     'beforechange',
     'beforecenter',

@@ -17,31 +17,38 @@ export class Select extends SelectBase {
     private get trigger(): HTMLElement | undefined { const node = this.refs.trigger?.[0]; return node instanceof HTMLElement ? node : undefined }
     private get popup(): HTMLElement | undefined { const node = this.refs.popup?.[0]; return node instanceof HTMLElement ? node : undefined }
     private readonly query = state('')
+    private readonly optionRevision = state(0)
     private get nativeControl(): HTMLSelectElement | undefined { const node = this.refs.native?.[0]; return node instanceof HTMLSelectElement ? node : undefined }
     private get searchInput(): HTMLInputElement | undefined { const node = this.refs.search?.[0]; return node instanceof HTMLInputElement ? node : undefined }
     private get listbox(): HTMLElement | undefined { const node = this.refs.listbox?.[0]; return node instanceof HTMLElement ? node : undefined }
+    private optionList = () => {
+        this.optionRevision[0]()
+        return this.normalizedOptions
+    }
     private visibleOptions = () => {
         const query = this.query[0]().trim().toLowerCase()
-        return query ? this.normalizedOptions.filter(option => (option.label + ' ' + option.value).toLowerCase().includes(query)) : this.normalizedOptions
+        const options = this.optionList()
+        return query ? options.filter(option => (option.label + ' ' + option.value).toLowerCase().includes(query)) : options
     }
-    private selectedLabels = (): string[] => { return this.normalizedOptions.filter(option => this.selection.includes(option.value)).map(option => option.label) }
+    private selectedLabels = (): string[] => { return this.optionList().filter(option => this.selection.includes(option.value)).map(option => option.label) }
     private displayValue = (): string => { return this.selectedLabels().join(', ') || text(this.placeholder) }
+    private selectedIcon = (): string => !bool(this.multi) ? this.optionList().find(option => this.selection.includes(option.value))?.icon || '' : ''
     private validationError(): boolean { return Boolean(this.validationMessage) && (this.validationShown || Boolean(text(this.errorText))) }
     private descriptionText = (): string | null => { return [text(this.description), this.validationError() ? this.validationMessage : ''].filter(Boolean).join(' ') || null }
     render(): Template {
-        return html`<div part="root">
-            <cb-button ref="trigger" part="trigger control" exportparts="control:trigger-control,button-label:trigger-label" data-bare data-semantic-host
+        return html`<div part="root" data-variant="${this.props.variant}" data-caret-position="${this.props.caretPosition}">
+            <cb-button ref="trigger" part="trigger control" exportparts="control:trigger-control,button-label:trigger-label" data-bare="${() => this.variant === 'secondary' ? '' : null}" data-semantic-host size="${this.props.size}" variant="${this.props.variant}"
                 hidden="${this.props.native}" disabled="${or(() => this.unavailable, this.props.readOnly)}" data-multi="${() => bool(this.multi) ? '' : null}"
                 accessible-label="${() => this.displayValue() && this.displayValue() !== this.accessibleName() ? this.accessibleName() + ': ' + this.displayValue() : this.accessibleName()}"
                 aria-haspopup="listbox" aria-controls="${this.controlId}-listbox" aria-expanded="${when(this.props.open, 'true', 'false')}"
                 aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
                 onkeydown="${this.handleKey}"
                 onaction="${(event: Event) => { event.stopPropagation(); const opening = !bool(this.open); if (this.setOpen(opening, event) && opening && this.searchEnabled) this.searchInput?.focus() }}">
-                <span part="value" data-placeholder="${() => this.selection.length ? null : ''}">
+                <span part="value-content"><cb-icon part="selected-icon" name="${this.selectedIcon}" hidden="${isNot(this.selectedIcon)}" decorative="true"></cb-icon><span part="value" data-placeholder="${() => this.selection.length ? null : ''}">
                     ${when(and(this.props.multi, () => this.selectedLabels().length > 0),
                         repeat(this.selectedLabels, (label, index) => html`<span part="value-item">${label}${() => index < this.selectedLabels().length - 1 ? ',' : ''}</span>`, { key: label => label }),
                         this.displayValue)}
-                </span><cb-icon part="icon indicator" name="down" decorative="true"></cb-icon>
+                </span></span><cb-icon part="icon indicator" name="down" decorative="true"></cb-icon>
             </cb-button>
             <div ref="popup" part="popup" hidden
                 onkeydown="${this.handleKey}">
@@ -53,6 +60,7 @@ export class Select extends SelectBase {
                 </div><div ref="listbox" part="listbox" id="${this.controlId}-listbox" role="listbox" aria-label="${this.accessibleName}"
                     aria-multiselectable="${() => bool(this.multi) ? 'true' : null}">
                 ${repeat(this.visibleOptions, option => html`<cb-button ref="options" part="option" exportparts="control:option-control,button-label:option-label" data-bare data-semantic-host
+                    icon="${option.icon}"
                     data-value="${option.value}" role="option" accessible-label="${option.label}" disabled="${or(option.disabled, () => this.unavailable)}"
                     aria-selected="${when(is(() => this.selection.includes(option.value)), 'true', 'false')}"
                     onaction="${(event: Event) => { event.stopPropagation(); this.choose(option.value, event); if (!bool(this.multi)) this.setOpen(false, event); else queueMicrotask(() => this.optionNodes().find(node => node.dataset.value === option.value)?.focus()) }}">
@@ -66,8 +74,8 @@ export class Select extends SelectBase {
                 aria-label="${this.accessibleName}" aria-invalid="${() => this.validationError() ? 'true' : null}" aria-description="${this.descriptionText}"
                 onchange="${(event: Event) => { const select = event.currentTarget; if (select instanceof HTMLSelectElement) this.choose(bool(this.multi) ? [...select.selectedOptions].map(option => option.value) : select.value, event) }}"
                 onblur="${() => { this.validationShown = true }}">
-                ${when(and(isNot(this.props.multi), isNot(() => this.normalizedOptions.some(option => option.value === ''))), html`<option part="option" value="" selected="${isNot(() => this.selection.length)}">${this.props.placeholder}</option>`)}
-                ${repeat(() => this.normalizedOptions, option => html`<option part="option" value="${option.value}" disabled="${option.disabled}" selected="${is(() => this.selection, values => values.includes(option.value))}">${option.label}</option>`, { key: option => option.value })}
+                ${when(and(isNot(this.props.multi), isNot(() => this.optionList().some(option => option.value === ''))), html`<option part="option" value="" selected="${isNot(() => this.selection.length)}">${this.props.placeholder}</option>`)}
+                ${repeat(this.optionList, option => html`<option part="option" value="${option.value}" disabled="${option.disabled}" selected="${is(() => this.selection, values => values.includes(option.value))}">${option.label}</option>`, { key: option => option.value })}
             </select>
         </div>`
     }
@@ -80,6 +88,12 @@ export class Select extends SelectBase {
         }
         super.mount()
         this.syncPopup()
+    }
+    protected update(name: string): void {
+        if (name === 'options') queueMicrotask(() => {
+            if (this.isConnected) this.optionRevision[1](this.optionRevision[0]() + 1)
+        })
+        super.update(name)
     }
     protected fieldElement(): HTMLSelectElement | undefined { return this.nativeControl }
     protected syncView(): void { if (!bool(this.open)) this.query[1](''); this.syncPopup() }

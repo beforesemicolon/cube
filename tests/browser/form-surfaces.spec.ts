@@ -12,7 +12,7 @@ async function mount(page: Page, appearance = 'light'): Promise<void> {
         fixture.style.cssText = 'display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;padding:32px;background:var(--color-surface);color:var(--color-foreground)'
         const add = (tag: string, label: string, props: object = {}, disabled = false): void => {
             const wrap = document.createElement('cb-field'), control = document.createElement(tag)
-            Object.assign(wrap, { label: tag === 'cb-checkbox' ? '' : label, disabled }); Object.assign(control, { accessibleLabel: label, ...props })
+            Object.assign(wrap, { label: ['cb-checkbox', 'cb-radio'].includes(tag) ? '' : label, disabled }); Object.assign(control, { accessibleLabel: label, ...props })
             wrap.style.alignSelf = 'start'
             wrap.style.inlineSize = '100%'
             control.style.cssText = 'inline-size:100%;max-inline-size:100%'; wrap.append(control); fixture.append(wrap)
@@ -30,6 +30,7 @@ async function mount(page: Page, appearance = 'light'): Promise<void> {
         add('cb-text-input', 'Read only', { value: 'studio.example.com', readOnly: true })
         add('cb-text-input', 'Disabled', { value: 'Not available' }, true)
         add('cb-checkbox', 'Notify collaborators', { label: 'Notify collaborators', checked: true })
+        add('cb-radio', 'Default row', { label: 'Default row', checked: true, name: 'surface-row', value: 'default' })
         add('cb-radio-group', 'Access', { value: 'team', options: [{ value: 'team', label: 'Team' }, { value: 'everyone', label: 'Everyone' }] })
         const button = document.createElement('cb-button'); Object.assign(button, { label: 'Add attribute' }); fixture.append(button)
     })

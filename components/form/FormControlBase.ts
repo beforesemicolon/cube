@@ -113,7 +113,10 @@ export abstract class FieldControlBase<P extends FieldControlSharedProps=FieldCo
         const control=this.fieldElement();if(!control)return
         control.setCustomValidity(text(this.errorText))
         const flags:ValidityStateFlags={}
-        if(!this.unavailable&&!bool(this.readOnly))for(const key of ['badInput','customError','patternMismatch','rangeOverflow','rangeUnderflow','stepMismatch','tooLong','tooShort','typeMismatch','valueMissing'] as const)if(control.validity[key])flags[key]=true
+        // A native control can already be disabled/read-only while the host is
+        // still synchronizing. Its flags may remain invalid, but its message is
+        // empty because it is barred from validation; setValidity rejects that.
+        if(!this.unavailable&&!bool(this.readOnly)&&control.willValidate)for(const key of ['badInput','customError','patternMismatch','rangeOverflow','rangeUnderflow','stepMismatch','tooLong','tooShort','typeMismatch','valueMissing'] as const)if(control.validity[key])flags[key]=true
         this.internals?.setValidity(flags,Object.keys(flags).length?control.validationMessage:'',control)
     }
     setCustomValidity(message:string):void{this.errorText=message;if(this.mounted){this.syncView();this.syncFormValue()}}
