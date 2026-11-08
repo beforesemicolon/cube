@@ -4,6 +4,7 @@ import type { TableColumn, TableRecord } from '../components/data-display/table/
 import type { List } from '../components/data-display/list/index.js'
 import type { Workspace } from '../components/layout/workspace/index.js'
 import { html, repeat } from '../components/core/runtime.js'
+import { iconPaths } from '../components/icons/registry.js'
 import { createFlashbar, configureFlashbarHost } from '../components/feedback/flashbar/service.js'
 import { showModal } from '../components/overlay/modal/service.js'
 import './setup.js'
@@ -14,6 +15,24 @@ const meta: Meta = {
 }
 export default meta
 type Story = StoryObj
+
+export const IconGallery: Story = {
+    name: 'Icons / All icons',
+    render: () => {
+        const grid = document.createElement('cb-grid')
+        grid.setAttribute('columns', 'repeat(auto-fit, minmax(min(100%, 112px), 1fr))')
+        grid.setAttribute('gap', '24px')
+        grid.setAttribute('padding', '16px')
+        grid.setAttribute('aria-label', 'All icons')
+        html`${repeat(Object.keys(iconPaths).sort(), name => html`
+            <cb-col align-items="center" gap="12px" title=${name}>
+                <cb-icon name=${name} accessible-label=${name} style="--component-icon-size:24px"></cb-icon>
+                <code style="text-align:center;overflow-wrap:anywhere;max-inline-size:100%">${name}</code>
+            </cb-col>
+        `)}`.render(grid)
+        return grid
+    },
+}
 
 const lengthUnits = [{ value: 'px', label: 'px' }, { value: '%', label: '%' }, { value: 'rem', label: 'rem' }, { value: 'vw', label: 'vw' }]
 const lengthUnitProps = { unit: 'px', units: lengthUnits, unitLabel: 'Unit' }
