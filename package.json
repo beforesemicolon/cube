@@ -316,7 +316,7 @@
     "build:docs": "tsx scripts/build-docs.ts"
   },
   "dependencies": {
-    "@beforesemicolon/web-component": "^1.21.0",
+    "@beforesemicolon/web-component": "^1.21.2-next",
     "echarts": "6.1.0",
     "highlight.js": "^11.12.0"
   },

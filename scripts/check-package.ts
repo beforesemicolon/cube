@@ -9,6 +9,10 @@ import { componentEntries, componentGroups } from './component-entries.js'
 interface Manifest {
     readonly name: string
     readonly version: string
+    readonly dependencies?: Readonly<Record<string, string>>
+    readonly devDependencies?: Readonly<Record<string, string>>
+    readonly peerDependencies?: Readonly<Record<string, string>>
+    readonly optionalDependencies?: Readonly<Record<string, string>>
     readonly exports: Readonly<Record<string, string | Readonly<Record<string, string>>>>
     readonly publishConfig: { readonly access: string; readonly tag: string }
 }
@@ -21,6 +25,9 @@ interface PackResult {
 }
 
 const manifest: Manifest = JSON.parse(await readFile('package.json', 'utf8'))
+for (const scope of ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'] as const) {
+    assert(!Object.hasOwn(manifest[scope] ?? {}, '@beforesemicolon/markup'), `Cube must consume Markup through WebComponent, not ${scope}`)
+}
 assert.equal(manifest.publishConfig.access, 'public', 'Cube is a public scoped package')
 if (manifest.version.includes('-')) assert.notEqual(manifest.publishConfig.tag, 'latest', 'Prereleases must not default to the stable tag')
 const artifacts = resolve('release-artifacts')
@@ -37,6 +44,9 @@ for (const file of files) {
     assert(documentation.has(file) || /^dist\/(?:esm\/.+\.js|cjs\/(?:.+\.js|package\.json)|types\/.+\.d\.ts|(?:[a-z-]+-)?client\.js|themes\/[^/]+\.(?:css|json)|icons\/[^/]+\.(?:css|svg))$/.test(file), `Unexpected npm payload: ${file}`)
     assert(!/(?:\.spec\.|\/description-row\/|editor-dom|build-report|\.map$)/.test(file), `Unnecessary npm payload: ${file}`)
     assert(!/^dist\/(?:esm|cjs|types)\/(?:(?:[^/]+-)?client\.|core\/browser\.)/.test(file), `Browser bootstraps belong only in the flat browser bundles: ${file}`)
+    if (/\.(?:js|ts)$/.test(file)) {
+        assert(!(await readFile(file, 'utf8')).includes('@beforesemicolon/markup'), `Published code/types must consume Markup through WebComponent: ${file}`)
+    }
 }
 for (const file of documentation) assert(files.has(file), `Missing ${file}`)
 for (const [key, target] of Object.entries(manifest.exports)) {
