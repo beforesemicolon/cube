@@ -32,3 +32,18 @@ test('action indicators retain their accessible label without changing ordinary 
     assert.deepEqual(normalizeActions([{ id: 'inputs', label: 'Inputs', indicator: true, indicatorLabel: 'Edited inputs' }]),
         [{ id: 'inputs', label: 'Inputs', indicator: true, indicatorLabel: 'Edited inputs', disabled: false, name: '', icon: '' }])
 })
+
+
+test('standalone selection actions avoid clamped ancestor preview controls', () => {
+    const selection = { x: 100, y: 70, width: 500, height: 40 }
+    const size = { width: 120, height: 32 }
+    const boundary = { x: 8, y: 8, width: 984, height: 584 }
+    const preview = { x: 140, y: 8, width: 420, height: 50 }
+    assert.deepEqual(positionControls(selection, size, 8, boundary, false, 'center', [preview]),
+        { x: 290, y: 118, placement: 'below' })
+    // A canvas toolbar is not clamped, and unrelated horizontal chrome cannot displace actions.
+    assert.deepEqual(positionControls(selection, size, 8, undefined, false, 'center', [preview]),
+        { x: 290, y: 30, placement: 'above' })
+    assert.deepEqual(positionControls(selection, size, 8, boundary, false, 'center', [{ ...preview, x: 700 }]),
+        { x: 290, y: 30, placement: 'above' })
+})

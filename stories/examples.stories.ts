@@ -503,7 +503,11 @@ export const CanvasSelection: Story = {
         const actions = fill(component('cb-action-bar', { accessibleLabel: 'Selection actions' }))
         const selection = component('cb-badge', { value: '1 layer selected' }); selection.slot = 'start'
         actions.append(selection, component('cb-button', { label: 'Duplicate', icon: 'copy' }), component('cb-button', { label: 'Delete', icon: 'close', variant: 'destructive' }))
-        return wideSurface(artboard, actions)
+        // An artboard retains its content dimensions; scroll the canvas on small screens.
+        const canvas = document.createElement('div')
+        canvas.style.cssText = 'inline-size:100%;min-inline-size:0;overflow:auto;padding:32px 8px 8px;box-sizing:border-box'
+        canvas.append(artboard)
+        return wideSurface(canvas, actions)
     },
 }
 
@@ -735,3 +739,4 @@ export const ModalActionNotifications: Story = {
         return root
     },
 }
+

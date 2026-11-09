@@ -11,17 +11,38 @@ export function positionControls(
     gap = 8,
     boundary?: EditorRect,
     aboveOnly = false,
-    align: SelectionActionsAlign = 'center'
+    align: SelectionActionsAlign = 'center',
+    avoid: readonly EditorRect[] = []
 ): ControlsPosition {
     const above = selection.y - gap - size.height
     const placement = !boundary || aboveOnly || above >= boundary.y ? 'above' : 'below'
     const x = selection.x + (selection.width - size.width) * (align === 'start' ? 0 : align === 'end' ? 1 : .5)
     const y = placement === 'above' ? above : selection.y + selection.height + gap
-    return {
+    const next: ControlsPosition = {
         x: boundary ? Math.max(boundary.x, Math.min(x, boundary.x + boundary.width - size.width)) : x,
         y: boundary ? Math.max(boundary.y, Math.min(y, boundary.y + boundary.height - size.height)) : y,
         placement,
     }
+    // Only standalone controls are clamped into the document viewport. Keep
+    // a selection's actions clear of its ancestor artboard's clamped chrome.
+    if (boundary && !aboveOnly && avoid.some(rect => next.x < rect.x + rect.width && next.x + size.width > rect.x && next.y < rect.y + rect.height && next.y + size.height > rect.y)) {
+        const below = Math.max(selection.y + selection.height + gap, ...avoid.map(rect => rect.y + rect.height + gap))
+        if (below + size.height <= boundary.y + boundary.height)
+            return { x: next.x, y: below, placement: 'below' }
+    }
+    return next
+}
+
+const previewBars = new WeakMap<HTMLElement, HTMLElement>()
+function ancestorPreviewRects(element: HTMLElement): EditorRect[] {
+    const result: EditorRect[] = []
+    let node: Node | null = element.parentNode
+    while (node) {
+        const bar = node instanceof HTMLElement ? previewBars.get(node) : undefined
+        if (bar && !bar.hidden && bar.matches(':popover-open')) result.push(bar.getBoundingClientRect())
+        node = node instanceof ShadowRoot ? node.host : node.parentNode
+    }
+    return result
 }
 
 /** Composed ancestors only: no access to another component's shadow DOM or internals. */
@@ -47,7 +68,7 @@ export class SelectionControlsController {
         private gap: () => number,
         private aboveOnly = false,
         private align: () => SelectionActionsAlign = () => 'center',
-    ) {}
+    ) { if (aboveOnly) previewBars.set(host, bar) }
 
     refresh = (): void => {
         const view = this.host.ownerDocument.defaultView
@@ -119,7 +140,8 @@ export class SelectionControlsController {
             // their controls reachable; only canvas chrome travels offscreen.
             viewports.length ? undefined : boundary,
             this.aboveOnly,
-            this.align()
+            this.align(),
+            ancestorPreviewRects(this.host)
         )
         // Keep the toolbar attached to its object, never pinned to a viewport
         // edge. Top-layer elements escape ancestor overflow, so clip only the
@@ -141,6 +163,7 @@ export class SelectionControlsController {
     }
     dispose = (): void => {
         this.disposed = true
+        if (previewBars.get(this.host) === this.bar) previewBars.delete(this.host)
         if (this.frame !== undefined)
             this.host.ownerDocument.defaultView?.cancelAnimationFrame(
                 this.frame
@@ -149,3 +172,4 @@ export class SelectionControlsController {
         this.hide()
     }
 }
+

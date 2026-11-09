@@ -743,7 +743,7 @@ cb-button[part~='token']::part(control) {
    labels retain their intrinsic width; only the short suffix padding shrinks. */
 @container (max-width:80px) {
     [part~='field-shell']:not([part~='stepper']) > input {
-        padding-inline: 2px;
+        padding-inline: 1px;
     }
     [part~='unit-select'],
     [part~='unit-static'] {
@@ -897,3 +897,4 @@ cb-button[part~='token']::part(control) {
         flex-wrap: wrap;
     }
 }
+
