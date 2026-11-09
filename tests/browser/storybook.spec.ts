@@ -107,7 +107,7 @@ test('Storybook records one segmented selection without empty button actions',as
     const actions=page.getByRole('tab',{name:/Actions/})
     await expect(actions).toBeVisible({timeout:20000});await actions.click()
     const panel=page.getByRole('tabpanel',{name:/Actions/})
-    const second=story.getByRole('radio',{name:'Secondary item',exact:true})
+    const second=story.getByRole('radio',{name:'Table view',exact:true})
     await expect(second).toBeVisible()
     const clear=panel.getByRole('button',{name:'Clear'});if(await clear.isVisible())await clear.click()
     await second.click()
@@ -383,7 +383,7 @@ test('built Storybook: code editor selection keeps selected text visible', async
 test('built Storybook: readiness component stories remain directly interactive', async ({ page }) => {
     await page.goto('http://127.0.0.1:6006/iframe.html?id=data-display--file-browser&viewMode=story')
     const browser = page.locator('cb-file-browser')
-    await browser.getByRole('option', { name: 'Open Images' }).click()
+    await browser.getByRole('option', { name: 'Select Images' }).dblclick()
     await expect(browser.getByText('hero.webp')).toBeVisible()
     await browser.getByRole('button', { name: 'Project' }).click()
     await browser.getByRole('radio', { name: 'Table view' }).click()
@@ -490,3 +490,4 @@ test('built Storybook: composition examples are responsive, interactive, and dis
     await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
     await expect(dialog).toBeHidden()
 })
+
