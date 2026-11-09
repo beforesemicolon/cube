@@ -134,19 +134,20 @@ test('radio group owns its options, keyboard selection and form value', async ({
             padding: style.padding,
             alignItems: style.alignItems,
             justifyItems: style.justifyItems,
-            dotWidth: dotStyle.width,
-            dotHeight: dotStyle.height,
+            dotWidth: parseFloat(dotStyle.width),
+            dotHeight: parseFloat(dotStyle.height),
         }
     })
-    expect(indicatorGeometry).toEqual({
-        width: 18,
-        height: 18,
+    expect(indicatorGeometry).toMatchObject({
+        width: 24,
+        height: 24,
         padding: '0px',
         alignItems: 'center',
         justifyItems: 'center',
-        dotWidth: '8px',
-        dotHeight: '8px',
     })
+    // The checked dot occupies 44% of the 22px inner control, rounded to layout pixels.
+    expect(indicatorGeometry.dotWidth).toBeCloseTo(22 * .44, 1)
+    expect(indicatorGeometry.dotHeight).toBeCloseTo(22 * .44, 1)
     await email.focus()
     await page.keyboard.press('ArrowRight')
     await expect(sms).toBeChecked()
@@ -393,3 +394,4 @@ test('native flags expose browser controls only when requested', async ({ page }
     await expect(page.locator('cb-date-picker').getByRole('button')).toBeHidden()
     await expect(page.locator('cb-time-picker').getByRole('button')).toBeHidden()
 })
+

@@ -21,6 +21,8 @@ test('File Browser Storybook boolean switches show the upload action and control
     const upload = page.frameLocator('#storybook-preview-iframe').getByRole('button', { name: 'Upload files', exact: true })
     await expect(page.locator('#control-uploadEnabled')).toHaveAttribute('role', 'switch')
     await expect(page.locator('#control-uploading')).toHaveAttribute('role', 'switch')
+    await expect(upload).toBeVisible()
+    await page.locator('label[for="control-uploadEnabled"]').click()
     await expect(upload).toBeHidden()
     await page.locator('label[for="control-uploadEnabled"]').click()
     await expect(upload).toBeVisible()
@@ -184,4 +186,13 @@ test('every public component exposes controls and initialized args for every rea
     expect(audit.comboboxProperties.indexOf('options')).toBeLessThan(audit.comboboxProperties.indexOf('name'))
     expect(audit.comboboxProperties.indexOf('name')).toBeLessThan(audit.comboboxProperties.indexOf('helpText'))
     expect(audit.comboboxProperties.indexOf('helpText')).toBeLessThan(audit.comboboxProperties.indexOf('label'))
+})
+
+test('Text Input Storybook uses input types rather than button types', async ({ page }) => {
+    await start(page)
+    const metadata = await page.evaluate(async () => {
+        const { controlsFor, storyArgsFor } = await import('../../stories/controls.js')
+        return { options: controlsFor('cb-text-input').type.options, value: storyArgsFor('cb-text-input', {}).type }
+    })
+    expect(metadata).toEqual({ options: ['text', 'email', 'password', 'search', 'tel', 'url', 'number'], value: 'text' })
 })

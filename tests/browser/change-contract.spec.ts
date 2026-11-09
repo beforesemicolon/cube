@@ -20,6 +20,10 @@ test.describe('date-picker Date payloads', () => {
         test(`date picker emits a local Date with string values (native=${native})`, async ({ page }) => {
             await start(page)
             await page.evaluate(native => {
+                document.addEventListener('error', event => {
+                    const detail = (event as CustomEvent<{ error?: unknown }>).detail
+                    if (detail?.error) document.documentElement.dataset.componentError = String(detail.error)
+                })
                 const picker = document.createElement('cb-date-picker') as DatePicker
                 Object.assign(picker,{native,label:'Date',name:'date',value:'2026-10-18'})
                 picker.addEventListener('change',event => {
@@ -34,6 +38,10 @@ test.describe('date-picker Date payloads', () => {
             const picker = page.locator('cb-date-picker')
             if (native) await picker.locator('input[type=date]').fill('2026-10-19')
             else {
+                await expect.poll(async () => ({
+                    triggerCount: await picker.locator('[part~=trigger]').count(),
+                    componentError: await page.locator('html').getAttribute('data-component-error'),
+                })).toEqual({ triggerCount: 1, componentError: null })
                 await picker.locator('[part~=trigger]').click()
                 await picker.locator('cb-calendar [data-value="2026-10-19"]').click()
             }
@@ -260,3 +268,4 @@ test('combobox mouse selection closes suggestions without reopening on focus', a
     await expect(input).toBeFocused()
     await expect(input).toHaveAttribute('aria-expanded','false')
 })
+

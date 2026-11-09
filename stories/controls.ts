@@ -1022,6 +1022,7 @@ const primitiveDefaults: Readonly<
 const taggedDefaults: Readonly<
     Record<string, Readonly<Record<string, StoryValue>>>
 > = {
+    'cb-text-input': { type: 'text', min: '', max: '', step: '' },
     'cb-tooltip': { anchorRect: null, placement: 'top', delay: 400 },
     'cb-verification-code': { length: 6, mode: 'numeric', pin: false, autocomplete: 'one-time-code' },
     'cb-tooltip-provider': { enabled: true, delay: 400 },
@@ -1323,6 +1324,8 @@ function optionsFor(
     tag: string,
     property: string
 ): readonly ControlOption[] | undefined {
+    if (tag === 'cb-text-input' && property === 'type')
+        return ['text', 'email', 'password', 'search', 'tel', 'url', 'number']
     if (property === 'icon' || (tag === 'cb-icon' && property === 'name'))
         return ['', ...Object.keys(iconPaths).sort()]
     return tagOptions[tag]?.[property] ?? genericOptions[property]
@@ -1657,3 +1660,4 @@ export function componentStory(tag: string, args: StoryArgs): StoryObj {
         render: (storyArgs) => preview(tag, storyArgs),
     }
 }
+
