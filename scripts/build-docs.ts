@@ -1,6 +1,6 @@
 import { buildDocs } from '@beforesemicolon/site-builder'
 import { buildBrowser } from '@beforesemicolon/builder'
-import { cp, mkdir, access, readFile } from 'node:fs/promises'
+import { cp, mkdir, access, readFile, writeFile } from 'node:fs/promises'
 import assert from 'node:assert/strict'
 import { resolve } from 'node:path'
 import { componentDocsEntries } from './component-entries.js'
@@ -15,6 +15,16 @@ for (const { name, path } of componentDocsEntries) {
 
 await buildBrowser({ entry: resolve('docs-cube/_template/template.config.ts'), out: 'docs-cube/_template/template.config.js', esbuildOptions: { format: 'esm', platform: 'node', minify: false, sourcemap: false } })
 const result = await buildDocs({ rootDir: resolve('docs-cube'), prod: true })
+const redirectsPath = resolve(result.publicDir, '_redirects')
+const redirects = await readFile(redirectsPath, 'utf8')
+const localeFallback = /^\/\* \S+ 200$/m
+assert.match(redirects, localeFallback)
+// Workers counts every rule after the first wildcard toward its dynamic rule limit.
+await writeFile(redirectsPath, redirects.replace(localeFallback, [
+    '/playground/* /playground/:splat 200',
+    '/assets/cube/* /assets/cube/:splat 200',
+    '$&',
+].join('\n')))
 const out = resolve(result.publicDir, 'assets/cube')
 await mkdir(out, { recursive: true })
 await cp('node_modules/@beforesemicolon/web-component/dist/client.js', resolve(out,'web-component.js'))
