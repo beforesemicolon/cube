@@ -2,6 +2,14 @@
   "schemaVersion": "1.0",
   "mode": "static",
   "siteUrl": "https://cube.beforesemicolon.com",
+  "deployment": {
+    "targets": {
+      "cloudflareWorkers": {
+        "name": "cube",
+        "compatibilityDate": "2026-08-11"
+      }
+    }
+  },
   "defaultLocale": "en",
   "locales": ["en", "pt", "es", "fr", "zh"],
   "localeDetails": {
