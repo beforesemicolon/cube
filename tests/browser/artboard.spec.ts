@@ -465,15 +465,20 @@ test('a 560px artboard fits fully centered in a taller viewport, even when zoome
 
 test('double-clicking the name edits without centering and F2 remains available', async ({ page }) => {
     await inViewport(page, 50)
-    await page.clock.install()
     const board = page.locator('cb-artboard'), viewport = page.locator('cb-viewport')
     await board.evaluate(node => { (node as Artboard).selected = false })
-    await board.getByRole('button', { name: /^Artboard name/ }).dblclick({ delay: 80 })
+    const name = board.getByRole('button', { name: /^Artboard name/ })
+    await expect(name).toBeVisible()
+    await page.clock.install()
+    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1_000)
+    // Drive the real double-click while keeping the single-click timer paused.
+    await name.dblclick({ force: true })
     await expect(board.getByRole('textbox')).toHaveValue('Homepage')
     await expect(board).toHaveJSProperty('selected', true)
     await page.clock.runFor(350)
     await expect(viewport).toHaveJSProperty('zoom', 50)
     expect(await page.evaluate(() => window.viewportChanges)).toBe(0)
+    await page.clock.resume()
     await board.getByRole('textbox').fill('Discarded')
     await board.getByRole('textbox').press('Escape')
     await board.getByRole('button', { name: /^Artboard name/ }).press('F2')
