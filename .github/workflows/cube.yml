@@ -23,6 +23,8 @@ jobs:
       - run: npm run verify:release
       - uses: actions/upload-artifact@v4
         if: always()
+        # Artifact storage quotas are independent of release verification.
+        continue-on-error: true
         with:
           name: cube-verification
           path: |
@@ -31,7 +33,4 @@ jobs:
             test-results/
             playwright-report/
             release-artifacts/
-            design/figma-layers/Studio/01/Actions.png
-            design/figma-layers/Studio/02/Inputs.png
-            design/figma-layers/Studio/03/Color & style.png
           retention-days: 7
