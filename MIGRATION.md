@@ -1,6 +1,6 @@
-# Migrating from Cube 0.2
+# Migrating from Cube 0.2 to 1.0
 
-This branch is a breaking alpha, not an in-place release of the old framework.
+Cube 1.0 is a breaking release that replaces the old framework with a web component library.
 
 Old templating, router, store and internationalization entrypoints are not exported by the new package. Use the maintained Before Semicolon packages (`markup`, `router`, `intl` and `web-component`) for the features moved out of Cube. Legacy `src/`, the old `docs/`, and their Jest/ESLint/build setup have been removed. The build source is `components/`, and the current documentation source is `docs-cube/`. Historical implementations remain recoverable from Git history.
 
@@ -32,9 +32,9 @@ The broad `InputBase` and `InputProps` exports were removed. Text, textarea, and
 
 Layout-capable controls that previously accepted `orientation="horizontal|vertical"` now use the boolean `stacked` property and attribute. Use `stacked` for the former vertical layout and omit it for the default horizontal layout. The unused collection `orientation` prop was removed. Device frames retain `orientation="portrait|landscape"` because that describes the simulated device rather than a component layout.
 
-Do not migrate an existing consumer by simply changing a version range. Inventory old imports and custom tags, adopt the new theme JSON and label contract, and verify behavior and accessibility in that application. Components live in consumer-facing categories: `action`, `text`, `form`, `layout`, `navigation`, `overlay`, `feedback`, `data-display`, `media`, `charts`, `styling`, `editor`, `collaboration`, `icons`, and `theme`. Import an entire category (`@beforesemicolon/cube/form`) and use its named class and headless-base exports. Former visual-only tags such as autocomplete, dimension, aspect-ratio, z-index, preview-switch and theme-switch are compositions or modes of retained primitives. A stable-version release review is still required before publication.
+Inventory old imports and custom tags, adopt the new theme JSON and label contract, and verify behavior and accessibility in your application. Components live in consumer-facing categories: `action`, `text`, `form`, `layout`, `navigation`, `overlay`, `feedback`, `data-display`, `media`, `charts`, `styling`, `editor`, `collaboration`, `icons`, and `theme`. Import an entire category (`@beforesemicolon/cube/form`) and use its named class and headless-base exports. Former visual-only tags such as autocomplete, dimension, aspect-ratio, z-index, preview-switch and theme-switch are compositions or modes of retained primitives.
 
-Browser consumers load the standalone WebComponent runtime first. Chart consumers additionally provide ECharts or a configured asynchronous engine loader. Neither engine is embedded into Cube's classic browser bundles. Pin published versions when a release is approved.
+Browser consumers load the standalone WebComponent runtime first. Chart consumers additionally provide ECharts or a configured asynchronous engine loader. Pin both runtime and Cube script versions in production.
 
 ## Category initialization and rendering
 
