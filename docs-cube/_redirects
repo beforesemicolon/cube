@@ -3,6 +3,7 @@
 /storybook/ /playground/ 301
 /playground /playground/ 301
 /playground/ /playground/index.html 200
+/documentation /documentation/ 301
 
 # Preserve links to the original media and chart guides.
 /documentation/audio-player /documentation/media/audio-player 301

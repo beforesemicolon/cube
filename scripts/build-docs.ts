@@ -17,14 +17,14 @@ await buildBrowser({ entry: resolve('docs-cube/_template/template.config.ts'), o
 const result = await buildDocs({ rootDir: resolve('docs-cube'), prod: true })
 const redirectsPath = resolve(result.publicDir, '_redirects')
 const redirects = await readFile(redirectsPath, 'utf8')
-const localeFallback = /^\/\* \S+ 200$/m
-assert.match(redirects, localeFallback)
-// Workers counts every rule after the first wildcard toward its dynamic rule limit.
-await writeFile(redirectsPath, redirects.replace(localeFallback, [
-    '/playground/* /playground/:splat 200',
-    '/assets/cube/* /assets/cube/:splat 200',
-    '$&',
-].join('\n')))
+const localeFallback = /^\/\* \/([^/]+)\/:splat 200\n?/m
+const defaultLocale = localeFallback.exec(redirects)?.[1]
+assert(defaultLocale, 'Expected a generated default-locale rewrite')
+// Publish shared resources directly so the locale fallback cannot intercept Playground assets.
+await writeFile(redirectsPath, redirects.replace(localeFallback, ''))
+await Promise.all(['assets', 'data', 'stylesheets', 'llms.txt', 'llms-full.txt', 'robots.txt', 'sitemap.xml'].map(path =>
+    cp(resolve(result.publicDir, defaultLocale, path), resolve(result.publicDir, path), { recursive: true })
+))
 const out = resolve(result.publicDir, 'assets/cube')
 await mkdir(out, { recursive: true })
 await cp('node_modules/@beforesemicolon/web-component/dist/client.js', resolve(out,'web-component.js'))
