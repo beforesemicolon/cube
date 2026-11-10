@@ -1,0 +1,26 @@
+# Keep previously shared playground links working.
+/storybook /playground/ 301
+/storybook/ /playground/ 301
+/playground /playground/ 301
+
+# Preserve links to the original media and chart guides.
+/documentation/audio-player /documentation/media/audio-player 301
+/documentation/video-player /documentation/media/video-player 301
+/documentation/cartesian-chart /documentation/charts/cartesian-chart 301
+/documentation/pie-chart /documentation/charts/pie-chart 301
+/es/documentation/audio-player /es/documentation/media/audio-player 301
+/es/documentation/video-player /es/documentation/media/video-player 301
+/es/documentation/cartesian-chart /es/documentation/charts/cartesian-chart 301
+/es/documentation/pie-chart /es/documentation/charts/pie-chart 301
+/fr/documentation/audio-player /fr/documentation/media/audio-player 301
+/fr/documentation/video-player /fr/documentation/media/video-player 301
+/fr/documentation/cartesian-chart /fr/documentation/charts/cartesian-chart 301
+/fr/documentation/pie-chart /fr/documentation/charts/pie-chart 301
+/pt/documentation/audio-player /pt/documentation/media/audio-player 301
+/pt/documentation/video-player /pt/documentation/media/video-player 301
+/pt/documentation/cartesian-chart /pt/documentation/charts/cartesian-chart 301
+/pt/documentation/pie-chart /pt/documentation/charts/pie-chart 301
+/zh/documentation/audio-player /zh/documentation/media/audio-player 301
+/zh/documentation/video-player /zh/documentation/media/video-player 301
+/zh/documentation/cartesian-chart /zh/documentation/charts/cartesian-chart 301
+/zh/documentation/pie-chart /zh/documentation/charts/pie-chart 301

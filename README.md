@@ -1,6 +1,6 @@
 # Cube
 
-A TypeScript web component library for building visual editors and application interfaces. Explore interactive components and examples in [Storybook](#storybook), or browse the [Cube documentation](docs-cube/documentation/index.md).
+A design system and TypeScript web component library for building accessible, themeable interfaces. Explore interactive components and examples in the [Playground](#playground), or browse the [Cube documentation](docs-cube/documentation/index.md).
 
 ## Usage
 
@@ -34,11 +34,11 @@ Import the full library, a category such as `@beforesemicolon/cube/action`, or a
 | Icons | `cb-icon` |
 | Theme | `cb-theme-provider` |
 
-## Storybook
+## Playground
 
 ```sh
 npm ci
 npm run storybook
 ```
 
-Open [Storybook on localhost](http://localhost:6006) for live controls and usage examples.
+Open the [Playground on localhost](http://localhost:6006) for live controls and usage examples.

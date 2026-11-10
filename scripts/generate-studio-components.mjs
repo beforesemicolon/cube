@@ -480,21 +480,6 @@ const existingCategoryExports = {
         "export * from './video-player/index.js'",
     ],
 }
-const documentationKeys = {
-    action: 'categoryAction',
-    text: 'categoryText',
-    form: 'categoryForm',
-    layout: 'studioLayout',
-    navigation: 'categoryNavigation',
-    overlay: 'categoryOverlay',
-    feedback: 'categoryFeedback',
-    'data-display': 'categoryDataDisplay',
-    media: 'categoryMedia',
-    styling: 'categoryStyling',
-    editor: 'categoryEditor',
-    assets: 'categoryAssets',
-    collaboration: 'categoryCollaboration',
-}
 const definitionGroups = componentCategoryOrder
     .map((category) => [
         category,
@@ -740,45 +725,6 @@ for (const [category, entries] of storyGroups) {
         })
         .join('\n\n')}\n`
     await writeFile(resolve('stories', `${category}.stories.ts`), story)
-}
-
-const summaryDefinitions = [
-    ...publicDefinitions,
-    ...reusedStoryDefinitions,
-    ...storyExtras,
-].filter((definition) => !['icons', 'theme'].includes(definition.category))
-const summary = summaryDefinitions.reduce((result, definition) => {
-    result[definition.category] ??= []
-    result[definition.category].push(definition)
-    return result
-}, {})
-const documentationCategories = componentCategoryOrder.filter(
-    (category) => summary[category]
-)
-
-for (const category of documentationCategories) {
-    const entries = orderDefinitions(category, summary[category])
-    const heading = componentCategoryTitles[category]
-    const rows = entries
-        .map(
-            (entry) =>
-                `| ${entry.title} | \`<cb-${entry.name}>\` | \`@beforesemicolon/cube/${category}/${entry.name}\` |`
-        )
-        .join('\n')
-    const key = documentationKeys[category]
-    const order = 20 + documentationCategories.indexOf(category)
-    const categoryNote = category === 'form' ? '\n{{t.cube.formNative}}\n' : ''
-    const categoryDetails =
-        category === 'form'
-            ? '\n\n{{t.cube.unitInputBody}}\n\n{{t.cube.selectBody}}'
-            : category === 'action'
-              ? "\n\nSet a button's optional `pressed` property when the action represents a persistent on/off state. The same `<cb-button>` then exposes `aria-pressed`, toggles on click or keyboard activation, and emits `change`. Leave `pressed` undefined for a normal action button that emits `action`."
-              : ''
-    const markdown = `---\nname: '{{t.cube.${key}}}'\ntitle: '{{t.cube.${key}}}'\npath: /documentation/${category}\nlayout: document\norder: ${order}\n---\n\n# {{t.cube.${key}}}\n\n{{t.cube.studioCatalogBody}}\n${categoryNote}\n:::cube studio-${category}\n:::\n\n| Component | Custom element | Package entry |\n| --- | --- | --- |\n${rows}${categoryDetails}\n\n## API\n\n{{t.cube.studioCatalogApi}}\n`
-    await writeFile(
-        resolve('docs-cube/documentation', `${category}.md`),
-        markdown
-    )
 }
 
 console.log(

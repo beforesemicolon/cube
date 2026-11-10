@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
+import { html } from 'lit'
 import { componentStory } from './controls.js'
 import './setup.js'
+import { configureModalHost, showModal, type ModalRenderer as ModalHost } from '../components/overlay/modal/index.js'
 
 const meta: Meta = {
     title: 'Overlay',
@@ -111,6 +113,24 @@ export const Modal: Story = componentStory('cb-modal', {
     cancelLabel: 'Cancel',
     showCancel: true,
 })
+
+export const ModalRenderer: Story = {
+    render: () => html`<div>
+        <cb-button label="Open hosted modal" @action=${(event: Event): void => {
+            const trigger = event.currentTarget
+            if (!(trigger instanceof HTMLElement)) return
+            const renderer = trigger.parentElement?.querySelector<ModalHost>('cb-modal-renderer')
+            if (!renderer) return
+            configureModalHost({ renderer })
+            void showModal({
+                heading: 'Hosted modal',
+                body: 'The modal service mounted this dialog inside the renderer.',
+                closeLabel: 'Close',
+            })
+        }}></cb-button>
+        <cb-modal-renderer data-story-component></cb-modal-renderer>
+    </div>`,
+}
 
 export const AlertDialog: Story = componentStory('cb-alert-dialog', {
     heading: 'Delete component?',

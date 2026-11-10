@@ -12,6 +12,11 @@
     "zh": { "label": "中文", "selectorLabel": "选择语言" }
   },
   "document": {
+    "csp": {
+      "style-src": ["'self'", "https://fonts.googleapis.com"],
+      "style-src-attr": ["'unsafe-inline'"],
+      "font-src": ["'self'", "data:", "https://fonts.gstatic.com"]
+    },
     "scripts": [
       { "src": "/assets/cube/web-component.js", "defer": true },
       { "src": "/assets/cube/client.js", "defer": true },

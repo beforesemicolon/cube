@@ -56,4 +56,8 @@ const foundationEntries = [
     {path:'feedback/flashbar',name:'flashbar',className:'Flashbar'},
 ] as const
 export const componentEntries = [...foundationEntries, ...studioEntries] as const
+export const componentDocsEntries = [
+    ...componentEntries,
+    { name: 'modal-renderer', path: 'overlay/modal-renderer' },
+] as const
 export const componentGroups = ['action','text','form','layout','navigation','overlay','feedback','data-display','media','charts','styling','editor','collaboration','icons','theme'] as const

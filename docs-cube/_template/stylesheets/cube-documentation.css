@@ -1,0 +1,27 @@
+/* Compatibility with the installed Fading Citrus theme. */
+#documentation article :is(li, td, dd, blockquote) a {
+    color: var(--primary);
+}
+
+#documentation article :is(li, td, dd, blockquote) a:hover {
+    color: var(--primary-glow);
+}
+
+#documentation article :is(h1, h2, h3, h4, h5, h6) > a[href^='#'] {
+    color: inherit;
+    text-decoration: none;
+}
+
+.cube-component-demo {
+    position: relative;
+    margin-block: 24px 12px;
+    padding: clamp(12px, 4vw, 24px);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    background: var(--surface);
+}
+
+.cube-component-demo > cb-theme-provider {
+    display: block;
+    min-inline-size: 0;
+}

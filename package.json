@@ -2,7 +2,7 @@
   "name": "@beforesemicolon/cube",
   "version": "1.0.0",
   "type": "module",
-  "description": "Cube by Before Semicolon — headless and themed web components for visual editors",
+  "description": "Cube by Before Semicolon — a design system and library of accessible, themeable web components",
   "license": "BSD-3-Clause",
   "author": "Elson Correia",
   "engines": {
@@ -311,7 +311,9 @@
     "verify:release": "npm run build:package && npm run test:exports && npm run build:storybook && npm run test:catalog && npm run build:docs && npm run test:browser && npm run audit:runtime && npm run test:pack",
     "prepack": "npm run build:package && npm run test:exports",
     "prepublishOnly": "npm run verify:release",
-    "build:docs": "tsx scripts/build-docs.ts"
+    "build:docs": "tsx scripts/build-docs.ts",
+    "build:site": "npm run build && npm run build:docs && npm run build:storybook -- --output-dir website/playground",
+    "preview:site": "tsx scripts/preview-site.ts"
   },
   "dependencies": {
     "@beforesemicolon/web-component": "^1.21.1",
