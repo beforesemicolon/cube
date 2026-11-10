@@ -45,7 +45,8 @@ export class SelectionOverlay extends SelectionOverlayBase {
             }}</span>
             <cb-toolbar part="controls" exportparts="toolbar:toolbar" ref="controls" popover="manual" hidden
                 accessible-label=${() => scalarText(this.actionsLabel) || this.accessibleName()}
-                onpointerdown=${this.containEvent} onclick=${this.containEvent} ondblclick=${this.containEvent} onkeydown=${this.containEvent}>
+                onpointerdown=${this.containEvent} onclick=${this.containEvent} ondblclick=${this.containEvent} onkeydown=${this.containEvent}
+                onslotchange=${() => this.controlsController?.refresh()}>
                 ${repeat(this.normalizedActions, action => html`<cb-button part="action" data-action-id=${action.id}
                     exportparts="control:action-control,icon:action-icon,label:action-label,button-label:action-label"
                     icon=${action.icon} icon-src=${action.iconSrc} icon-only=${Boolean(action.icon || action.iconSrc)} label=${action.label} accessible-label=${action.label}
@@ -55,6 +56,7 @@ export class SelectionOverlay extends SelectionOverlayBase {
                     onaction=${(event: CustomEvent<{ originalEvent?: Event }>) => {
                         event.stopPropagation(); this.activateAction(action.id, event.detail.originalEvent)
                     }}></cb-button>`, { key: action => action.id })}
+                <slot name="actions-end" ref="actionsEnd"></slot>
             </cb-toolbar>`;
     }
     private containEvent = (event: Event): void => { event.stopPropagation() }
@@ -62,7 +64,10 @@ export class SelectionOverlay extends SelectionOverlayBase {
         super.mount()
         const bar = this.refs.controls?.[0]
         if (!(bar instanceof HTMLElement)) return
-        this.controlsController = new SelectionControlsController(this, bar, () => this.normalizedActions().length > 0, () => bool(this.rotatable) ? 32 : 8, false, () => this.actionsAlign)
+        const actionsEnd = this.refs.actionsEnd?.[0]
+        const hasControls = (): boolean => this.normalizedActions().length > 0 ||
+            (actionsEnd instanceof HTMLSlotElement && actionsEnd.assignedElements({ flatten: true }).length > 0)
+        this.controlsController = new SelectionControlsController(this, bar, hasControls, () => bool(this.rotatable) ? 32 : 8, false, () => this.actionsAlign)
         this.controlsController.refresh()
         this.cleanup(() => { this.controlsController?.dispose(); this.controlsController = undefined })
     }

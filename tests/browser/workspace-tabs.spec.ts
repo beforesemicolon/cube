@@ -83,6 +83,7 @@ test('tab content is lazy, unmounts on switch/collapse, and unrelated panels ret
     page.on('pageerror', error => errors.push(error.message))
     await mount(page)
     const workspace = page.locator('cb-workspace')
+    await expect(workspace).toHaveCSS('border-radius', '0px')
     await expect(workspace.getByRole('textbox', { name: 'pages input' })).toBeVisible()
     await expect.poll(() => page.evaluate(() => window.workspaceTabStats.calls)).toEqual({ pages: 1, properties: 1 })
     await workspace.getByRole('textbox', { name: 'properties input' }).fill('Preserved')

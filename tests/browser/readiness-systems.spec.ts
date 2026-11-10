@@ -312,6 +312,7 @@ test('modal service binds reactive action state and close label through its rend
         const { showModal, configureModalHost } = await import('/components/overlay/modal/service.ts')
         const [disabled, setDisabled] = state(true)
         const [loading, setLoading] = state(false)
+        const [hidden, setHidden] = state(true)
         configureModalHost({ renderer: modalRenderer as import('../../components/overlay/modal/renderer.js').ModalRenderer })
         showModal({
             id: 'reactive-modal',
@@ -321,21 +322,25 @@ test('modal service binds reactive action state and close label through its rend
             actions: [{
                 id: 'save',
                 label: 'Save changes',
+                hidden,
                 disabled,
                 loading,
                 dismiss: false,
             }],
         })
-        Object.assign(window, { setModalDisabled: setDisabled, setModalLoading: setLoading })
+        Object.assign(window, { setModalDisabled: setDisabled, setModalLoading: setLoading, setModalHidden: setHidden })
     })
 
     const modal = page.locator('cb-modal-renderer > cb-modal')
     const actionHost = modal.locator('cb-button[part~="action"]')
     const action = actionHost.getByRole('button', { name: 'Save changes' })
     await expect(modal).toHaveCount(1)
-    await expect(action).toBeDisabled()
+    await expect(actionHost).toBeHidden()
     await expect(modal.getByRole('button', { name: 'Close reactive modal' })).toBeVisible()
 
+    await page.evaluate(() => (Reflect.get(window, 'setModalHidden') as (value: boolean) => void)(false))
+    await expect(actionHost).toBeVisible()
+    await expect(action).toBeDisabled()
     await page.evaluate(() => (Reflect.get(window, 'setModalDisabled') as (value: boolean) => void)(false))
     await expect(action).toBeEnabled()
     await page.evaluate(() => (Reflect.get(window, 'setModalLoading') as (value: boolean) => void)(true))

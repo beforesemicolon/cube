@@ -29,6 +29,7 @@ export interface ModalAction {
     iconSrc?: string
     variant?: ButtonVariant
     value?: string
+    hidden?: ModalActionBoolean
     disabled?: ModalActionBoolean
     loading?: ModalActionBoolean
     dismiss?: boolean
@@ -235,11 +236,12 @@ function applyRequest(record: ModalRecord): void {
                 const running = state(false)
                 const loading = () =>
                     Boolean(val(action.loading)) || running[0]()
+                const hidden = () => Boolean(val(action.hidden))
                 const disabled = () =>
                     loading() || Boolean(val(action.disabled))
                 const run = async (event: Event): Promise<void> => {
                     event.stopPropagation()
-                    if (disabled()) return
+                    if (hidden() || disabled()) return
                     const detail = {
                         id: record.id,
                         actionId,
@@ -290,6 +292,7 @@ function applyRequest(record: ModalRecord): void {
                             icon=${action.icon ?? ''}
                             icon-src=${action.iconSrc}
                             variant=${action.variant ?? 'ghost'}
+                            hidden=${hidden}
                             disabled=${disabled}
                             onnavigate=${(event: Event) => {
                                 event.stopPropagation()
@@ -307,6 +310,7 @@ function applyRequest(record: ModalRecord): void {
                             icon-src=${action.iconSrc}
                             variant=${action.variant ?? (index === actionList.length - 1 ? 'primary' : 'secondary')}
                             value=${action.value ?? ''}
+                            hidden=${hidden}
                             disabled=${disabled}
                             loading=${loading}
                             onaction=${run}
@@ -374,25 +378,22 @@ export function showModal(request: ModalRequest = {}): ModalHandle {
             )
         }
     })
-    modal.addEventListener(
-        'close',
-        (event) => {
-            if (event.composedPath()[0] !== modal) return
-            const detail = (event as CustomEvent<{ reason: ModalCloseReason }>)
-                .detail
-            if (record.documentLayerActive) setDocumentInert(false)
-            record.documentLayerActive = false
-            record.disposeContent?.()
-            record.footerTemplate?.unmount()
-            records.delete(id)
-            modal.remove()
-            record.resolve({
-                id,
-                reason: detail.reason,
-                ...record.actionResult,
-            })
-        }
-    )
+    modal.addEventListener('close', (event) => {
+        if (event.composedPath()[0] !== modal) return
+        const detail = (event as CustomEvent<{ reason: ModalCloseReason }>)
+            .detail
+        if (record.documentLayerActive) setDocumentInert(false)
+        record.documentLayerActive = false
+        record.disposeContent?.()
+        record.footerTemplate?.unmount()
+        records.delete(id)
+        modal.remove()
+        record.resolve({
+            id,
+            reason: detail.reason,
+            ...record.actionResult,
+        })
+    })
     if (modal.show()) {
         if (modal.layer === 'document') {
             setDocumentInert(true)

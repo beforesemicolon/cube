@@ -30,4 +30,18 @@ componentContract('cb-selection-overlay', 'editor--selection-overlay', async ({ 
     await expect(outline).toHaveAttribute('tabindex', '-1')
     await host.evaluate(node => { Object.assign(node, { movable: true } satisfies Partial<SelectionOverlay>) })
     await expect(outline).toHaveCSS('pointer-events', 'auto')
+    await host.evaluate((node: SelectionOverlay) => {
+        node.actions = []
+        const input = node.ownerDocument.createElement('input')
+        input.slot = 'actions-end'
+        input.setAttribute('aria-label', 'Selection command')
+        node.append(input)
+    })
+    const input = host.getByRole('textbox', { name: 'Selection command' })
+    await expect(toolbar).toBeVisible()
+    await input.fill('Edit selection')
+    await expect(input).toHaveValue('Edit selection')
+    await input.evaluate(node => node.remove())
+    await expect(toolbar).toBeHidden()
+
 })

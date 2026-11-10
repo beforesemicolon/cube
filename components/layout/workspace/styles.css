@@ -12,7 +12,6 @@
   grid-template-areas: "header header header" "start main end" "start bottom end";
   background: var(--color-background);
   border: 1px solid var(--color-separator);
-  border-radius: var(--radius-md);
 }
 [part~=header] {
   grid-area: header;
