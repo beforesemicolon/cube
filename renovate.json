@@ -1,6 +1,31 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>beforesemicolon/.github"
-  ]
+    "github>beforesemicolon/.github",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "timezone": "Etc/UTC",
+  "schedule": [
+    "* 0-5 * * *"
+  ],
+  "dependencyDashboard": true,
+  "prCreation": "immediate",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "automerge": false,
+  "platformAutomerge": false,
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "*"
+      ],
+      "automerge": false
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "* 0-5 * * 1"
+    ]
+  }
 }
