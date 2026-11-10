@@ -20,6 +20,16 @@
     "zh": { "label": "中文", "selectorLabel": "选择语言" }
   },
   "document": {
+    "analytics": {
+      "providers": [
+        {
+          "type": "google-analytics",
+          "tagId": "G-F92VLFRYR5",
+          "enabled": true,
+          "config": { "send_page_view": true }
+        }
+      ]
+    },
     "csp": {
       "style-src": ["'self'", "https://fonts.googleapis.com"],
       "style-src-attr": ["'unsafe-inline'"],
