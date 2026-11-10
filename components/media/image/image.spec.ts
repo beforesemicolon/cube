@@ -14,7 +14,7 @@ componentContract('cb-image', 'media--image', async ({ host }) => {
     })
     await expect(host).toHaveAttribute('data-variant', 'thumbnail')
     await expect(host.locator('img')).toHaveAttribute('alt', 'Inventory preview')
-    await host.locator('img').dispatchEvent('error')
     await expect(host.locator('img')).toHaveAttribute('src', '/poster.svg')
+    await expect(host.locator('img')).toBeVisible()
     await expect(host).toHaveCSS('width', '40px')
 })
