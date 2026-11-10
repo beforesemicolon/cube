@@ -273,8 +273,6 @@
     "dist/icons/*.svg",
     "dist/icons/*.css",
     "README.md",
-    "MIGRATION.md",
-    "THIRD_PARTY.md",
     "LICENSE"
   ],
   "sideEffects": [

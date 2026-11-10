@@ -39,7 +39,7 @@ const archive = resolve(artifacts, packed.filename)
 assert.equal(createHash('sha1').update(await readFile(archive)).digest('hex'), packed.shasum, 'The archive must match npm pack metadata')
 const archiveFiles = execFileSync('tar', ['-tzf', archive], { encoding: 'utf8' }).trim().split('\n').filter(path => !path.endsWith('/')).map(path => path.replace(/^package\//, ''))
 assert.deepEqual(new Set(archiveFiles), files, 'Inspect the actual archive, not just npm metadata')
-const documentation = new Set(['package.json', 'README.md', 'MIGRATION.md', 'THIRD_PARTY.md', 'LICENSE'])
+const documentation = new Set(['package.json', 'README.md', 'LICENSE'])
 for (const file of files) {
     assert(documentation.has(file) || /^dist\/(?:esm\/.+\.js|cjs\/(?:.+\.js|package\.json)|types\/.+\.d\.ts|(?:[a-z-]+-)?client\.js|themes\/[^/]+\.(?:css|json)|icons\/[^/]+\.(?:css|svg))$/.test(file), `Unexpected npm payload: ${file}`)
     assert(!/(?:\.spec\.|\/description-row\/|editor-dom|build-report|\.map$)/.test(file), `Unnecessary npm payload: ${file}`)

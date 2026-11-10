@@ -2,8 +2,6 @@
 
 A TypeScript web component library for building visual editors and application interfaces. Explore interactive components and examples in [Storybook](#storybook), or browse the [Cube documentation](docs-cube/documentation/index.md).
 
-Upgrading from Cube 0.2? See the [1.0 migration guide](MIGRATION.md).
-
 ## Usage
 
 ```js
