@@ -21,7 +21,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - run: npm run verify:release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         # Artifact storage quotas are independent of release verification.
         continue-on-error: true
