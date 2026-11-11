@@ -1,6 +1,10 @@
+import type { Template } from './runtime.js'
+
 export interface ActionItem {
     id?: string
     label?: string
+    /** Replaces the complete built-in menu control with custom content. */
+    renderItem?: (item: NormalizedItem) => Template | Node | string | number | null
     description?: string
     icon?: string
     iconSrc?: string

@@ -308,6 +308,7 @@ const tagOptions: Readonly<
         variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'],
     },
     'cb-heading': { variant: ['h2', 'h3', 'h4', 'h5', 'h6'] },
+    'cb-menu': { size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'], variant: ['icon', 'label', 'both'] },
     'cb-link': {
         variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'],
         size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'],

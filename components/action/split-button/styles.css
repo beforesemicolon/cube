@@ -33,8 +33,10 @@
   inline-size: max-content;
   box-sizing: border-box;
   max-inline-size: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
+  min-inline-size: 180px;
+  padding: var(--spacing-xs, 4px);
+  border: 1px solid var(--color-separator, #dae0e4);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-surface-raised, #fff);
   overflow: auto;
 }

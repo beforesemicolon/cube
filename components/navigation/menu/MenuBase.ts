@@ -5,9 +5,14 @@ import {
     type NormalizedItem,
 } from '../../core/items.js'
 
+export type MenuVariant = 'icon' | 'label' | 'both'
+
 export interface MenuProps extends ComponentProps {
     items?: ActionItem[]
     loop?: boolean
+    gap?: string
+    active?: string
+    variant?: MenuVariant
 }
 
 /** Menu item normalization and activation without choosing popup or inline rendering. */
@@ -18,9 +23,15 @@ export abstract class MenuBase<
         ...Component.observedAttributes,
         'items',
         'loop',
+        'gap',
+        'active',
+        'variant',
     ]
     items: ActionItem[] = []
     loop = true
+    gap = '1px'
+    active = ''
+    variant: MenuVariant = 'both'
     get normalizedItems(): NormalizedItem[] {
         const items = normalizeItems(this.items)
         let previousGroup = 'default'
