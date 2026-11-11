@@ -162,7 +162,7 @@ export const cubeTheme: ThemeDefinition = {
                 fullscreenBackground: mode('#0F1113', '#08090A'),
             },
             modal: {
-                width: '560px',
+                width: '500px',
                 radius: '12px',
                 shadow: 'none',
             },
