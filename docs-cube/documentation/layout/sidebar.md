@@ -1,7 +1,7 @@
 ---
-name: "Sidebar"
-title: "Sidebar"
-description: "Place supplementary content in a side panel. Enable `collapsible` to expose a disclosure control."
+name: 'Sidebar'
+title: 'Sidebar'
+description: 'Place supplementary content in a side panel. Enable `collapsible` to expose a disclosure control.'
 order: 330
 layout: document
 ---
@@ -15,7 +15,7 @@ Place supplementary content in a side panel. Enable `collapsible` to expose a di
 :::component
 <cb-sidebar label="Layers" collapsible="true" expanded="true"
     expand-label="Expand layers" collapse-label="Collapse layers">
-    Home page
+Home page
 </cb-sidebar>
 :::
 
