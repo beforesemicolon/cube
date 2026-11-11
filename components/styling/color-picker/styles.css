@@ -86,7 +86,7 @@
   border-radius: var(--radius-lg,12px);
   background: var(--color-surface-raised, #FFFFFF);
   color: var(--color-foreground, #20262B);
-  box-shadow: var(--shadow-lg,0 18px 50px color-mix(in srgb,var(--color-foreground, #20262B) 22%,transparent));
+  box-shadow: none;
 }
 [part~=toolbar] {
   display: grid;
@@ -174,7 +174,7 @@ button[part~=plane]:active:not(:disabled) {
   border: 2px solid #fff;
   border-radius: 50%;
   background: transparent;
-  box-shadow: 0 0 0 1px #000, 0 1px 4px rgba(0, 0, 0, .5);
+  box-shadow: 0 0 0 1px #000;
   pointer-events: none;
 }
 [part~=slider-field] {
@@ -223,7 +223,7 @@ button[part~=plane]:active:not(:disabled) {
   border: 2px solid #fff;
   border-radius: 50%;
   background: var(--color-surface, #FFFFFF);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-foreground, #20262B) 65%, transparent), 0 1px 3px rgba(0, 0, 0, .35);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-foreground, #20262B) 65%, transparent);
 }
 [part~=slider]::-moz-range-thumb {
   inline-size: 16px;

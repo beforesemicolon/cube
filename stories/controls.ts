@@ -286,6 +286,7 @@ const tagOptions: Readonly<
     'cb-rich-text-editor': { variant: ['inline', 'box'] },
     'cb-list': { orientation: ['vertical', 'horizontal'] },
     'cb-avatar': {
+        variant: ['round', 'boxy'],
         status: ['none', 'online', 'idle', 'busy', 'offline'],
         size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'],
     },
@@ -309,6 +310,7 @@ const tagOptions: Readonly<
     'cb-heading': { variant: ['h2', 'h3', 'h4', 'h5', 'h6'] },
     'cb-link': {
         variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'],
+        size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'],
     },
     'cb-cartesian-chart': {
         status: ['finished', 'loading', 'error'],
@@ -1053,7 +1055,7 @@ const taggedDefaults: Readonly<
         offset: 100,
         renderItem: null,
     },
-    'cb-avatar': { status: 'none' },
+    'cb-avatar': { status: 'none', variant: 'round' },
     'cb-badge': { tone: 'neutral' },
     'cb-accordion': { variant: 'simple' },
     'cb-expandable-section': { variant: 'default' },
@@ -1069,7 +1071,7 @@ const taggedDefaults: Readonly<
     'cb-heading': { variant: 'h2' },
     'cb-button-group': { variant: 'secondary' },
     'cb-split-button': { popupMaxWidth: '320px', popupMaxHeight: '360px' },
-    'cb-link': { variant: 'secondary' },
+    'cb-link': { variant: 'primary' },
     'cb-cartesian-chart': {
         status: 'finished',
         stacking: false,

@@ -149,7 +149,7 @@ export abstract class Component<
     }
 }
 const brand = Symbol.for('@beforesemicolon/cube/component-version')
-const componentVersion = '1.0.0'
+const componentVersion = '1.1.0'
 export function register(tag: string, ctor: CustomElementConstructor): void {
     const existing = customElements.get(tag)
     if (!existing) {

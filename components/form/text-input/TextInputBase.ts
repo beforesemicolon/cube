@@ -1,6 +1,13 @@
 import { TextReferenceController } from '../text-references.js'
-import { plainText, resolveReferences, type RichTextReference } from '../rich-text-editor/model.js'
-import { MentionController, type MentionConfiguration } from '../../core/mentions.js'
+import {
+    plainText,
+    resolveReferences,
+    type RichTextReference,
+} from '../rich-text-editor/model.js'
+import {
+    MentionController,
+    type MentionConfiguration,
+} from '../../core/mentions.js'
 import { scalarText } from '../../core/value.js'
 import type { StudioKind, StudioValue } from '../../studio/types.js'
 import {
@@ -23,6 +30,7 @@ export interface TextInputProps extends FieldControlProps<string> {
     step?: string
     inputMode?: string
     icon?: string
+    width?: string
 }
 
 /** Headless behavior for the Text input component. */
@@ -42,23 +50,47 @@ export abstract class TextInputBase extends FieldControlBase<TextInputProps> {
         'step',
         'input-mode',
         'icon',
+        'width',
     ]
     value = ''
     references: readonly RichTextReference[] = []
     mentions: MentionConfiguration | null = null
     protected referenceController?: TextReferenceController
-    displayValue = (): string => plainText(resolveReferences([{ text: this.value, formats: [] }], this.references, true))
+    displayValue = (): string =>
+        plainText(
+            resolveReferences(
+                [{ text: this.value, formats: [] }],
+                this.references,
+                true
+            )
+        )
     private mentionController?: MentionController
     protected mount(): void {
         super.mount()
         const control = this.fieldElement()
         if (control) {
-            this.referenceController = new TextReferenceController(control, () => this.value, () => this.references, (value, event) => this.setValue(value, event))
-            this.mentionController = new MentionController(this.referenceController.adapter, () => this.mentions)
+            this.referenceController = new TextReferenceController(
+                control,
+                () => this.value,
+                () => this.references,
+                (value, event) => this.setValue(value, event)
+            )
+            this.mentionController = new MentionController(
+                this.referenceController.adapter,
+                () => this.mentions
+            )
         }
-        this.cleanup(() => { this.mentionController?.dispose(); this.mentionController = undefined; this.referenceController?.dispose(); this.referenceController = undefined })
+        this.cleanup(() => {
+            this.mentionController?.dispose()
+            this.mentionController = undefined
+            this.referenceController?.dispose()
+            this.referenceController = undefined
+        })
     }
-    protected update(name: string): void { super.update(name); this.mentionController?.refresh() }
+    protected update(name: string): void {
+        super.update(name)
+        this.mentionController?.refresh()
+    }
     placeholder = ''
     type = 'text'
     autocomplete = ''
@@ -70,6 +102,7 @@ export abstract class TextInputBase extends FieldControlBase<TextInputProps> {
     step = ''
     inputMode = ''
     icon = ''
+    width = ''
     readonly componentName = 'text-input'
     readonly componentKind: StudioKind = 'text'
     protected fieldElement(): HTMLInputElement | undefined {
@@ -92,6 +125,8 @@ export abstract class TextInputBase extends FieldControlBase<TextInputProps> {
         return this.handleChange(value, originalEvent)
     }
     setControlValue(value: StudioValue, originalEvent?: Event): boolean {
-        return originalEvent && this.referenceController ? this.referenceController.input(scalarText(value), originalEvent) : this.setValue(scalarText(value), originalEvent)
+        return originalEvent && this.referenceController
+            ? this.referenceController.input(scalarText(value), originalEvent)
+            : this.setValue(scalarText(value), originalEvent)
     }
 }

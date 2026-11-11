@@ -20,6 +20,6 @@ export const Breadcrumb: Story = componentStory('cb-breadcrumb', { label: 'Bread
 
 export const Menu: Story = componentStory('cb-menu', { label: 'Menu', items, loop: true })
 
-export const Link: Story = componentStory('cb-link', { label: 'Documentation', href: '#documentation', target: '_self', variant: 'ghost' })
+export const Link: Story = componentStory('cb-link', { label: 'Documentation', href: '#documentation', target: '_self', variant: 'primary' })
 
 export const Pagination: Story = componentStory('cb-pagination', { label: 'Results pages', page: 2, totalPages: 8, siblings: 1, previousLabel: 'Previous page', nextLabel: 'Next page', pageLabel: 'Page {page}' })

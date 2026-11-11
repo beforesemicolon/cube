@@ -11,7 +11,7 @@
     border: 1px solid var(--color-separator, #dae0e4);
     border-radius: var(--radius-sm, 6px);
     background: var(--color-surface-raised, #fff);
-    box-shadow: 0 12px 32px rgba(12, 18, 24, 0.16);
+    box-shadow: none;
     overflow: auto;
 }
 [part='item'] {

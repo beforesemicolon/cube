@@ -14,6 +14,7 @@ export class Avatar extends AvatarBase {
             <span part="avatar root" role="${() => this.avatarDecorative ? 'presentation' : this.avatarLabel ? 'img' : null}"
                 aria-hidden="${() => this.avatarDecorative ? 'true' : null}"
                 aria-label="${() => this.avatarDecorative ? null : this.avatarLabel || null}"
+                data-variant="${() => this.variant === 'boxy' ? 'boxy' : 'round'}"
                 data-color-index="${() => this.avatarColorIndex}"
                 style="${() => this.avatarColor ? '--cb-avatar-color:' + this.avatarColor : null}">
                 <span part="surface">
@@ -28,6 +29,6 @@ export class Avatar extends AvatarBase {
     protected syncView(): void { this.toggleAttribute('aria-hidden', this.avatarDecorative) }
 }
 export { AvatarBase };
-export type { AvatarProps, AvatarStatus } from './AvatarBase.js';
+export type { AvatarProps, AvatarStatus, AvatarVariant } from './AvatarBase.js';
 
 register('cb-avatar', Avatar)

@@ -30,7 +30,7 @@
   border: 1px solid color-mix(in srgb, var(--color-border, #8A959F) 70%, #000);
   border-radius: var(--cb-device-radius);
   background: var(--component-device-frame-bezel,#20262b);
-  box-shadow: 0 18px 45px color-mix(in srgb, #000 24%, transparent);
+  box-shadow: none;
 }
 [part~=device][data-chrome=false] [part~=bezel] {
   padding: 0;

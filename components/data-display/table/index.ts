@@ -498,7 +498,7 @@ export class Table extends TableBase {
                         style=${() => this.stickyStyle(this.stickyIndex(columnIndex))}
                     >
                         ${when(
-                            columnIndex === 0,
+                            columnIndex === 0 && (row.hasChildren || row.depth > 0),
                             () =>
                                 html`<div part="tree-cell">
                                     ${when(row.depth > 0, () => html`<span part="tree-indent" aria-hidden="true" style=${`--table-depth:${row.depth}`}></span>`)}

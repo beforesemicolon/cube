@@ -164,7 +164,7 @@ export const cubeTheme: ThemeDefinition = {
             modal: {
                 width: '560px',
                 radius: '12px',
-                shadow: '0 24px 70px rgba(12,18,24,.24)',
+                shadow: 'none',
             },
             overlay: { backdrop: 'rgba(10,16,22,.56)', blur: '1px' },
             disabled: { opacity: '.5' },

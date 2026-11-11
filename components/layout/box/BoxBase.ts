@@ -27,7 +27,9 @@ export interface BoxProps extends CommonProps {
     bg?: string
 }
 
-const properties: ReadonlyArray<readonly [keyof BoxProps, keyof CSSStyleDeclaration]> = [
+const properties: ReadonlyArray<
+    readonly [keyof BoxProps, keyof CSSStyleDeclaration]
+> = [
     ['inlineSize', 'inlineSize'],
     ['blockSize', 'blockSize'],
     ['minInlineSize', 'minInlineSize'],
@@ -44,7 +46,9 @@ const properties: ReadonlyArray<readonly [keyof BoxProps, keyof CSSStyleDeclarat
     ['overflow', 'overflow'],
 ]
 
-const aliases: ReadonlyArray<readonly [keyof BoxProps, keyof BoxProps, keyof CSSStyleDeclaration]> = [
+const aliases: ReadonlyArray<
+    readonly [keyof BoxProps, keyof BoxProps, keyof CSSStyleDeclaration]
+> = [
     ['width', 'inlineSize', 'inlineSize'],
     ['height', 'blockSize', 'blockSize'],
     ['minWidth', 'minInlineSize', 'minInlineSize'],
@@ -70,15 +74,27 @@ const spacingScale: Readonly<Record<string, string>> = {
 
 export function layoutSpacing(value: string): string {
     const normalized = scalarText(value)
+    const shorthand = normalized.trim().split(/\s+/)
+    if (
+        shorthand.length <= 4 &&
+        shorthand.every((token) => token === '0' || token in spacingScale)
+    ) {
+        return shorthand.map((token) => spacingScale[token] ?? token).join(' ')
+    }
     return spacingScale[normalized] ?? normalized
 }
 
 function cssName(property: keyof CSSStyleDeclaration): string {
-    return String(property).replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`)
+    return String(property).replace(
+        /[A-Z]/g,
+        (letter) => `-${letter.toLowerCase()}`
+    )
 }
 
 /** Shared sizing and surface behavior without choosing a rendered child element. */
-export abstract class BoxBase<P extends BoxProps = BoxProps> extends Component<P> {
+export abstract class BoxBase<
+    P extends BoxProps = BoxProps,
+> extends Component<P> {
     static observedAttributes = [
         ...Component.observedAttributes,
         'inline',
@@ -131,19 +147,27 @@ export abstract class BoxBase<P extends BoxProps = BoxProps> extends Component<P
     protected syncLayout(): void {
         for (const [property, cssProperty] of properties) {
             const rawValue = scalarText(this[property])
-            const value = property === 'gap' ? layoutSpacing(rawValue) : rawValue
+            const value = ['padding', 'margin', 'gap'].includes(property)
+                ? layoutSpacing(rawValue)
+                : rawValue
             if (value) this.style.setProperty(cssName(cssProperty), value)
             else this.style.removeProperty(cssName(cssProperty))
         }
         for (const [alias, canonical, cssProperty] of aliases) {
             const canonicalValue = scalarText(this[canonical])
             const aliasValue = scalarText(this[alias])
-            if (!canonicalValue && aliasValue) this.style.setProperty(cssName(cssProperty), aliasValue)
-            else if (!canonicalValue) this.style.removeProperty(cssName(cssProperty))
+            if (!canonicalValue && aliasValue)
+                this.style.setProperty(cssName(cssProperty), aliasValue)
+            else if (!canonicalValue)
+                this.style.removeProperty(cssName(cssProperty))
         }
         this.toggleAttribute('data-inline', bool(this.inline))
     }
 
-    protected mount(): void { this.syncLayout() }
-    protected update(): void { this.syncLayout() }
+    protected mount(): void {
+        this.syncLayout()
+    }
+    protected update(): void {
+        this.syncLayout()
+    }
 }

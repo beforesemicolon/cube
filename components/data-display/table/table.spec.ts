@@ -13,6 +13,13 @@ componentContract('cb-table', 'data-display--table', async ({ host }) => {
     } satisfies Partial<Table>) })
     await expect(host.getByText("Release row", { exact: true }).first()).toBeVisible()
     await expect(host.getByText('Rich draft', { exact: true })).toBeVisible()
+    const firstHeader = host.locator('th[data-column-id="name"] [part~="header-content"]')
+    const firstContent = host.locator('td[data-column-id="name"] [part~="cell-content"]')
+    await expect.poll(async () => {
+        const headerStart = await firstHeader.evaluate(element => element.getBoundingClientRect().left)
+        const contentStart = await firstContent.evaluate(element => element.getBoundingClientRect().left)
+        return Math.abs(headerStart - contentStart)
+    }).toBeLessThan(1)
     await host.evaluate(node => {
         Object.assign(node, {
             items: [],
