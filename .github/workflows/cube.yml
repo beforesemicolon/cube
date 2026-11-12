@@ -3,25 +3,30 @@ on:
   push:
     branches: [main, feat/cube-design-system, feat/media-charts-design-system]
   pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 9 * * *'
 permissions:
   contents: read
 concurrency:
-  group: cube-${{ github.ref }}
+  group: cube-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '24'
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - run: npm run verify:release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
         # Artifact storage quotas are independent of release verification.
         continue-on-error: true
