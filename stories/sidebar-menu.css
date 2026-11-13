@@ -1,0 +1,47 @@
+.cube-sidebar-navigation {
+    display: flex;
+    inline-size: min(100%, 880px);
+    block-size: 680px;
+    color: var(--color-foreground);
+    background: var(--color-surface);
+}
+.cube-sidebar-navigation cb-sidebar {
+    --component-sidebar-width: 240px;
+    flex: none;
+    block-size: 100%;
+}
+.cube-sidebar-navigation cb-sidebar[data-navigation-collapsed] {
+    --component-sidebar-width: 56px;
+}
+.cube-sidebar-navigation cb-sidebar::part(sidebar) {
+    display: flex;
+    flex-direction: column;
+}
+.cube-sidebar-navigation cb-sidebar::part(header) {
+    display: none;
+}
+/* This example supplies a rail-style collapse button in the content slot. */
+.cube-sidebar-navigation cb-sidebar::part(content) {
+    flex: 1;
+    min-block-size: 0;
+    padding: 8px;
+}
+.cube-sidebar-navigation .sidebar-navigation-content {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 16px;
+    block-size: 100%;
+}
+.cube-sidebar-navigation cb-menu::part(item) {
+    border-radius: var(--radius-sm, 6px);
+}
+.cube-sidebar-navigation cb-menu[accessible-label='Account navigation'] {
+    block-size: auto;
+    padding-block-start: 12px;
+    border-block-start: 1px solid var(--color-separator);
+}
+.cube-sidebar-navigation main {
+    flex: 1;
+    min-inline-size: 0;
+    padding: 24px;
+}

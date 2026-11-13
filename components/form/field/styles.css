@@ -1,9 +1,12 @@
 @import "../../theme/editor.css";
 :host {
-  display: inline-grid;
-  inline-size: var(--component-field-width,fit-content);
+  display: grid;
+  inline-size: var(--component-field-width,100%);
   max-inline-size: 100%;
   min-inline-size: 0;
+}
+::slotted(*) {
+  --component-studio-control-width:100%;
 }
 [part~=field] {
   display: grid;

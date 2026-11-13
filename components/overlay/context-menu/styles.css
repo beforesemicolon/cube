@@ -1,0 +1,13 @@
+@import '../../navigation/menu/view.css';
+
+:host {
+    block-size: auto;
+}
+[part='menu'] {
+    block-size: auto;
+    min-inline-size: 180px;
+    padding: var(--spacing-xs, 4px);
+    border: 1px solid var(--color-separator, #dae0e4);
+    border-radius: var(--radius-sm, 6px);
+    background: var(--color-surface-raised, #fff);
+}

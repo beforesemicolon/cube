@@ -1,5 +1,5 @@
 import { register } from '../../core/Component.js'
-import componentStylesheet from '../../action/button/view.css?inline'
+import componentStylesheet from './styles.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { safeHref } from '../../core/url.js'
 import { buttonView } from '../../action/button/view.js'

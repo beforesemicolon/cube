@@ -3,6 +3,7 @@ import componentStylesheet from '../../studio/view.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { createStudioView, type StudioView } from '../../studio/view.js'
 import { TextInputBase } from './TextInputBase.js'
+import { scalarText } from '../../core/value.js'
 export class TextInput extends TextInputBase {
     stylesheet = componentStylesheet
 
@@ -13,9 +14,14 @@ export class TextInput extends TextInputBase {
     }
     protected syncView(): void {
         this.view?.update()
+        const width = scalarText(this.width)
+        if (width)
+            this.style.setProperty('--component-studio-control-width', width)
+        else this.style.removeProperty('--component-studio-control-width')
         const control = this.fieldElement()
         if (this.referenceController) this.referenceController.sync()
-        else if (control && control.value !== this.value) control.value = this.value
+        else if (control && control.value !== this.value)
+            control.value = this.value
     }
 }
 export { TextInputBase }

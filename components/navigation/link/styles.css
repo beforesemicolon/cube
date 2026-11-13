@@ -1,0 +1,84 @@
+@import '../../action/button/view.css';
+
+:host {
+    --cb-link-color: var(--color-signal-text, #1d50b3);
+    --cb-link-hover-color: var(--color-primary-hover, #1d50b3);
+    --cb-link-decoration: underline;
+    --cb-link-font-scale: 1;
+    font-size: var(
+        --component-link-font-size,
+        calc(var(--typography-body-font-size, 14px) * var(--cb-link-font-scale))
+    );
+    line-height: var(--typography-body-line-height, 1.5);
+}
+
+:host([data-size='tiny']) {
+    --cb-link-font-scale: 0.625;
+}
+
+:host([data-size='xs']) {
+    --cb-link-font-scale: 0.75;
+}
+
+:host([data-size='md']) {
+    --cb-link-font-scale: 1.125;
+}
+
+:host([data-size='lg']) {
+    --cb-link-font-scale: 1.25;
+}
+
+:host([data-size='xl']) {
+    --cb-link-font-scale: 1.5;
+}
+
+:host([data-bare]) {
+    font: inherit;
+}
+
+:host([data-variant='ghost']) {
+    --cb-link-color: var(--color-foreground, #20262b);
+    --cb-link-hover-color: var(--color-signal-text, #1d50b3);
+    --cb-link-decoration: none;
+}
+
+:host([data-variant='secondary']) {
+    --cb-link-decoration: none;
+}
+
+:host([data-variant='destructive']) {
+    --cb-link-color: var(--color-danger, #b4233c);
+    --cb-link-hover-color: var(--color-danger-hover, var(--color-danger, #b4233c));
+}
+
+:host([data-variant='outline']) {
+    --cb-link-color: var(--color-muted-foreground, #606b73);
+    --cb-link-hover-color: var(--color-foreground, #20262b);
+}
+
+:host([data-variant]:not([data-bare])) a[part~='control'] {
+    min-inline-size: 0;
+    min-block-size: var(--cb-height);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--component-link-color, var(--cb-link-color));
+    box-shadow: none;
+    text-decoration: var(--cb-link-decoration);
+    text-underline-offset: 3px;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+:host([data-variant]:not([data-bare]))
+    a[part~='control']:hover:not(:disabled):not([aria-disabled='true']) {
+    background: transparent;
+    color: var(--component-link-hover-color, var(--cb-link-hover-color));
+    box-shadow: none;
+}
+
+:host([data-variant]:not([data-bare]))
+    a[part~='control'][aria-disabled='true'] {
+    background: transparent;
+    box-shadow: none;
+}

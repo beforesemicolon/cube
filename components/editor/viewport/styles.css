@@ -61,7 +61,7 @@
   border: 1px solid var(--color-separator, #DAE0E4);
   border-radius: var(--radius-md,10px);
   background: color-mix(in srgb, var(--color-surface-raised, #FFFFFF) 92%, transparent);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-foreground, #20262B) 12%, transparent);
+  box-shadow: none;
   max-inline-size: calc(100% - 16px);
   overflow: auto;
   cursor: default;

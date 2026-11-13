@@ -116,6 +116,9 @@
     line-height: 1;
     user-select: none;
 }
+[part~='avatar'][data-variant='boxy'] [part~='surface'] {
+    border-radius: var(--component-avatar-radius, var(--radius-sm, 6px));
+}
 [part~='initials'] {
     font-size: max(9px, calc(var(--cb-avatar-size) * 0.36));
     letter-spacing: -0.025em;

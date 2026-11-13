@@ -14,4 +14,19 @@ componentContract('cb-row', 'layout--row', async ({ host }) => {
     })
     await expect(host).toHaveCSS('align-items', 'center')
     await expect(host).toHaveCSS('justify-content', 'space-between')
+
+    await host.evaluate(node => {
+        node.replaceChildren(
+            Object.assign(document.createElement('span'), { textContent: 'One' }),
+            Object.assign(document.createElement('span'), { textContent: 'Two' }),
+        )
+        node.removeAttribute('reverse')
+        node.removeAttribute('spacing')
+        node.setAttribute('gap', 'md')
+    })
+    const rowGap = await host.evaluate(node => {
+        const [first, second] = Array.from(node.children)
+        return second.getBoundingClientRect().left - first.getBoundingClientRect().right
+    })
+    expect(rowGap).toBe(12)
 })

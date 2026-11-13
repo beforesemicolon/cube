@@ -42,7 +42,7 @@
     border-inline-start: 3px solid var(--color-signal-text, #1d50b3);
     border-radius: var(--radius-md, 10px);
     background: var(--color-surface-raised, #fff);
-    box-shadow: 0 12px 36px rgba(12, 18, 24, 0.16);
+    box-shadow: none;
     animation: cb-flash-in var(--motion-duration-normal, 160ms) ease-out;
 }
 [part='message'][data-type='success'] {

@@ -16,5 +16,5 @@
   border-radius: var(--radius-md);
   background: var(--color-surface-raised,var(--color-surface));
   color: var(--color-foreground);
-  box-shadow: 0 12px 32px color-mix(in srgb, var(--color-foreground) 18%, transparent);
+  box-shadow: none;
 }

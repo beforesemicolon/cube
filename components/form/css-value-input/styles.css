@@ -22,7 +22,7 @@
 [part~=argument] + [part~=argument] { border-inline-start: 1px solid var(--cb-field-border); }
 [part~=argument]::part(control) { border: 0; border-radius: 0; background: transparent; }
 [part~=argument]::part(input) { padding-inline: 6px; }
-[part~=popup] { padding: 4px; border: 1px solid var(--cb-field-border); border-radius: var(--cb-field-radius); background: var(--color-surface,#fff); color: var(--color-foreground); overflow: auto; overscroll-behavior: contain; box-shadow: var(--shadow-md); }
+[part~=popup] { padding: 4px; border: 1px solid var(--cb-field-border); border-radius: var(--cb-field-radius); background: var(--color-surface,#fff); color: var(--color-foreground); overflow: auto; overscroll-behavior: contain; box-shadow: none; }
 [part~=option] { display: block; inline-size: 100%; min-block-size: var(--cb-height); border-radius: var(--radius-sm,6px); background: transparent; text-align: start; cursor: pointer; }
 [part~=option]::part(control) { display: flex; justify-content: flex-start; padding: var(--spacing-xs,4px) var(--spacing-md,12px); }
 [part~=option]:is(:hover,:focus-visible), [part~=option][aria-selected=true] { background: var(--color-selection); color: var(--color-signal-text); }

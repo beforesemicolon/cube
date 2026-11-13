@@ -15,7 +15,7 @@ export class Menu extends MenuBase {
     } super.focus(options); }
 }
 export { MenuBase };
-export type { MenuProps } from './MenuBase.js';
+export type { MenuProps, MenuVariant } from './MenuBase.js';
 export type { ActionItem } from '../../core/items.js';
 
 register('cb-menu', Menu)
