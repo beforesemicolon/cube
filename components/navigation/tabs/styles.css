@@ -36,6 +36,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+[part=tab]::part(description) {
+  color: var(--color-muted-foreground,#606b73);
+  font-size: var(--font-size-sm,.875rem);
+  font-weight: 400;
+}
 [part=tab][aria-selected=true] {
   color: var(--color-foreground,#20262b);
 }

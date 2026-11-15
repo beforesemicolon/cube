@@ -22,7 +22,7 @@ export class Tabs extends TabsBase {
                     const source = () => this.items.find(candidate => scalarText(candidate.id) === item.id)
                     return html`<div part="tab-item" data-selected="${is(() => item.id === this.selected())}">
                         <cb-button ref="items" part="tab" exportparts="control:tab-control,label:tab-label,button-label:tab-label,icon:tab-icon,description:tab-description" data-bare data-semantic-host role="tab" data-label="${item.label}"
-                            accessible-label="${item.label}" icon=${item.icon} icon-src=${item.iconSrc} disabled="${or(() => this.unavailable, item.disabled)}"
+                            accessible-label="${item.label}" description="${item.description}" icon=${item.icon} icon-src=${item.iconSrc} disabled="${or(() => this.unavailable, item.disabled)}"
                             aria-selected="${when(is(() => item.id === this.selected()), 'true', 'false')}" tabindex="${() => item.id === this.selected() ? 0 : -1}"
                             id="${() => (this.id || 'cb-tabs') + '-' + item.id + '-tab'}"
                             aria-controls="${() => (this.id || 'cb-tabs') + '-' + item.id + '-panel'}"
