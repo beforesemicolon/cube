@@ -1075,6 +1075,7 @@ const taggedDefaults: Readonly<
     'cb-split-button': { popupMaxWidth: '320px', popupMaxHeight: '360px' },
     'cb-link': { variant: 'primary' },
     'cb-menu': { variant: 'both' },
+    'cb-color-swatch': { variant: 'boxy' },
     'cb-cartesian-chart': {
         status: 'finished',
         stacking: false,

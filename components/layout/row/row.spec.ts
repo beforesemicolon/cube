@@ -28,5 +28,5 @@ componentContract('cb-row', 'layout--row', async ({ host }) => {
         const [first, second] = Array.from(node.children)
         return second.getBoundingClientRect().left - first.getBoundingClientRect().right
     })
-    expect(rowGap).toBe(12)
+    expect(rowGap).toBe(14)
 })

@@ -46,6 +46,7 @@
 }
 :host([data-collapsed]) [part~='header']::part(header) {
     justify-content: center;
+    gap: 0;
     border-block-end: 0;
 }
 :host([data-collapsed]) [part~='header']::part(actions) {

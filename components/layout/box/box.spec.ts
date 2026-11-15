@@ -12,9 +12,9 @@ componentContract('cb-box', 'layout--box', async ({ host }) => {
             margin: 'xs',
         } satisfies Partial<Box>)
     })
-    await expect(host).toHaveCSS('padding-top', '12px')
+    await expect(host).toHaveCSS('padding-top', '14px')
     await expect(host).toHaveCSS('padding-right', '0px')
-    await expect(host).toHaveCSS('padding-bottom', '12px')
+    await expect(host).toHaveCSS('padding-bottom', '14px')
     await expect(host).toHaveCSS('padding-left', '0px')
     await expect(host).toHaveCSS('margin-top', '4px')
 })

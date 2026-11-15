@@ -17,5 +17,5 @@ componentContract('cb-col', 'layout--col', async ({ host }) => {
         const [first, second] = Array.from(node.children)
         return second.getBoundingClientRect().top - first.getBoundingClientRect().bottom
     })
-    expect(colGap).toBe(12)
+    expect(colGap).toBe(14)
 })
