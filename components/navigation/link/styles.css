@@ -5,11 +5,18 @@
     --cb-link-hover-color: var(--color-primary-hover, #1d50b3);
     --cb-link-decoration: underline;
     --cb-link-font-scale: 1;
+    display: inline;
+    container-type: normal;
+    vertical-align: baseline;
+    font: inherit;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+    text-transform: inherit;
+    white-space: inherit;
     font-size: var(
         --component-link-font-size,
-        calc(var(--typography-body-font-size, 14px) * var(--cb-link-font-scale))
+        calc(1em * var(--cb-link-font-scale))
     );
-    line-height: var(--typography-body-line-height, 1.5);
 }
 
 :host([data-size='tiny']) {
@@ -35,6 +42,10 @@
 :host([data-bare]) {
     font: inherit;
 }
+:host([data-variant][data-wrap]) {
+    display: inline;
+    inline-size: auto;
+}
 
 :host([data-variant='ghost']) {
     --cb-link-color: var(--color-foreground, #20262b);
@@ -57,8 +68,11 @@
 }
 
 :host([data-variant]:not([data-bare])) a[part~='control'] {
+    display: inline;
+    vertical-align: baseline;
     min-inline-size: 0;
-    min-block-size: var(--cb-height);
+    min-block-size: 0;
+    block-size: auto;
     padding: 0;
     border: 0;
     background: transparent;
@@ -66,8 +80,19 @@
     box-shadow: none;
     text-decoration: var(--cb-link-decoration);
     text-underline-offset: 3px;
-    font-size: inherit;
-    line-height: inherit;
+    font: inherit;
+    white-space: inherit;
+}
+
+:host(:not([data-bare])) [part~='label'] {
+    display: inline;
+    white-space: inherit;
+    overflow: visible;
+    text-overflow: clip;
+}
+:host(:not([data-bare])) [part~='icon'] {
+    margin-inline-end: var(--spacing-xs, 4px);
+    vertical-align: middle;
 }
 
 :host([data-variant]:not([data-bare]))

@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import type { Link } from './index.js'
 import { componentContract } from '../../../tests/component-contract.js'
 
@@ -21,7 +21,9 @@ componentContract('cb-link', 'navigation--link', async ({ host, page }) => {
         ['outline', 'rgb(100, 100, 100)', 'rgb(30, 30, 30)', 'underline'],
     ] as const
     const anchor = host.locator('a')
-    await host.evaluate(node => node.style.setProperty('--typography-body-font-size', '16px'))
+    await host.evaluate(node => {
+        if (node.parentElement) node.parentElement.style.fontSize = '16px'
+    })
     await expect(anchor).toHaveCSS('font-size', '16px')
     for (const [size, pixels] of [
         ['tiny', 10], ['xs', 12], ['sm', 16], ['md', 18], ['lg', 20], ['xl', 24],
@@ -31,7 +33,7 @@ componentContract('cb-link', 'navigation--link', async ({ host, page }) => {
     }
     await host.evaluate(node => {
         Object.assign(node, { size: 'sm' } satisfies Partial<Link>)
-        node.style.setProperty('--typography-body-font-size', '20px')
+        if (node.parentElement) node.parentElement.style.fontSize = '20px'
     })
     await expect(anchor).toHaveCSS('font-size', '20px')
     for (const [variant, color, hoverColor, decoration] of variants) {
@@ -52,4 +54,25 @@ componentContract('cb-link', 'navigation--link', async ({ host, page }) => {
     })
     await expect(anchor).toHaveAttribute('aria-disabled', 'true')
     await expect(anchor).toHaveCSS('color', 'rgb(30, 30, 30)')
+})
+
+test('links inherit paragraph typography and wrap as inline text', async ({ page }) => {
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--inline-links&viewMode=story')
+    const paragraph = page.locator('[data-inline-link-paragraph]')
+    const link = paragraph.locator('cb-link').first()
+    const anchor = link.locator('a')
+    await expect(link).toHaveCSS('display', 'inline')
+    await expect(anchor).toHaveCSS('display', 'inline')
+    await expect(anchor).toHaveCSS('min-height', '0px')
+    for (const property of ['font-family', 'font-size', 'font-weight', 'font-style', 'line-height', 'letter-spacing']) {
+        const inherited = await paragraph.evaluate((node, property) => getComputedStyle(node).getPropertyValue(property), property)
+        await expect(anchor).toHaveCSS(property, inherited)
+    }
+    const wrapping = page.locator('[data-wrapping-link] a')
+    await expect.poll(() => wrapping.evaluate(node => node.getClientRects().length)).toBeGreaterThan(1)
+    await link.evaluate(node => { (node as Link).size = 'lg' })
+    await expect(anchor).toHaveCSS('font-size', '20px')
+    await expect(anchor).toHaveCSS('line-height', '28px')
+    await link.evaluate(node => node.style.setProperty('--component-link-font-size', '18px'))
+    await expect(anchor).toHaveCSS('font-size', '18px')
 })
