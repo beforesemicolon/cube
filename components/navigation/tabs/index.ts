@@ -35,7 +35,18 @@ export class Tabs extends TabsBase {
                             onaction="${(event: Event) => { const tab = source(); if (tab) this.closeTab(tab, event) }}"></cb-button>`)}
                     </div>`
                 }, { key: item => item.id })}
-            </div>`
+            </div>
+            ${repeat(
+                () => this.choices,
+                item => html`<div
+                    part="tabpanel"
+                    role="tabpanel"
+                    id="${() => (this.id || 'cb-tabs') + '-' + item.id + '-panel'}"
+                    aria-labelledby="${() => (this.id || 'cb-tabs') + '-' + item.id + '-tab'}"
+                    hidden="${is(() => item.id !== this.selected())}"
+                ><slot name="${item.id}"></slot></div>`,
+                { key: item => item.id }
+            )}`
     }
     protected syncView(): void {
         if (!scalarText(this.value) && this.selected()) this.value = this.selected()

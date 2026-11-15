@@ -63,6 +63,9 @@
 [part=close] {
   flex: none;
 }
+[part=tabpanel] {
+  min-inline-size: 0;
+}
 :host([data-stacked]) [part=tab-item] {
   inline-size: 100%;
 }
