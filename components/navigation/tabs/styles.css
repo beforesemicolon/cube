@@ -36,9 +36,21 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-[part=tab]::part(description) {
+[part=tab-copy] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--component-tabs-description-gap, 2px);
+  min-inline-size: 0;
+  text-align: start;
+}
+[part=tab]::part(control) {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+[part=tab-description] {
   color: var(--color-muted-foreground,#606b73);
-  font-size: var(--font-size-sm,.875rem);
+  font-size: var(--component-tabs-description-font-size, .85em);
   font-weight: 400;
 }
 [part=tab][aria-selected=true] {

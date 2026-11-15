@@ -22,12 +22,12 @@ export class Tabs extends TabsBase {
                     const source = () => this.items.find(candidate => scalarText(candidate.id) === item.id)
                     return html`<div part="tab-item" data-selected="${is(() => item.id === this.selected())}">
                         <cb-button ref="items" part="tab" exportparts="control:tab-control,label:tab-label,button-label:tab-label,icon:tab-icon,description:tab-description" data-bare data-semantic-host role="tab" data-label="${item.label}"
-                            accessible-label="${item.label}" description="${item.description}" icon=${item.icon} icon-src=${item.iconSrc} disabled="${or(() => this.unavailable, item.disabled)}"
+                            accessible-label="${item.label}" aria-description="${item.description || null}" icon=${item.icon} icon-src=${item.iconSrc} disabled="${or(() => this.unavailable, item.disabled)}"
                             aria-selected="${when(is(() => item.id === this.selected()), 'true', 'false')}" tabindex="${() => item.id === this.selected() ? 0 : -1}"
                             id="${() => (this.id || 'cb-tabs') + '-' + item.id + '-tab'}"
                             aria-controls="${() => (this.id || 'cb-tabs') + '-' + item.id + '-panel'}"
                             onbeforeaction="${(event: Event) => event.stopPropagation()}"
-                            onaction="${(event: Event) => this.choose(item, event)}">${() => source()?.renderItem?.() ?? item.label}</cb-button>
+                            onaction="${(event: Event) => this.choose(item, event)}"><span part="tab-copy"><span part="tab-label">${() => source()?.renderItem?.() ?? item.label}</span>${when(item.description, html`<span part="tab-description">${item.description}</span>`)}</span></cb-button>
                         ${when(pick(source, "dirty"), html`<span part="dirty" aria-hidden="true"></span>`)}
                         ${when(pick(source, "closable"), html`<cb-button part="close" exportparts="control:close-control,label:close-label,button-label:close-label,icon:close-icon,description:close-description" icon="close" icon-only="true" variant="ghost" size="xs"
                             accessible-label="${() => scalarText(this.closeLabel).replaceAll('{tab}', item.label)}" disabled="${or(() => this.unavailable, item.disabled)}"
