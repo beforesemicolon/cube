@@ -46,6 +46,7 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 }
 
 const booleanProperties = new Set([
+    'actionsOnly',
     'pin',
     'expandFunctions',
     'enabled',
@@ -679,6 +680,7 @@ const descriptions: Readonly<Record<string, string>> = {
 }
 
 const defaultSummaries: Readonly<Record<string, string>> = {
+    actionsOnly: 'false',
     activation: 'automatic',
     align: 'stretch',
     appearance: 'system',
@@ -818,6 +820,7 @@ const primitiveDefaults: Readonly<
 > = {
     accessibleLabel: '',
     actionLabel: '',
+    actionsOnly: false,
     activation: 'automatic',
     align: 'stretch',
     allowAlpha: true,
