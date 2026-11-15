@@ -4,6 +4,12 @@ import { componentContract } from '../../../tests/component-contract.js'
 
 componentContract('cb-alert', 'feedback--alert', async ({ host }) => {
     await host.evaluate(node => {
+        const container = document.createElement('div')
+        container.style.inlineSize = '640px'
+        node.parentElement?.insertBefore(container, node)
+        container.append(node)
+    })
+    await host.evaluate(node => {
         Object.assign(node, { label: 'Release message', tone: 'warning' } satisfies Partial<Alert>)
         const content = document.createElement('p')
         content.textContent = 'Review the failed records before retrying.'
@@ -14,4 +20,5 @@ componentContract('cb-alert', 'feedback--alert', async ({ host }) => {
     await expect(host.locator('[part~=display]')).toHaveAttribute('aria-live', 'assertive')
     await expect(host.locator('[part~=content]')).not.toHaveAttribute('hidden')
     await expect(host.getByText('Review the failed records before retrying.', { exact: true })).toBeVisible()
+    await expect.poll(async () => (await host.boundingBox())?.width).toBe(640)
 })
