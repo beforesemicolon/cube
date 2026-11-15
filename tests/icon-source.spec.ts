@@ -3,7 +3,11 @@ import { test } from 'node:test'
 import { iconSource } from '../components/icons/source.js'
 import { normalizeActions } from '../components/core/actions.js'
 import { normalizeItems } from '../components/core/items.js'
-import { iconPaths } from '../components/icons/registry.js'
+import {
+    filledIconNames,
+    iconPaths,
+    iconViewBoxes,
+} from '../components/icons/registry.js'
 
 test('duplicate has its own add-copy glyph, distinct from the clipboard copy command', () => {
     assert.ok(iconPaths.duplicate)
@@ -52,6 +56,30 @@ test('application glyphs cover tabular views, rich text, people, attachments and
     assert.equal(new Set(names.map(name => iconPaths[name])).size, names.length)
     assert.notEqual(iconPaths.table, iconPaths.grid)
     assert.notEqual(iconPaths.users, iconPaths.userAdd)
+})
+
+test('directional arrow glyphs cover vertical and diagonal navigation', () => {
+    const names = [
+        'arrow-up',
+        'arrow-down',
+        'arrow-up-right',
+        'arrow-up-left',
+        'arrow-down-right',
+        'arrow-down-left',
+    ]
+
+    for (const name of names) assert.ok(iconPaths[name], name)
+    assert.equal(new Set(names.map((name) => iconPaths[name])).size, names.length)
+})
+
+test('filled theme glyphs preserve their Bootstrap icon presentation', () => {
+    const names = ['moon-stars-fill', 'circle-half', 'sun-fill']
+
+    for (const name of names) {
+        assert.ok(iconPaths[name], name)
+        assert.equal(iconViewBoxes[name], '0 0 16 16')
+        assert.equal(filledIconNames.has(name), true)
+    }
 })
 
 test('icon sources accept image URLs without interpreting markup or executable protocols', () => {
