@@ -152,7 +152,8 @@ export class Field extends FieldBase {
     }
     private syncControl = (): void => {
         const control = this.controlSlot?.assignedElements({ flatten: true })[0]
-        if (!(control instanceof HTMLElement)) return
+        const view = control?.ownerDocument.defaultView
+        if (!view || !(control instanceof view.HTMLElement)) return
         const fieldControl = control as FieldControlElement
         const label = this.accessibleName()
         const description = [
@@ -167,9 +168,9 @@ export class Field extends FieldBase {
         const disabled = this.unavailable
         const required = bool(this.required)
         if (
-            control instanceof HTMLInputElement ||
-            control instanceof HTMLSelectElement ||
-            control instanceof HTMLTextAreaElement
+            control instanceof view.HTMLInputElement ||
+            control instanceof view.HTMLSelectElement ||
+            control instanceof view.HTMLTextAreaElement
         ) {
             control.disabled = disabled
             control.required = required
