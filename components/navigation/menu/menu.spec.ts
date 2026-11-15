@@ -3,6 +3,7 @@ import type { Menu } from './index.js'
 import { componentContract } from '../../../tests/component-contract.js'
 
 componentContract('cb-menu', 'navigation--menu', async ({ host }) => {
+    await expect(host.getByRole('menu')).toHaveCSS('row-gap', '8px')
     await expect(host.locator('[part="custom-item"] strong')).toHaveText('Custom item')
     await expect(host.locator('[part="custom-item"]')).toHaveCSS('border-radius', '6px')
     await expect(host.locator('[part="custom-item"] cb-button, [part="custom-item"] cb-link')).toHaveCount(0)
@@ -76,14 +77,40 @@ componentContract('cb-menu', 'navigation--menu', async ({ host }) => {
     await host.evaluate(node => node.setAttribute('active', 'first'))
     await expect(firstItem).toHaveAttribute('aria-current', 'true')
     await expect(firstItem).toHaveAttribute('data-active', '')
+    await secondItem.hover()
+    await expect(secondItem).toHaveCSS(
+        'background-color',
+        'rgb(232, 236, 238)'
+    )
+    await expect(secondItem.locator('[part~="control"]')).toHaveCSS(
+        'background-color',
+        'rgba(0, 0, 0, 0)'
+    )
     await host.evaluate(node => { (node as Menu).active = 'second' })
     await expect(secondItem).toHaveAttribute('aria-current', 'true')
     await expect(firstItem).not.toHaveAttribute('aria-current')
     await expect(firstItem).not.toHaveAttribute('data-active')
+    const firstItemCopy = host.locator('[part="item-copy"]').first()
+    await expect(firstItemCopy).toHaveCSS(
+        'transition-duration',
+        '0.16s, 0s'
+    )
     await host.evaluate(node => node.setAttribute('variant', 'icon'))
     await expect(firstLabel).toBeHidden()
+    await expect(firstItemCopy).toHaveCSS('opacity', '0')
+    await expect(firstItemCopy).toHaveCSS('visibility', 'hidden')
     await expect(icon).toBeVisible()
     await expect(firstItem).toBeVisible()
+    await expect
+        .poll(async () => {
+            const itemBounds = await firstItem.boundingBox()
+            const iconBounds = await icon.boundingBox()
+            if (!itemBounds || !iconBounds) return false
+            const itemCenter = itemBounds.x + itemBounds.width / 2
+            const iconCenter = iconBounds.x + iconBounds.width / 2
+            return Math.abs(itemCenter - iconCenter) <= 1
+        })
+        .toBe(true)
     await host.evaluate(node => { (node as Menu).variant = 'label' })
     await expect(firstLabel).toBeVisible()
     await expect(icon).toBeHidden()

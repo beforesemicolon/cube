@@ -43,7 +43,7 @@ export const SidebarNavigation: StoryObj = {
     render: () => {
         const [expanded, setExpanded] = state(true)
         const [active, setActive] = state('websites')
-        const variant = () => expanded() ? 'both' : 'icon'
+        const variant = () => (expanded() ? 'both' : 'icon')
         const select = (event: CustomEvent<{ id: string }>): void => {
             event.stopPropagation()
             setActive(event.detail.id)
@@ -51,23 +51,45 @@ export const SidebarNavigation: StoryObj = {
         const root = document.createElement('div')
         root.className = 'cube-sidebar-navigation'
         html`
-            <style>${exampleStyles}</style>
-            <cb-sidebar label="Navigation" accessible-label="Application navigation"
-                data-navigation-collapsed=${() => expanded() ? null : ''}>
+            <style>
+                ${exampleStyles}
+            </style>
+            <cb-sidebar
+                label="Navigation"
+                accessible-label="Application navigation"
+                data-navigation-collapsed=${() => (expanded() ? null : '')}
+            >
                 <div class="sidebar-navigation-content">
-                    <cb-button variant="ghost" icon="layoutRow" icon-only=${() => !expanded()}
-                        label="Collapse" accessible-label=${() => expanded() ? 'Collapse navigation' : 'Expand navigation'}
+                    <cb-button
+                        variant="ghost"
+                        icon="layoutRow"
+                        icon-only=${() => !expanded()}
+                        label="Collapse"
+                        accessible-label=${() => (expanded() ? 'Collapse navigation' : 'Expand navigation')}
                         aria-expanded=${() => String(expanded())}
-                        onaction=${() => setExpanded(!expanded())}></cb-button>
-                    <cb-menu accessible-label="Main navigation" items=${navigation}
-                        active=${active} variant=${variant} gap="4px" onaction=${select}></cb-menu>
-                    <cb-menu accessible-label="Account navigation" items=${account}
-                        active=${active} variant=${variant} gap="4px" onaction=${select}></cb-menu>
+                        onaction=${() => setExpanded(!expanded())}
+                    ></cb-button>
+                    <cb-menu
+                        accessible-label="Main navigation"
+                        items=${navigation}
+                        active=${active}
+                        variant=${variant}
+                        onaction=${select}
+                    ></cb-menu>
+                    <cb-menu
+                        accessible-label="Account navigation"
+                        items=${account}
+                        active=${active}
+                        variant=${variant}
+                        onaction=${select}
+                    ></cb-menu>
                 </div>
             </cb-sidebar>
             <main>
-                <cb-heading label=${() => [...navigation, ...account].find(item => item.id === active())?.label ?? ''}
-                    description="Select a menu item or collapse the navigation."></cb-heading>
+                <cb-heading
+                    label=${() => [...navigation, ...account].find((item) => item.id === active())?.label ?? ''}
+                    description="Select a menu item or collapse the navigation."
+                ></cb-heading>
             </main>
         `.render(root)
         return root

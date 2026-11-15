@@ -2,6 +2,8 @@ import type { Template } from './runtime.js'
 
 export interface ActionItem {
     id?: string
+    /** Optional value alias used by form-oriented item sources. */
+    value?: string
     label?: string
     /** Replaces the complete built-in menu control with custom content. */
     renderItem?: (item: NormalizedItem) => Template | Node | string | number | null
@@ -30,7 +32,11 @@ export function normalizeItems(value: unknown): NormalizedItem[] {
         if (!raw || typeof raw !== 'object') return []
         const item = raw as ActionItem
         const id =
-            typeof item.id === 'string' && item.id ? item.id : `item-${index}`
+            typeof item.id === 'string' && item.id
+                ? item.id
+                : typeof item.value === 'string' && item.value
+                  ? item.value
+                  : `item-${index}`
         if (used.has(id)) return []
         used.add(id)
         return [

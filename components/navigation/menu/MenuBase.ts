@@ -29,7 +29,7 @@ export abstract class MenuBase<
     ]
     items: ActionItem[] = []
     loop = true
-    gap = '1px'
+    gap = '8px'
     active = ''
     variant: MenuVariant = 'both'
     get normalizedItems(): NormalizedItem[] {

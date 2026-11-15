@@ -30,7 +30,7 @@ export function createMenuView(
         role="menu"
         aria-label="${host.resolvedMenuLabel}"
         data-variant="${() => host.variant}"
-        style="${() => `--component-menu-gap:${scalarText(host.gap) || '1px'}`}"
+        style="${() => `--component-menu-gap:${scalarText(host.gap) || '8px'}`}"
         onkeydown="${(event: KeyboardEvent) => roving.keydown(event)}"
     >
         ${repeat(
@@ -61,10 +61,10 @@ export function createMenuView(
                         data-label="${item.label}"
                         aria-label="${item.label || null}"
                         aria-checked="${role === 'menuitem' ? null : String(Boolean(item.checked))}"
-                        aria-disabled="${() => bool(host.disabled) || item.disabled ? 'true' : null}"
-                        data-disabled="${() => bool(host.disabled) || item.disabled ? '' : null}"
-                        data-active="${() => host.active === item.id ? '' : null}"
-                        aria-current="${() => host.active === item.id ? 'true' : null}"
+                        aria-disabled="${() => (bool(host.disabled) || item.disabled ? 'true' : null)}"
+                        data-disabled="${() => (bool(host.disabled) || item.disabled ? '' : null)}"
+                        data-active="${() => (host.active === item.id ? '' : null)}"
+                        aria-current="${() => (host.active === item.id ? 'true' : null)}"
                         onclick="${activateCustom}"
                         onaction="${(event: Event) => event.stopPropagation()}"
                         onnavigate="${(event: Event) => event.stopPropagation()}"
@@ -75,7 +75,9 @@ export function createMenuView(
                                 activateCustom(event)
                             }
                         }}"
-                    >${() => item.renderItem?.(item)}</div>`
+                    >
+                        ${() => item.renderItem?.(item)}
+                    </div>`
                 }
                 const content = html`<cb-icon
                         part="icon"
@@ -130,8 +132,8 @@ export function createMenuView(
                             role="${role}"
                             href="${href}"
                             data-tone="${tone}"
-                            data-active="${() => host.active === item.id ? '' : null}"
-                            aria-current="${() => host.active === item.id ? 'true' : null}"
+                            data-active="${() => (host.active === item.id ? '' : null)}"
+                            aria-current="${() => (host.active === item.id ? 'true' : null)}"
                             accessible-label="${item.label}"
                             disabled="${or(() => bool(host.disabled), item.disabled)}"
                             aria-checked="${checked}"
@@ -157,8 +159,8 @@ export function createMenuView(
                             data-label="${item.label}"
                             role="${role}"
                             data-tone="${tone}"
-                            data-active="${() => host.active === item.id ? '' : null}"
-                            aria-current="${() => host.active === item.id ? 'true' : null}"
+                            data-active="${() => (host.active === item.id ? '' : null)}"
+                            aria-current="${() => (host.active === item.id ? 'true' : null)}"
                             accessible-label="${item.label}"
                             disabled="${or(() => bool(host.disabled), item.disabled)}"
                             aria-checked="${checked}"

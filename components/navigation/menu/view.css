@@ -35,7 +35,7 @@
     flex-direction: column;
     block-size: 100%;
     min-block-size: 0;
-    gap: var(--component-menu-gap, 1px);
+    gap: var(--component-menu-gap, 8px);
     padding: 0;
     border: 0;
     border-radius: 0;
@@ -67,6 +67,11 @@
     padding: 4px 8px;
     text-align: inherit;
     white-space: inherit;
+    transition:
+        grid-template-columns var(--motion-duration-normal, 160ms) ease-out,
+        column-gap var(--motion-duration-normal, 160ms) ease-out,
+        background-color var(--motion-duration-fast, 100ms) ease-out,
+        border-color var(--motion-duration-fast, 100ms) ease-out;
 }
 [part='item']::part(button-label) {
     display: contents;
@@ -102,6 +107,20 @@ cb-link[part='item']::part(label) {
     grid-column: 2/-1;
     font-size: 0.85em;
 }
+[part='item-copy'],
+[part='shortcut'],
+[part='menu'] cb-icon:not([part='icon']) {
+    min-inline-size: 0;
+    opacity: 1;
+    visibility: visible;
+    transition:
+        opacity var(--motion-duration-normal, 160ms) ease-out,
+        visibility 0s linear 0s;
+}
+[part='item-copy'],
+[part='shortcut'] {
+    overflow: hidden;
+}
 [part='shortcut'] {
     color: var(--color-muted-foreground, #606b73);
     font: 500 0.8em/1
@@ -112,16 +131,24 @@ cb-link[part='item']::part(label) {
     block-size: var(--cb-menu-icon-size);
 }
 [part='menu'][data-variant='label'] [part='icon'],
-[part='menu'][data-variant='label'] [part='icon-spacer'],
+[part='menu'][data-variant='label'] [part='icon-spacer'] {
+    display: none;
+}
 [part='menu'][data-variant='icon'] [part='item-copy'],
 [part='menu'][data-variant='icon'] [part='shortcut'],
 [part='menu'][data-variant='icon'] cb-icon:not([part='icon']) {
-    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transition-delay: 0s, var(--motion-duration-normal, 160ms);
 }
 [part='menu'][data-variant='label'] [part='item']::part(control) {
     grid-template-columns: minmax(0, 1fr) auto;
 }
 [part='menu'][data-variant='icon'] [part='item']::part(control) {
-    grid-template-columns: var(--cb-menu-icon-size);
+    grid-template-columns: var(--cb-menu-icon-size) minmax(0, 0fr) minmax(
+            0,
+            0fr
+        );
+    column-gap: 0;
     justify-content: center;
 }
