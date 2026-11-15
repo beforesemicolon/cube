@@ -28,7 +28,7 @@ Import the full library, a category such as `@beforesemicolon/cube/action`, or a
 | Data display | `cb-accordion`, `cb-avatar`, `cb-badge`, `cb-card`, `cb-code-preview`, `cb-expandable-section`, `cb-file-browser`, `cb-layer-tree`, `cb-list`, `cb-table`, `cb-tree` |
 | Media | `cb-audio-player`, `cb-image`, `cb-video-player` |
 | Charts | `cb-cartesian-chart`, `cb-pie-chart` |
-| Styling | `cb-color-picker`, `cb-gradient-editor` |
+| Styling | `cb-color-picker`, `cb-color-swatch`, `cb-gradient-editor` |
 | Editor | `cb-artboard`, `cb-bezier`, `cb-device-frame`, `cb-guide-overlay`, `cb-marquee-selection`, `cb-property-group`, `cb-rulers`, `cb-selection-overlay`, `cb-timeline`, `cb-viewport` |
 | Collaboration | `cb-comment-pin`, `cb-comment-thread`, `cb-presence`, `cb-remote-cursor` |
 | Icons | `cb-icon` |

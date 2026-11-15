@@ -89,7 +89,7 @@ test('opens from a compact swatch and exposes every custom color control', async
     await expect(picker.getByRole('button', { name: 'Saved and recent colors: Transparent' })).toBeVisible()
     await expect(picker.getByRole('button', { name: 'Saved and recent colors: #db2777' })).toBeVisible()
     await expect(picker.getByRole('button', { name: 'Add current color' })).toBeVisible()
-    await expect(picker.locator('[part~="preview"]')).toHaveCount(0)
+    await expect(picker.locator('[part~="popup"] > [part~="preview"]')).toHaveCount(0)
     await expect.poll(() => picker.evaluate(element => {
         const popup = element.shadowRoot?.querySelector('[part~="popup"]')
         return Array.from(popup?.children ?? []).map(child => child.getAttribute('part'))

@@ -342,6 +342,7 @@ const tagOptions: Readonly<
     },
     'cb-accordion': { variant: ['simple', 'container'] },
     'cb-expandable-section': { variant: ['default', 'container', 'footer'] },
+    'cb-color-swatch': { variant: ['round', 'boxy'], size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'] },
     'cb-gradient-editor': {
         type: ['linear', 'radial'],
         shape: ['circle', 'ellipse'],
