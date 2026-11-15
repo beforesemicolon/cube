@@ -124,6 +124,24 @@ export abstract class TextInputBase extends FieldControlBase<TextInputProps> {
     setValue(value: string, originalEvent?: Event): boolean {
         return this.handleChange(value, originalEvent)
     }
+    setSelectionRange(start: number, end: number): boolean {
+        const control = this.fieldElement()
+        if (!control || control.disabled || control.selectionStart === null)
+            return false
+        control.focus()
+        control.setSelectionRange(start, end)
+        return true
+    }
+    replaceTextRange(start: number, end: number, text: string): boolean {
+        const control = this.fieldElement()
+        if (!control || control.readOnly || !this.setSelectionRange(start, end))
+            return false
+        return control.ownerDocument.execCommand(
+            text ? 'insertText' : 'delete',
+            false,
+            text
+        )
+    }
     setControlValue(value: StudioValue, originalEvent?: Event): boolean {
         return originalEvent && this.referenceController
             ? this.referenceController.input(scalarText(value), originalEvent)

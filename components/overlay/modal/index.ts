@@ -74,6 +74,7 @@ export {
     type ModalActionBoolean,
     type ModalActionContext,
     type ModalContent,
+    type ModalBody,
     type ModalHandle,
     type ModalHostOptions,
 } from './service.js'

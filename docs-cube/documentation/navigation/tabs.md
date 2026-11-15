@@ -35,3 +35,16 @@ Panel content uses a slot matching the item ID.
 :::
 
 [Try the example in the Playground](/playground/?path=/story/examples--settings-tabs)
+
+## Width and spacing
+
+Tabs size to their label and description, which stay on one line. Each tab has
+30px trailing padding, adjustable with `--component-tabs-padding-inline-end`.
+Set `fill` to share the available width between tabs. When the content exceeds
+the available space, the tab strip scrolls instead of wrapping descriptions.
+
+```html
+<cb-tabs fill items='[{"id":"inbox","label":"Inbox","description":"Recent messages"},{"id":"drafts","label":"Drafts","description":"Unsent messages"}]'></cb-tabs>
+```
+
+[Try tabs filling the available width](/playground/?path=/story/examples--filled-settings-tabs)

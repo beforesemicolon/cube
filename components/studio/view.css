@@ -20,6 +20,11 @@
         var(--component-studio-control-min-width, 240px)
     );
 }
+:host([data-kind='file'][presentation='button']) {
+    inline-size: fit-content;
+    min-inline-size: 0;
+    container-type: normal;
+}
 :host([data-kind='range']) {
     inline-size: var(
         --component-range-slider-width,
@@ -901,4 +906,3 @@ cb-button[part~='token']::part(control) {
         flex-wrap: wrap;
     }
 }
-

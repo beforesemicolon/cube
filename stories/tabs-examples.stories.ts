@@ -9,10 +9,10 @@ const items = [
     { id: 'danger', label: 'Danger Zone', description: 'Irreversible actions', icon: 'shieldCheck' },
 ]
 
-function settingsTabs(stacked: boolean): HTMLElement {
+function settingsTabs(stacked: boolean, fill = false): HTMLElement {
     const root = document.createElement('div')
     root.style.maxInlineSize = '960px'
-    html`<cb-tabs accessible-label="Account settings" value="notifications" items=${items} stacked=${stacked}>
+    html`<cb-tabs accessible-label="Account settings" value="notifications" items=${items} stacked=${stacked} fill=${fill}>
         <p slot="notifications">Choose which notifications you receive.</p>
         <p slot="danger">Manage account removal and other irreversible actions.</p>
     </cb-tabs>`.render(root)
@@ -27,4 +27,9 @@ export const SettingsTabs: StoryObj = {
 export const StackedSettingsTabs: StoryObj = {
     name: 'Navigation / Stacked tabs with icons and descriptions',
     render: () => settingsTabs(true),
+}
+
+export const FilledSettingsTabs: StoryObj = {
+    name: 'Navigation / Tabs filling available width',
+    render: () => settingsTabs(false, true),
 }

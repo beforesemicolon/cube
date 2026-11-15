@@ -8,14 +8,15 @@ export interface TabItem extends ActionItem {
     dirty?: boolean
     renderItem?: () => Template | Node
 }
-export interface TabsProps extends Omit<ChoiceGroupProps, 'items'> { items?: TabItem[]; activation?: 'automatic' | 'manual'; closeLabel?: string }
+export interface TabsProps extends Omit<ChoiceGroupProps, 'items'> { items?: TabItem[]; activation?: 'automatic' | 'manual'; closeLabel?: string; fill?: boolean }
 
 /** Headless tab selection and activation policy. */
 export abstract class TabsBase<P extends TabsProps = TabsProps> extends ChoiceGroupBase<P> {
-    static observedAttributes = [...ChoiceGroupBase.observedAttributes, 'activation', 'close-label']
+    static observedAttributes = [...ChoiceGroupBase.observedAttributes, 'activation', 'close-label', 'fill']
     declare items: TabItem[]
     activation: TabsProps['activation'] = 'automatic'
     closeLabel = ''
+    fill = false
 
     protected closeTab(item: TabItem, originalEvent: Event): boolean {
         originalEvent.stopPropagation()

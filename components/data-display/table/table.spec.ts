@@ -7,12 +7,12 @@ componentContract('cb-table', 'data-display--table', async ({ host }) => {
         items: [{ id: 'release', name: 'Release row', status: 'Draft', owner: 'Owner', updated: 'Now' }],
         columns: [
             { id: 'name', header: 'Name', field: 'name' },
-            { id: 'status', header: 'Status', cell: () => ({ render(target: Element) { const strong = document.createElement('strong'); strong.textContent = 'Rich draft'; target.replaceChildren(strong) } }) },
+            { id: 'status', header: 'Status', itemCell: (item) => ({ render(target: Element) { const strong = document.createElement('strong'); strong.textContent = `${item.status} item`; target.replaceChildren(strong) } }) },
         ],
         expandedKeys: [], selectedKeys: [],
     } satisfies Partial<Table>) })
     await expect(host.getByText("Release row", { exact: true }).first()).toBeVisible()
-    await expect(host.getByText('Rich draft', { exact: true })).toBeVisible()
+    await expect(host.getByText('Draft item', { exact: true })).toBeVisible()
     const firstHeader = host.locator('th[data-column-id="name"] [part~="header-content"]')
     const firstContent = host.locator('td[data-column-id="name"] [part~="cell-content"]')
     await expect.poll(async () => {

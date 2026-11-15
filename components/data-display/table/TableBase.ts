@@ -65,17 +65,23 @@ export interface TableColumn<TItem extends object = TableRecord> {
     readonly ariaLabel?: string
     readonly field?: string
     readonly cell?: (context: TableCellContext<TItem>) => TableCellContent
+    /** Render a cell directly from its row item. */
+    readonly itemCell?: (item: TItem, rowIndex: number) => TableCellContent
     readonly cellVariant?:
         | TableCellVariant
         | ((context: TableCellContext<TItem>) => TableCellVariant)
-    readonly align?: TableAlign | 'left' | 'right'
+    /** Resolve a cell variant directly from its row item. */
+    readonly itemCellVariant?: (
+        item: TItem,
+        rowIndex: number
+    ) => TableCellVariant
+    readonly align?: TableAlign
     readonly width?: string | number
     readonly minWidth?: string | number
     readonly maxWidth?: string | number
     readonly sortable?: boolean
     readonly sortKey?: string
     readonly compare?: (left: TItem, right: TItem) => number
-    readonly sort?: (left: TItem, right: TItem) => number
     readonly group?: string
     readonly hidden?: boolean
     readonly wrap?: boolean
@@ -377,8 +383,7 @@ export abstract class TableBase extends Component<TableProps> {
         return (
             bool(column.sortable) ||
             Boolean(scalarText(column.sortKey).trim()) ||
-            typeof column.compare === 'function' ||
-            typeof column.sort === 'function'
+            typeof column.compare === 'function'
         )
     }
 
@@ -428,15 +433,17 @@ export abstract class TableBase extends Component<TableProps> {
             value: this.cellValue(column, row.item),
             depth: row.depth,
         }
+        if (typeof column.itemCell === 'function') {
+            try {
+                return column.itemCell(row.item, rowIndex)
+            } catch (error) {
+                this.onError(error)
+                return null
+            }
+        }
         if (typeof column.cell === 'function') {
             try {
-                const render = column.cell as unknown as (
-                    value: TableCellContext | TableRecord,
-                    legacyIndex?: number
-                ) => TableCellContent
-                return render.length >= 2
-                    ? render(row.item, rowIndex)
-                    : render(context)
+                return column.cell(context)
             } catch (error) {
                 this.onError(error)
                 return null
@@ -457,22 +464,11 @@ export abstract class TableBase extends Component<TableProps> {
             value: this.cellValue(column, row.item),
             depth: row.depth,
         }
-        const variant =
-            typeof column.cellVariant === 'function'
-                ? (
-                      column.cellVariant as unknown as (
-                          value: TableCellContext | TableRecord,
-                          legacyIndex?: number
-                      ) => TableCellVariant
-                  ).length >= 2
-                    ? (
-                          column.cellVariant as unknown as (
-                              value: TableRecord,
-                              legacyIndex: number
-                          ) => TableCellVariant
-                      )(row.item, rowIndex)
-                    : column.cellVariant(context)
-                : column.cellVariant
+        const variant = column.itemCellVariant
+            ? column.itemCellVariant(row.item, rowIndex)
+            : typeof column.cellVariant === 'function'
+              ? column.cellVariant(context)
+              : column.cellVariant
         return ['success', 'warning', 'danger', 'muted'].includes(variant ?? '')
             ? (variant ?? '')
             : ''
@@ -524,8 +520,6 @@ export abstract class TableBase extends Component<TableProps> {
             direction *
             (typeof column.compare === 'function'
                 ? column.compare(left, right)
-                : typeof column.sort === 'function'
-                  ? column.sort(left, right)
                 : defaultCompare(
                       pathValue(
                           left,

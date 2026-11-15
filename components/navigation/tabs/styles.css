@@ -6,6 +6,7 @@
   display: flex;
   align-items: flex-end;
   gap: var(--spacing-lg,16px);
+  margin-block-end: var(--component-tabs-content-gap,var(--spacing-lg,16px));
   border-block-end: 1px solid var(--color-separator,#dae0e4);
   overflow: auto;
 }
@@ -20,7 +21,8 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs,4px);
-  min-inline-size: 0;
+  flex: none;
+  min-inline-size: max-content;
 }
 [part=tab] {
   position: relative;
@@ -28,7 +30,9 @@
   align-items: center;
   justify-content: center;
   min-block-size: 32px;
-  padding: 4px 2px;
+  padding-block: var(--component-tabs-padding-block, var(--spacing-sm,8px));
+  padding-inline: var(--component-tabs-padding-inline, 2px);
+  padding-inline-end: var(--component-tabs-padding-inline-end, 30px);
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -43,6 +47,17 @@
   gap: var(--component-tabs-description-gap, 2px);
   min-inline-size: 0;
   text-align: start;
+  white-space: nowrap;
+}
+[part=tab]::part(button-label) {
+  overflow: visible;
+  white-space: nowrap;
+}
+:host([data-fill]:not([data-stacked])) [part=tab-item] {
+  flex: 1 0 0;
+}
+:host([data-fill]) [part=tab] {
+  flex: 1;
 }
 [part=tab]::part(control) {
   align-items: flex-start;

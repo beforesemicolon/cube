@@ -8,6 +8,11 @@ import {
 } from '../../core/popup.js'
 import { state } from '../../core/runtime.js'
 
+export type ComboboxOption = SelectOption & {
+    value: string
+    label: string
+}
+
 export interface ComboboxProps
     extends FieldControlProps<string | string[]>, PopupConstraintProps {
     options?: SelectOption[]

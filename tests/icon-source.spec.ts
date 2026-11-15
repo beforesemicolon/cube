@@ -58,6 +58,30 @@ test('application glyphs cover tabular views, rich text, people, attachments and
     assert.notEqual(iconPaths.users, iconPaths.userAdd)
 })
 
+test('Bootstrap-style application icon aliases resolve through the shared registry', () => {
+    const names = [
+        'activity',
+        'arrows-angle-expand',
+        'cash-stack',
+        'chevron-expand',
+        'credit-card',
+        'currency-dollar',
+        'megaphone',
+        'pencil-square',
+        'people',
+        'shield-exclamation',
+        'shield-lock-fill',
+        'box-arrow-up-right',
+        'cloud-upload',
+        'file-earmark-pdf',
+        'person-plus',
+        'send-check',
+        'x-lg',
+    ]
+
+    for (const name of names) assert.ok(iconPaths[name], name)
+})
+
 test('directional arrow glyphs cover vertical and diagonal navigation', () => {
     const names = [
         'arrow-up',

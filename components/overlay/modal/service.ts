@@ -9,12 +9,18 @@ import {
 } from '../../core/runtime.js'
 import type { Modal, ModalCloseReason, ModalLayer, ModalSize } from './index.js'
 import type { ModalRenderer } from './renderer.js'
+import { scalarText } from '../../core/value.js'
 
 export interface ModalContent {
     node: Node
     dispose?: () => void
 }
-export type ModalContentFactory = () => string | Node | ModalContent
+export interface ModalRenderable {
+    render(target: DocumentFragment | Element | ShadowRoot): unknown
+    unmount?(): unknown
+}
+export type ModalBody = string | Node | ModalContent | ModalRenderable
+export type ModalContentFactory = () => ModalBody
 export interface ModalActionContext {
     readonly id: string
     readonly actionId: string
@@ -24,10 +30,10 @@ export interface ModalActionContext {
 export type ModalActionBoolean = boolean | (() => boolean)
 export interface ModalAction {
     id?: string
-    label: string
-    icon?: string
+    label: string | (() => string)
+    icon?: string | (() => string)
     iconSrc?: string
-    variant?: ButtonVariant
+    variant?: ButtonVariant | 'cta' | 'outline' | 'text' | 'link' | 'icon'
     value?: string
     hidden?: ModalActionBoolean
     disabled?: ModalActionBoolean
@@ -36,15 +42,19 @@ export interface ModalAction {
     href?: string
     target?: string
     onAction?: (context: ModalActionContext) => void | Promise<void>
+    onClick?: () => void | Promise<void>
 }
 export interface ModalRequest {
     id?: string
     title?: string
     heading?: string
-    description?: string
-    body?: string | Node | ModalContentFactory
+    description?: string | (() => string)
+    body?: ModalBody | ModalContentFactory
+    content?: ModalBody | ModalContentFactory
+    contentStyles?: string
     footer?: Node
     dismissible?: boolean
+    dismissable?: boolean
     closeOnBackdrop?: boolean
     modalSize?: ModalSize
     size?: ModalSize
@@ -57,6 +67,8 @@ export interface ModalRequest {
     actions?: readonly ModalAction[]
     actionLabel?: string
     action?: (context: ModalActionContext) => void | Promise<void>
+    actionDisabled?: ModalActionBoolean
+    loading?: ModalActionBoolean
     onCancel?: (modal: Modal) => void | Promise<void>
     onError?: (error: Error) => void
 }
@@ -159,7 +171,7 @@ function setDocumentInert(active: boolean): void {
     inertState.clear()
 }
 
-function contentValue(body: ModalRequest['body']): {
+function contentValue(body: ModalBody | ModalContentFactory | undefined): {
     node?: Node
     dispose?: () => void
 } {
@@ -167,18 +179,31 @@ function contentValue(body: ModalRequest['body']): {
     if (typeof value === 'string')
         return { node: document.createTextNode(value) }
     if (value instanceof Node) return { node: value }
-    if (value) return value
+    if (value && 'node' in value) return value
+    if (value && 'render' in value && typeof value.render === 'function') {
+        const node = document.createDocumentFragment()
+        value.render(node)
+        return {
+            node,
+            dispose: () => value.unmount?.(),
+        }
+    }
     return {}
 }
 
 function actionsFor(request: ModalRequest): readonly ModalAction[] {
-    const actions = [...(request.actions ?? [])]
+    const actions = (request.actions ?? []).map((action) => ({
+        ...action,
+        onAction: action.onAction ?? action.onClick,
+    }))
     if (request.actionLabel)
         actions.push({
             id: 'primary',
             label: request.actionLabel,
             variant: 'primary',
             onAction: request.action,
+            disabled: request.actionDisabled,
+            loading: request.loading,
         })
     return actions
 }
@@ -191,12 +216,12 @@ function report(record: ModalRecord, cause: Error): void {
 function applyRequest(record: ModalRecord): void {
     const { modal, request } = record
     modal.heading = request.heading ?? request.title ?? ''
-    modal.description = request.description ?? ''
+    modal.description = val(request.description) ?? ''
     modal.cancelLabel = request.cancelLabel ?? ''
     modal.closeLabel = request.closeLabel ?? ''
     modal.showCancel =
         request.showFooter !== false && request.showCancel !== false
-    modal.dismissible = request.dismissible ?? true
+    modal.dismissible = request.dismissible ?? request.dismissable ?? true
     modal.closeOnBackdrop = request.closeOnBackdrop ?? true
     modal.modalSize = request.modalSize ?? request.size ?? 'md'
     modal.layer = request.layer ?? 'top'
@@ -208,12 +233,17 @@ function applyRequest(record: ModalRecord): void {
     record.disposeContent = undefined
     let content: { node?: Node; dispose?: () => void } = {}
     try {
-        content = contentValue(request.body)
+        content = contentValue(request.body ?? request.content)
     } catch (cause) {
         report(
             record,
             cause instanceof Error ? cause : new Error(String(cause))
         )
+    }
+    if (request.contentStyles) {
+        const style = document.createElement('style')
+        style.textContent = request.contentStyles
+        modal.append(style)
     }
     if (content.node) modal.append(content.node)
     record.disposeContent = content.dispose
@@ -304,11 +334,24 @@ function applyRequest(record: ModalRecord): void {
                         html`<cb-button
                             part="action"
                             exportparts="control:action-control,label:action-label,button-label:action-label,icon:action-icon,description:action-description"
-                            label=${action.label}
-                            accessible-label=${action.label}
-                            icon=${action.icon ?? ''}
+                            label=${() => scalarText(val(action.label))}
+                            accessible-label=${() => scalarText(val(action.label))}
+                            icon=${() => scalarText(val(action.icon))}
                             icon-src=${action.iconSrc}
-                            variant=${action.variant ?? (index === actionList.length - 1 ? 'primary' : 'secondary')}
+                            variant=${
+                                action.variant === 'cta'
+                                    ? 'primary'
+                                    : action.variant === 'outline'
+                                      ? 'secondary'
+                                      : action.variant === 'text' ||
+                                          action.variant === 'link' ||
+                                          action.variant === 'icon'
+                                        ? 'ghost'
+                                        : (action.variant ??
+                                          (index === actionList.length - 1
+                                              ? 'primary'
+                                              : 'secondary'))
+                            }
                             value=${action.value ?? ''}
                             hidden=${hidden}
                             disabled=${disabled}
@@ -409,10 +452,11 @@ export function showModal(request: ModalRequest = {}): ModalHandle {
 }
 
 export function hideModal(
-    id: string,
+    id?: string,
     reason: ModalCloseReason = 'programmatic'
 ): boolean {
-    return records.get(id)?.handle.close(reason) ?? false
+    const target = id ? records.get(id) : [...records.values()].at(-1)
+    return target?.handle.close(reason) ?? false
 }
 export function closeAllModals(reason: ModalCloseReason = 'invalidated'): void {
     for (const record of [...records.values()].reverse())

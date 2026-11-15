@@ -4,7 +4,7 @@ import { elementRefs } from '../../core/refs.js'
 import { is, or, pick, html, repeat, when, type Template } from '../../core/runtime.js'
 
 import { RovingFocus } from '../../core/roving.js'
-import { scalarText } from '../../core/value.js'
+import { bool, scalarText } from '../../core/value.js'
 import { TabsBase } from './TabsBase.js'
 
 export class Tabs extends TabsBase {
@@ -51,6 +51,7 @@ export class Tabs extends TabsBase {
     protected syncView(): void {
         if (!scalarText(this.value) && this.selected()) this.value = this.selected()
         this.toggleAttribute('data-stacked', this.navigationAxis === 'vertical')
+        this.toggleAttribute('data-fill', bool(this.fill))
     }
 }
 export { TabsBase };

@@ -65,7 +65,10 @@ export class TooltipProvider extends TooltipProviderBase {
         if (path.some(node => node instanceof HTMLElement && (node.localName === 'cb-tooltip' || node.localName === 'cb-tooltip-provider'))) return
         const host = path.find(node => node instanceof HTMLElement && node.localName === 'cb-button')
         const native = path.find(node => node instanceof HTMLElement && node.matches('button, input[type=button], input[type=submit], input[type=reset], [role=button]'))
-        const control = host instanceof HTMLElement ? host : native
+        const iconMenuItem = path.some(node => node instanceof HTMLElement && node.dataset.variant === 'icon')
+            ? path.find(node => node instanceof HTMLElement && node.getAttribute('role') === 'menuitem')
+            : undefined
+        const control = host instanceof HTMLElement ? host : native instanceof HTMLElement ? native : iconMenuItem
         if (!(control instanceof HTMLElement)) return
         const semantic = control.hasAttribute('data-semantic-host') || !(native instanceof HTMLElement) ? control : native
         return { control, semantic, path }
