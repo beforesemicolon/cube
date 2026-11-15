@@ -10,6 +10,8 @@ export type FlashbarActionHandler = (context: FlashbarActionContext) => void | P
 export interface FlashbarMessage {
     id?: string
     type?: FlashbarType
+    /** Compatibility shorthand for a non-dismissible loading message. */
+    loading?: boolean
     title?: string
     heading?: string
     message?: string
@@ -17,6 +19,8 @@ export interface FlashbarMessage {
     actionHref?: string
     actionTarget?: string
     action?: FlashbarActionHandler
+    /** Compatibility action shorthand for consumers that do not need context. */
+    actionCallback?: () => void | Promise<void>
     dismissOnAction?: boolean
     dismissLabel?: string
     dismissible?: boolean
@@ -151,7 +155,7 @@ export abstract class FlashbarBase<P extends FlashbarProps = FlashbarProps> exte
     }
 
     private normalizeMessage(message: FlashbarMessage): NormalizedFlashbarMessage {
-        const inputType = message.type ?? 'info'
+        const inputType = message.loading ? 'loading' : message.type ?? 'info'
         const type: NormalizedFlashbarType = inputType === 'error' ? 'danger' : ['info', 'success', 'warning', 'danger', 'loading'].includes(inputType) ? inputType : 'info'
         const duration = message.duration ?? message.autoDismissMs
         return {
@@ -162,7 +166,11 @@ export abstract class FlashbarBase<P extends FlashbarProps = FlashbarProps> exte
             actionLabel: text(message.actionLabel),
             actionHref: text(message.actionHref),
             actionTarget: text(message.actionTarget),
-            action: message.action,
+            action:
+                message.action ??
+                (message.actionCallback
+                    ? () => message.actionCallback?.()
+                    : undefined),
             dismissOnAction: message.dismissOnAction ?? false,
             actionLoading: false,
             dismissLabel: text(message.dismissLabel),
