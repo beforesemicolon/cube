@@ -31,7 +31,12 @@ export class Field extends FieldBase {
     private readonly labelId = uid('cb-field-label')
     private readonly assigned = state({ actions: false, details: false })
     private isSlot(element: unknown): element is HTMLSlotElement {
-        return element instanceof Element && element.localName === 'slot'
+        return (
+            typeof element === 'object' &&
+            element !== null &&
+            'localName' in element &&
+            element.localName === 'slot'
+        )
     }
     private get controlSlot(): HTMLSlotElement | undefined {
         const slot = this.refs.control?.[0]
