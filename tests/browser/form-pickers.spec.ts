@@ -301,7 +301,9 @@ test('combobox stays closed initially, filters interactively and replaces autoco
         combo.locator('[part~="input-shell"]').evaluate(element => element.getBoundingClientRect().height),
         textInput.locator('[part~="control"]').evaluate(element => element.getBoundingClientRect().height),
     ])
-    expect(await controlHeights()).toEqual([28, 28])
+    const heights = await controlHeights()
+    expect(heights[0]).toBeGreaterThan(28)
+    expect(heights[0]).toBe(heights[1])
     await combo.evaluate(element => { (element as HTMLElement & { size: 'lg' }).size = 'lg' })
     await textInput.evaluate(element => { (element as HTMLElement & { size: 'lg' }).size = 'lg' })
     expect(await controlHeights()).toEqual([44, 44])

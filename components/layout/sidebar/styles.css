@@ -36,7 +36,7 @@
     background: var(--color-surface);
 }
 [part~='content'] {
-    padding: var(--component-sidebar-content-padding, var(--spacing-md, 12px));
+    padding: var(--component-sidebar-content-padding, var(--spacing-md, 14px));
 }
 :host([data-collapsed]) [part~='content'] {
     display: none;

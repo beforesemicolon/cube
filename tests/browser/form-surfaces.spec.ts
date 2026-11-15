@@ -37,14 +37,16 @@ async function mount(page: Page, appearance = 'light'): Promise<void> {
     await expect(page.locator('cb-text-input').first().locator('input')).toHaveValue('Studio website')
 }
 
-for (const appearance of ['light', 'dark']) test(`themed fields share soft neutral surfaces without changing control heights (${appearance})`, async ({ page }) => {
+for (const appearance of ['light', 'dark']) test(`themed fields share soft neutral surfaces and padded control heights (${appearance})`, async ({ page }) => {
     await mount(page, appearance)
     const input = page.locator('cb-text-input').first().locator('input')
     const selector = page.locator('cb-select').first().locator('cb-button[part~=trigger]')
     const combo = page.locator('cb-combobox [part~=input-shell]')
+    const height = await input.evaluate(node => node.getBoundingClientRect().height)
+    expect(height).toBeGreaterThan(28)
     for (const control of [input, selector, combo]) {
         await expect(control).toHaveCSS('border-radius', '8px')
-        await expect(control).toHaveCSS('height', '28px')
+        expect(await control.evaluate(node => node.getBoundingClientRect().height)).toBeCloseTo(height, 1)
         await expect(control).toHaveCSS('box-shadow', 'none')
     }
     const inputColor = await input.evaluate(node => getComputedStyle(node).backgroundColor)

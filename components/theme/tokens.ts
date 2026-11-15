@@ -122,7 +122,7 @@ export const cubeTheme: ThemeDefinition = {
             },
             mono: { fontFamily: 'ui-monospace, monospace' },
         },
-        spacing: { xs: '4px', sm: '8px', md: '12px', lg: '16px', xl: '24px' },
+        spacing: { xs: '4px', sm: '8px', md: '14px', lg: '16px', xl: '24px' },
         radius: { sm: '6px', md: '10px', lg: '12px' },
         motion: { duration: { fast: '100ms', normal: '160ms' } },
         component: {
@@ -132,6 +132,8 @@ export const cubeTheme: ThemeDefinition = {
                 border: mode('#D6D6D6', '#505050'),
                 borderHover: mode('#B5B5B5', '#707070'),
                 radius: '8px',
+                paddingBlock: '6px',
+                paddingInline: '14px',
             },
             fontSize: '12px',
             lineHeight: '1.4',

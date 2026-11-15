@@ -262,7 +262,7 @@ input[type='range'][part~='control']:disabled {
     justify-content: space-between;
     gap: var(--spacing-sm, 8px);
     inline-size: 100%;
-    padding: var(--spacing-xs, 4px) var(--spacing-md, 12px);
+    padding: var(--spacing-xs, 4px) var(--spacing-md, 14px);
     text-align: inherit;
 }
 [part~='item']::part(button-label) {
@@ -408,7 +408,7 @@ input[type='range'][part~='control']:disabled {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface);
-    padding: var(--spacing-md, 12px);
+    padding: var(--spacing-md, 14px);
     min-inline-size: 0;
 }
 [part~='display'] {
@@ -542,16 +542,19 @@ cb-button[part~='token'] {
 }
 cb-button[part~='token']::part(control) {
     min-inline-size: 0;
-    min-block-size: 24px;
+    min-block-size: var(--cb-field-line-height);
+    block-size: var(--cb-field-line-height);
+    line-height: 1;
     border-radius: 999px;
-    padding: 2px var(--spacing-sm, 8px);
+    padding: 0 var(--spacing-sm, 8px);
 }
 [part~='token-list'] {
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-xs, 4px);
-    min-block-size: var(--cb-height);
-    padding: var(--spacing-xs, 4px);
+    align-items: center;
+    min-block-size: var(--cb-field-height);
+    padding: var(--cb-field-padding-block) var(--cb-field-padding-inline);
 }
 [part~='status'] {
     min-block-size: 1lh;
@@ -625,7 +628,7 @@ cb-button[part~='token']::part(control) {
     border-radius: var(--cb-field-radius) 0 0 var(--cb-field-radius);
 }
 [part~='field-shell']:not([part~='stepper']) > input {
-    padding-inline: 6px;
+    padding-inline: var(--cb-field-padding-inline);
     appearance: textfield;
 }
 [part~='field-shell']:not([part~='stepper']) > input::-webkit-inner-spin-button,
@@ -661,6 +664,9 @@ cb-button[part~='token']::part(control) {
     flex: none;
     inline-size: var(--cb-height);
     min-inline-size: var(--cb-height);
+}
+[part~='stepper-button']::part(control) {
+    block-size: 100%;
 }
 [part~='field-shell'][part~='stepper'] [part~='decrement-button'] {
     --component-button-radius-start-start: var(--cb-field-radius);
@@ -742,7 +748,7 @@ cb-button[part~='token']::part(control) {
    labels retain their intrinsic width; only the short suffix padding shrinks. */
 @container (max-width:80px) {
     [part~='field-shell']:not([part~='stepper']) > input {
-        padding-inline: 1px;
+        padding-inline: var(--component-field-compact-padding-inline, 1px);
     }
     [part~='unit-select'],
     [part~='unit-static'] {

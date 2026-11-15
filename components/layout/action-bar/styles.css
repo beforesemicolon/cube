@@ -59,7 +59,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--component-action-bar-gap, var(--spacing-md, 12px));
+    gap: var(--component-action-bar-gap, var(--spacing-md, 14px));
     min-block-size: var(
         --component-action-bar-min-height,
         var(--component-control-height-md, 36px)

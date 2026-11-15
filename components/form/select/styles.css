@@ -15,6 +15,9 @@
   inline-size: 100%;
   padding: 0;
   text-align: start;
+  block-size: var(--cb-field-height);
+  min-block-size: var(--cb-field-height);
+  font: inherit;
 }
 [part~=trigger]::part(control),
 [part~=trigger]::part(button-label) {
@@ -26,7 +29,10 @@
   text-align: inherit;
 }
 [part~=trigger]::part(control) {
-  padding: var(--spacing-xs,4px) var(--spacing-md,12px);
+  padding: var(--cb-field-padding-block) var(--cb-field-padding-inline);
+  block-size: 100%;
+  min-block-size: 0;
+  line-height: var(--cb-field-line-height);
 }
 [part~=root]:not([data-variant=secondary]) [part~=trigger] {
   border: 0;
@@ -47,6 +53,10 @@
 [part~=trigger][data-multi] {
   align-items: flex-start;
   block-size: auto;
+}
+[part~=trigger][data-multi]::part(control) {
+  block-size: auto;
+  min-block-size: calc(var(--cb-field-height) - 2px);
 }
 [part~=trigger][data-multi] [part~=value] {
   display: flex;
@@ -122,7 +132,7 @@
   text-align: inherit;
 }
 [part~=option]::part(control) {
-  padding: var(--spacing-xs,4px) var(--spacing-md,12px);
+  padding: var(--spacing-xs,4px) var(--spacing-md,14px);
 }
 [part~=option][aria-selected=true] {
   background: var(--color-selection);

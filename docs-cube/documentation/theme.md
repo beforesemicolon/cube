@@ -25,6 +25,21 @@ order: 3
 
 [Theme Provider](theme/theme-provider.md)
 
+## Form field spacing
+
+Text, number, select, textarea, rich text, unit, combobox, token, masked, and
+linked-value fields share `--component-field-padding-inline` (14px) and
+`--component-field-padding-block` (6px). A single-row field grows to fit its
+text and padding while respecting its size's minimum control height.
+Textarea and rich-text box modes retain their configured row count.
+
+```css
+cb-theme-provider {
+  --component-field-padding-inline: 18px;
+  --component-field-padding-block: 8px;
+}
+```
+
 ## Layers
 
 Theme `zIndex` tokens become scoped CSS variables. The default order is root `0`,

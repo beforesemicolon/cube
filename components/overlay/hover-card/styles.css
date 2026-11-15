@@ -11,7 +11,7 @@
   inline-size: var(--component-hover-card-width,300px);
   box-sizing: border-box;
   overflow: auto;
-  padding: var(--spacing-md,12px);
+  padding: var(--spacing-md,14px);
   border: 1px solid var(--color-separator);
   border-radius: var(--radius-md);
   background: var(--color-surface-raised,var(--color-surface));

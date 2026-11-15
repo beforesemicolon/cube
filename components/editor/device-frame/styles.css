@@ -115,6 +115,6 @@
 @container (max-width:520px) {
   [part~=root] {
     min-block-size: 340px;
-    padding: var(--spacing-md,12px);
+    padding: var(--spacing-md,14px);
   }
 }

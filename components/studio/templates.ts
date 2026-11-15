@@ -268,6 +268,7 @@ export function studioTemplates(source: StudioViewSource): Template {
                 >
                 <cb-select
                     part="unit unit-select"
+                    size="${unit.props.size}"
                     hidden="${() => units().length <= 1}"
                     options="${units}"
                     value="${() => unit.selectedUnit}"

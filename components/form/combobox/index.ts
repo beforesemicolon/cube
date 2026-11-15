@@ -103,7 +103,7 @@ export class Combobox extends ComboboxBase {
                 part="input-shell control"
                 data-variant="${this.props.variant}"
                 data-caret-position="${this.props.caretPosition}"
-                data-multi="${when(this.props.multi, '', null)}"
+                data-multi="${() => bool(this.multi) ? '' : null}"
             >
                 <div part="values" onclick="${this.openFromField}">
                     ${when(
