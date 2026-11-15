@@ -8,6 +8,16 @@ import type { SpinnerBase } from './spinner/SpinnerBase.js'
 type MessageKind = 'status' | 'toast' | 'alert' | 'banner'
 const tones: readonly FeedbackTone[] = ['neutral','info','success','warning','danger']
 const toneFor = (tone: FeedbackTone): FeedbackTone => tones.includes(tone) ? tone : 'info'
+const slotHasContent = (slot: Element | undefined): boolean =>
+    slot?.tagName === 'SLOT' &&
+    typeof (slot as HTMLSlotElement).assignedNodes === 'function' &&
+    (slot as HTMLSlotElement)
+        .assignedNodes()
+        .some(
+            (node) =>
+                node.nodeType === Node.ELEMENT_NODE ||
+                Boolean(node.textContent?.trim())
+        )
 
 // Family-owned feedback styles, independent of the Studio demo/control layouts.
 
@@ -19,11 +29,11 @@ export function messageView(source: MessageBase, kind: MessageKind): Template {
     const content = state(false)
     const syncActions = (): void => {
         const slot = root.refs.actions?.[0]
-        actions[1](slot instanceof HTMLSlotElement && slot.assignedNodes().some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim())))
+        actions[1](slotHasContent(slot))
     }
     const syncContent = (): void => {
         const slot = root.refs.content?.[0]
-        content[1](slot instanceof HTMLSlotElement && slot.assignedNodes().some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim())))
+        content[1](slotHasContent(slot))
     }
     const root = html`<div part="display status-display" data-component=${kind} data-tone=${tone}
         role=${() => kind === 'alert' && ['warning', 'danger'].includes(tone()) ? 'alert' : 'status'}
