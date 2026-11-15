@@ -1,7 +1,24 @@
 @import '../../theme/field.css';
 :host {
+    --cb-button-font-scale: 1;
     display: inline-block;
     cursor: pointer;
+    font-size: var(--component-button-font-size, calc(var(--component-font-size, 12px) * var(--cb-button-font-scale)));
+}
+:host([data-size='xs']) {
+    --cb-button-font-scale: calc(11 / 12);
+}
+:host([data-size='md']) {
+    --cb-button-font-scale: calc(7 / 6);
+}
+:host([data-size='lg']) {
+    --cb-button-font-scale: calc(4 / 3);
+}
+:host([data-size='xl']) {
+    --cb-button-font-scale: 1.5;
+}
+:host([data-bare]) {
+    font: inherit;
 }
 :host(:is([data-disabled], [aria-disabled='true'])) {
     cursor: not-allowed;
@@ -121,6 +138,7 @@
     padding-inline: var(--spacing-xs, 4px);
 }
 :host([data-size='tiny']) {
+    --cb-button-font-scale: calc(5 / 6);
     --cb-height: var(--component-button-tiny-height, 14px);
     --component-icon-size: var(--component-button-tiny-icon-size, 10px);
 }
@@ -128,7 +146,6 @@
     min-inline-size: var(--cb-height);
     padding: 1px;
     gap: 2px;
-    font-size: 10px;
     line-height: 1;
 }
 :host([data-variant='destructive']) [part~='control'] {
