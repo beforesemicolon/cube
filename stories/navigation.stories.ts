@@ -73,6 +73,7 @@ export const Menu: Story = componentStory('cb-menu', {
     gap: '8px',
     active: 'one',
     variant: 'both',
+    stacked: true,
 })
 Menu.parameters = {
     docs: {

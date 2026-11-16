@@ -1,0 +1,7 @@
+.cube-menu-layouts {
+    box-sizing: border-box;
+    max-inline-size: 680px;
+    padding: 24px;
+    color: var(--color-foreground);
+    background: var(--color-background);
+}
