@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import type { Menu } from './index.js'
 import { componentContract } from '../../../tests/component-contract.js'
 
@@ -146,4 +146,63 @@ componentContract('cb-menu', 'navigation--menu', async ({ host }) => {
     await expect(menu).toHaveCSS('row-gap', '4px')
     await expect(host.locator('[part="item"]')).toHaveCount(20)
     await expect.poll(() => menu.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true)
+})
+
+test('menu switches between compact vertical and horizontal navigation', async ({ page }) => {
+    await page.goto('/tests/browser/fixture.html')
+    await page.waitForFunction(() => Boolean(customElements.get('cb-menu')))
+    await page.evaluate(() => {
+        const menu = document.createElement('cb-menu') as Menu
+        menu.id = 'layout-menu'
+        Object.assign(menu, {
+            accessibleLabel: 'Navigation layouts',
+            items: [
+                { id: 'projects', label: 'Projects', icon: 'briefcase', group: 'Workspace' },
+                { id: 'disabled', label: 'Unavailable', icon: 'lock', disabled: true, group: 'Workspace' },
+                { id: 'settings', label: 'Settings', icon: 'gear', group: 'Account', href: '#settings' },
+            ],
+        } satisfies Partial<Menu>)
+        document.getElementById('fixture')!.append(menu)
+    })
+    const host = page.locator('#layout-menu')
+    const menu = host.getByRole('menu')
+    const first = host.locator('[part="item"][data-label="Projects"]')
+    const last = host.locator('[part="item"][data-label="Settings"]')
+    const separator = host.locator('cb-divider')
+    await expect(menu).toHaveAttribute('aria-orientation', 'vertical')
+    await expect(separator.locator('[part=label]')).toHaveText('Account')
+    await first.focus()
+    await first.press('ArrowDown')
+    await expect(last).toBeFocused()
+
+    await host.evaluate(node => { (node as Menu).variant = 'icon' })
+    await expect(separator.locator('[part=label]')).toHaveCount(0)
+    for (const control of [first, last]) {
+        await expect(control).toHaveAccessibleName(control === first ? 'Projects' : 'Settings')
+        await expect.poll(async () => {
+            const bounds = await control.boundingBox()
+            return bounds ? Math.abs(bounds.width - bounds.height) : Infinity
+        }).toBeLessThan(1)
+        await expect(control).toHaveCSS('width', '34px')
+    }
+    await host.evaluate(node => node.setAttribute('stacked', 'false'))
+    await expect(menu).toHaveAttribute('aria-orientation', 'horizontal')
+    await expect(menu).toHaveCSS('flex-direction', 'row')
+    await expect(separator).toHaveAttribute('aria-orientation', 'vertical')
+    await expect.poll(async () => {
+        const a = await first.boundingBox(), b = await last.boundingBox()
+        return a && b ? Math.abs(a.y - b.y) : Infinity
+    }).toBeLessThan(1)
+    await first.focus()
+    await first.press('ArrowRight')
+    await expect(last).toBeFocused()
+    await host.evaluate(node => node.setAttribute('dir', 'rtl'))
+    await first.focus()
+    await first.press('ArrowLeft')
+    await expect(last).toBeFocused()
+
+    await host.evaluate(node => { Object.assign(node, { stacked: true, variant: 'both' } satisfies Partial<Menu>) })
+    await expect(menu).toHaveAttribute('aria-orientation', 'vertical')
+    await expect(separator).toHaveAttribute('aria-orientation', 'horizontal')
+    await expect(separator.locator('[part=label]')).toHaveText('Account')
 })
