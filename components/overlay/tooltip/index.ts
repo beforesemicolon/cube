@@ -16,7 +16,10 @@ export class Tooltip extends TooltipBase {
     private bubbleObserver?: ResizeObserver
     private positioningFrame?: number
     private describedElements = new Map<Element, string | null>()
-    private get triggerSlot(): HTMLSlotElement | undefined { const node = this.refs.trigger?.[0]; return node instanceof HTMLSlotElement ? node : undefined }
+    private isSlot(node: unknown): node is HTMLSlotElement {
+        return Boolean(node && (node as Element).localName === 'slot')
+    }
+    private get triggerSlot(): HTMLSlotElement | undefined { const node = this.refs.trigger?.[0]; return this.isSlot(node) ? node : undefined }
     private get bubble(): HTMLElement | undefined { const node = this.refs.bubble?.[0]; return node instanceof HTMLElement ? node : undefined }
     render(): Template {
         return html`
@@ -34,7 +37,7 @@ export class Tooltip extends TooltipBase {
     }
     private contentChanged = (): void => {
         const slot = this.refs.content?.[0]
-        if (slot instanceof HTMLSlotElement) this.slottedContent[1](slot.assignedNodes().length > 0)
+        if (this.isSlot(slot)) this.slottedContent[1](slot.assignedNodes().length > 0)
         this.syncTooltip()
     }
     protected syncTooltip(): void {
