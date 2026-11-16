@@ -276,7 +276,11 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
 const tagOptions: Readonly<
     Record<string, Readonly<Record<string, readonly ControlOption[]>>>
 > = {
-    'cb-divider': { size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'] },
+    'cb-divider': {
+        size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'],
+        labelPosition: ['start', 'center', 'end'],
+        variant: ['solid', 'dotted', 'dashed', 'double'],
+    },
     'cb-flashbar': {
         position: [
             'top-start',
@@ -823,6 +827,7 @@ const primitiveDefaults: Readonly<
 > = {
     accessibleLabel: '',
     actionLabel: '',
+    labelPosition: 'start',
     fill: false,
     actionsOnly: false,
     activation: 'automatic',
@@ -1033,6 +1038,7 @@ const primitiveDefaults: Readonly<
 const taggedDefaults: Readonly<
     Record<string, Readonly<Record<string, StoryValue>>>
 > = {
+    'cb-divider': { variant: 'solid', labelPosition: 'start' },
     'cb-text-input': { type: 'text', min: '', max: '', step: '' },
     'cb-tooltip': { anchorRect: null, placement: 'top', delay: 400 },
     'cb-verification-code': { length: 6, mode: 'numeric', pin: false, autocomplete: 'one-time-code' },
