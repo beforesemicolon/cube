@@ -13,6 +13,7 @@ export interface MenuProps extends ComponentProps {
     gap?: string
     active?: string
     variant?: MenuVariant
+    stacked?: boolean
 }
 
 /** Menu item normalization and activation without choosing popup or inline rendering. */
@@ -26,12 +27,14 @@ export abstract class MenuBase<
         'gap',
         'active',
         'variant',
+        'stacked',
     ]
     items: ActionItem[] = []
     loop = true
     gap = '8px'
     active = ''
     variant: MenuVariant = 'both'
+    stacked = true
     get normalizedItems(): NormalizedItem[] {
         const items = normalizeItems(this.items)
         let previousGroup = 'default'

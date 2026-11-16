@@ -23,12 +23,15 @@ export function createMenuView(
         elementRefs(root.refs.items).filter(
             (node) => !node.hasAttribute('data-disabled')
         )
-    const roving = new RovingFocus(controls, () => 'vertical')
+    const orientation = () => bool(host.stacked) ? 'vertical' : 'horizontal'
+    const roving = new RovingFocus(controls, orientation)
     const root = html` <div
         ref="menu"
         part="menu"
         role="menu"
         aria-label="${host.resolvedMenuLabel}"
+        aria-orientation="${orientation}"
+        data-stacked="${() => bool(host.stacked) ? '' : null}"
         data-variant="${() => host.variant}"
         style="${() => `--component-menu-gap:${scalarText(host.gap) || '8px'}`}"
         onkeydown="${(event: KeyboardEvent) => roving.keydown(event)}"
@@ -36,7 +39,12 @@ export function createMenuView(
         ${repeat(
             () => host.normalizedItems,
             (item) => {
-                if (item.separator) return html`<cb-divider part="separator" label="${item.label}" size="${host.props.size}"></cb-divider>`
+                if (item.separator) return html`<cb-divider
+                    part="separator"
+                    label="${() => host.variant === 'icon' ? '' : item.label}"
+                    stacked="${() => !bool(host.stacked)}"
+                    size="${host.props.size}"
+                ></cb-divider>`
                 const href = safeHref(item.href)
                 const role =
                     item.type === 'checkbox'
