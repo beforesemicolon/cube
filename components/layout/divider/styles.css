@@ -1,14 +1,29 @@
 @import "../../theme/box-sizing.css";
 :host {
+  --cb-divider-thickness: var(--component-divider-thickness-md,2px);
   display: block;
   align-self: stretch;
-  min-block-size: 1px;
+  flex-shrink: 0;
+  block-size: var(--component-divider-thickness,var(--cb-divider-thickness));
+  min-block-size: var(--component-divider-thickness,var(--cb-divider-thickness));
   background: var(--color-separator,#dae0e4);
+}
+:host([data-size='tiny']),
+:host([data-size='xs']),
+:host([data-size='sm']) {
+  --cb-divider-thickness: var(--component-divider-thickness-sm,1px);
+}
+:host([data-size='lg']) {
+  --cb-divider-thickness: var(--component-divider-thickness-lg,3px);
+}
+:host([data-size='xl']) {
+  --cb-divider-thickness: var(--component-divider-thickness-xl,4px);
 }
 :host([data-stacked]) {
   display: inline-block;
-  inline-size: 1px;
-  min-inline-size: 1px;
+  block-size: auto;
+  inline-size: var(--component-divider-thickness,var(--cb-divider-thickness));
+  min-inline-size: var(--component-divider-thickness,var(--cb-divider-thickness));
   min-block-size: 1em;
 }
 :host([hidden]) {

@@ -10,6 +10,10 @@ layout: document
 
 Separate adjacent content. The line is horizontal by default; set `stacked` for a vertical divider.
 
+Thickness follows `size`: `tiny`, `xs`, and `sm` are 1px; `md` (the default)
+is 2px; `lg` is 3px; and `xl` is 4px. Override any size with
+`--component-divider-thickness`.
+
 `<cb-divider>` · `@beforesemicolon/cube/layout/divider`
 
 :::component

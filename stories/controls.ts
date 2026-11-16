@@ -276,6 +276,7 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
 const tagOptions: Readonly<
     Record<string, Readonly<Record<string, readonly ControlOption[]>>>
 > = {
+    'cb-divider': { size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'] },
     'cb-flashbar': {
         position: [
             'top-start',
