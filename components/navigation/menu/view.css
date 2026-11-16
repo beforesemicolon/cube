@@ -99,9 +99,7 @@ cb-link[part='item']::part(label) {
     background: var(--color-danger-soft, #fff0f2);
 }
 [part='separator'] {
-    block-size: 1px;
     margin: var(--spacing-xs, 4px);
-    background: var(--color-separator, #dae0e4);
 }
 [part='description'] {
     grid-column: 2/-1;

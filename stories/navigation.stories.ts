@@ -54,12 +54,13 @@ export const Breadcrumb: Story = componentStory('cb-breadcrumb', {
 export const Menu: Story = componentStory('cb-menu', {
     label: 'Menu',
     items: [
-        { id: 'one', label: 'Primary item', icon: 'file' },
-        { id: 'two', label: 'Secondary item', icon: 'settings' },
-        { id: 'three', label: 'Disabled item', icon: 'lock', disabled: true },
+        { id: 'one', label: 'Primary item', icon: 'file', group: 'workspace' },
+        { id: 'two', label: 'Secondary item', icon: 'settings', group: 'workspace' },
+        { id: 'three', label: 'Disabled item', icon: 'lock', disabled: true, group: 'account' },
         {
             id: 'custom',
             label: 'Custom item',
+            group: 'account',
             renderItem: (item: NormalizedItem) =>
                 html`<cb-row gap="sm" padding="sm"
                     ><cb-icon name="file"></cb-icon
@@ -73,6 +74,13 @@ export const Menu: Story = componentStory('cb-menu', {
     active: 'one',
     variant: 'both',
 })
+Menu.parameters = {
+    docs: {
+        description: {
+            story: 'Items with the same group stay together. A divider labeled with the incoming group appears when the group changes: the first two items belong to workspace, and the remaining items belong to account. Edit the items control to try your own groups. Items keep their supplied order.',
+        },
+    },
+}
 
 export const Link: Story = componentStory('cb-link', {
     label: 'Documentation',
