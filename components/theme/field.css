@@ -7,11 +7,11 @@
   --cb-field-hover: var(--component-field-hover,var(--cb-field-background));
   --cb-field-border: var(--component-field-border,var(--color-separator,#D6D6D6));
   --cb-field-border-hover: var(--component-field-border-hover,#B5B5B5);
-  --cb-field-radius: var(--component-field-radius,8px);
+  --cb-field-radius: var(--component-field-radius,4px);
   --cb-field-padding-inline: var(--component-field-padding-inline,var(--spacing-md,14px));
-  --cb-field-padding-block: var(--component-field-padding-block,6px);
+  --cb-field-padding-block: var(--component-field-padding-block,10px);
   --cb-field-line-height: var(--component-field-line-height,calc(var(--component-font-size,12px) * var(--component-line-height,1.4)));
-  --cb-field-height: var(--component-field-height,max(var(--cb-height),calc(var(--cb-field-line-height) + 2 * var(--cb-field-padding-block) + 2px)));
+  --cb-field-height: var(--component-field-height,max(var(--component-field-min-height,38px),var(--cb-height),calc(var(--cb-field-line-height) + 2 * var(--cb-field-padding-block) + 2px)));
 }
 
 :where(input:not([type=checkbox],[type=radio],[type=range],[type=file],[type=hidden]),textarea,select)[part] {

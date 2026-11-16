@@ -54,14 +54,16 @@ test('textual controls share padding and single-row height, including custom spa
                 }
                 if (custom) {
                     fixture.style.setProperty('--component-field-padding-inline', '18px')
-                    fixture.style.setProperty('--component-field-padding-block', '8px')
+                    fixture.style.setProperty('--component-field-padding-block', '12px')
                 }
             }, custom)
             const reference = await page.locator('cb-text-input input[part~=control]').evaluate(node => node.getBoundingClientRect().height)
+            if (!custom && size !== 'lg') expect(reference).toBeCloseTo(38.8, 1)
+            await expect(page.locator('cb-text-input input[part~=control]')).toHaveCSS('border-radius', '4px')
             for (const [tag, shell, padded] of controls) {
                 const host = page.locator(tag)
                 await expect(host.locator(padded).first(), `${tag} inline padding`).toHaveCSS('padding-inline-start', custom ? '18px' : '14px')
-                await expect(host.locator(padded).first(), `${tag} block padding`).toHaveCSS('padding-block-start', custom ? '8px' : '6px')
+                await expect(host.locator(padded).first(), `${tag} block padding`).toHaveCSS('padding-block-start', custom ? '12px' : '10px')
                 await expect.poll(() => host.locator(shell).first().evaluate(node => node.getBoundingClientRect().height), `${tag} matches text input (${size})`).toBeCloseTo(reference, 1)
             }
         }

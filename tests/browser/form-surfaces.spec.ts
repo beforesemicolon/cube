@@ -45,7 +45,7 @@ for (const appearance of ['light', 'dark']) test(`themed fields share soft neutr
     const height = await input.evaluate(node => node.getBoundingClientRect().height)
     expect(height).toBeGreaterThan(28)
     for (const control of [input, selector, combo]) {
-        await expect(control).toHaveCSS('border-radius', '8px')
+        await expect(control).toHaveCSS('border-radius', '4px')
         expect(await control.evaluate(node => node.getBoundingClientRect().height)).toBeCloseTo(height, 1)
         await expect(control).toHaveCSS('box-shadow', 'none')
     }
