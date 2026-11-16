@@ -1,6 +1,6 @@
 {
   "name": "@beforesemicolon/cube",
-  "version": "1.1.0",
+  "version": "1.1.0-next",
   "type": "module",
   "description": "Cube by Before Semicolon — a design system and library of accessible, themeable web components",
   "license": "BSD-3-Clause",
@@ -10,7 +10,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "tag": "latest"
+    "tag": "next"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
