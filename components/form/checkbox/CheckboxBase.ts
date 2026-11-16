@@ -1,6 +1,5 @@
 import { ChoiceControlBase, type ChoiceControlProps } from '../ChoiceControlBase.js'
 import type { StudioKind } from '../../studio/types.js'
-import type { ControlSize } from '../../core/Component.js'
 
 export interface CheckboxProps extends ChoiceControlProps {
     indeterminate?: boolean
@@ -15,7 +14,6 @@ export abstract class CheckboxBase extends ChoiceControlBase<CheckboxProps> {
     readonly componentName = 'checkbox'
     readonly componentKind: StudioKind = 'choice'
     indeterminate = false
-    size: ControlSize = 'xs'
 
     setChecked(checked: boolean, originalEvent?: Event): boolean {
         return this.commitState(

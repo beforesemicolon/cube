@@ -3,6 +3,13 @@ import type { Button } from './index.js'
 import { componentContract } from '../../../tests/component-contract.js'
 
 componentContract('cb-button', 'action--button', async ({ page, host }) => {
+    await expect(host).toHaveAttribute('data-size', 'md')
+    await host.evaluate(node => {
+        const button = document.createElement('cb-button')
+        button.textContent = 'Default size'
+        node.after(button)
+    })
+    await expect(page.getByRole('button', { name: 'Default size', exact: true })).toHaveCSS('font-size', '14px')
     await host.evaluate(node => { Object.assign(node, { label: 'Button', icon: 'plus', variant: 'primary' } satisfies Partial<Button>) })
     const textColor = await host.locator('[part~=label]').evaluate(node => getComputedStyle(node).color)
     await expect(host.locator('cb-icon')).toHaveCSS('color', textColor)

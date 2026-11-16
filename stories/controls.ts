@@ -740,7 +740,7 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     seekStep: '10',
     recentColors: '[]',
     series: '[]',
-    size: 'sm',
+    size: 'md',
     src: "''",
     status: 'finished',
     statusLabel: "''",
@@ -947,7 +947,7 @@ const primitiveDefaults: Readonly<
     seekStep: 10,
     shape: 'circle',
     siblings: 1,
-    size: 'sm',
+    size: 'md',
     src: '',
     status: '',
     statusLabel: '',
@@ -1075,7 +1075,7 @@ const taggedDefaults: Readonly<
     },
     'cb-device-frame': { device: 'desktop', orientation: 'landscape' },
     'cb-presence': { maxVisible: 2 },
-    'cb-button': { variant: 'secondary' },
+    'cb-button': { variant: 'secondary', size: 'md' },
     'cb-heading': { variant: 'h2' },
     'cb-button-group': { variant: 'secondary' },
     'cb-split-button': { popupMaxWidth: '320px', popupMaxHeight: '360px' },
@@ -1577,11 +1577,6 @@ function defaultValueFor(
     tag: string,
     property: string
 ): StoryValue | undefined {
-    if (
-        property === 'size' &&
-        ['cb-checkbox', 'cb-radio', 'cb-radio-group'].includes(tag)
-    )
-        return 'xs'
     if (tag === 'cb-list' && property === 'renderItem') return undefined
     if (tag === 'cb-list' && property === 'orientation') return 'vertical'
     if (tag === 'cb-list' && property === 'offset') return 100

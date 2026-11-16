@@ -7,7 +7,7 @@ export default meta
 type Story = StoryObj
 
 export const ColorSwatch: Story = componentStory('cb-color-swatch', {
-    value: '#7c3aed', label: 'Profile color', selected: true, variant: 'round', size: 'sm',
+    value: '#7c3aed', label: 'Profile color', selected: true, variant: 'round', size: 'md',
     options: ['#2563eb', '#7c3aed', '#16a34a', '#ea580c', '#dc2626', '#0891b2', '#00000000'],
 })
 

@@ -108,7 +108,7 @@ test('generated data displays only render containers that belong to the componen
     const tree = page.locator('cb-tree').locator('[part~="list"]')
     await expect(page.locator('cb-badge').locator('[part~="panel"]')).toHaveCount(0)
     await expect(badge).toHaveCSS('border-top-width', '1px')
-    await expect(badge).toHaveCSS('padding-top', '2px')
+    await expect(badge).toHaveCSS('padding-top', '3px')
     await expect(tree).toHaveCSS('border-top-width', '0px')
     await expect(tree).toHaveCSS('padding-top', '0px')
     await expect(tree).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')

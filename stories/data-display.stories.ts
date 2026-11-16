@@ -161,7 +161,7 @@ export const Avatar: Story = componentStory('cb-avatar', {
     src: '',
     initials: '',
     color: '',
-    size: 'sm',
+    size: 'md',
     status: 'online',
     statusLabel: 'Online',
     decorative: false,

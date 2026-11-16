@@ -28,7 +28,7 @@
 }
 
 :host([data-size='md']) {
-    --cb-link-font-scale: 1.125;
+    --cb-link-font-scale: 1;
 }
 
 :host([data-size='lg']) {

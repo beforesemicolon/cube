@@ -39,7 +39,7 @@ for (const appearance of ['light','dark']) test(`feedback follows distinct desig
     await expect(status.locator('[part~=actions]')).toBeHidden()
     const spinner=page.locator('cb-spinner')
     await expect(spinner.getByRole('status')).toContainText('Loading assets…')
-    await expect(spinner.locator('[part~=spinner-ring]')).toHaveCSS('width','16px')
+    await expect(spinner.locator('[part~=spinner-ring]')).toHaveCSS('width','24px')
     const empty=page.locator('cb-empty-state')
     await expect(empty).toHaveCSS('text-align','center')
     await expect(empty.locator('cb-col')).toHaveCSS('align-items','center')
@@ -127,7 +127,7 @@ test('skeleton renders visible text, card and table placeholders', async ({ page
     await expect(skeleton).toHaveCSS('width','288px')
     await expect(skeleton.locator('[part~=line]').first()).toHaveCSS('width','208px')
     await expect(skeleton.locator('[part~=line]').nth(1)).toHaveCSS('width','256px')
-    await expect(skeleton.locator('[part~=line]').first()).toHaveCSS('height','10px')
+    await expect(skeleton.locator('[part~=line]').first()).toHaveCSS('height','12px')
     await expect(skeleton.getByRole('status', { name: 'Loading content' })).toBeVisible()
 
     await skeleton.evaluate((node: HTMLElement & { variant: 'card'; lines: number }) => { node.variant = 'card'; node.lines = 2 })

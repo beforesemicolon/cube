@@ -73,6 +73,7 @@ componentContract('cb-menu', 'navigation--menu', async ({ host }) => {
     const icon = host.locator('cb-icon[part="icon"] [part="icon"]').first()
     const firstItem = host.getByRole('menuitem', { name: 'First item', exact: true })
     const secondItem = host.locator('cb-link[part="item"][data-label="Second item"]')
+    await expect(secondItem).toHaveAttribute('data-size', 'md')
     await expect(menu).toHaveAttribute('data-variant', 'both')
     await host.evaluate(node => node.setAttribute('active', 'first'))
     await expect(firstItem).toHaveAttribute('aria-current', 'true')

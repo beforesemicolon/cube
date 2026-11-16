@@ -26,7 +26,7 @@ componentContract('cb-link', 'navigation--link', async ({ host, page }) => {
     })
     await expect(anchor).toHaveCSS('font-size', '16px')
     for (const [size, pixels] of [
-        ['tiny', 10], ['xs', 12], ['sm', 16], ['md', 18], ['lg', 20], ['xl', 24],
+        ['tiny', 10], ['xs', 12], ['sm', 16], ['md', 16], ['lg', 20], ['xl', 24],
     ] as const) {
         await host.evaluate((node, size) => node.setAttribute('size', size), size)
         await expect(anchor).toHaveCSS('font-size', `${pixels}px`)

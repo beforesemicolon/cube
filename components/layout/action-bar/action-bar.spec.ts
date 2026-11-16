@@ -13,7 +13,9 @@ componentContract('cb-action-bar', 'layout--action-bar', async ({ host }) => {
     await expect(host.getByRole('textbox', { name: 'Release search' })).toBeVisible()
     await expect(host.getByText('Release end')).toBeVisible()
     await expect(host.getByText('Release named action')).toBeVisible()
-    await expect(host.locator('cb-button').locator('button')).toHaveCSS('height', '28px')
+    await expect(host.locator('cb-button').locator('button')).toHaveCSS('height', '36px')
+    await host.locator('cb-button').evaluate(node => { node.setAttribute('size', 'lg') })
+    await expect(host.locator('cb-button').locator('button')).toHaveCSS('height', '44px')
     await expect(host.getByText('Release overflow')).toBeVisible()
     await expect(host.locator('slot').first()).toHaveCSS('display', 'contents')
     expect(

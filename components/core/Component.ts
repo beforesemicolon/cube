@@ -25,7 +25,7 @@ export abstract class Component<
     accessibleLabel = ''
     description = ''
     disabled = false
-    size: ControlSize = 'sm'
+    size: ControlSize = 'md'
     private disposers: Array<() => void> = []
     private reflectingNativeState = false
     protected syncView(): void {}
@@ -58,7 +58,7 @@ export abstract class Component<
             this.size
         )
             ? this.size
-            : 'sm'
+            : 'md'
         this.toggleAttribute('data-disabled', this.unavailable)
     }
     protected cleanup(fn: () => void): void {

@@ -3,57 +3,8 @@
     display: block;
     container-type: inline-size;
     margin-block-end: var(--component-action-bar-margin-block-end, 0);
-    --cb-action-bar-control-height: var(
-        --component-action-bar-control-height-sm,
-        28px
-    );
-    --component-control-height: var(--cb-action-bar-control-height);
-    --component-control-height-xs: var(--cb-action-bar-control-height);
-    --component-control-height-sm: var(--cb-action-bar-control-height);
-    --component-control-height-md: var(--cb-action-bar-control-height);
-    --component-control-height-lg: var(--cb-action-bar-control-height);
     --component-segmented-control-group-padding: 0;
     --component-segmented-control-group-border: 0;
-    --component-segmented-control-item-min-height: var(
-        --cb-action-bar-control-height
-    );
-    --toolbar-control-height: var(--cb-action-bar-control-height);
-    --toolbar-control-padding-block: var(
-        --component-action-bar-control-padding-block,
-        0px
-    );
-    --toolbar-control-padding-inline: var(
-        --component-action-bar-control-padding-inline,
-        12px
-    );
-    --toolbar-control-font-size: var(
-        --component-action-bar-control-font-size,
-        var(--component-font-size, 12px)
-    );
-    --toolbar-control-radius: var(
-        --component-action-bar-control-radius,
-        var(--radius-sm, 6px)
-    );
-}
-:host([data-size='tiny']),
-:host([data-size='xs']) {
-    --cb-action-bar-control-height: var(
-        --component-action-bar-control-height-xs,
-        24px
-    );
-}
-:host([data-size='md']) {
-    --cb-action-bar-control-height: var(
-        --component-action-bar-control-height-md,
-        36px
-    );
-}
-:host([data-size='lg']),
-:host([data-size='xl']) {
-    --cb-action-bar-control-height: var(
-        --component-action-bar-control-height-lg,
-        44px
-    );
 }
 [part='bar'] {
     display: flex;
@@ -103,7 +54,7 @@ slot {
     justify-content: flex-end;
     min-block-size: var(
         --component-action-bar-actions-only-min-height,
-        var(--cb-action-bar-control-height)
+        var(--component-control-height-md, 36px)
     );
 }
 :host([data-actions-only]) {
@@ -115,14 +66,6 @@ slot {
 }
 :host([data-actions-only]) [part='start'] {
     display: none;
-}
-@media (pointer: coarse) {
-    :host([data-size]) {
-        --cb-action-bar-control-height: var(
-            --component-action-bar-touch-control-height,
-            44px
-        );
-    }
 }
 @container (max-width:420px) {
     [part='bar'] {
