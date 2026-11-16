@@ -8,7 +8,7 @@ componentContract('cb-icon', 'icons--icon', async ({ host }) => {
     await expect(host.locator("svg")).toHaveAttribute("aria-hidden", "true")
     await host.evaluate(node => { (node as Icon).name = 'ruler' })
     await expect(host.locator('svg path')).toHaveAttribute('d', iconPaths.ruler)
-    for (const name of ['attributes', 'variant', 'cut', 'paste', 'trash', 'save', 'download', 'send', 'creditCard', 'filter', 'mailCheck', 'puzzle', 'shieldCheck', 'sidebarExpand', 'expandVertical', 'receipt', 'cartCheck', 'hexagon', 'microsoft', 'mail', 'inbox', 'collection', 'archive', 'workflow', 'wifiOff', 'apple', 'android', 'folder2-open', 'hourglass', 'people-fill', 'window-stack', 'bar-chart', 'palette', 'speedometer2', 'translate', 'arrow-up', 'arrow-down', 'arrow-up-right', 'arrow-up-left', 'arrow-down-right', 'arrow-down-left', 'moon-stars-fill', 'circle-half', 'sun-fill']) {
+    for (const name of ['attributes', 'variant', 'cut', 'paste', 'trash', 'save', 'download', 'send', 'creditCard', 'filter', 'mailCheck', 'puzzle', 'shieldCheck', 'sidebarExpand', 'expandVertical', 'receipt', 'cartCheck', 'hexagon', 'microsoft', 'mail', 'inbox', 'collection', 'archive', 'workflow', 'wifiOff', 'apple', 'android', 'folder2-open', 'hourglass', 'people-fill', 'person', 'person-vcard', 'card-image', 'sticky', 'star-outline', 'window-stack', 'bar-chart', 'palette', 'speedometer2', 'translate', 'arrow-up', 'arrow-down', 'arrow-up-right', 'arrow-up-left', 'arrow-down-right', 'arrow-down-left', 'moon-stars-fill', 'circle-half', 'sun-fill']) {
         await host.evaluate((node, name) => { (node as Icon).name = name }, name)
         await expect(host.locator('svg path')).toHaveAttribute('d', iconPaths[name])
     }

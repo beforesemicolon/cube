@@ -1,159 +1,97 @@
-import { iconPaths } from './paths.js'
+import { iconPaths as originalIconPaths } from './paths.js'
 import { mediaIconPaths } from '../media/icons.js'
 import { tablerIconPaths } from './tabler.js'
-/** One canonical glyph registry for standalone icons and composed media controls. */
-Object.assign(iconPaths, mediaIconPaths, tablerIconPaths)
+import { bootstrapIconPaths, evenOddBootstrapIcons } from './bootstrap.js'
 
-Object.assign(iconPaths, {
-    activity: iconPaths.bolt,
-    alarm: iconPaths.clock,
-    'arrow-counterclockwise': iconPaths.undo,
-    'arrow-left': iconPaths.left,
-    'arrow-repeat': iconPaths.reset,
-    'arrow-right': iconPaths.right,
-    'arrows-angle-expand': iconPaths.expand,
-    'arrow-clockwise': iconPaths.reset,
-    'bar-chart': 'M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7M2 20h20',
-    'bar-chart-line': 'M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7M2 20h20',
-    'box-arrow-up-right': iconPaths.external,
-    boxes: iconPaths.collection,
-    'braces-asterisk': iconPaths.code,
-    bug: iconPaths.warning,
-    'calendar-check': iconPaths.calendar,
-    'calendar-range': iconPaths.calendarRange,
-    calendar2: iconPaths.calendar,
-    calendar3: iconPaths.calendar,
-    camera: iconPaths.image,
-    'card-list': iconPaths.collection,
-    'cart-check': iconPaths.cartCheck,
-    'cash-stack': iconPaths.creditCard,
-    chat: iconPaths.comment,
-    'chat-left-dots': iconPaths.comment,
-    'chat-left-text': iconPaths.comment,
-    'chat-quote': iconPaths.quote,
-    'check-circle': iconPaths.checkCircle,
-    'check-circle-fill': iconPaths.checkCircle,
-    check2: iconPaths.check,
-    'check2-circle': iconPaths.checkCircle,
-    'check2-square': iconPaths.checkSquare,
-    'chevron-down': iconPaths.down,
-    'chevron-left': iconPaths.left,
-    'chevron-right': iconPaths.right,
-    'chevron-expand': iconPaths.expandVertical,
-    clipboard: iconPaths.paste,
-    'clock-history': iconPaths.clock,
-    'cloud-arrow-up': iconPaths.upload,
-    'cloud-slash': iconPaths.wifiOff,
-    'cloud-upload': iconPaths.upload,
-    'credit-card': iconPaths.creditCard,
-    'currency-dollar': iconPaths.receipt,
-    dark: iconPaths.moon,
-    'dash-circle': iconPaths.minus,
-    database: iconPaths.collection,
-    'diagram-3': iconPaths.workflow,
-    envelope: iconPaths.mail,
-    'envelope-open': iconPaths.mail,
-    'envelope-plus': iconPaths.mailCheck,
-    'exclamation-triangle': iconPaths.warning,
-    'eye-slash': iconPaths.eyeOff,
-    facebook: iconPaths.globe,
-    'file-earmark': iconPaths.file,
-    'file-earmark-code': iconPaths.code,
-    'file-earmark-pdf': iconPaths.file,
-    'file-earmark-text': iconPaths.file,
-    flag: iconPaths.pin,
-    floppy: iconPaths.save,
-    'folder-fill': iconPaths.folder,
-    'folder-plus': iconPaths.folderAdd,
-    'folder-symlink': iconPaths.folder,
-    'folder2-open': iconPaths.folder,
-    fonts: iconPaths.text,
-    funnel: iconPaths.filter,
-    gear: iconPaths.settings,
-    'geo-alt': iconPaths.pin,
-    globe2: iconPaths.globe,
-    'grid-fill': iconPaths.grid,
-    'grip-vertical': iconPaths.drag,
-    house: iconPaths.desktop,
-    'hexagon-fill': iconPaths.hexagon,
-    hourglass:
-        'M6 3h12M6 21h12M7 3c0 4 2 6 5 9-3 3-5 5-5 9M17 3c0 4-2 6-5 9 3 3 5 5 5 9',
-    images: iconPaths.image,
-    instagram: iconPaths.globe,
-    'info-circle': iconPaths.info,
-    'journal-plus': iconPaths.noteAdd,
-    'journal-richtext': iconPaths.noteAdd,
-    'journal-text': iconPaths.file,
-    laptop: iconPaths.desktop,
-    'layout-text-window-reverse': iconPaths.collection,
-    'life-preserver': iconPaths.help,
-    light: iconPaths.sun,
-    'link-45deg': iconPaths.link,
-    'list-check': iconPaths.checkSquare,
-    'list-ul': iconPaths.list,
-    'lock-fill': iconPaths.lock,
-    magic: iconPaths.spark,
-    megaphone: iconPaths.send,
-    paperclip: iconPaths.attachment,
-    palette:
-        'M12 3a9 9 0 1 0 0 18h2a2 2 0 0 0 0-4h-1a2 2 0 0 1-2-2c0-2 2-3 4-3h6a9 9 0 0 0-9-9M7 10h.01M10 7h.01M14 7h.01M17 10h.01',
-    pen: iconPaths.edit,
-    pencil: iconPaths.edit,
-    'pencil-square': iconPaths.edit,
-    people: iconPaths.users,
-    'people-fill': iconPaths.users,
-    'person-check': iconPaths.users,
-    'person-dash': iconPaths.users,
-    'person-lines-fill': iconPaths.users,
-    'person-plus': iconPaths.userAdd,
-    paypal: iconPaths.creditCard,
-    'play-fill': iconPaths.play,
-    'plus-lg': iconPaths.plus,
-    'question-circle': iconPaths.help,
-    'send-check': iconPaths.send,
-    'shield-check': iconPaths.shieldCheck,
-    'shield-exclamation': iconPaths.warning,
-    'shield-lock-fill': iconPaths.lock,
-    'shield-lock': iconPaths.lock,
-    sliders: iconPaths.settings,
-    speedometer2:
-        'M3 15a9 9 0 1 1 18 0M12 6v2M6.34 8.34l1.42 1.42M17.66 8.34l-1.42 1.42M12 15l4-4M12 15h.01',
-    stars: iconPaths.spark,
-    star: iconPaths.spark,
-    stripe: iconPaths.creditCard,
-    tag: iconPaths.attributes,
-    tags: iconPaths.attributes,
-    telephone: iconPaths.mobile,
-    'three-dots-vertical': iconPaths.more,
-    translate:
-        'M4 5h10M9 3v2M6 5c1 4 3 7 7 9M12 5c-1 4-3 7-7 9M14 21l4-10 4 10M16 17h4',
-    'ui-checks-grid': iconPaths.checkSquare,
-    'twitter-x': iconPaths.globe,
-    whatsapp: iconPaths.comment,
-    'wifi-off': iconPaths.wifiOff,
-    window: iconPaths.desktop,
-    'window-stack': iconPaths.collection,
-    x: iconPaths.close,
-    'x-circle': iconPaths.close,
-    'x-lg': iconPaths.close,
-    yelp: iconPaths.globe,
-    youtube: iconPaths.play,
-    'moon-stars-fill':
-        'M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278 M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.73 1.73 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.73 1.73 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.73 1.73 0 0 0 1.097-1.097zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z',
-    'circle-half': 'M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16',
-    'sun-fill':
-        'M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708',
-})
+const kebabCase = (name: string): string => name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
 
-export const filledIconNames = new Set([
-    'moon-stars-fill',
-    'circle-half',
-    'sun-fill',
-])
-
-export const iconViewBoxes: Readonly<Record<string, string>> = {
-    'moon-stars-fill': '0 0 16 16',
-    'circle-half': '0 0 16 16',
-    'sun-fill': '0 0 16 16',
+/** Synonyms stay accepted at runtime, but never appear as additional catalog entries. */
+const synonyms: Readonly<Record<string, string>> = {
+    "box-arrow-up-right": "external",
+    "edit": "pencil",
+    "envelope": "mail",
+    "exclamation-triangle": "warning",
+    "funnel": "filter",
+    "users": "people",
+    "settings": "gear",
+    "attributes": "sliders",
+    "review-star": "star",
+    "arrow": "arrow-right",
+    "calendar2": "calendar",
+    "calendar3": "calendar",
+    "check2": "check",
+    "check2-circle": "check-circle",
+    "check2-square": "check-square",
+    "chevron-down": "down",
+    "chevron-left": "left",
+    "chevron-right": "right",
+    "dark": "moon",
+    "light": "sun",
+    "eye-slash": "eye-off",
+    "file-earmark": "file",
+    "floppy": "save",
+    "fonts": "text",
+    "globe2": "globe",
+    "grip-vertical": "drag",
+    "info-circle": "info",
+    "link-45deg": "link",
+    "list-ul": "list",
+    "paperclip": "attachment",
+    "person-plus": "user-add",
+    "plus-lg": "plus",
+    "question-circle": "help",
+    "sticky": "sticky-note",
+    "star-outline": "star",
+    "folder-plus": "folder-add",
+    "system": "circle-half",
+    "x": "close",
+    "x-lg": "close",
+    "speedometer2": "gauge"
 }
-export { iconPaths }
+
+const rawPaths: Record<string, string> = { ...originalIconPaths, ...mediaIconPaths, ...tablerIconPaths, ...bootstrapIconPaths }
+const definitions: Record<string, string> = {}
+for (const [name, path] of Object.entries(rawPaths)) {
+    const canonical = kebabCase(name)
+    if (!synonyms[canonical]) definitions[canonical] = path
+}
+
+export const iconPaths: Record<string, string> = {}
+export const filledIconNames = new Set<string>()
+export const iconViewBoxes: Record<string, string> = {}
+export const iconFillRules: Record<string, 'evenodd' | 'nonzero'> = {}
+const aliases: Record<string, string> = {}
+const signatures = new Map<string, string>()
+for (const [name, path] of Object.entries(definitions)) {
+    const filled = Object.hasOwn(bootstrapIconPaths, name)
+    const viewBox = filled ? '0 0 16 16' : '0 0 24 24'
+    const fillRule = evenOddBootstrapIcons.has(name) ? 'evenodd' : 'nonzero'
+    const signature = `${viewBox}:${filled}:${fillRule}:${path.replace(/\s+/g, '')}`
+    const previous = signatures.get(signature)
+    if (previous) { aliases[name] = previous; continue }
+    signatures.set(signature, name)
+    iconPaths[name] = path
+    iconViewBoxes[name] = viewBox
+    iconFillRules[name] = fillRule
+    if (filled) filledIconNames.add(name)
+}
+
+for (const name of [...Object.keys(rawPaths), ...Object.keys(synonyms)]) {
+    let canonical = kebabCase(name)
+    while (synonyms[canonical] || aliases[canonical]) canonical = synonyms[canonical] ?? aliases[canonical]!
+    if (!Object.hasOwn(iconPaths, canonical)) throw new Error(`Missing icon alias target: ${name} -> ${canonical}`)
+    if (name !== canonical) aliases[name] = canonical
+}
+
+export const iconAliases: Readonly<Record<string, string>> = aliases
+export function canonicalIconName(name: string): string {
+    return iconAliases[name] ?? iconAliases[kebabCase(name)] ?? kebabCase(name)
+}
+
+// Existing property lookups remain compatible without duplicating Object.keys/entries.
+for (const [alias, canonical] of Object.entries(iconAliases)) {
+    if (!Object.hasOwn(iconPaths, alias)) Object.defineProperty(iconPaths, alias, {
+        enumerable: false,
+        get: () => iconPaths[canonical],
+    })
+}

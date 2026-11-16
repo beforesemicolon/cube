@@ -7,7 +7,41 @@ import {
     filledIconNames,
     iconPaths,
     iconViewBoxes,
+    iconAliases,
+    canonicalIconName,
+    iconFillRules,
 } from '../components/icons/registry.js'
+
+test('the icon catalog has canonical names and no duplicate glyph definitions', () => {
+    const signatures = new Set<string>()
+    for (const [name, path] of Object.entries(iconPaths)) {
+        assert.match(name, /^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+        const signature = `${iconViewBoxes[name]}:${filledIconNames.has(name)}:${iconFillRules[name]}:${path.replace(/\s+/g, '')}`
+        assert.ok(!signatures.has(signature), `Duplicate catalog glyph: ${name}`)
+        signatures.add(signature)
+    }
+    for (const [alias, canonical] of Object.entries(iconAliases)) {
+        assert.equal(canonicalIconName(alias), canonical)
+        assert.equal(iconPaths[alias], iconPaths[canonical])
+        assert.ok(!Object.keys(iconPaths).includes(alias), alias)
+    }
+    assert.equal(canonicalIconName('creditCard'), 'credit-card')
+    assert.equal(canonicalIconName('settings'), 'gear')
+})
+
+test('related icons have genuine, distinct artwork rather than placeholder aliases', () => {
+    for (const names of [
+        ['calendar', 'calendar-check'], ['boxes', 'database', 'collection'],
+        ['comment', 'whatsapp', 'chat', 'chat-left-dots', 'chat-left-text'],
+        ['gear', 'sliders'], ['facebook', 'instagram', 'twitter-x', 'globe'],
+        ['credit-card', 'paypal', 'stripe', 'cash-stack'],
+        ['hexagon', 'hexagon-fill'], ['image', 'camera', 'images', 'card-image'],
+    ]) assert.equal(new Set(names.map(name => iconPaths[name])).size, names.length, names.join(', '))
+    for (const name of ['hexagon-fill', 'folder-fill', 'check-circle-fill', 'people-fill', 'lock-fill', 'play-fill']) {
+        assert.ok(filledIconNames.has(name), name)
+    }
+    assert.ok(!filledIconNames.has('hexagon'))
+})
 
 test('duplicate has its own add-copy glyph, distinct from the clipboard copy command', () => {
     assert.ok(iconPaths.duplicate)

@@ -10,7 +10,7 @@ import {
     type Template,
 } from '../core/runtime.js'
 import { bool, scalarText } from '../core/value.js'
-import { iconPaths } from '../icons/paths.js'
+import { canonicalIconName, filledIconNames, iconPaths, iconViewBoxes, iconFillRules } from '../icons/registry.js'
 import type { StudioItem } from './types.js'
 import type { StudioViewSource } from './view.js'
 import type { UnitInputBase } from '../form/unit-input/UnitInputBase.js'
@@ -88,14 +88,15 @@ export function studioTemplates(source: StudioViewSource): Template {
     const glyph = (name: string, part = 'icon'): Template =>
         html`<svg
             part="${part}"
-            viewBox="0 0 24 24"
+            viewBox="${iconViewBoxes[canonicalIconName(name)] ?? '0 0 24 24'}"
             aria-hidden="true"
             focusable="false"
         >
             <path
                 d="${iconPaths[name] ?? ''}"
-                fill="none"
-                stroke="currentColor"
+                fill="${filledIconNames.has(canonicalIconName(name)) ? 'currentColor' : 'none'}"
+                fill-rule="${iconFillRules[canonicalIconName(name)] ?? 'nonzero'}"
+                stroke="${filledIconNames.has(canonicalIconName(name)) ? 'none' : 'currentColor'}"
                 stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"

@@ -3,7 +3,7 @@ import componentStylesheet from './styles.css?inline'
 import { elementRefs } from '../../core/refs.js'
 import { pick, isNot, and, or, is, type Template, html, repeat, when, state } from '../../core/runtime.js'
 
-import { iconPaths } from '../../icons/paths.js';
+import { iconPaths } from '../../icons/registry.js';
 import { bool } from '../../core/value.js';
 import { LayerTreeBase, type LayerDropPosition, type LayerTreeItem } from './LayerTreeBase.js';
 

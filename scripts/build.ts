@@ -1,5 +1,5 @@
 import { componentGroups } from './component-entries.js'
-import { iconPaths } from '../components/icons/registry.js'
+import { iconPaths, iconViewBoxes, filledIconNames, iconFillRules } from '../components/icons/registry.js'
 import { buildBrowser } from '@beforesemicolon/builder'
 import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -53,8 +53,9 @@ try {
         await writeFile(resolve(outputRoot, `themes/${mode}.css`), `:root{${declarations(mode)}}\n`)
     }
     await writeFile(resolve(outputRoot, 'themes/cube.css'), `:root{${declarations('light')}}@media(prefers-color-scheme:dark){:root{${declarations('dark')}}}[data-theme="light"]{${declarations('light')}}[data-theme="dark"]{${declarations('dark')}}\n`)
-    for (const [name, d] of Object.entries(iconPaths)) await writeFile(resolve(outputRoot, `icons/${name}.svg`), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>\n`)
-    const iconSymbols = Object.entries(iconPaths).map(([name,d]) => `<symbol id="${name}" viewBox="0 0 24 24"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>`).join('')
+    const glyphPath = (name: string, d: string): string => `<path d="${d}" fill="${filledIconNames.has(name) ? 'currentColor' : 'none'}" fill-rule="${iconFillRules[name] ?? 'nonzero'}" stroke="${filledIconNames.has(name) ? 'none' : 'currentColor'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
+    for (const [name, d] of Object.entries(iconPaths)) await writeFile(resolve(outputRoot, `icons/${name}.svg`), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${iconViewBoxes[name]}">${glyphPath(name, d)}</svg>\n`)
+    const iconSymbols = Object.entries(iconPaths).map(([name,d]) => `<symbol id="${name}" viewBox="${iconViewBoxes[name]}">${glyphPath(name, d)}</symbol>`).join('')
     await writeFile(resolve(outputRoot, 'icons/sprite.svg'), `<svg xmlns="http://www.w3.org/2000/svg">${iconSymbols}</svg>\n`)
     const iconClasses = Object.keys(iconPaths).map(name => `.cb-icon--${name}{--cb-icon-url:url('./${name}.svg')}`).join('')
     await writeFile(resolve(outputRoot, 'icons/icons.css'), `.cb-icon{display:inline-block;inline-size:1em;block-size:1em;background:currentColor;mask:var(--cb-icon-url) center/contain no-repeat;-webkit-mask:var(--cb-icon-url) center/contain no-repeat}${iconClasses}\n`)

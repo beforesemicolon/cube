@@ -2,7 +2,7 @@ import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { type Template, html, when } from '../../core/runtime.js'
 
-import { filledIconNames, iconPaths, iconViewBoxes } from '../registry.js'
+import { canonicalIconName, filledIconNames, iconPaths, iconViewBoxes, iconFillRules } from '../registry.js'
 import { IconBase } from './IconBase.js'
 import { iconSource } from '../source.js'
 export class Icon extends IconBase {
@@ -11,7 +11,7 @@ export class Icon extends IconBase {
         const label = () =>
             this.props.accessibleLabel?.() || this.props.label?.() || ''
         const source = () => iconSource(this.src, this.baseURI)
-        const name = () => this.props.name?.() ?? ''
+        const name = () => canonicalIconName(this.props.name?.() ?? '')
         const filled = () => filledIconNames.has(name())
         return html`<span
             part="icon"
@@ -39,6 +39,7 @@ export class Icon extends IconBase {
                             part="path"
                             d="${() => iconPaths[name()] ?? ''}"
                             fill="${() => (filled() ? 'currentColor' : 'none')}"
+                            fill-rule="${() => iconFillRules[name()] ?? 'nonzero'}"
                             stroke="${() => (filled() ? 'none' : 'currentColor')}"
                             stroke-width="1.5"
                             stroke-linecap="round"

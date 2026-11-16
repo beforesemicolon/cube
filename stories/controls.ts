@@ -1,5 +1,5 @@
 import type { StoryObj } from '@storybook/web-components-vite'
-import { iconPaths } from '../components/icons/paths.js'
+import { iconPaths } from '../components/icons/registry.js'
 import { fieldControlTags, preview } from './helpers.js'
 
 type ControlOption = string | number | boolean
