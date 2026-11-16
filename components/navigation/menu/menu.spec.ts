@@ -46,6 +46,14 @@ componentContract('cb-menu', 'navigation--menu', async ({ host }) => {
     await expect(host.getByRole('menuitemcheckbox', { name: 'Release menu' })).toContainText('Release menu')
     await expect(host.locator('[part="custom-item"]')).toHaveCount(0)
     await expect(host.locator('[part=separator]')).toHaveCount(1)
+    await expect(host.getByRole('separator', { name: 'danger', exact: true })).toBeVisible()
+    await expect(host.locator('cb-divider [part=label]')).toHaveText('danger')
+    await host.evaluate(node => {
+        const menu = node as Menu
+        menu.items = [menu.items[0]!, { id: 'section', separator: true, label: 'Danger zone' }, menu.items[1]!]
+    })
+    await expect(host.getByRole('separator', { name: 'Danger zone' })).toBeVisible()
+    await expect(host.locator('cb-divider [part=label]')).toHaveText('Danger zone')
     await expect(host.getByRole('menuitem', { name: 'Delete release' })).toHaveAttribute('data-tone', 'danger')
     await host.evaluate(node => {
         if (!node.parentElement) throw new Error('Expected a menu container')

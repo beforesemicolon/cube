@@ -36,7 +36,7 @@ export function createMenuView(
         ${repeat(
             () => host.normalizedItems,
             (item) => {
-                if (item.separator) return html`<div part="separator"></div>`
+                if (item.separator) return html`<cb-divider part="separator" label="${item.label}" size="${host.props.size}"></cb-divider>`
                 const href = safeHref(item.href)
                 const role =
                     item.type === 'checkbox'

@@ -50,7 +50,7 @@ export abstract class MenuBase<
                 ? [
                       {
                           id: `group-separator-${index}`,
-                          label: '',
+                          label: item.group?.trim() || '',
                           description: '',
                           disabled: true,
                           separator: true,

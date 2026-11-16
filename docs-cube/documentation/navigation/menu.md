@@ -19,3 +19,19 @@ Present a keyboard-navigable list of commands. Each item has a stable ID and can
 :::
 
 [{{t.cubeReference.openPlayground}}](/playground/?path=/story/navigation--menu)
+
+## Labeled separators
+
+Set `group` on items to insert a divider whenever the group changes. The divider
+uses the incoming group's value as its label. Item order is preserved; an
+ungrouped section gets an unlabeled divider.
+
+An item with `separator: true` renders a `cb-divider`. Its optional `label`
+appears at the start of the line. Load the Layout category alongside Navigation
+when using menu separators. Separators are skipped by keyboard navigation.
+
+:::component
+<cb-menu accessible-label="Project actions"
+    items='[{"id":"rename","label":"Rename"},{"id":"section","separator":true,"label":"Danger zone"},{"id":"delete","label":"Delete","tone":"danger"}]'>
+</cb-menu>
+:::
