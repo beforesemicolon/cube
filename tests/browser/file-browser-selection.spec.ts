@@ -109,7 +109,7 @@ test('unframed responsive cards contain long names and descriptions below taller
         await expect(host.locator('[part="entry-meta"]')).toHaveCSS('text-overflow', 'ellipsis')
     }
     await expect(host.locator('[part="browser"]')).toHaveCSS('border-top-width', '0px')
-    await expect(host.locator('[part="content"]')).toHaveCSS('padding', '0px')
+    await expect(host.locator('cb-col[part="browser"] > div[part="content"]')).toHaveCSS('padding', '0px')
 })
 
 for (const view of ['grid', 'table'] as const) {
@@ -128,7 +128,7 @@ for (const view of ['grid', 'table'] as const) {
                 entries: Array.from({ length: 40 }, (_, index) => ({ id: String(index), name: `Asset ${index}`, type: 'file' })),
             })
         }, view)
-        const content = host.locator('[part="content"]')
+        const content = host.locator('cb-col[part="browser"] > div[part="content"]')
         await expect.poll(async () => Math.round((await host.boundingBox())!.height)).toBe(380)
         await expect.poll(async () => Math.round((await host.locator('[part="browser"]').boundingBox())!.height)).toBe(380)
         expect(await content.evaluate(node => node.scrollHeight > node.clientHeight)).toBe(true)
