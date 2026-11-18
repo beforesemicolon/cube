@@ -1,13 +1,17 @@
 @import '../../theme/editor.css';
 :host {
     display: block;
+    flex: 1;
+    block-size: 100%;
+    min-block-size: 0;
     inline-size: 100%;
     min-inline-size: 0;
     container-type: inline-size;
 }
 [part~='browser'] {
-    block-size: var(--component-file-browser-height, auto);
-    min-block-size: 260px;
+    block-size: var(--component-file-browser-height, 100%);
+    min-block-size: 0;
+    overflow: hidden;
 }
 [part~='toolbar'] {
     flex: none;

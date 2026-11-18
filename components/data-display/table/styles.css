@@ -6,7 +6,6 @@
     container-type: inline-size;
 }
 [part~='root'] {
-    display: grid;
     block-size: 100%;
     min-block-size: 0;
     min-inline-size: 0;

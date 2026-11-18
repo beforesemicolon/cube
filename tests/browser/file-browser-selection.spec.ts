@@ -111,3 +111,30 @@ test('unframed responsive cards contain long names and descriptions below taller
     await expect(host.locator('[part="browser"]')).toHaveCSS('border-top-width', '0px')
     await expect(host.locator('[part="content"]')).toHaveCSS('padding', '0px')
 })
+
+for (const view of ['grid', 'table'] as const) {
+    test(`fills a constrained flex parent and scrolls only its content in ${view} view`, async ({ page }) => {
+        const host = page.locator('cb-file-browser')
+        await host.evaluate((node, view) => {
+            const parent = node.parentElement!
+            parent.style.cssText = 'display:flex;flex-direction:column;height:420px;width:600px'
+            const heading = document.createElement('div')
+            heading.style.cssText = 'height:40px;flex:none'
+            heading.textContent = 'Assets'
+            parent.prepend(heading)
+            ;(node as HTMLElement).style.removeProperty('--component-file-browser-height')
+            Object.assign(node as FileBrowser, {
+                view,
+                entries: Array.from({ length: 40 }, (_, index) => ({ id: String(index), name: `Asset ${index}`, type: 'file' })),
+            })
+        }, view)
+        const content = host.locator('[part="content"]')
+        await expect.poll(async () => Math.round((await host.boundingBox())!.height)).toBe(380)
+        await expect.poll(async () => Math.round((await host.locator('[part="browser"]').boundingBox())!.height)).toBe(380)
+        expect(await content.evaluate(node => node.scrollHeight > node.clientHeight)).toBe(true)
+        await content.evaluate(node => { node.scrollTop = 120 })
+        expect(await content.evaluate(node => node.scrollTop)).toBeGreaterThan(0)
+        expect(await host.evaluate(node => node.scrollHeight <= node.clientHeight + 1)).toBe(true)
+        if (view === 'table') await expect(host.locator('cb-table [part="root"]')).not.toHaveCSS('display', 'grid')
+    })
+}
