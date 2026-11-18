@@ -135,6 +135,6 @@ for (const view of ['grid', 'table'] as const) {
         await content.evaluate(node => { node.scrollTop = 120 })
         expect(await content.evaluate(node => node.scrollTop)).toBeGreaterThan(0)
         expect(await host.evaluate(node => node.scrollHeight <= node.clientHeight + 1)).toBe(true)
-        if (view === 'table') await expect(host.locator('cb-table [part="root"]')).not.toHaveCSS('display', 'grid')
+        if (view === 'table') await expect(host.locator('cb-table [part~="table-root"]')).not.toHaveCSS('display', 'grid')
     })
 }
