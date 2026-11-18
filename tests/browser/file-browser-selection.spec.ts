@@ -82,3 +82,32 @@ test('a compact toolbar keeps upload and view controls side by side and scroll s
     expect(await host.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true)
     await expect(host.locator('div[part~="content"]')).toHaveCSS('overscroll-behavior', 'contain')
 })
+
+test('unframed responsive cards contain long names and descriptions below taller previews', async ({ page }) => {
+    const host = page.locator('cb-file-browser')
+    await host.evaluate(node => {
+        Object.assign(node as FileBrowser, { entries: [{ id: 'long', type: 'file', name: 'LongFileName'.repeat(30), description: 'LongDescription'.repeat(30) }], selectionCountLabel: '' })
+        ;(node as HTMLElement).style.width = '600px'
+    })
+    await expect(host.locator('cb-col[part="browser"]')).toHaveAttribute('gap', 'md')
+    await expect(host.locator('cb-action-bar[part="toolbar"]')).toHaveCount(1)
+    for (const width of [600, 220]) {
+        await host.evaluate((node, width) => { (node as HTMLElement).style.width = `${width}px` }, width)
+        const grid = host.locator('[part="grid"]')
+        const card = host.locator('[part="entry"]')
+        const preview = host.locator('[part="entry-preview"]')
+        const copy = host.locator('[part="entry-copy"]')
+        const bounds = (await card.boundingBox())!
+        const previewBounds = (await preview.boundingBox())!
+        const copyBounds = (await copy.boundingBox())!
+        expect(bounds.width).toBeLessThanOrEqual(width)
+        if (width >= 250) expect(bounds.width).toBeGreaterThanOrEqual(250)
+        expect(previewBounds.height).toBeGreaterThanOrEqual(160)
+        expect(copyBounds.y).toBeGreaterThanOrEqual(previewBounds.y + previewBounds.height)
+        expect(copyBounds.x + copyBounds.width).toBeLessThanOrEqual(bounds.x + bounds.width)
+        expect(await grid.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true)
+        await expect(host.locator('[part="entry-meta"]')).toHaveCSS('text-overflow', 'ellipsis')
+    }
+    await expect(host.locator('[part="browser"]')).toHaveCSS('border-top-width', '0px')
+    await expect(host.locator('[part="content"]')).toHaveCSS('padding', '0px')
+})

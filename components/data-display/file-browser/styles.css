@@ -6,26 +6,16 @@
     container-type: inline-size;
 }
 [part~='browser'] {
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
     block-size: var(--component-file-browser-height, auto);
     min-block-size: 260px;
-    overflow: hidden;
-    border: 1px solid var(--color-separator);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-}
-[part~='browser']:has(> [part~='toolbar']) {
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
 }
 [part~='toolbar'] {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-sm, 8px);
-    padding: var(--spacing-sm, 8px);
-    border-block-end: 1px solid var(--color-separator);
-    background: var(--color-surface-muted);
+    flex: none;
+    --component-action-bar-padding-block: 0;
+    --component-action-bar-padding-inline: 0;
+    --component-action-bar-border: 0;
+    --component-action-bar-radius: 0;
+    --component-action-bar-background: transparent;
 }
 [part~='toolbar-main'] {
     display: flex;
@@ -45,19 +35,20 @@
     inline-size: min(280px, 100%);
 }
 [part~='path'] {
-    padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+    padding-block-end: var(--spacing-sm, 8px);
+    flex: none;
     border-block-end: 1px solid var(--color-separator);
 }
 [part~='content'] {
+    flex: 1 1 auto;
     min-inline-size: 0;
     min-block-size: 0;
     overflow: auto;
-    padding: var(--spacing-sm, 8px);
     overscroll-behavior: contain;
 }
 [part~='grid'] {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
     gap: var(--spacing-sm, 8px);
 }
 [part~='entry-shell'] {
@@ -81,19 +72,18 @@
     inset-inline-end: var(--spacing-xs, 4px);
 }
 [part~='entry']::part(control) {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(80px, 1fr) auto;
-    align-items: stretch;
-    justify-content: stretch;
-    gap: var(--spacing-sm, 8px);
+    display: block;
+    box-sizing: border-box;
     inline-size: 100%;
-    min-block-size: 130px;
+    block-size: auto;
     padding: var(--spacing-sm, 8px);
     text-align: inherit;
 }
 [part~='entry']::part(button-label) {
-    display: contents;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--spacing-sm, 8px);
+    white-space: normal;
 }
 [part~='entry'][aria-selected='true'] {
     border-color: var(--color-primary);
@@ -104,7 +94,7 @@
     display: grid;
     place-items: center;
     min-inline-size: 0;
-    min-block-size: 80px;
+    min-block-size: 160px;
     overflow: hidden;
     border-radius: var(--radius-sm);
     background: var(--color-surface-muted);
@@ -124,6 +114,7 @@
 }
 [part~='entry-copy'] {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     min-inline-size: 0;
 }
 [part~='entry-name'] {
@@ -133,6 +124,10 @@
     font-weight: 600;
 }
 [part~='entry-meta'] {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: var(--color-muted-foreground);
     font-size: var(--component-caption-font-size, 11px);
 }
@@ -147,6 +142,7 @@
     --component-icon-size: 12px;
 }
 [part~='selection'] {
+    flex: none;
     display: grid;
     gap: var(--spacing-xs, 4px);
     padding: var(--spacing-sm, 8px);
@@ -196,23 +192,22 @@
     min-inline-size: 0;
 }
 @container (max-width:520px) {
-    [part~='toolbar'] {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        align-items: center;
+    [part~='toolbar']::part(bar) {
+        flex-direction: column;
+        align-items: stretch;
     }
-    [part~='toolbar-main'] {
-        grid-column: 1 / -1;
+    [part~='toolbar']::part(start),
+    [part~='toolbar']::part(actions) {
+        inline-size: 100%;
+        max-inline-size: none;
+    }
+    [part~='toolbar-main'],
+    [part~='toolbar-actions'],
+    [part~='search'] {
         inline-size: 100%;
     }
     [part~='toolbar-actions'] {
-        grid-column: 1 / -1;
         flex-wrap: wrap;
-        justify-content: flex-end;
         min-inline-size: 0;
-        inline-size: 100%;
-    }
-    [part~='search'] {
-        inline-size: 100%;
     }
 }

@@ -8,10 +8,6 @@
         --component-avatar-color,
         var(--component-avatar-color-0, var(--color-selection))
     );
-    --cb-avatar-foreground: var(
-        --component-avatar-foreground,
-        var(--component-avatar-foreground-0, var(--color-signal-text))
-    );
     display: inline-grid;
     place-items: center;
     inline-size: var(--cb-avatar-size);
@@ -39,6 +35,8 @@
     --cb-avatar-size: var(--component-avatar-size-xl, 64px);
 }
 [part~='avatar'] {
+    --cb-avatar-contrast: var(--cb-avatar-auto-foreground, var(--color-foreground));
+    --cb-avatar-foreground: var(--component-avatar-foreground, var(--component-avatar-foreground-0, var(--cb-avatar-contrast)));
     position: relative;
     display: grid;
     place-items: center;
@@ -48,56 +46,61 @@
 }
 [part~='avatar'][data-color-index='1'] {
     --cb-avatar-color: var(
+        --component-avatar-color, var(
         --component-avatar-color-1,
         color-mix(in srgb, var(--color-success) 14%, var(--color-surface))
-    );
+    ));
     --cb-avatar-foreground: var(
-        --component-avatar-foreground-1,
-        var(--color-success)
+        --component-avatar-foreground,
+        var(--component-avatar-foreground-1, var(--cb-avatar-contrast, var(--color-foreground)))
     );
 }
 [part~='avatar'][data-color-index='2'] {
     --cb-avatar-color: var(
+        --component-avatar-color, var(
         --component-avatar-color-2,
         color-mix(in srgb, var(--color-warning) 16%, var(--color-surface))
-    );
+    ));
     --cb-avatar-foreground: var(
-        --component-avatar-foreground-2,
-        var(--color-warning)
+        --component-avatar-foreground,
+        var(--component-avatar-foreground-2, var(--cb-avatar-contrast, var(--color-foreground)))
     );
 }
 [part~='avatar'][data-color-index='3'] {
     --cb-avatar-color: var(
+        --component-avatar-color, var(
         --component-avatar-color-3,
         var(--color-danger-soft)
-    );
+    ));
     --cb-avatar-foreground: var(
-        --component-avatar-foreground-3,
-        var(--color-danger)
+        --component-avatar-foreground,
+        var(--component-avatar-foreground-3, var(--cb-avatar-contrast, var(--color-foreground)))
     );
 }
 [part~='avatar'][data-color-index='4'] {
     --cb-avatar-color: var(
+        --component-avatar-color, var(
         --component-avatar-color-4,
         color-mix(in srgb, var(--color-primary) 13%, var(--color-surface))
-    );
+    ));
     --cb-avatar-foreground: var(
-        --component-avatar-foreground-4,
-        var(--color-signal-text)
+        --component-avatar-foreground,
+        var(--component-avatar-foreground-4, var(--cb-avatar-contrast, var(--color-foreground)))
     );
 }
 [part~='avatar'][data-color-index='5'] {
     --cb-avatar-color: var(
+        --component-avatar-color, var(
         --component-avatar-color-5,
         color-mix(
             in srgb,
             var(--color-muted-foreground) 16%,
             var(--color-surface)
         )
-    );
+    ));
     --cb-avatar-foreground: var(
-        --component-avatar-foreground-5,
-        var(--color-foreground)
+        --component-avatar-foreground,
+        var(--component-avatar-foreground-5, var(--cb-avatar-contrast, var(--color-foreground)))
     );
 }
 [part~='surface'] {
@@ -162,5 +165,11 @@
     [part~='status'] {
         border-color: Canvas;
         background: CanvasText;
+    }
+}
+
+@supports (color: contrast-color(red)) {
+    [part~='avatar'] {
+        --cb-avatar-contrast: contrast-color(var(--cb-avatar-color));
     }
 }

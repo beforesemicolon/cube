@@ -40,12 +40,12 @@ export class FileBrowser extends FileBrowserBase {
     private pendingFolderSelection: ReturnType<typeof setTimeout> | null = null
 
     render(): Template {
-        return html`<section part="browser" aria-label=${this.accessibleName}>
+        return html`<cb-col part="browser" gap="md" role="region" aria-label=${this.accessibleName}>
             ${when(
                 this.props.toolbarEnabled,
                 () =>
-                    html`<div part="toolbar">
-                        <div part="toolbar-main">
+                    html`<cb-action-bar part="toolbar" wrap accessible-label=${this.accessibleName}>
+                        <div part="toolbar-main" slot="start">
                             <cb-text-input
                                 part="search"
                                 hidden=${isNot(this.props.searchable)}
@@ -153,7 +153,7 @@ export class FileBrowser extends FileBrowserBase {
                                 }}
                             ></cb-segmented-control>
                         </div>
-                    </div>`
+                    </cb-action-bar>`
             )}
             <cb-breadcrumb
                 part="path"
@@ -214,7 +214,7 @@ export class FileBrowser extends FileBrowserBase {
                 ),
                 this.selectionTemplate
             )}
-        </section>`
+        </cb-col>`
     }
 
     private gridTemplate = (): Template =>
