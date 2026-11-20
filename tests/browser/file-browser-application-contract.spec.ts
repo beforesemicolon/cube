@@ -108,6 +108,59 @@ test('flat current-folder entries render with an explicit navigable path', async
     await expect(navigated).resolves.toBe('assets')
 })
 
+for (const view of ['grid', 'table'] as const) {
+    test(`navigates from a nested ${view} to any ancestor without the toolbar`, async ({
+        page,
+    }) => {
+        const host = page.locator('cb-file-browser')
+        await host.evaluate((element, view) => {
+            const browser = element as FileBrowser
+            Object.assign(browser, {
+                toolbarEnabled: false,
+                view,
+                currentFolderId: 'leaf',
+                pathItems: [
+                    { id: 'assets', label: 'Assets' },
+                    { id: 'one', label: 'Design' },
+                    { id: 'two', label: 'Branding' },
+                    { id: 'leaf', label: 'Logos' },
+                ],
+                entries: [{ id: 'example', name: 'mark.svg', type: 'file' }],
+            })
+            const navigated: string[] = []
+            browser.addEventListener('navigate', (event: Event) => {
+                navigated.push(
+                    (event as CustomEvent<{ folderId: string }>).detail.folderId
+                )
+            })
+            Object.assign(browser, { navigated })
+        }, view)
+
+        const path = host.getByRole('navigation', { name: 'Folder' })
+        const current = path.locator('[aria-current="page"]')
+        await expect(host.locator('[part~="toolbar"]')).toHaveCount(0)
+        await expect(current).toHaveText('Logos')
+        await expect(path.getByRole('button', { name: 'Logos' })).toHaveCount(0)
+
+        const parent = path.getByRole('button', { name: 'Design' })
+        await parent.focus()
+        await parent.press('Enter')
+        // The application has not yet sent its new pathItems or entries.
+        await expect(current).toHaveText('Design')
+        await expect(path.getByText('Branding')).toHaveCount(0)
+        await expect(path.getByText('Logos')).toHaveCount(0)
+
+        await path.getByRole('button', { name: 'Assets' }).click()
+        await expect(current).toHaveText('Assets')
+        await expect(path.getByRole('button', { name: 'Assets' })).toHaveCount(0)
+        await expect(
+            host.evaluate((element) =>
+                Reflect.get(element, 'navigated')
+            )
+        ).resolves.toEqual(['one', 'assets'])
+    })
+}
+
 test('create, upload, and refresh requests honor disabled and loading guards', async ({
     page,
 }) => {

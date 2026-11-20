@@ -442,7 +442,15 @@ export abstract class FileBrowserBase<
     }
 
     resolvedPathItems(): readonly FileBrowserPathItem[] {
-        if (this.pathItems.length) return this.pathItems
+        const folderId = scalarText(this.currentFolderId)
+        const suppliedPath = Array.isArray(this.pathItems) ? this.pathItems : []
+        const currentIndex = suppliedPath.findIndex(
+            (item) => item.id === folderId
+        )
+        // A controlled listing may still contain the previous trail while its
+        // parent loads. Do not keep the old descendant marked as current.
+        if (currentIndex >= 0) return suppliedPath.slice(0, currentIndex + 1)
+        if (folderId && suppliedPath.length) return suppliedPath
 
         const byId = new Map(
             this.normalizedEntries()
@@ -450,11 +458,11 @@ export abstract class FileBrowserBase<
                 .map((entry) => [entry.id, entry])
         )
         const result: FileBrowserPathItem[] = [
-            { id: '', label: scalarText(this.rootLabel) },
+            { id: '', label: scalarText(this.rootLabel).trim() || '/' },
         ]
         const chain: FileBrowserPathItem[] = []
         const visited = new Set<string>()
-        let id = scalarText(this.currentFolderId)
+        let id = folderId
         while (id && !visited.has(id)) {
             visited.add(id)
             const entry = byId.get(id)
