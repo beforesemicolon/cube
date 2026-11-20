@@ -1,8 +1,8 @@
 {
   "name": "@beforesemicolon/cube",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
-  "description": "Cube by Before Semicolon — a design system and library of accessible, themeable web components",
+  "description": "Cube by Before Semicolon \u2014 a design system and library of accessible, themeable web components",
   "license": "BSD-3-Clause",
   "author": "Elson Correia",
   "engines": {
@@ -259,7 +259,9 @@
     "./themes/*": "./dist/themes/*",
     "./icons/*": "./dist/icons/*",
     "./dist/*": "./dist/*",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./ai/*": "./ai/*",
+    "./custom-elements.json": "./custom-elements.json"
   },
   "files": [
     "dist/esm/**/*.js",
@@ -273,7 +275,12 @@
     "dist/icons/*.svg",
     "dist/icons/*.css",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "ai/index.json",
+    "ai/tokens.json",
+    "ai/records/*.json",
+    "ai/assets/*",
+    "custom-elements.json"
   ],
   "sideEffects": [
     "./components/index.ts",
@@ -295,7 +302,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit && tsc -p tsconfig.contracts.json",
     "test": "tsc -p tsconfig.unit.json && node --test .test-output/tests/*.spec.js",
-    "build": "tsx scripts/build.ts",
+    "build": "tsx scripts/build.ts && npm run build:ai",
     "build:package": "npm run typecheck && npm test && npm run build",
     "storybook": "storybook dev -p 6006",
     "start": "storybook dev -p 6006",
@@ -314,7 +321,8 @@
     "prepublishOnly": "npm run verify:release",
     "build:docs": "tsx scripts/build-docs.ts",
     "build:site": "npm run build && npm run build:docs && npm run build:storybook -- --output-dir website/playground",
-    "preview:site": "tsx scripts/preview-site.ts"
+    "preview:site": "tsx scripts/preview-site.ts",
+    "build:ai": "node --import tsx scripts/build-ai.ts"
   },
   "dependencies": {
     "@beforesemicolon/web-component": "^1.21.1",
@@ -342,5 +350,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/beforesemicolon/cube.git"
-  }
+  },
+  "customElements": "custom-elements.json"
 }

@@ -109,3 +109,7 @@ test-results/
 release-artifacts/
 docs-cube/_template/template.config.js
 .DS_Store
+
+# Generated versioned reference and web-component metadata
+/ai/
+/custom-elements.json
