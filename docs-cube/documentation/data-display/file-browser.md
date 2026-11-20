@@ -30,4 +30,8 @@ item from the list to update the selection, or supply `clearSelectionLabel`
 to offer a clear-all action. These actions use the normal `selectionchange`
 and cancelable `beforeselectionchange` events.
 
+If you use separate modules or category scripts instead of the full Cube
+bundle, also load Action, Feedback, Form, Icons, Layout, Navigation, and
+Overlay for the file browser's controls, states, and popovers.
+
 [{{t.cubeReference.openPlayground}}](/playground/?path=/story/data-display--file-browser)

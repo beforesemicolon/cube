@@ -10,9 +10,6 @@ import {
 } from '../../core/runtime.js'
 import { safeHref } from '../../core/url.js'
 import { scalarText } from '../../core/value.js'
-import '../../overlay/popover/index.js'
-import '../../layout/row/index.js'
-import '../list/index.js'
 import type { TableColumn, TableRecord } from '../table/TableBase.js'
 import {
     FileBrowserBase,

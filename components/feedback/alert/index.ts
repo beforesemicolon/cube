@@ -2,8 +2,6 @@ import { register } from '../../core/Component.js'
 import componentStylesheet from './styles.css?inline'
 import { html, when, type Template } from '../../core/runtime.js'
 import { bool, scalarText } from '../../core/value.js'
-import '../../action/button/index.js'
-import '../../icons/icon/index.js'
 import { messageView } from '../view.js'
 import { AlertBase } from './AlertBase.js';
 export class Alert extends AlertBase {

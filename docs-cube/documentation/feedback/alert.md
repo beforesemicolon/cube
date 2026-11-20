@@ -22,5 +22,7 @@ For a message without a heading, set `description` and leave `label` and
 `value` empty. Set `dismissible` to show a close button and use
 `dismiss-label` to customize its accessible name. A listener can cancel
 `beforedismiss`. When accepted, dismissal hides the alert and fires `dismiss`.
+If you use separate modules or category scripts instead of the full Cube
+bundle, load the Action and Icons categories for the close button.
 
 [{{t.cubeReference.openPlayground}}](/playground/?path=/story/feedback--alert)
