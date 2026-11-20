@@ -280,7 +280,8 @@
     "ai/tokens.json",
     "ai/records/*.json",
     "ai/assets/*",
-    "custom-elements.json"
+    "custom-elements.json",
+    "skills/beforesemicolon-cube/SKILL.md"
   ],
   "sideEffects": [
     "./components/index.ts",

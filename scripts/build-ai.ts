@@ -587,11 +587,14 @@ const browser = [...sources].filter(([path]) => /^(?:[a-z-]+-)?client\.ts$/.test
     })
     return { path: `dist/${sourcePath.replace(/\.ts$/, '.js')}`, globals: provided.sort(), requires: [{ package: '@beforesemicolon/web-component', path: 'dist/client.js' }] }
 })
+const skill = { name: 'beforesemicolon-cube', path: 'skills/beforesemicolon-cube/SKILL.md' }
+const skillSource = await readFile(skill.path, 'utf8')
+assert.match(skillSource, /^---\nname: beforesemicolon-cube\ndescription: [^\n]+\n---\n/, 'The package skill must have matching installation metadata')
 const index = {
     schemaVersion: 1, package: manifest.name, version: manifest.version,
     repository: 'https://github.com/beforesemicolon/cube',
     records: indexRecords.sort((a, b) => a.id.localeCompare(b.id, 'en')),
-    exports: allExports, browser,
+    exports: allExports, browser, skill,
     customElementsManifest: '../custom-elements.json',
     themeTokens: 'tokens.json',
 }

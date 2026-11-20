@@ -42,6 +42,8 @@ assert.deepEqual(new Set(archiveFiles), files, 'Inspect the actual archive, not 
 const documentation = new Set(['package.json', 'README.md', 'LICENSE', 'ai/index.json', 'ai/tokens.json', 'custom-elements.json'])
 const references = JSON.parse(await readFile('ai/index.json', 'utf8'))
 assert.equal(references.version, manifest.version)
+assert.deepEqual(references.skill, { name: 'beforesemicolon-cube', path: 'skills/beforesemicolon-cube/SKILL.md' })
+documentation.add(references.skill.path)
 assert.equal(references.records.length, componentEntries.length + 1)
 for (const record of references.records) documentation.add(`ai/${record.path}`)
 for (const file of files) {

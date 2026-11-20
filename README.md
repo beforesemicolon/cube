@@ -16,7 +16,7 @@ Import the full library, a category such as `@beforesemicolon/cube/action`, or a
 
 ## Build with AI
 
-Read the [AI quick start](https://cube.beforesemicolon.com/documentation/build-with-ai).
+Read the [Cube agent skill](skills/beforesemicolon-cube/SKILL.md) and the [AI quick start](https://cube.beforesemicolon.com/documentation/build-with-ai).
 Find the index at `node_modules/@beforesemicolon/cube/ai/index.json`, or open the
 [version-pinned Cube 1.2.0 index](https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.2.0/ai/index.json)
 after publication. Change the version in the URL only to match your installed release.
