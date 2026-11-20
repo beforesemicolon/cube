@@ -248,16 +248,60 @@ async function hooksFor(klass: Klass): Promise<{ slots: Slot[]; parts: Part[]; c
     const scanPart = (name: string) => {
         if (/^[a-z][\w-]*$/.test(name)) parts.push({ name })
     }
-    for (const source of viewsFor(klass)) {
+    const hookSources = viewsFor(klass).map(source => source.text)
+    const workspace = klass.node.id?.name === 'Workspace'
+    if (workspace) {
+        const panelNames = [...klass.source.text.matchAll(/this\.panelTemplate\('([a-z-]+)'\)/g)].map(match => match[1]!)
+        assert(panelNames.length && /<slot name=\$\{panel\}/.test(klass.source.text), 'Review Workspace panel slot generation')
+        for (const panel of panelNames) {
+            slots.push({ name: panel })
+            for (const [, template] of klass.source.text.matchAll(/\bpart=\$\{`([^`]+)`\}/g)) {
+                const candidates = template!.replaceAll('${panel}', panel).split(/\s+/)
+                for (const candidate of candidates) scanPart(candidate)
+            }
+        }
+    }
+    const studioView = klass.source.text.includes('createStudioView(')
+    if (studioView) {
+        const kind = chain.map(item => /\bcomponentKind(?:\s*:\s*StudioKind)?\s*=\s*'([a-z]+)'/.exec(item.source.text)?.[1]).find(Boolean)
+        assert(kind, `Studio control ${klass.node.id?.name} has no known view kind`)
+        const template = sources.get('studio/templates.ts')!
+        // Only inspect the branch selected by this component's source-declared
+        // studio kind. Opening all branches would label nonexistent hooks.
+        const branch = ['text', 'textarea', 'number', 'range'].includes(kind)
+            ? 'primitive'
+            : kind === 'collaboration'
+                ? 'collection'
+                : kind === 'progress'
+                    ? 'status'
+                    : ['choice', 'tokens', 'file', 'collection', 'display', 'status', 'canvas'].includes(kind)
+                        ? kind
+                        : 'panel'
+        const names = new Set([branch, 'root'])
+        if (branch === 'primitive') names.add('input')
+        if (branch === 'panel') names.add('field')
+        visit(template.ast, node => {
+            if (node.type !== 'VariableDeclarator' || !names.has(nameOf(node.id) ?? '') || !node.init) return
+            let text = template.text.slice(node.init.start!, node.init.end!)
+            const owner = klass.node.id?.name
+            if (branch === 'choice' && owner !== 'Switch') text = text.replace(/part="switch-(?:track|thumb)"/g, '')
+            if (branch === 'primitive' && owner !== 'Stepper') text = text.replace(/part="(?:field-shell stepper|stepper-button (?:decrement|increment)-button)"/g, '')
+            if (branch === 'primitive' && owner !== 'UnitInput') text = text.replace(/part="(?:field-affix unit unit-static|unit unit-select)"/g, '')
+            hookSources.push(text)
+        })
+    }
+    for (const text of hookSources) {
         // Match named and default slots in actual template literals; no guessed dynamic names.
-        for (const [, attrs] of source.text.matchAll(/<slot(?=\s|>)([^>]*)>/g)) {
+        for (const [, attrs] of text.matchAll(/<slot(?=\s|>)([^>]*)>/g)) {
             const name = /\bname\s*=\s*["']([\w-]+)["']/.exec(attrs)?.[1]
             if (name || !/\bname\s*=/.test(attrs)) slots.push({ name: name ?? '' })
         }
-        for (const [, names] of source.text.matchAll(/(?<![-\w])part\s*=\s*["']([\w -]+)["']/g)) names.split(/\s+/).forEach(scanPart)
-        for (const [, names] of source.text.matchAll(/\bexportparts\s*=\s*["']([^"'${]+)["']/g)) {
+        for (const [, names] of text.matchAll(/(?<![-\w])part\s*=\s*["']([\w -]+)["']/g)) names.split(/\s+/).forEach(scanPart)
+        for (const [, names] of text.matchAll(/\bexportparts\s*=\s*["']([^"'${]+)["']/g)) {
             for (const mapping of names.split(',')) scanPart(mapping.trim().split(/\s*:\s*/).at(-1)!)
         }
+    }
+    for (const source of viewsFor(klass)) {
         const tokenSources = [source.text]
         for (const [, file] of source.text.matchAll(/['"](\.[^'"]+\.css)\?inline['"]/g))
             tokenSources.push(await readFile(resolve('components', dirname(source.path), file!), 'utf8'))
@@ -531,6 +575,8 @@ assert.deepEqual(audioRecord.setup.classic.scripts.map((script: ClientScript) =>
 assert.equal(buttonRecord.component.events.find((event: Event) => event.name === 'action')?.cancelable, false)
 assert.match(buttonRecord.component.events.find((event: Event) => event.name === 'change')?.detail, /pressed/)
 assert.equal(audioRecord.component.attributes.find((attribute: Attribute) => attribute.name === 'play-label')?.property, 'playLabel')
+const workspaceRecord = JSON.parse(await readFile(resolve(output, 'records/cb-workspace.json'), 'utf8'))
+assert.deepEqual(workspaceRecord.component.slots.map((slot: Slot) => slot.name), ['', 'bottom', 'end', 'header', 'start'])
 const browser = [...sources].filter(([path]) => /^(?:[a-z-]+-)?client\.ts$/.test(path)).map(([sourcePath, source]) => {
     const provided: string[] = []
     visit(source.ast, node => {
