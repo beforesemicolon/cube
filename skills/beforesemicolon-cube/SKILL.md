@@ -14,6 +14,20 @@ description: Build and check interfaces with @beforesemicolon/cube. Use this ski
 
 Choose a Cube control when it already meets the request. For example, use `cube/cb-button` for an icon-only action and `cube/cb-audio-player` for a ready-made audio player. If the intent is to teach playback state with Markup, choose a native `<audio>` element and build the controls instead.
 
+## Companion packages
+
+Use these packages when their capabilities are needed. Match each package's
+installed version and read its own skill before using its API.
+
+- `@beforesemicolon/markup` (`beforesemicolon-markup`): reactive templates, state, and helpers for custom behavior.
+- `@beforesemicolon/web-component` (`beforesemicolon-web-component`): author, register, and manage custom elements. It supplies Cube's runtime.
+- `@beforesemicolon/router` (`beforesemicolon-router`): route views and handle navigation and browser history.
+- `@beforesemicolon/intl` (`beforesemicolon-intl`): translations, formatting, and runtime locale changes.
+
+Do not add Router or Intl for an isolated Cube control. In classic pages,
+the WebComponent script already supplies its matching Markup runtime as
+`BFS.MARKUP`. Do not install or load a separate classic Markup script for Cube.
+
 ## npm: icon action and toggle
 
 For a browser application with a bundler, install `npm install @beforesemicolon/cube@1.2.0`. Use these candidate versions after publication.
