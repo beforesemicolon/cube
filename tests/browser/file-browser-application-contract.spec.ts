@@ -82,6 +82,68 @@ test('grid cards render generic entry metadata and include it in filtering', asy
     ).toHaveCount(0)
 })
 
+test('shows a responsive selected-files popover instead of a footer', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 740 })
+    const host = page.locator('cb-file-browser')
+    await host.evaluate((node) => {
+        const browser = node as FileBrowser
+        browser.selectionCountLabel = '{count} selected'
+        browser.selectionLimitLabel = '{count} of {max} selected'
+        browser.selectedFilesLabel = 'Selected files'
+        browser.clearSelectionLabel = 'Clear all'
+        browser.maxSelections = 3
+        browser.entries = [
+            { id: 'one', name: 'one.svg', type: 'file' },
+            { id: 'two', name: 'two.svg', type: 'file' },
+            { id: 'three', name: 'three.svg', type: 'file' },
+        ]
+        const selections: string[][] = []
+        browser.addEventListener('selectionchange', (event) => {
+            selections.push((event as CustomEvent<{ selectedIds: string[] }>).detail.selectedIds)
+        })
+        Object.assign(browser, { selections })
+    })
+
+    await expect(host.locator('footer[part~="selection"]')).toHaveCount(0)
+    await expect(host.locator('cb-popover[part~="selection"]')).toHaveCount(0)
+    await host.evaluate((node) => {
+        ;(node as FileBrowser).selectedIds = ['one', 'two', 'three']
+    })
+    const search = host.getByRole('textbox', { name: 'Search assets' })
+    const trigger = host.getByRole('button', { name: '3 selected' })
+    await expect(trigger).toBeVisible()
+    await expect.poll(async () => {
+        const a = await search.boundingBox()
+        const b = await trigger.boundingBox()
+        return !!a && !!b && a.x < b.x
+    }).toBe(true)
+    await trigger.press('Enter')
+    const dialog = host.getByRole('dialog', { name: 'Selected files' })
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByRole('listitem')).toHaveCount(3)
+    await expect(dialog.getByText('3 of 3 selected')).toBeVisible()
+
+    const remove = dialog.getByRole('button', { name: 'Remove two.svg' })
+    await remove.press('Escape')
+    await expect(dialog).toBeHidden()
+    await expect(trigger).toBeFocused()
+    await trigger.press('Enter')
+    await expect(dialog).toBeVisible()
+    await host.evaluate((node) => {
+        node.addEventListener('beforeselectionchange', (event) => event.preventDefault(), { once: true })
+    })
+    await remove.press('Enter')
+    await expect(dialog.getByRole('listitem')).toHaveCount(3)
+    await remove.click()
+    await expect(dialog.getByRole('listitem')).toHaveCount(2)
+    await expect(host.getByRole('button', { name: '2 selected' })).toBeVisible()
+    await dialog.getByRole('button', { name: 'Clear all' }).click()
+    await expect(dialog).toHaveCount(0)
+    await expect(search).toBeFocused()
+    await expect(host.evaluate(node => Reflect.get(node, 'selections')))
+        .resolves.toEqual([['one', 'three'], []])
+})
+
 test('flat current-folder entries render with an explicit navigable path', async ({
     page,
 }) => {

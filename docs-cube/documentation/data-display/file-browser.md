@@ -25,4 +25,9 @@ root-to-current order, with `{ id, label }` for each folder. Include the root's
 actual ID and set `currentFolderId` to the current folder's ID. The app receives
 the same `navigate` event when a user opens a folder or selects a breadcrumb.
 
+The selected count opens a list of selected items beside search. Remove an
+item from the list to update the selection, or supply `clearSelectionLabel`
+to offer a clear-all action. These actions use the normal `selectionchange`
+and cancelable `beforeselectionchange` events.
+
 [{{t.cubeReference.openPlayground}}](/playground/?path=/story/data-display--file-browser)

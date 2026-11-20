@@ -265,7 +265,7 @@ function wireInteraction(tag: string, node: HTMLElement, wrapper: HTMLElement): 
 }
 
 export function preview(tag: string, args: PreviewArgs) {
-    const wrapper = document.createElement('div'); wrapper.style.cssText = 'min-height:140px;max-width:960px;width:100%;padding:24px;box-sizing:border-box;background:var(--color-background);color:var(--color-foreground)'
+    const wrapper = document.createElement('div'); wrapper.style.cssText = 'min-height:140px;width:100%;padding:24px;box-sizing:border-box;background:var(--color-background);color:var(--color-foreground)'
     if (['cb-status','cb-empty-state','cb-skeleton','cb-progress','cb-spinner','cb-toast','cb-alert','cb-banner','cb-flashbar'].includes(tag)) wrapper.style.background='light-dark(var(--color-surface-muted),var(--color-surface))'
     const node = document.createElement(tag); seedPreview(tag, node, args); Object.assign(node, fieldControlTags.has(tag) ? controlArgs(args) : args)
     if (tag === 'cb-workspace') {

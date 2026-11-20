@@ -37,6 +37,7 @@
 [part~='search'] {
     display: block;
     inline-size: min(280px, 100%);
+    min-inline-size: 0;
 }
 [part~='path'] {
     padding-block-end: var(--spacing-sm, 8px);
@@ -147,40 +148,31 @@
 }
 [part~='selection'] {
     flex: none;
-    display: grid;
-    gap: var(--spacing-xs, 4px);
-    padding: var(--spacing-sm, 8px);
-    border-block-start: 1px solid var(--color-separator);
-    background: var(--color-surface-muted);
-    min-inline-size: 0;
-}
-[part~='selection-toolbar'] {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    min-block-size: 24px;
+    align-self: flex-start;
 }
 [part~='selection-count'] {
+    white-space: nowrap;
+}
+[part~='selection-toolbar'] {
     color: var(--color-muted-foreground);
     font-size: var(--component-caption-font-size, 11px);
+    margin-block-end: var(--spacing-sm, 8px);
 }
 [part~='selected-files'] {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    max-block-size: 84px;
-    overflow: auto;
+    max-block-size: 220px;
     overscroll-behavior: contain;
 }
 [part~='selected-file'] {
-    max-inline-size: 100%;
     min-inline-size: 0;
 }
-[part~='selected-file']::part(label) {
+[part~='selected-file-name'] {
+    min-inline-size: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+[part~='remove-selection'] {
+    flex: none;
 }
 [part~='state'] {
     display: grid;

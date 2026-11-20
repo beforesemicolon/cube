@@ -1,6 +1,5 @@
 import { register } from '../../core/Component.js'
 import {
-    and,
     html,
     is,
     isNot,
@@ -11,6 +10,9 @@ import {
 } from '../../core/runtime.js'
 import { safeHref } from '../../core/url.js'
 import { scalarText } from '../../core/value.js'
+import '../../overlay/popover/index.js'
+import '../../layout/row/index.js'
+import '../list/index.js'
 import type { TableColumn, TableRecord } from '../table/TableBase.js'
 import {
     FileBrowserBase,
@@ -40,13 +42,14 @@ export class FileBrowser extends FileBrowserBase {
     private pendingFolderSelection: ReturnType<typeof setTimeout> | null = null
 
     render(): Template {
-        return html`<cb-col part="browser" gap="md" role="region" aria-label=${this.accessibleName}>
+        return html`<cb-col ref="browser" part="browser" gap="md" role="region" tabindex="-1" aria-label=${this.accessibleName}>
             ${when(
                 this.props.toolbarEnabled,
                 () =>
                     html`<cb-action-bar part="toolbar" wrap accessible-label=${this.accessibleName}>
                         <div part="toolbar-main" slot="start">
                             <cb-text-input
+                                ref="search"
                                 part="search"
                                 hidden=${isNot(this.props.searchable)}
                                 accessible-label=${this.props.searchLabel}
@@ -60,6 +63,7 @@ export class FileBrowser extends FileBrowserBase {
                                     this.setQuery(event.detail.value, event)
                                 }}
                             ></cb-text-input>
+                            ${when(this.showSelectedFiles, this.selectionTemplate)}
                             <slot name="toolbar" part="toolbar-content"></slot>
                         </div>
                         <div part="toolbar-actions">
@@ -155,6 +159,10 @@ export class FileBrowser extends FileBrowserBase {
                         </div>
                     </cb-action-bar>`
             )}
+            ${when(
+                () => !this.toolbarEnabled && this.showSelectedFiles(),
+                this.selectionTemplate
+            )}
             <cb-breadcrumb
                 part="path"
                 accessible-label=${this.props.breadcrumbLabel}
@@ -207,13 +215,6 @@ export class FileBrowser extends FileBrowserBase {
                         )
                 )}
             </div>
-            ${when(
-                and(
-                    isNot(this.props.selectionMode, 'none'),
-                    this.props.selectionCountLabel
-                ),
-                this.selectionTemplate
-            )}
         </cb-col>`
     }
 
@@ -232,6 +233,7 @@ export class FileBrowser extends FileBrowserBase {
                 (entry) =>
                     html`<div part="entry-shell" data-id=${entry.id}>
                         <cb-button
+                            ref="entries"
                             part="entry"
                             exportparts="control:entry-control,label:entry-label,button-label:entry-label,icon:entry-icon,description:entry-description"
                             data-bare
@@ -405,69 +407,105 @@ export class FileBrowser extends FileBrowserBase {
             }}
         ></cb-table>`
 
+    private showSelectedFiles = (): boolean =>
+        this.selectionMode !== 'none' && this.selectionCount > 0
+
+    private selectionButtonLabel = (): string =>
+        (scalarText(this.selectionCountLabel).trim() || '{count} selected')
+            .replaceAll('{count}', String(this.selectionCount))
+            .replaceAll('{max}', String(this.selectionLimit))
+
+    private selectedListLabel = (): string =>
+        scalarText(this.selectedFilesLabel).trim() || 'Selected files'
+
+    private changeSelectedFiles(ids: readonly string[], event: Event): void {
+        event.stopPropagation()
+        if (!this.setSelection(ids, event)) return
+        queueMicrotask(() => {
+            const targets = this.selectionCount
+                ? [...(this.refs.removeSelection ?? []), this.refs.selectionCount?.[0]]
+                : [this.refs.search?.[0], this.refs.entries?.[0], this.refs.browser?.[0]]
+            targets
+                .find((target): target is HTMLElement =>
+                    target instanceof HTMLElement && target.isConnected && !target.hidden
+                )
+                ?.focus()
+        })
+    }
+
     private selectionTemplate = (): Template =>
-        html`<footer part="selection">
-            <div part="selection-toolbar">
-                <span part="selection-count" role="status" aria-live="polite"
-                    >${this.selectionSummary}</span
-                >
+        html`<cb-popover
+            part="selection"
+            accessible-label=${this.selectedListLabel}
+            popup-max-width="360px"
+            popup-max-height="360px"
+            disabled=${() => this.unavailable}
+            onkeydown=${(event: KeyboardEvent) => {
+                if (event.key !== 'Escape') return
+                const trigger = this.refs.selectionCount?.[0]
+                if (trigger instanceof HTMLElement) trigger.focus()
+            }}
+        >
+            <cb-button
+                ref="selectionCount"
+                part="selection-count"
+                slot="trigger"
+                variant="secondary"
+                size="sm"
+                label=${this.selectionButtonLabel}
+                disabled=${() => this.unavailable}
+            ></cb-button>
+            <cb-row
+                part="selection-toolbar"
+                gap="sm"
+                align="center"
+                justify="space-between"
+            >
+                <span role="status">${() => this.selectionSummary() || this.selectionButtonLabel()}</span>
                 <cb-button
                     part="clear-selection"
                     label=${this.props.clearSelectionLabel}
                     size="xs"
                     variant="ghost"
-                    hidden=${() => !this.selectionCount || !this.clearSelectionLabel}
+                    hidden=${isNot(this.props.clearSelectionLabel)}
                     disabled=${() => this.unavailable}
-                    onaction=${(event: Event) => {
-                        event.stopPropagation()
-                        this.setSelection([], event)
-                    }}
+                    onaction=${(event: Event) => this.changeSelectedFiles([], event)}
                 ></cb-button>
-            </div>
-            ${when(
-                () => this.selectionCount > 0,
-                () =>
-                    html`<div
-                        part="selected-files"
-                        role="region"
-                        aria-label=${() => this.selectedFilesLabel || this.accessibleName()}
-                    >
-                        ${repeat(
-                            this.selectedEntries,
-                            (entry) =>
-                                html`<cb-button
-                                    part="selected-file"
-                                    variant="secondary"
-                                    size="xs"
-                                    label=${entry.name}
-                                    title=${entry.id}
-                                    accessible-label=${() =>
-                                        scalarText(
-                                            this.removeSelectionLabel
-                                        ).replaceAll('{entry}', entry.name)}
-                                    disabled=${() => this.unavailable}
-                                    onaction=${(event: Event) => {
-                                        event.stopPropagation()
-                                        this.setSelection(
-                                            this.selectedIds.filter(
-                                                (id) => id !== entry.id
-                                            ),
-                                            event
-                                        )
-                                    }}
-                                >
-                                    <span>${entry.name}</span>
-                                    <cb-icon
-                                        slot="suffix"
-                                        name="close"
-                                        decorative
-                                    ></cb-icon>
-                                </cb-button>`,
-                            { key: (entry) => entry.id }
-                        )}
-                    </div>`
-            )}
-        </footer>`
+            </cb-row>
+            <cb-list part="selected-files" gap="xs" accessible-label=${this.selectedListLabel}>
+                ${repeat(
+                    this.selectedEntries,
+                    (entry) =>
+                        html`<cb-row
+                            part="selected-file"
+                            role="listitem"
+                            align="center"
+                            justify="space-between"
+                            gap="sm"
+                        >
+                            <span part="selected-file-name" title=${entry.name}>${entry.name}</span>
+                            <cb-button
+                                ref="removeSelection"
+                                part="remove-selection"
+                                icon="close"
+                                icon-only
+                                variant="ghost"
+                                size="xs"
+                                accessible-label=${() =>
+                                    (scalarText(this.removeSelectionLabel).trim() ||
+                                        'Remove {entry}').replaceAll('{entry}', entry.name)}
+                                disabled=${() => this.unavailable}
+                                onaction=${(event: Event) =>
+                                    this.changeSelectedFiles(
+                                        this.selectedIds.filter((id) => id !== entry.id),
+                                        event
+                                    )}
+                            ></cb-button>
+                        </cb-row>`,
+                    { key: (entry) => entry.id }
+                )}
+            </cb-list>
+        </cb-popover>`
 
     private tableColumns = (): readonly TableColumn<FileRecord>[] => {
         const columns: TableColumn<FileRecord>[] = [

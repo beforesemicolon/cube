@@ -21,8 +21,8 @@ const slotHasContent = (slot: Element | undefined): boolean =>
 
 // Family-owned feedback styles, independent of the Studio demo/control layouts.
 
-export function messageView(source: MessageBase, kind: MessageKind): Template {
-    const title = () => kind === 'status' ? scalarText(source.value) || scalarText(source.label) : scalarText(source.label) || scalarText(source.value)
+export function messageView(source: MessageBase, kind: MessageKind, action?: Template): Template {
+    const title = () => kind === 'status' ? scalarText(source.value) || scalarText(source.label) : scalarText(source.label).trim() || scalarText(source.value).trim()
     const copy = () => [...new Set([kind !== 'status' && scalarText(source.value) !== title() ? scalarText(source.value) : '',scalarText(source.status) !== title() ? scalarText(source.status) : ''].filter(Boolean))].join(' · ')
     const tone = () => toneFor(source.tone)
     const actions = state(false)
@@ -45,6 +45,7 @@ export function messageView(source: MessageBase, kind: MessageKind): Template {
                 <div part="content" hidden=${isNot(content[0])} onslotchange=${syncContent}><slot ref="content"></slot></div>
                 <div part="actions" hidden=${isNot(actions[0])} onslotchange=${syncActions}><slot ref="actions"></slot></div>
             </div>
+            ${action ?? ''}
         </div>
     </div>`
     return root.onMount(() => { syncContent(); syncActions() })

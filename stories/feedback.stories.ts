@@ -18,7 +18,7 @@ export const Spinner: Story = componentStory('cb-spinner', { label: 'Loading', s
 
 export const Toast: Story = componentStory('cb-toast', { label: 'Changes published', value: 'Your latest changes are available online.', status: '', tone: 'success' })
 
-export const Alert: Story = componentStory('cb-alert', { label: 'Preview is not published', value: 'Only people with the preview link can see this version.', status: '', tone: 'info' })
+export const Alert: Story = componentStory('cb-alert', { label: 'Preview is not published', value: 'Only people with the preview link can see this version.', status: '', tone: 'info', dismissible: false, dismissLabel: 'Dismiss alert' })
 
 export const Banner: Story = componentStory('cb-banner', { label: 'You are offline', value: 'Changes are saved on this device until you reconnect.', status: '', tone: 'warning' })
 
