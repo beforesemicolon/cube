@@ -12,6 +12,7 @@ Start with your version of Cube. Read the version from your lockfile or the
 URL of your browser script. Open the matching index and one component record.
 
 - **Agent skill:** [Cube skill for 1.2.0](https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.2.0/skills/beforesemicolon-cube/SKILL.md) after npm publication.
+- **Offline guides and examples:** Start at the packaged skill's `references/index.md`. The category guides cover all registered components.
 - **Installed package:** `node_modules/@beforesemicolon/cube/ai/index.json`
 - **Web:** [Cube 1.2.0 index](https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.2.0/ai/index.json) after npm publication.
 - **Component tooling:** `@beforesemicolon/cube/custom-elements.json`

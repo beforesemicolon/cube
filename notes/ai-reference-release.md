@@ -22,3 +22,12 @@ After the owner publishes the dependency and Cube, verify:
    confirm its schema version and the element definitions.
 4. Install the published packages into a new application. Test a named
    icon-only action by keyboard using only the public entry points.
+
+The installable skill contains a versioned offline guide and companion example
+files for every registered element. Verify the public archive entry point at
+`https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.2.0/skills/beforesemicolon-cube/manifest.json`.
+Install the package into a clean project, run the shared skill installer
+against that project, and open `references/index.md` in the installed skill.
+The manifest gives the paths relative to the skill folder. Check the component
+page and bundled examples for `cb-button`, `cb-audio-player`, and
+`cb-modal-renderer`.

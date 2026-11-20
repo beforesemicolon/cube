@@ -3,8 +3,9 @@ import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { resolve } from 'node:path'
+import { posix, resolve } from 'node:path'
 import { componentEntries, componentGroups } from './component-entries.js'
+import { build } from 'esbuild'
 
 interface Manifest {
     readonly name: string
@@ -42,8 +43,43 @@ assert.deepEqual(new Set(archiveFiles), files, 'Inspect the actual archive, not 
 const documentation = new Set(['package.json', 'README.md', 'LICENSE', 'ai/index.json', 'ai/tokens.json', 'custom-elements.json'])
 const references = JSON.parse(await readFile('ai/index.json', 'utf8'))
 assert.equal(references.version, manifest.version)
-assert.deepEqual(references.skill, { name: 'beforesemicolon-cube', path: 'skills/beforesemicolon-cube/SKILL.md' })
-documentation.add(references.skill.path)
+const skillRoot = 'skills/beforesemicolon-cube/'
+assert.deepEqual(references.skill, { name: 'beforesemicolon-cube', path: skillRoot + 'SKILL.md', manifest: skillRoot + 'manifest.json' })
+documentation.add(references.skill.manifest)
+const skill = JSON.parse(await readFile(references.skill.manifest, 'utf8'))
+assert.equal(skill.schemaVersion, 1)
+assert.equal(skill.name, references.skill.name)
+assert.deepEqual(Object.keys(skill.coverage).sort(), references.records.map((record: { id: string }) => record.id).sort())
+const skillFiles = new Set<string>(skill.files)
+assert.equal(skillFiles.size, skill.files.length, 'Duplicate file in skill manifest')
+for (const path of skillFiles) {
+    assert(/^(SKILL\.md|(?:references|examples)\/[a-z0-9./-]+)$/.test(path), 'Unexpected skill path: ' + path)
+    assert.equal(path, posix.normalize(path), 'Non-canonical skill path')
+    documentation.add(skillRoot + path)
+}
+for (const path of Object.values(skill.coverage))
+    assert(typeof path === 'string' && path.startsWith('references/components/') && skillFiles.has(path), 'Missing component reference')
+const inspection = await mkdtemp(resolve(tmpdir(), 'cube-packed-skill-'))
+try {
+    execFileSync('tar', ['-xzf', archive, '-C', inspection, 'package/' + skillRoot])
+    const packedSkill = resolve(inspection, 'package', skillRoot)
+    assert.deepEqual(JSON.parse(await readFile(resolve(packedSkill, 'manifest.json'), 'utf8')), skill)
+    for (const path of skillFiles) {
+        const contents = await readFile(resolve(packedSkill, path))
+        assert(contents.length > 0, 'Empty packaged skill file: ' + path)
+        if (!path.endsWith('.md')) continue
+        for (const [, href] of contents.toString().matchAll(/\]\(([^)\s]+)\)/g)) {
+            if (!href || /^(https?:|mailto:|#)/.test(href)) continue
+            const linked = posix.normalize(posix.join(posix.dirname(path), href.split('#')[0]!))
+            assert(skillFiles.has(linked), 'Broken packed skill link: ' + path + ' -> ' + href)
+        }
+        if (path.startsWith('references/components/')) {
+            assert(contents.includes('Standalone classic HTML') && contents.includes('Npm browser entry'), 'Example links missing in ' + path)
+        }
+    }
+} finally {
+    await rm(inspection, { recursive: true, force: true })
+}
 assert.equal(references.records.length, componentEntries.length + 1)
 for (const record of references.records) documentation.add(`ai/${record.path}`)
 for (const file of files) {
@@ -72,6 +108,11 @@ const directory = await mkdtemp(resolve(tmpdir(), 'cube-installed-consumer-'))
 try {
     await writeFile(resolve(directory, 'package.json'), JSON.stringify({ name: 'cube-release-consumer', private: true, type: 'module' }))
     execFileSync('npm', ['install', archive, '--ignore-scripts', '--omit=dev', '--no-audit', '--no-fund'], { cwd: directory, stdio: 'inherit' })
+    const registration = await build({
+        stdin: { contents: "import '@beforesemicolon/cube/overlay/modal'", resolveDir: directory },
+        bundle: true, platform: 'browser', format: 'esm', write: false,
+    })
+    assert.match(registration.outputFiles[0]!.text, /register\d*\("cb-modal-renderer", ModalRenderer\)/, 'Bundled side-effect imports must keep the modal renderer registration')
     const entries = ['theme/tokens', 'media/controller', 'charts/model'].map(path => `${manifest.name}/dist/esm/${path}.js`)
     const allTags = [...componentEntries.map(entry => `cb-${entry.name}`), 'cb-modal-renderer'].sort()
     const smoke = `

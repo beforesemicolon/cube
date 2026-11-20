@@ -5,6 +5,17 @@ description: Build and check interfaces with @beforesemicolon/cube. Use this ski
 
 # Build with Cube
 
+## Offline documentation
+
+The installed skill contains the complete [component catalog](references/index.md).
+Choose a category, then open one component page. Each page has the public guide,
+the applicable API (attributes, properties, events, slots and styling hooks),
+and both example files. Start with [installation](references/setup.md),
+[theming and token values](references/theming.md), or
+[implementation recipes](references/recipes.md). Use the
+[public entry-point catalog](references/public-exports.md) to find exports and
+type names. No network is needed to read these guides.
+
 ## Select and verify the API
 
 1. Read the installed Cube version from package metadata or the lockfile. In plain HTML, read the version from the actual script URLs. If the version is unknown, say so. Do not assume it is latest.

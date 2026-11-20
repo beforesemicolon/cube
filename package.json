@@ -281,7 +281,7 @@
     "ai/records/*.json",
     "ai/assets/*",
     "custom-elements.json",
-    "skills/beforesemicolon-cube/SKILL.md"
+    "skills/beforesemicolon-cube/**"
   ],
   "sideEffects": [
     "./components/index.ts",
@@ -298,7 +298,10 @@
     "./dist/client.js",
     "./dist/*-client.js",
     "./dist/esm/icons/registry.js",
-    "./dist/cjs/icons/registry.js"
+    "./dist/cjs/icons/registry.js",
+    "./components/overlay/modal/renderer.ts",
+    "./dist/esm/overlay/modal/renderer.js",
+    "./dist/cjs/overlay/modal/renderer.js"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit && tsc -p tsconfig.contracts.json",

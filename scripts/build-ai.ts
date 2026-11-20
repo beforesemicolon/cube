@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 import { parse } from '@babel/parser'
 import type * as t from '@babel/types'
 import { componentDocsEntries } from './component-entries.js'
+import { buildCubeSkill } from './build-ai-skill.js'
 import { cubeEventNames } from '../stories/event-names.js'
 import { cubeTheme, flattenTheme } from '../components/theme/tokens.js'
 
@@ -587,7 +588,8 @@ const browser = [...sources].filter(([path]) => /^(?:[a-z-]+-)?client\.ts$/.test
     })
     return { path: `dist/${sourcePath.replace(/\.ts$/, '.js')}`, globals: provided.sort(), requires: [{ package: '@beforesemicolon/web-component', path: 'dist/client.js' }] }
 })
-const skill = { name: 'beforesemicolon-cube', path: 'skills/beforesemicolon-cube/SKILL.md' }
+const tokens = { schemaVersion: 1, package: manifest.name, version: manifest.version, light: flattenTheme(cubeTheme, 'light'), dark: flattenTheme(cubeTheme, 'dark') }
+const skill = await buildCubeSkill(manifest.version, allExports, tokens)
 const skillSource = await readFile(skill.path, 'utf8')
 assert.match(skillSource, /^---\nname: beforesemicolon-cube\ndescription: [^\n]+\n---\n/, 'The package skill must have matching installation metadata')
 const index = {
@@ -599,7 +601,7 @@ const index = {
     themeTokens: 'tokens.json',
 }
 await writeFile(resolve(output, 'index.json'), JSON.stringify(index, null, 2) + '\n')
-await writeFile(resolve(output, 'tokens.json'), JSON.stringify({ schemaVersion: 1, package: manifest.name, version: manifest.version, light: flattenTheme(cubeTheme, 'light'), dark: flattenTheme(cubeTheme, 'dark') }, null, 2) + '\n')
+await writeFile(resolve(output, 'tokens.json'), JSON.stringify(tokens, null, 2) + '\n')
 const cemPath = resolve(output, '..', 'custom-elements.json')
 await writeFile(cemPath, JSON.stringify({ schemaVersion: '1.0.0', readme: 'README.md', modules: [...cemModules.values()] }, null, 2) + '\n')
 console.log(`${index.records.length} versioned Cube reference records and Custom Elements Manifest generated.`)
