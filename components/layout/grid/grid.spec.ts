@@ -35,33 +35,45 @@ test('grid variants supply columns until the caller sets an explicit track list'
             ['sidebar', 'sidebar', '800px'],
             ['holy-grail', 'holy-grail', '800px'],
         ]) {
+            const wrapper = document.createElement('div')
+            wrapper.style.inlineSize = width
             const grid = document.createElement('cb-grid')
             grid.id = id
-            grid.style.inlineSize = width
             if (variant) grid.setAttribute('variant', variant)
             for (let i = 0; i < 3; i++) {
                 const item = document.createElement('div')
                 item.textContent = String(i + 1)
                 grid.append(item)
             }
-            fixture.append(grid)
+            wrapper.append(grid)
+            fixture.append(wrapper)
         }
     })
 
-    const trackCount = (count: number) =>
-        new RegExp('^(?:[\\d.]+px ){' + (count - 1) + '}[\\d.]+px$')
-    await expect(page.locator('#plain')).toHaveCSS('grid-template-columns', trackCount(1))
-    await expect(page.locator('#cards-narrow')).toHaveCSS('grid-template-columns', trackCount(1))
-    await expect(page.locator('#cards-wide')).toHaveCSS('grid-template-columns', trackCount(3))
-    await expect(page.locator('#masonry')).toHaveCSS('grid-template-columns', trackCount(3))
-    await expect(page.locator('#sidebar')).toHaveCSS('grid-template-columns', trackCount(2))
-    await expect(page.locator('#holy-grail')).toHaveCSS('grid-template-columns', trackCount(3))
+    const occupiedColumns = (id: string) =>
+        page.locator(id).evaluate((grid) =>
+            new Set(
+                Array.from(grid.children, (item) =>
+                    Math.round(item.getBoundingClientRect().left)
+                )
+            ).size
+        )
+    for (const [id, count] of [
+        ['#plain', 1],
+        ['#cards-narrow', 1],
+        ['#cards-wide', 3],
+        ['#masonry', 3],
+        ['#sidebar', 2],
+        ['#holy-grail', 3],
+    ] as const) {
+        await expect.poll(() => occupiedColumns(id)).toBe(count)
+    }
 
     const wide = page.locator('#cards-wide')
     await wide.evaluate((node) =>
         node.setAttribute('columns', 'minmax(0, 1fr)')
     )
-    await expect(wide).toHaveCSS('grid-template-columns', trackCount(1))
+    await expect.poll(() => occupiedColumns('#cards-wide')).toBe(1)
     await wide.evaluate((node) => {
         node.setAttribute('template-columns', '100px 200px')
     })
@@ -70,5 +82,5 @@ test('grid variants supply columns until the caller sets an explicit track list'
         node.removeAttribute('template-columns')
         node.removeAttribute('columns')
     })
-    await expect(wide).toHaveCSS('grid-template-columns', trackCount(3))
+    await expect.poll(() => occupiedColumns('#cards-wide')).toBe(3)
 })
