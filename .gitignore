@@ -116,4 +116,5 @@ docs-cube/_template/template.config.js
 /skills/beforesemicolon-cube/manifest.json
 /skills/beforesemicolon-cube/references/*
 !/skills/beforesemicolon-cube/references/recipes.md
+!/skills/beforesemicolon-cube/references/patterns.md
 /skills/beforesemicolon-cube/examples/

@@ -64,6 +64,21 @@ try {
     execFileSync('tar', ['-xzf', archive, '-C', inspection, 'package/' + skillRoot])
     const packedSkill = resolve(inspection, 'package', skillRoot)
     assert.deepEqual(JSON.parse(await readFile(resolve(packedSkill, 'manifest.json'), 'utf8')), skill)
+    const discover = 'references/catalog/index.md'
+    assert(skillFiles.has(discover), 'Missing packed discovery guide')
+    assert(skillFiles.has('references/patterns.md'), 'Missing packed implementation patterns')
+    const discovery = await readFile(resolve(packedSkill, discover), 'utf8')
+    const links = new Map([...discovery.matchAll(/\[(cb-[a-z-]+)\]\(([^)]+)\)/g)].map(([, tag, href]) => [tag, posix.normalize(posix.join(posix.dirname(discover), href!))]))
+    assert.equal(links.size, references.records.length, 'Packed discovery links must cover all public tags')
+    for (const record of references.records) {
+        const path = skill.coverage[record.id]
+        assert.equal(links.get(record.name), path, 'Wrong packed discovery link: ' + record.id)
+        const category = path.split('/')[2]
+        const categoryPath = 'references/categories/' + category + '.md'
+        assert(skillFiles.has(categoryPath), 'Missing packed category: ' + category)
+        const categoryMarkdown = await readFile(resolve(packedSkill, categoryPath), 'utf8')
+        assert(categoryMarkdown.includes('[' + record.name + '](' + posix.relative(posix.dirname(categoryPath), path) + ')'), 'Missing category selection cue: ' + record.id)
+    }
     for (const path of skillFiles) {
         const contents = await readFile(resolve(packedSkill, path))
         assert(contents.length > 0, 'Empty packaged skill file: ' + path)

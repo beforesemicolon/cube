@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { posix, resolve } from 'node:path'
 import { parse } from '@babel/parser'
+import { componentGoals } from './ai-component-goals.js'
 import { componentDocsEntries, componentGroups } from './component-entries.js'
 
 type Item = { name: string; type?: string; property?: string; values?: string[]; default?: string; signature?: string; readonly?: boolean; cancelable?: boolean; detail?: string; bubbles?: boolean; composed?: boolean }
@@ -18,7 +19,7 @@ const folder = 'skills/' + skillName
 const docsRoot = 'docs-cube/documentation'
 const guideMap = new Map([['index.md', 'references/setup.md'], ['theme.md', 'references/theming.md'], ['get-started.md', 'references/setup.md'], ['build-with-ai.md', 'SKILL.md']])
 const componentMap = new Map(componentDocsEntries.map(entry => [entry.path + '.md', 'references/components/' + entry.path + '.md']))
-const cleanDirs = ['references/components', 'references/categories', 'examples/components']
+const cleanDirs = ['references/components', 'references/categories', 'references/catalog', 'examples/components']
 const fixtureFiles = ['tone.wav', 'studio.webm', 'poster.svg'] as const
 const inline = (s: string) => '\x60' + s.replaceAll('\x60', '\\x60') + '\x60'
 const fence = (lang: string, code: string) => '\x60\x60\x60' + lang + '\n' + code.trim() + '\n\x60\x60\x60\n'
@@ -38,11 +39,18 @@ function table(columns: string[], lines: string[][]) {
     return row(columns) + row(columns.map(() => '---')) + lines.map(row).join('') + '\n'
 }
 
-export async function buildCubeSkill(version: string, exports: RecordExports, tokens: unknown) {
+export async function buildCubeSkill(
+    version: string,
+    exports: RecordExports,
+    tokens: unknown,
+    indexedRecords: { id: string; name: string; summary: string }[],
+) {
     const files = new Map<string, string>()
     const binary = new Set<string>()
     const coverage: { [recordId: string]: string } = {}
     const categories = new Map<string, { record: Record; path: string }[]>()
+    const byId = new Map(indexedRecords.map(record => [record.id, record]))
+    assert.equal(byId.size, indexedRecords.length, 'Duplicate versioned component record ID')
     const english = JSON.parse(await readFile('docs-cube/locale/en.json', 'utf8')) as unknown
     const rewriteDoc = (text: string, old: string, page: string) => {
         return text.replace(/^---\n[\s\S]*?\n---\n/, '')
@@ -73,6 +81,10 @@ export async function buildCubeSkill(version: string, exports: RecordExports, to
         const record = JSON.parse(await readFile('ai/records/' + tag + '.json', 'utf8')) as Record
         assert.equal(record.id, 'cube/' + tag)
         assert.equal(record.version, version)
+        const indexed = byId.get(record.id)
+        assert(indexed, 'Discovery catalog record missing: ' + record.id)
+        assert.equal(indexed.name, tag, 'Discovery catalog tag not found in the versioned index')
+        assert.equal(indexed.summary, record.summary)
         const page = componentMap.get(entry.path + '.md')!
         coverage[record.id] = page
         const npm = 'examples/components/' + tag + '.mjs'
@@ -127,17 +139,48 @@ export async function buildCubeSkill(version: string, exports: RecordExports, to
         categories.set(category, group)
     }
     assert.deepEqual([...categories.keys()].sort(), [...componentGroups].sort(), 'Every public category needs a skill page')
+    assert.deepEqual(Object.keys(coverage).sort(), [...byId.keys()].sort(), 'Offline discovery must cover every versioned component')
+    assert.deepEqual(Object.keys(componentGoals).sort(), [...componentGroups].sort(), 'Every component group needs selection cues')
+    const catalog = 'references/catalog/index.md'
+    const goalSections: string[] = []
     const overview = 'references/index.md'
     files.set(overview, '# Cube ' + version + ' offline documentation\n\n' +
         'Start with [setup](setup.md), [theming](theming.md), [recipes](recipes.md), [utility signatures](utilities.md), or the [entry-point catalog](public-exports.md). Follow one category and component page per task. All component pages include npm and classic browser examples.\n\n' +
+        '[Find a component by task](catalog/index.md) before writing a new control.\n\n' +
         '## Component categories\n\n' +
         componentGroups.map(group => '- ' + localLink(overview, 'references/categories/' + group + '.md', heading(group)) + ' (' + categories.get(group)!.length + ')').join('\n') + '\n')
     for (const [category, entries] of categories) {
         const page = 'references/categories/' + category + '.md'
+        const byTag = new Map(entries.map(entry => [entry.record.name, entry]))
+        const goalsByTag = new Map<string, string>()
+        for (const [intent, tags] of componentGoals[category]!) for (const shorthand of tags.split(' ')) {
+            const tag = 'cb-' + shorthand
+            assert(byTag.has(tag), 'Unknown ' + category + ' discovery tag: ' + tag)
+            assert(!goalsByTag.has(tag), 'Duplicate selection cue for ' + tag)
+            goalsByTag.set(tag, intent)
+        }
+        assert.deepEqual([...goalsByTag.keys()].sort(), [...byTag.keys()].sort(), 'Selection cues must match all tags in ' + category)
+        goalSections.push('## ' + localLink(catalog, page, heading(category) + ' (' + entries.length + ')') + '\n\n' +
+            table(['I want to…', 'Check these first'], componentGoals[category]!.map(([intent, tags]) => [intent, tags.split(' ').map(shorthand => {
+                const { record, path } = byTag.get('cb-' + shorthand)!
+                return localLink(catalog, path, record.name)
+            }).join(', ')])))
         files.set(page, '# ' + heading(category) + ' · Cube ' + version + '\n\n' +
-            '[All categories](../index.md) · [Setup](../setup.md) · [Theming](../theming.md)\n\n' +
-            table(['Component', 'Use it to'], entries.sort((a,b) => a.record.name.localeCompare(b.record.name,'en')).map(({ record, path }) => [localLink(page, path, record.name), record.summary])))
+            '[Find by task](../catalog/index.md) · [All categories](../index.md) · [Setup](../setup.md) · [Theming](../theming.md)\n\n' +
+            table(['Component', 'Use it to', 'Task cue'], entries.sort((a,b) => a.record.name.localeCompare(b.record.name,'en')).map(({ record, path }) => [
+                localLink(page, path, record.name), record.summary, goalsByTag.get(record.name)!,
+            ])))
     }
+    files.set(catalog, '# Find a Cube ' + version + ' component by task\n\n' +
+        'Search for the job, not the tag name. Open the category to compare close matches, then open the component page for its exact import, slots, events, accessibility guidance, and runnable examples. Use the project’s compatible component rather than rebuilding it.\n\n' +
+        '[All offline guides](../index.md) · [Setup](../setup.md) · [Theming](../theming.md)\n\n' +
+        '## Goals that need composition\n\n' +
+        '- **Date range:** use two [date pickers](../components/form/date-picker.md) with distinct start/end labels and app-owned range validation. Each picker selects one date.\n' +
+        '- **Relative timestamps:** supply a formatted value from your app or its existing localization formatter. Cube does not provide a relative-time tag.\n' +
+        '- **Multi-step flow:** keep step order and validation in the app. The [numeric stepper](../components/form/stepper.md) is not a wizard; use [tabs](../components/navigation/tabs.md) only for peer views.\n' +
+        '- **Choose tags:** use [select](../components/form/select.md) for predefined choices, [combobox](../components/form/combobox.md) for searchable choices, or [token input](../components/form/token-input.md) for free-form tokens.\n' +
+        '- **No upload:** [file picker](../components/form/file-picker.md) selects files; the application or form owns transfer. For an existing file hierarchy, [file browser](../components/data-display/file-browser.md) has separate upload controls.\n\n' +
+        goalSections.join('\n'))
     for (const source of ['index.md', 'theme.md']) {
         const page = guideMap.get(source)!
         const body = rewriteDoc(await readFile(docsRoot + '/' + source, 'utf8'), source, page)
@@ -189,7 +232,8 @@ export async function buildCubeSkill(version: string, exports: RecordExports, to
     files.set('references/utilities.md', '# Cube utility signatures · ' + version + '\n\n' +
         'See the [implementation recipes](recipes.md) for usage examples. These are signature excerpts from the exact built release. Imports not shown inside excerpts are resolved by the original package declarations.\n\n' + utilities.join('\n'))
     const recipes = 'references/recipes.md'
-    files.set(recipes, await readFile(resolve(folder, recipes), 'utf8'))
+    const patterns = 'references/patterns.md'
+    for (const guide of [recipes, patterns]) files.set(guide, await readFile(resolve(folder, guide), 'utf8'))
     files.set('SKILL.md', await readFile(resolve(folder, 'SKILL.md'), 'utf8'))
     // Check links relative to the installed skill folder, not the checkout.
     for (const fixture of fixtureFiles) binary.add('examples/assets/' + fixture)
@@ -203,7 +247,7 @@ export async function buildCubeSkill(version: string, exports: RecordExports, to
     for (const [path, contents] of files) {
         const target = resolve(folder, path)
         await mkdir(posix.dirname(target), { recursive: true })
-        if (path !== 'SKILL.md' && path !== recipes) await writeFile(target, contents)
+        if (path !== 'SKILL.md' && path !== recipes && path !== patterns) await writeFile(target, contents)
     }
     await mkdir(resolve(folder, 'examples/assets'), { recursive: true })
     for (const fixture of fixtureFiles) await copyFile(resolve('ai/assets', fixture), resolve(folder, 'examples/assets', fixture))

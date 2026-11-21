@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 import { parse } from '@babel/parser'
 import type * as t from '@babel/types'
 import { componentDocsEntries } from './component-entries.js'
+import { componentGoals, exactIntentKeywords } from './ai-component-goals.js'
 import { buildCubeSkill } from './build-ai-skill.js'
 import { cubeEventNames } from '../stories/event-names.js'
 import { cubeTheme, flattenTheme } from '../components/theme/tokens.js'
@@ -464,7 +465,15 @@ for (const entry of componentDocsEntries) {
         links,
     }
     const recordPath = `records/${tag}.json`
-    indexRecords.push({ id, name: tag, summary, path: recordPath, keywords: extra.keywords ?? [entry.name.replaceAll('-', ' '), category] })
+    const goal = componentGoals[category]?.find(([, names]) => names.split(' ').includes(entry.name))
+    assert(goal, `Missing discovery intent for ${tag}`)
+    const keywords = [...new Set([
+        entry.name.replaceAll('-', ' '), category,
+        ...(extra.keywords ?? []),
+        ...(exactIntentKeywords[tag] ?? []),
+        goal[0],
+    ])]
+    indexRecords.push({ id, name: tag, summary, path: recordPath, keywords })
     await writeFile(resolve(output, recordPath), JSON.stringify(record, null, 2) + '\n')
     const modulePath = `dist/esm/${path}/index.js`
     const module = moduleFor(modulePath)
@@ -565,6 +574,10 @@ for (const record of indexRecords) {
     const key = setup.specifier.replace(manifest.name, '.')
     assert(setup.names.every((name: string) => allExports[key]?.names.includes(name)), `Stale npm name in ${record.id}`)
 }
+for (const [tag, keywords] of Object.entries(exactIntentKeywords)) {
+    assert(indexRecords.some(record => record.name === tag), `Unknown intent keyword tag: ${tag}`)
+    assert(keywords.length && keywords.every(keyword => keyword.trim()), `Empty intent keywords for ${tag}`)
+}
 const buttonRecord = JSON.parse(await readFile(resolve(output, 'records/cb-button.json'), 'utf8'))
 const audioRecord = JSON.parse(await readFile(resolve(output, 'records/cb-audio-player.json'), 'utf8'))
 assert.deepEqual(buttonRecord.setup.classic.scripts.map((script: ClientScript) => script.path), [
@@ -589,7 +602,7 @@ const browser = [...sources].filter(([path]) => /^(?:[a-z-]+-)?client\.ts$/.test
     return { path: `dist/${sourcePath.replace(/\.ts$/, '.js')}`, globals: provided.sort(), requires: [{ package: '@beforesemicolon/web-component', path: 'dist/client.js' }] }
 })
 const tokens = { schemaVersion: 1, package: manifest.name, version: manifest.version, light: flattenTheme(cubeTheme, 'light'), dark: flattenTheme(cubeTheme, 'dark') }
-const skill = await buildCubeSkill(manifest.version, allExports, tokens)
+const skill = await buildCubeSkill(manifest.version, allExports, tokens, indexRecords)
 const skillSource = await readFile(skill.path, 'utf8')
 assert.match(skillSource, /^---\nname: beforesemicolon-cube\ndescription: [^\n]+\n---\n/, 'The package skill must have matching installation metadata')
 const index = {

@@ -5,25 +5,80 @@ description: Build and check interfaces with @beforesemicolon/cube. Use this ski
 
 # Build with Cube
 
-## Offline documentation
+## Find the right component
 
-The installed skill contains the complete [component catalog](references/index.md).
-Choose a category, then open one component page. Each page has the public guide,
-the applicable API (attributes, properties, events, slots and styling hooks),
-and both example files. Start with [installation](references/setup.md),
-[theming and token values](references/theming.md), or
-[implementation recipes](references/recipes.md). Use the
-[public entry-point catalog](references/public-exports.md) to find exports and
-type names. No network is needed to read these guides.
+1. Identify the job first. Is this an action, navigation, input, collection,
+   overlay, feedback message, layout, or visualization? Is the user asking
+   for a ready-made control or asking to learn how to build one?
+2. Start at the [intent and component catalog](references/catalog/index.md).
+   Open the matching category and compare the closest controls by purpose.
+   Then open the specific component page. Do not guess component names from
+   other libraries. A simple native button, link, input, table, or layout can
+   be the correct choice if it already satisfies the requirement.
+3. Read the installed Cube version from package metadata or the lockfile. In
+   plain HTML, read the actual script URLs. Match the offline guide's version
+   to that consumer. If a version is unknown, say so. If an older release has
+   no release-specific reference, use its tagged source or documentation.
+4. Read the component's markup example, installation, properties, events,
+   slots, and CSS hooks. Choose the smallest working imports or ordered
+   browser bundles. Use the existing setup; do not introduce a bundler into a
+   page that works with classic scripts.
+5. Implement the behavior with public properties and events. Run
+   `bfs-ai check <file-or-project>` when the checker is installed. Fix
+   verifiable errors, review advisory findings, and test the interaction in a
+   real browser before declaring it fixed.
 
-## Select and verify the API
+### Common choices
 
-1. Read the installed Cube version from package metadata or the lockfile. In plain HTML, read the version from the actual script URLs. If the version is unknown, say so. Do not assume it is latest.
-2. Open that release's `ai/index.json` and follow the relevant record path relative to the index. Without a local package, use `https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@VERSION/ai/index.json`. For an older release with no index, use that release's tagged source or docs.
-3. Read the example, public properties, attributes, events, slots, parts, and dependency list. Do not read the full catalog when one or two records are sufficient. Use `custom-elements.json` for tools that consume a Custom Elements Manifest and `ai/tokens.json` for theme tokens.
-4. Keep the existing project setup. When the shared checker is installed, run `bfs-ai check <file-or-project>`. Fix definite errors, review advisory findings, then verify the actual interaction in a browser.
+| What the interface needs | Start with | Prefer something else when |
+| --- | --- | --- |
+| Run a command or submit a form | [Button](references/components/action/button.md) | Use a link for navigation. Use a native button when you need no Cube conventions. |
+| Navigate to another page | [Link](references/components/navigation/link.md) or [Menu](references/components/navigation/menu.md) | Use [Tabs](references/components/navigation/tabs.md) for peer panels, not browser routes. |
+| Pick a value to submit | [Select](references/components/form/select.md) or [Radio Group](references/components/form/radio-group.md) | Use [Dropdown](references/components/overlay/dropdown.md) for a menu of commands, not a form value. |
+| Show a collection | [List](references/components/data-display/list.md) for items or cards; [Table](references/components/data-display/table.md) for columns | Use a native list or table for static content that needs no component interaction. Use [File Browser](references/components/data-display/file-browser.md) for files and folders. |
+| Show a hint or supporting content | [Tooltip](references/components/overlay/tooltip.md) for a short hint; [Popover](references/components/overlay/popover.md) for anchored content | Use [Modal](references/components/overlay/modal.md) when a task needs focus and a clear return path. |
+| Show the result of an action | [Alert](references/components/feedback/alert.md) in the relevant section; [Flashbar](references/components/feedback/flashbar.md) for app-level progress | Put validation near the field. Put modal-local errors inside the modal. |
+| Arrange interface regions | [Row](references/components/layout/row.md), [Col](references/components/layout/col.md), [Grid](references/components/layout/grid.md) | Use CSS flex or grid for simple native layouts. Use [Workspace](references/components/layout/workspace.md) for coordinated, labeled, resizable regions. |
+| Play sound or video | [Audio Player](references/components/media/audio-player.md) or [Video Player](references/components/media/video-player.md) | Use native media and custom Markup-controlled UI when teaching how playback state works. |
 
-Choose a Cube control when it already meets the request. For example, use `cube/cb-button` for an icon-only action and `cube/cb-audio-player` for a ready-made audio player. If the intent is to teach playback state with Markup, choose a native `<audio>` element and build the controls instead.
+## Read the public API correctly
+
+- **Attributes** are strings in HTML. Use only attribute names and literals the
+  record lists. Use a JavaScript **property** for functions, nodes, arrays or
+  objects unless the component documents a serialized attribute.
+- **Inherited APIs** still need verification on the concrete element. Some
+  subtypes do not support a parent API's behavior. For example, Cube Button
+  has an optional `pressed` toggle, but Link is navigation and does not
+  observe `pressed`. A universal property such as `label` does not replace a
+  component's documented dialog heading or field label contract.
+- **Events** name user requests or state changes. Read the exact event name,
+  detail and whether it is cancellable. Do not wire both a generic
+  `click` and a semantic `action` to the same mutation. Do not use a
+  private descendant as an event target.
+- **Slots and parts** are different API surfaces. A slot composes light-DOM
+  children; a CSS part styles a published shadow hook. A component page can
+  describe generated slot names, such as a tab item's ID. Do not invent a
+  header slot on Card or assume every variant renders the same parts.
+- **Registration** is not the same as styling. A tag that appears in markup
+  may not have upgraded. Check `customElements.get('cb-button')` and
+  separately verify the accessible control, keyboard path, and icon.
+
+## Browse the complete offline references
+
+The [component index](references/index.md) has every category. Each
+component page combines the public guide, API tables and separate npm and
+classic example files. Start with [installation](references/setup.md),
+[theming and tokens](references/theming.md),
+[practical patterns with before-and-after examples](references/patterns.md),
+[implementation recipes](references/recipes.md), or the
+[entry-point catalog](references/public-exports.md). These guides work offline.
+
+For programmatic lookup, read the matching package's `ai/index.json` and
+follow its relative record path. Without the local package, open
+`https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@VERSION/ai/index.json`.
+Use `custom-elements.json` for tooling that reads Custom Elements Manifests
+and `ai/tokens.json` for machine-readable theme values. Load one component page
+and example at a time rather than giving an agent the full catalog.
 
 ## Companion packages
 
