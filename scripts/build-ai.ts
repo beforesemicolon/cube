@@ -7,6 +7,7 @@ import type * as t from '@babel/types'
 import { componentDocsEntries } from './component-entries.js'
 import { componentGoals, exactIntentKeywords } from './ai-component-goals.js'
 import { buildCubeSkill } from './build-ai-skill.js'
+import { expandExportPattern, type ClassicPreviewSource } from './ai-example-utils.js'
 import { cubeEventNames } from '../stories/event-names.js'
 import { cubeTheme, flattenTheme } from '../components/theme/tokens.js'
 
@@ -375,6 +376,7 @@ function moduleFor(path: string) {
 await rm(resolve(output, 'records'), { recursive: true, force: true })
 await mkdir(resolve(output, 'records'), { recursive: true })
 await mkdir(resolve(output, 'assets'), { recursive: true })
+const classicPreviews = new Map<string, ClassicPreviewSource>()
 const pinnedAssets = `https://cdn.jsdelivr.net/npm/${manifest.name}@${manifest.version}/ai/assets`
 for (const [name, source] of Object.entries({ 'tone.wav': 'design/fixtures/tone.wav', 'studio.webm': 'design/fixtures/studio.webm', 'poster.svg': 'design/poster.svg' })) {
     await copyFile(source, resolve(output, 'assets', name))
@@ -449,6 +451,7 @@ for (const entry of componentDocsEntries) {
 }\n`
         : ''
     parseSource(behavior)
+    classicPreviews.set(tag, { trustedMarkup: example, generatedBehavior: behavior })
     const npmImport = exampleEntries.map(entry => `import '${manifest.name}/${entry}'`).join('\n')
     const npmExample = `${npmImport}\n\ndocument.body.insertAdjacentHTML('beforeend', \`${example.replaceAll('\\', '\\\\').replaceAll('`', '\\\`').replaceAll('${', '\\${')}\`)\n${behavior}`
     // Syntax check again after interpolation so malformed previews cannot enter the tarball.
@@ -538,8 +541,8 @@ type Export = { names: string[]; types: string[] }
 type ExportPaths = { import?: string; types?: string }
 async function npmExports(paths: ExportPaths, subpath: string = ''): Promise<Export | null> {
     if (!paths.import || !paths.types) return null
-    const js = resolve(paths.import.replace('*', subpath))
-    const declaration = resolve(paths.types.replace('*', subpath))
+    const js = resolve(expandExportPattern(paths.import, subpath))
+    const declaration = resolve(expandExportPattern(paths.types, subpath))
     await access(js)
     const names = Object.keys(await import(pathToFileURL(js).href)).sort()
     const declared = await getDeclarationExports(declaration)
@@ -556,7 +559,7 @@ for (const [key, value] of Object.entries(manifest.exports) as [string, ExportPa
         if (entry.name === 'modal-renderer') continue
         const [group, name] = entry.path.split('/')
         const declared = `./${group}/${name}${key.endsWith('/base') ? '/base' : ''}`
-        if (key.replace('*', name!) !== declared || Object.hasOwn(allExports, declared)) continue
+        if (expandExportPattern(key, name!) !== declared || Object.hasOwn(allExports, declared)) continue
         allExports[declared] = await npmExports(value, name)
     }
 }
@@ -602,7 +605,7 @@ const browser = [...sources].filter(([path]) => /^(?:[a-z-]+-)?client\.ts$/.test
     return { path: `dist/${sourcePath.replace(/\.ts$/, '.js')}`, globals: provided.sort(), requires: [{ package: '@beforesemicolon/web-component', path: 'dist/client.js' }] }
 })
 const tokens = { schemaVersion: 1, package: manifest.name, version: manifest.version, light: flattenTheme(cubeTheme, 'light'), dark: flattenTheme(cubeTheme, 'dark') }
-const skill = await buildCubeSkill(manifest.version, allExports, tokens, indexRecords)
+const skill = await buildCubeSkill(manifest.version, allExports, tokens, indexRecords, classicPreviews)
 const skillSource = await readFile(skill.path, 'utf8')
 assert.match(skillSource, /^---\nname: beforesemicolon-cube\ndescription: [^\n]+\n---\n/, 'The package skill must have matching installation metadata')
 const index = {

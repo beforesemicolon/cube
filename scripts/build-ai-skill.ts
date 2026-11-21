@@ -4,13 +4,14 @@ import { posix, resolve } from 'node:path'
 import { parse } from '@babel/parser'
 import { componentGoals } from './ai-component-goals.js'
 import { componentDocsEntries, componentGroups } from './component-entries.js'
+import { classicSkillBody, type ClassicPreviewSource } from './ai-example-utils.js'
 
 type Item = { name: string; type?: string; property?: string; values?: string[]; default?: string; signature?: string; readonly?: boolean; cancelable?: boolean; detail?: string; bubbles?: boolean; composed?: boolean }
 type Record = {
     id: string; name: string; version: string; summary: string
     setup: { npm: { import: string; specifier: string; names: string[] }; classic: { scripts: { package: string; version: string; path: string }[] } }
     component: { attributes: Item[]; properties: Item[]; methods: Item[]; events: Item[]; slots: Item[]; parts: Item[]; cssProperties: Item[]; accessibility: string; composition: { relatedComponents: string[]; renderedComponents: string[] } }
-    example: { npm: string; classic: string }
+    example: { npm: string }
 }
 type RecordExports = { [subpath: string]: { names: string[]; types: string[] } | null }
 
@@ -44,6 +45,7 @@ export async function buildCubeSkill(
     exports: RecordExports,
     tokens: unknown,
     indexedRecords: { id: string; name: string; summary: string }[],
+    classicPreviews: ReadonlyMap<string, ClassicPreviewSource>,
 ) {
     const files = new Map<string, string>()
     const binary = new Set<string>()
@@ -90,7 +92,8 @@ export async function buildCubeSkill(
         const npm = 'examples/components/' + tag + '.mjs'
         const html = 'examples/components/' + tag + '.html'
         const c = record.component
-        const preview = record.example.classic.replace(/^<script src="[^"]+"><\/script>\n/gm, '')
+        const preview = classicPreviews.get(tag)
+        assert(preview, 'Missing structured preview for ' + tag)
         const scripts = record.setup.classic.scripts.map(script => '<script defer src="https://cdn.jsdelivr.net/npm/' + script.package + '@' + script.version + '/' + script.path + '"></script>')
         const article = rewriteDoc(await readFile(docsRoot + '/' + entry.path + '.md', 'utf8'), entry.path + '.md', page)
         // The exact authored preview remains in the component page. The
@@ -128,10 +131,9 @@ export async function buildCubeSkill(
         const npmCode = localAssets(record.example.npm)
         parse(npmCode, { sourceType: 'module' })
         files.set(npm, npmCode)
-        // Preview scripts run after deferred category scripts have upgraded the elements.
-        const content = localAssets(preview).replace(/<script>([\s\S]*?)<\/script>/g, (_, code: string) => {
-            parse(code, { sourceType: 'script' })
-            return '<script>document.addEventListener("DOMContentLoaded", () => {\n' + code.trim() + '\n})</script>'
+        const content = classicSkillBody({
+            trustedMarkup: localAssets(preview.trustedMarkup),
+            generatedBehavior: preview.generatedBehavior,
         })
         files.set(html, '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + tag + ' example</title>\n' + scripts.join('\n') + '\n</head>\n<body>\n' + content.trim() + '\n</body>\n</html>\n')
         const group = categories.get(category) ?? []
