@@ -57,7 +57,7 @@ export class SegmentedControl extends SegmentedControlBase {
                 () => this.choices,
                 (item) => {
                     const choice = html`<cb-tooltip
-                        content="${() => item.shortcut || bool(this.iconOnly) || Boolean(scalarText(this.iconOnlyAt)) ? [item.label, item.description].filter(Boolean).join(' — ') : ''}"
+                        content="${() => (item.shortcut || bool(this.iconOnly) || Boolean(scalarText(this.iconOnlyAt)) ? [item.label, item.description].filter(Boolean).join(' — ') : '')}"
                         shortcut="${item.shortcut || ''}"
                         ><cb-button
                             ref="items"
@@ -86,29 +86,34 @@ export class SegmentedControl extends SegmentedControlBase {
                             onaction="${(event: Event) => this.choose(item, event)}"
                         ></cb-button
                     ></cb-tooltip>`
-                    return this.items.find(candidate => scalarText(candidate.id) === item.id)?.closable
-                        ? html`<div part="segment" data-selected="${() => this.checked(item.id)}">
-                            ${choice}
-                            <cb-button part="close" icon="close" icon-only="true" variant="ghost" size="xs"
-                                accessible-label="${() => scalarText(this.closeLabel).replaceAll('{item}', item.label)}"
-                                disabled="${or(() => this.unavailable, item.disabled)}"
-                                onkeydown="${(event: KeyboardEvent) => event.stopPropagation()}"
-                                onbeforeaction="${(event: Event) => event.stopPropagation()}"
-                                onaction="${(event: Event) => this.closeSegment(item, event)}"></cb-button>
-                        </div>` : choice
+                    return this.items.find(
+                        (candidate) => scalarText(candidate.id) === item.id
+                    )?.closable
+                        ? html`<div
+                              part="segment"
+                              data-selected="${() => this.checked(item.id)}"
+                          >
+                              ${choice}
+                              <cb-button
+                                  part="close"
+                                  icon="close"
+                                  icon-only="true"
+                                  variant="ghost"
+                                  size="xs"
+                                  accessible-label="${() => scalarText(this.closeLabel).replaceAll('{item}', item.label)}"
+                                  disabled="${or(() => this.unavailable, item.disabled)}"
+                                  onkeydown="${(event: KeyboardEvent) => event.stopPropagation()}"
+                                  onbeforeaction="${(event: Event) => event.stopPropagation()}"
+                                  onaction="${(event: Event) => this.closeSegment(item, event)}"
+                              ></cb-button>
+                          </div>`
+                        : choice
                 },
                 { key: (item) => item.id }
             )}
         </div>`
     }
     protected syncView(): void {
-        if (bool(this.multiple)) {
-            if (!bool(this.allowEmpty) && !this.selectedValues().length) {
-                const first = this.choices.find((item) => !item.disabled)
-                if (first) this.values = [first.id]
-            }
-        } else if (!scalarText(this.value) && this.selected())
-            this.value = this.selected()
         this.toggleAttribute('data-stacked', this.navigationAxis === 'vertical')
         const breakpoint = this.normalizedIconOnlyBreakpoint
         if (breakpoint) this.dataset.iconOnlyAt = breakpoint

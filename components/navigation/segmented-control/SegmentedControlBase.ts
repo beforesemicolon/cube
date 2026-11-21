@@ -3,7 +3,9 @@ import type { ActionItem, NormalizedItem } from '../../core/items.js'
 import { bool, scalarText } from '../../core/value.js'
 
 export type IconOnlyBreakpoint = '' | 'sm' | 'md' | 'lg'
-export interface SegmentedItem extends ActionItem { closable?: boolean }
+export interface SegmentedItem extends ActionItem {
+    closable?: boolean
+}
 export interface SegmentedControlProps extends Omit<ChoiceGroupProps, 'items'> {
     items?: SegmentedItem[]
     closeLabel?: string
@@ -44,23 +46,56 @@ export abstract class SegmentedControlBase<
     protected selectedValues(): string[] {
         const values: readonly string[] = this.props.values?.() || []
         if (!Array.isArray(values)) return []
-        return this.choices
+        const selected = this.choices
             .filter((item) => values.includes(item.id))
             .map((item) => item.id)
+        if (selected.length || bool(this.allowEmpty)) return selected
+        const first = this.choices.find((item) => !item.disabled)
+        return first ? [first.id] : []
     }
 
-    protected closeSegment(item: NormalizedItem, originalEvent: Event): boolean {
+    protected closeSegment(
+        item: NormalizedItem,
+        originalEvent: Event
+    ): boolean {
         originalEvent.stopPropagation()
-        const source = this.items.find(candidate => scalarText(candidate.id) === item.id)
+        const source = this.items.find(
+            (candidate) => scalarText(candidate.id) === item.id
+        )
         if (this.unavailable || item.disabled || !source?.closable) return false
-        const choices = this.choices, index = choices.findIndex(choice => choice.id === item.id)
-        const items = this.items.filter(candidate => scalarText(candidate.id) !== item.id)
-        const remaining = choices.filter(choice => choice.id !== item.id && !choice.disabled)
-        const next = choices.slice(index + 1).find(choice => !choice.disabled) || [...choices.slice(0, index)].reverse().find(choice => !choice.disabled)
-        const value = scalarText(this.value) === item.id ? next?.id || '' : scalarText(this.value)
-        const values = this.selectedValues().filter(id => id !== item.id)
-        if (bool(this.multiple) && !bool(this.allowEmpty) && !values.length && remaining[0]) values.push(remaining[0].id)
-        const detail = { id: item.id, item: source, items, value, values, originalEvent }
+        const choices = this.choices,
+            index = choices.findIndex((choice) => choice.id === item.id)
+        const items = this.items.filter(
+            (candidate) => scalarText(candidate.id) !== item.id
+        )
+        const remaining = choices.filter(
+            (choice) => choice.id !== item.id && !choice.disabled
+        )
+        const next =
+            choices.slice(index + 1).find((choice) => !choice.disabled) ||
+            [...choices.slice(0, index)]
+                .reverse()
+                .find((choice) => !choice.disabled)
+        const value =
+            scalarText(this.value) === item.id
+                ? next?.id || ''
+                : scalarText(this.value)
+        const values = this.selectedValues().filter((id) => id !== item.id)
+        if (
+            bool(this.multiple) &&
+            !bool(this.allowEmpty) &&
+            !values.length &&
+            remaining[0]
+        )
+            values.push(remaining[0].id)
+        const detail = {
+            id: item.id,
+            item: source,
+            items,
+            value,
+            values,
+            originalEvent,
+        }
         if (!this.request('beforeclose', detail)) return false
         this.items = items
         this.value = value

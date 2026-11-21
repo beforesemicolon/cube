@@ -19,20 +19,25 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('cross-folder selections stay ordered and the native summary counts, removes and clears with a maximum', async ({ page }) => {
-    const host = page.locator('cb-file-browser'), selected = host.getByRole('region', { name: 'Selected files', exact: true })
+    const host = page.locator('cb-file-browser')
+    const selected = host.getByRole('dialog', { name: 'Selected files', exact: true })
     await host.getByRole('option', { name: 'Select Beta.png', exact: true }).click()
     await host.getByRole('option', { name: 'Open Photos', exact: true }).click()
     await host.getByRole('option', { name: 'Select Charlie.png', exact: true }).click()
+    await host.getByRole('button', { name: '2 selected', exact: true }).click()
+    await expect(selected).toBeVisible()
     await expect(host.getByRole('status')).toHaveText('2 of 2 selected')
     await expect(host.getByRole('option', { name: 'Select Delta.png', exact: true })).toBeDisabled()
     expect(await host.evaluate(node => (node as FileBrowser).selectedIds)).toEqual(['b', 'c'])
     expect(await host.evaluate(node => (node as FileBrowser).selectionCount)).toBe(2)
     expect(await host.evaluate(node => (node as FileBrowser).setSelection(['a', 'b', 'c']))).toBe(false)
-    await selected.getByRole('button', { name: 'Remove Beta.png', exact: true }).click()
+    await host.getByRole('button', { name: 'Remove Beta.png', exact: true }).click()
+    await host.getByRole('button', { name: '1 selected', exact: true }).click()
     await expect(host.getByRole('option', { name: 'Select Delta.png', exact: true })).toBeEnabled()
     await host.getByRole('option', { name: 'Select Delta.png', exact: true }).click()
+    await host.getByRole('button', { name: '2 selected', exact: true }).click()
     await host.getByRole('button', { name: 'Clear selection', exact: true }).click()
-    await expect(host.getByRole('status')).toHaveText('0 of 2 selected')
+    await expect(host.locator('[part~="selection-count"]')).toHaveCount(0)
     await expect(selected).toHaveCount(0)
 })
 
@@ -51,12 +56,15 @@ test('Table preserves off-folder selections, blocks folders and respects the cap
     await expect(host.getByRole('checkbox', { name: 'Deselect Charlie.png', exact: true })).toBeChecked()
     expect(await host.evaluate(node => (node as FileBrowser).selectedIds)).toEqual(['b', 'c'])
     await expect(host.getByRole('checkbox', { name: 'Select Delta.png', exact: true })).toBeDisabled()
-    await host.getByRole('region', { name: 'Selected files', exact: true }).getByRole('button', { name: 'Remove Charlie.png', exact: true }).click()
+    await host.getByRole('button', { name: '2 selected', exact: true }).click()
+    await host.getByRole('button', { name: 'Remove Charlie.png', exact: true }).click()
+    await host.getByRole('button', { name: '1 selected', exact: true }).click()
     await expect(host.getByRole('checkbox', { name: 'Select Delta.png', exact: true })).toBeEnabled()
     await host.getByRole('checkbox', { name: 'Select Delta.png', exact: true }).click()
     expect(await host.evaluate(node => (node as FileBrowser).selectedIds)).toEqual(['b', 'd'])
     await host.evaluate(node => { (node as FileBrowser).navigate('') })
     await expect(host.getByRole('checkbox', { name: 'Select Photos', exact: true })).toBeDisabled()
+    await host.getByRole('button', { name: '2 selected', exact: true }).click()
     await expect(host.getByRole('status')).toHaveText('2 of 2 selected')
 })
 
@@ -65,11 +73,12 @@ test('single mode replaces the previous file and keyboard removal returns to an 
     await host.evaluate(node => { (node as FileBrowser).selectionMode = 'single' })
     await host.getByRole('option', { name: 'Select Alpha.png', exact: true }).click()
     await host.getByRole('option', { name: 'Select Beta.png', exact: true }).click()
+    await host.getByRole('button', { name: '1 selected', exact: true }).click()
     await expect(host.getByRole('status')).toHaveText('1 of 1 selected')
     expect(await host.evaluate(node => (node as FileBrowser).selectedIds)).toEqual(['b'])
     const remove = host.getByRole('button', { name: 'Remove Beta.png', exact: true })
     await remove.focus(); await remove.press('Enter')
-    await expect(host.getByRole('status')).toHaveText('0 of 1 selected')
+    await expect(host.locator('[part~="selection-count"]')).toHaveCount(0)
 })
 
 test('a compact toolbar keeps upload and view controls side by side and scroll stays inside the browser', async ({ page }) => {
@@ -82,3 +91,59 @@ test('a compact toolbar keeps upload and view controls side by side and scroll s
     expect(await host.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true)
     await expect(host.locator('div[part~="content"]')).toHaveCSS('overscroll-behavior', 'contain')
 })
+
+test('unframed responsive cards contain long names and descriptions below taller previews', async ({ page }) => {
+    const host = page.locator('cb-file-browser')
+    await host.evaluate(node => {
+        Object.assign(node as FileBrowser, { entries: [{ id: 'long', type: 'file', name: 'LongFileName'.repeat(30), description: 'LongDescription'.repeat(30) }], selectionCountLabel: '' })
+        ;(node as HTMLElement).style.width = '600px'
+    })
+    await expect(host.locator('cb-col[part="browser"]')).toHaveAttribute('gap', 'md')
+    await expect(host.locator('cb-action-bar[part="toolbar"]')).toHaveCount(1)
+    for (const width of [600, 220]) {
+        await host.evaluate((node, width) => { (node as HTMLElement).style.width = `${width}px` }, width)
+        const grid = host.locator('[part="grid"]')
+        const card = host.locator('[part="entry"]')
+        const preview = host.locator('[part="entry-preview"]')
+        const copy = host.locator('[part="entry-copy"]')
+        const bounds = (await card.boundingBox())!
+        const previewBounds = (await preview.boundingBox())!
+        const copyBounds = (await copy.boundingBox())!
+        expect(bounds.width).toBeLessThanOrEqual(width)
+        if (width >= 250) expect(bounds.width).toBeGreaterThanOrEqual(250)
+        expect(previewBounds.height).toBeGreaterThanOrEqual(160)
+        expect(copyBounds.y).toBeGreaterThanOrEqual(previewBounds.y + previewBounds.height)
+        expect(copyBounds.x + copyBounds.width).toBeLessThanOrEqual(bounds.x + bounds.width)
+        expect(await grid.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true)
+        await expect(host.locator('[part="entry-meta"]')).toHaveCSS('text-overflow', 'ellipsis')
+    }
+    await expect(host.locator('[part="browser"]')).toHaveCSS('border-top-width', '0px')
+    await expect(host.locator('cb-col[part="browser"] > div[part="content"]')).toHaveCSS('padding', '0px')
+})
+
+for (const view of ['grid', 'table'] as const) {
+    test(`fills a constrained flex parent and scrolls only its content in ${view} view`, async ({ page }) => {
+        const host = page.locator('cb-file-browser')
+        await host.evaluate((node, view) => {
+            const parent = node.parentElement!
+            parent.style.cssText = 'display:flex;flex-direction:column;height:420px;width:600px'
+            const heading = document.createElement('div')
+            heading.style.cssText = 'height:40px;flex:none'
+            heading.textContent = 'Assets'
+            parent.prepend(heading)
+            ;(node as HTMLElement).style.removeProperty('--component-file-browser-height')
+            Object.assign(node as FileBrowser, {
+                view,
+                entries: Array.from({ length: 40 }, (_, index) => ({ id: String(index), name: `Asset ${index}`, type: 'file' })),
+            })
+        }, view)
+        const content = host.locator('cb-col[part="browser"] > div[part="content"]')
+        await expect.poll(async () => Math.round((await host.boundingBox())!.height)).toBe(380)
+        await expect.poll(async () => Math.round((await host.locator('[part="browser"]').boundingBox())!.height)).toBe(380)
+        expect(await content.evaluate(node => node.scrollHeight > node.clientHeight)).toBe(true)
+        await content.evaluate(node => { node.scrollTop = 120 })
+        expect(await content.evaluate(node => node.scrollTop)).toBeGreaterThan(0)
+        expect(await host.evaluate(node => node.scrollHeight <= node.clientHeight + 1)).toBe(true)
+        if (view === 'table') await expect(host.locator('cb-table [part~="table-root"]')).not.toHaveCSS('display', 'grid')
+    })
+}

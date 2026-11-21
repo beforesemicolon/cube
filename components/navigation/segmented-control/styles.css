@@ -37,7 +37,7 @@ cb-tooltip::part(trigger) {
 [part='segment'][data-selected='true'] {
     background: var(--color-surface, #fff);
     color: var(--color-signal-text, #1d50b3);
-    box-shadow: 0 1px 3px rgba(12, 18, 24, 0.14);
+    box-shadow: none;
 }
 [part='segment'] [part='item'],
 [part='segment'] [part='item'][aria-checked='true'] {
@@ -66,7 +66,7 @@ cb-tooltip::part(trigger) {
 [part='item'][aria-checked='true'] {
     background: var(--color-surface, #fff);
     color: var(--color-signal-text, #1d50b3);
-    box-shadow: 0 1px 3px rgba(12, 18, 24, 0.14);
+    box-shadow: none;
 }
 [part='item']:hover:not([aria-disabled='true']) {
     background: var(--component-segmented-control-item-hover-background, var(--color-active, #e8ecee));

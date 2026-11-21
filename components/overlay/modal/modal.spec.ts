@@ -6,6 +6,9 @@ import { componentContract } from '../../../tests/component-contract.js'
 componentContract('cb-modal', 'overlay--modal', async ({ host }) => {
     await host.evaluate(node => { Object.assign(node, {"open":true} satisfies Partial<Modal>) })
     await expect(host.locator('dialog')).toBeVisible()
+    await expect(host.locator('dialog')).toHaveCSS('width', '500px')
+    await host.evaluate(node => node.setAttribute('modal-size', 'lg'))
+    await expect(host.locator('dialog')).toHaveCSS('width', '600px')
     await host.evaluate(node => {
         const select = document.createElement('cb-select') as Select
         Object.assign(select, {

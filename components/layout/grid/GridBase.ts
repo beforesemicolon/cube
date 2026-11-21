@@ -59,7 +59,7 @@ export abstract class GridBase<
     ]
     empty = false
     variant: GridProps['variant'] = ''
-    columns = 'minmax(0, 1fr)'
+    columns = ''
     rows = ''
     template = ''
     templateColumns = ''

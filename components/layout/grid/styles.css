@@ -4,6 +4,9 @@
     box-sizing: border-box;
     min-inline-size: 0;
 }
+slot {
+    display: contents;
+}
 :host([hidden]) {
     display: none;
 }

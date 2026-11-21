@@ -97,7 +97,7 @@ export class MentionController {
         if (!this.popup) {
             this.popup = document.createElement('div'); this.popup.id = `cb-mentions-${++sequence}`
             this.popup.setAttribute('role', 'listbox'); this.popup.setAttribute('data-cb-mentions', '')
-            this.popup.style.cssText = 'position:fixed;z-index:var(--z-index-popup,100);width:max-content;box-sizing:border-box;min-width:220px;max-width:calc(100vw - 16px);max-height:240px;overflow:auto;padding:4px;border:1px solid var(--color-separator,#81929c);border-radius:var(--radius-md,8px);background:var(--color-surface-raised,var(--color-surface,#fff));color:var(--color-foreground,#20282c);box-shadow:0 6px 20px #0003;font:14px/1.4 system-ui;text-align:start'
+            this.popup.style.cssText = 'position:fixed;z-index:var(--z-index-popup,100);width:max-content;box-sizing:border-box;min-width:220px;max-width:calc(100vw - 16px);max-height:240px;overflow:auto;padding:4px;border:1px solid var(--color-separator,#81929c);border-radius:var(--radius-md,8px);background:var(--color-surface-raised,var(--color-surface,#fff));color:var(--color-foreground,#20282c);font:14px/1.4 system-ui;text-align:start'
             const theme = document.defaultView!.getComputedStyle(element)
             for (const name of ['--color-separator', '--radius-md', '--color-surface-raised', '--color-surface', '--color-foreground', '--color-selection', '--color-selection-foreground', '--z-index-popup']) { const value = theme.getPropertyValue(name); if (value) this.popup.style.setProperty(name, value) }
             suggestionContainer(element).append(this.popup)

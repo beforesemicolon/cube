@@ -107,7 +107,7 @@ test('function and argument controls stay in one row at editor and Storybook wid
                 expect(arg.x).toBeGreaterThan(name.x + name.width)
             }
             expect(await host.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true)
-            expect((await host.boundingBox())!.height).toBeLessThan(36)
+            expect((await host.boundingBox())!.height).toBeLessThanOrEqual(name.height + 2)
         }
     }
     await host.evaluate(node => { node.style.width = '320px'; (node as CssValueInput).value = 'min(100%,720px)' })

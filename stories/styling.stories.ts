@@ -6,6 +6,11 @@ const meta: Meta = { title: 'Styling', tags: ['autodocs'], parameters: { docs: {
 export default meta
 type Story = StoryObj
 
+export const ColorSwatch: Story = componentStory('cb-color-swatch', {
+    value: '#7c3aed', label: 'Profile color', selected: true, variant: 'round', size: 'md',
+    options: ['#2563eb', '#7c3aed', '#16a34a', '#ea580c', '#dc2626', '#0891b2', '#00000000'],
+})
+
 export const ColorPicker: Story = componentStory('cb-color-picker', {
     label: 'Fill color', accessibleLabel: 'Choose fill color', value: '#2563ebcc', native: false, allowAlpha: true, allowSampler: true,
     swatches: ['#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#16a34a','#0891b2','#111827','#ffffff'], recentColors: [], maxRecent: 8,

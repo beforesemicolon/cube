@@ -155,12 +155,13 @@ export const Badge: Story = componentStory('cb-badge', {
 })
 
 export const Avatar: Story = componentStory('cb-avatar', {
+    variant: 'round',
     name: 'Elson Correia',
     accessibleLabel: 'Elson Correia',
     src: '',
     initials: '',
     color: '',
-    size: 'sm',
+    size: 'md',
     status: 'online',
     statusLabel: 'Online',
     decorative: false,

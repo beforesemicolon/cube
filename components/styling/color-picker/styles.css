@@ -48,16 +48,13 @@
 [part~=trigger]::part(control),
 [part~=trigger]::part(button-label),
 [part~=plane]::part(control),
-[part~=plane]::part(button-label),
-[part~=swatch]::part(control),
-[part~=swatch]::part(button-label) {
+[part~=plane]::part(button-label) {
   display: block;
   inline-size: 100%;
   block-size: 100%;
 }
 [part~=trigger]::part(button-label),
-[part~=plane]::part(button-label),
-[part~=swatch]::part(button-label) {
+[part~=plane]::part(button-label) {
   overflow: visible;
 }
 [part~=native] {
@@ -77,37 +74,22 @@
   z-index: var(--z-index-popover,var(--z-index-popup,100));
   container-type: inline-size;
   display: grid;
-  gap: var(--spacing-md,12px);
+  gap: var(--spacing-md,14px);
   inline-size: min(var(--component-color-picker-popup-width,344px), calc(100vw - 16px));
   box-sizing: border-box;
-  padding: var(--spacing-md,12px);
+  padding: var(--spacing-md,14px);
   overflow: auto;
   border: 1px solid var(--color-border, #8A959F);
   border-radius: var(--radius-lg,12px);
   background: var(--color-surface-raised, #FFFFFF);
   color: var(--color-foreground, #20262B);
-  box-shadow: var(--shadow-lg,0 18px 50px color-mix(in srgb,var(--color-foreground, #20262B) 22%,transparent));
+  box-shadow: none;
 }
 [part~=toolbar] {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: end;
   gap: var(--spacing-sm,8px);
-}
-[part~=swatch-preview] {
-  position: relative;
-  overflow: hidden;
-  background:
-    conic-gradient(
-      var(--color-separator, #DAE0E4) 25%,
-      var(--color-surface, #FFFFFF) 0 50%,
-      var(--color-separator, #DAE0E4) 0 75%,
-      var(--color-surface, #FFFFFF) 0) 0 0/8px 8px;
-}
-[part~=swatch-color] {
-  position: absolute;
-  inset: 0;
-  background: var(--cb-swatch-color);
 }
 [part~=hex-field],
 [part~=channel-field] {
@@ -174,7 +156,7 @@ button[part~=plane]:active:not(:disabled) {
   border: 2px solid #fff;
   border-radius: 50%;
   background: transparent;
-  box-shadow: 0 0 0 1px #000, 0 1px 4px rgba(0, 0, 0, .5);
+  box-shadow: 0 0 0 1px #000;
   pointer-events: none;
 }
 [part~=slider-field] {
@@ -223,7 +205,7 @@ button[part~=plane]:active:not(:disabled) {
   border: 2px solid #fff;
   border-radius: 50%;
   background: var(--color-surface, #FFFFFF);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-foreground, #20262B) 65%, transparent), 0 1px 3px rgba(0, 0, 0, .35);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-foreground, #20262B) 65%, transparent);
 }
 [part~=slider]::-moz-range-thumb {
   inline-size: 16px;
@@ -253,26 +235,7 @@ button[part~=plane]:active:not(:disabled) {
   gap: var(--spacing-xs,4px);
 }
 [part~=swatch] {
-  position: relative;
-  inline-size: 28px;
-  min-inline-size: 28px;
-  block-size: 28px;
-  min-block-size: 28px;
-  padding: 2px;
-  border: 1px solid var(--color-border, #8A959F);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface, #FFFFFF);
-  overflow: hidden;
-}
-[part~=swatch][aria-pressed=true] {
-  border-color: var(--color-primary, #2563EB);
-  box-shadow: 0 0 0 1px var(--color-primary, #2563EB);
-}
-[part~=swatch-preview] {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-  border-radius: calc(var(--radius-sm) - 2px);
+  --component-color-swatch-size:28px;
 }
 [part~=add-swatch]::part(control) {
   border-style: dashed;
@@ -292,10 +255,7 @@ button[part~=plane]:active:not(:disabled) {
     --component-color-picker-trigger-size:44px;
   }
   [part~=swatch] {
-    inline-size: 36px;
-    min-inline-size: 36px;
-    block-size: 36px;
-    min-block-size: 36px;
+    --component-color-swatch-size:36px;
   }
   [part~=add-swatch] {
     --component-control-height-sm:36px;

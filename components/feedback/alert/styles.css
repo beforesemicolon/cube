@@ -1,4 +1,25 @@
-@import "../view.css";
+@import '../view.css';
 :host {
-  inline-size: min(100%, var(--component-alert-width,var(--component-feedback-width,320px)));
+    inline-size: min(100%, var(--component-alert-width, 100%));
+}
+:host([hidden]) {
+    display: none;
+}
+[part~='status-card']:has([part~='dismiss']) {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-sm, 8px);
+}
+[part~='dismiss'] {
+    flex: none;
+}
+[part~='status-content'] > :first-child {
+    margin-block-start: 0;
+}
+[part~='status-content'] > [hidden] {
+    display: none;
+}
+[part~='status-content'] > [hidden]:first-child + :not([hidden]) {
+    margin-block-start: 0;
 }

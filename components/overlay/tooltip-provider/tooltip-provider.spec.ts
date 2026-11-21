@@ -6,6 +6,21 @@ componentContract('cb-tooltip-provider', 'overlay--tooltip-provider', async ({ h
     await host.getByRole('button', { name: 'Save document', exact: true }).hover()
     await expect(host.getByRole('tooltip')).toBeVisible()
     await expect(host.getByRole('tooltip')).toHaveText('Save document')
+
+    await host.evaluate(node => {
+        const menu = document.createElement('div')
+        menu.dataset.variant = 'icon'
+        const item = document.createElement('a')
+        item.setAttribute('role', 'menuitem')
+        item.setAttribute('aria-label', 'Websites')
+        item.textContent = '🌐'
+        menu.append(item)
+        node.append(menu)
+    })
+    await host.getByRole('menuitem', { name: 'Websites' }).hover()
+    await expect(host.getByRole('tooltip')).toBeVisible()
+    await expect(host.getByRole('tooltip')).toHaveText('Websites')
+
     await host.evaluate(node => { (node as TooltipProvider).enabled = false })
     await expect(host.getByRole('tooltip')).toBeHidden()
 })

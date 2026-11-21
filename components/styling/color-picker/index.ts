@@ -122,8 +122,8 @@ export class ColorPicker extends ColorPickerBase {
                 <div part="palette-group" hidden=${and(isNot(pick(this.paletteColors, "length")), isNot(this.props.addSwatchLabel))}>
                     <span part="palette-label label" hidden=${isNot(this.props.swatchesLabel)}>${this.props.swatchesLabel}</span>
                     <div part="palette" ref="palette" role="group" aria-label=${() => this.swatchesLabel || null}>
-                        ${repeat(this.paletteColors, color => html`<cb-button ref="swatches" part="swatch" exportparts="control:swatch-control,label:swatch-label,button-label:swatch-label,icon:swatch-icon,description:swatch-description" data-bare data-semantic-host data-color=${color}
-                            aria-pressed=${when(() => color === this.normalizedValue(), 'true', 'false')} disabled=${blocked} data-removable=${() => this.removable(color) ? '' : null}
+                        ${repeat(this.paletteColors, color => html`<cb-color-swatch ref="swatches" part="swatch" exportparts="button:swatch-control,preview:swatch-preview,color:swatch-color" value=${color} data-color=${color}
+                            selected=${() => color === this.normalizedValue()} disabled=${blocked} data-removable=${() => this.removable(color) ? '' : null}
                             accessible-label=${() => { const label=color === '#00000000' ? this.transparentLabel || color : color; return this.swatchesLabel ? `${this.swatchesLabel}: ${label}` : label; }}
                             title=${() => color === '#00000000' ? this.transparentLabel || color : color}
                             aria-keyshortcuts=${() => this.removable(color) ? 'Delete Backspace' : null}
@@ -133,7 +133,7 @@ export class ColorPicker extends ColorPickerBase {
                                 if(!['Delete','Backspace'].includes(event.key) || !this.removable(color)) return;
                                 const index=this.paletteColors().indexOf(color);
                                 if(this.removeSwatch(color,event)) { event.preventDefault(); if(this.selectedSwatch[0]() === color) this.selectedSwatch[1](null); queueMicrotask(() => this.focusPaletteItem(Math.max(0,index))); }
-                            }}><span part="swatch-preview"><span part="swatch-color" style=${`--cb-swatch-color:${color}`}></span></span></cb-button>`,{key:color=>color})}
+                            }}></cb-color-swatch>`,{key:color=>color})}
                         <cb-button part="add-swatch" exportparts="control:add-swatch-control,label:add-swatch-label,button-label:add-swatch-label,icon:add-swatch-icon,description:add-swatch-description" ref="addSwatch" icon-only icon="plus" variant="outline" size="sm"
                             accessible-label=${this.props.addSwatchLabel} title=${this.props.addSwatchLabel} hidden=${isNot(this.props.addSwatchLabel)} disabled=${blocked}
                             onpointerdown=${(event: PointerEvent) => event.preventDefault()}

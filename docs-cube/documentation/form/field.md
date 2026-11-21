@@ -10,6 +10,8 @@ layout: document
 
 Wrap a compatible form control to supply a visible label, supporting text, and validation feedback.
 
+Fields fill their available inline space by default, and compatible Cube controls fill the field. Set `--component-field-width` when an intentionally narrower field is needed.
+
 `<cb-field>` · `@beforesemicolon/cube/form/field`
 
 :::component

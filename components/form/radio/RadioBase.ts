@@ -4,7 +4,6 @@ import {
     type ChoiceControlProps,
 } from '../ChoiceControlBase.js'
 import type { StudioKind } from '../../studio/types.js'
-import type { ControlSize } from '../../core/Component.js'
 
 export interface RadioProps extends ChoiceControlProps {}
 
@@ -18,7 +17,6 @@ const radioSelectionEvent = 'cube-radio-select'
 export abstract class RadioBase extends ChoiceControlBase<RadioProps> {
     readonly componentName = 'radio'
     readonly componentKind: StudioKind = 'choice'
-    size: ControlSize = 'xs'
 
     private sameGroup(source: RadioBase): boolean {
         const name = scalarText(this.name)

@@ -8,7 +8,7 @@
 }
 [part~=root] {
   display: grid;
-  gap: var(--spacing-md,12px);
+  gap: var(--spacing-md,14px);
   min-inline-size: 0;
 }
 [part~=track] {

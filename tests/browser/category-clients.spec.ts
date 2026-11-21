@@ -155,6 +155,30 @@ for (const category of componentGroups) {
     })
 }
 
+test('matching category clients provide alert and file-browser controls without the full bundle', async ({ page }) => {
+    await page.goto('/tests/browser/runtime.html')
+    for (const category of ['action', 'icons', 'form', 'layout', 'navigation', 'overlay', 'feedback', 'data-display']) {
+        await page.addScriptTag({ url: `/dist/${category}-client.js` })
+    }
+    await page.evaluate(() => {
+        const alert = document.createElement('cb-alert')
+        alert.setAttribute('description', 'Notice')
+        alert.setAttribute('dismissible', '')
+        const browser = document.createElement('cb-file-browser')
+        Object.assign(browser, {
+            entries: [{ id: 'file', name: 'Report.pdf', type: 'file' }],
+            selectedIds: ['file'],
+        })
+        document.body.append(alert, browser)
+    })
+    await page.getByRole('button', { name: 'Dismiss alert' }).click()
+    await expect(page.locator('cb-alert')).toBeHidden()
+    await page.getByRole('button', { name: '1 selected' }).click()
+    await expect(page.getByRole('dialog', { name: 'Selected files' })).toBeVisible()
+    await page.getByRole('button', { name: 'Remove Report.pdf' }).click()
+    await expect(page.getByRole('button', { name: '1 selected' })).toHaveCount(0)
+})
+
 test('public utility APIs work without exported classes and survive overlapping scripts', async ({ page }) => {
     await page.goto('/tests/browser/runtime.html')
     await page.addScriptTag({ url: '/dist/client.js' })

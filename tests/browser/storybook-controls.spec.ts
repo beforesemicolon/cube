@@ -133,12 +133,17 @@ test('every public component exposes controls and initialized args for every rea
         interface ObservedConstructor extends CustomElementConstructor { readonly observedAttributes?: readonly string[] }
         const missingControls: string[] = []
         const missingArgs: string[] = []
+        const wrongDefaultSizes: string[] = []
         for (const entry of componentEntries) {
             const tag = `cb-${entry.name}`
             const constructor = customElements.get(tag) as ObservedConstructor | undefined
             if (!constructor) { missingControls.push(`${tag}:registration`); continue }
             const controls = controlsFor(tag)
             const args = storyArgsFor(tag, {})
+            if (constructor.observedAttributes?.includes('size')) {
+                const node = document.createElement(tag)
+                if (!('size' in node) || node.size !== 'md' || args.size !== 'md') wrongDefaultSizes.push(tag)
+            }
             for (const attribute of constructor.observedAttributes ?? []) {
                 const property = attribute.replace(/-([a-z])/g, (_match: string, letter: string) => letter.toUpperCase())
                 if (!(property in controls)) missingControls.push(`${tag}:${property}`)
@@ -156,6 +161,7 @@ test('every public component exposes controls and initialized args for every rea
         return {
             missingControls,
             missingArgs,
+            wrongDefaultSizes,
             splitItemControl: splitControls.items?.control,
             splitItems: splitArgs.items,
             missingMaskedFieldControls: fieldProperties.filter(property => !(property in maskedControls)),
@@ -170,6 +176,7 @@ test('every public component exposes controls and initialized args for every rea
     })
     expect(audit.missingControls).toEqual([])
     expect(audit.missingArgs).toEqual([])
+    expect(audit.wrongDefaultSizes).toEqual([])
     expect(audit.splitItemControl).toBe('object')
     expect(audit.splitItems).toEqual([{ id: 'save', label: 'Save' }])
     expect(audit.missingMaskedFieldControls).toEqual([])

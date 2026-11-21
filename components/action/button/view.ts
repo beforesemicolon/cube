@@ -92,7 +92,6 @@ export function buttonView<P extends ButtonProps>(
                   download="${() => link?.download() || null}"
                   tabindex="${when(or(semanticHost, host.controlUnavailable), -1, 0)}"
                   onclick="${onClick}"
-                  style="padding:0;min-height:var(--cb-height);border:0;background:transparent;color:var(--color-signal-text,#1D50B3);text-decoration:underline;text-underline-offset:3px"
                   >${content}</a
               >`
             : html`<button

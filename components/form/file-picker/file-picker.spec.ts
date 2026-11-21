@@ -7,6 +7,15 @@ componentContract('cb-file-picker', 'form--file-picker', async ({ host, page }) 
     await expect(host.locator('input[type=file]')).toHaveJSProperty('multiple', true)
     await expect(host.locator('input[type=file]')).toHaveAttribute('accept', 'image/*')
     await expect(host.getByRole('button', { name: 'Choose images' })).toBeVisible()
+    const buttonWidths = await host.evaluate(node => {
+        const button = node.shadowRoot?.querySelector('cb-button')
+        return {
+            host: node.getBoundingClientRect().width,
+            button: button?.getBoundingClientRect().width ?? 0,
+        }
+    })
+    expect(buttonWidths.host).toBeGreaterThan(0)
+    expect(Math.round(buttonWidths.host)).toBe(Math.round(buttonWidths.button))
     const chooser = page.waitForEvent('filechooser')
     await host.getByRole('button', { name: 'Choose images' }).click()
     await (await chooser).setFiles({ name: 'chosen.png', mimeType: 'image/png', buffer: Buffer.from('image') })

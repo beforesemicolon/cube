@@ -128,7 +128,7 @@
   color: var(--color-foreground);
   pointer-events: auto;
   overflow: auto;
-  box-shadow: var(--shadow-md,0 4px 16px #0002);
+  box-shadow: none;
 }
 [part~=controls]::part(toolbar) {
   max-block-size: inherit;

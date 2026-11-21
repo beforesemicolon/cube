@@ -14,6 +14,16 @@ import '@beforesemicolon/cube'
 
 Import the full library, a category such as `@beforesemicolon/cube/action`, or an individual component such as `@beforesemicolon/cube/action/button`. For classic browser scripts, load WebComponent first, then Cube's full or category client.
 
+## Build with AI
+
+Read the [Cube agent skill](skills/beforesemicolon-cube/SKILL.md) and the [AI quick start](https://cube.beforesemicolon.com/documentation/build-with-ai).
+Find the index at `node_modules/@beforesemicolon/cube/ai/index.json`, or open the
+[version-pinned Cube 1.2.0 index](https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.2.0/ai/index.json)
+after publication. Change the version in the URL only to match your installed release.
+The packaged skill includes the offline component guides and local examples for every tag.
+The index points to individual component records, and `custom-elements.json` supplies
+the Custom Elements Manifest. Neither is part of a runtime bundle.
+
 ## Components
 
 | Category | Custom elements |
@@ -28,7 +38,7 @@ Import the full library, a category such as `@beforesemicolon/cube/action`, or a
 | Data display | `cb-accordion`, `cb-avatar`, `cb-badge`, `cb-card`, `cb-code-preview`, `cb-expandable-section`, `cb-file-browser`, `cb-layer-tree`, `cb-list`, `cb-table`, `cb-tree` |
 | Media | `cb-audio-player`, `cb-image`, `cb-video-player` |
 | Charts | `cb-cartesian-chart`, `cb-pie-chart` |
-| Styling | `cb-color-picker`, `cb-gradient-editor` |
+| Styling | `cb-color-picker`, `cb-color-swatch`, `cb-gradient-editor` |
 | Editor | `cb-artboard`, `cb-bezier`, `cb-device-frame`, `cb-guide-overlay`, `cb-marquee-selection`, `cb-property-group`, `cb-rulers`, `cb-selection-overlay`, `cb-timeline`, `cb-viewport` |
 | Collaboration | `cb-comment-pin`, `cb-comment-thread`, `cb-presence`, `cb-remote-cursor` |
 | Icons | `cb-icon` |

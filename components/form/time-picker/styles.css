@@ -12,6 +12,9 @@
   inline-size: 100%;
   padding: 0;
   text-align: start;
+  min-block-size: var(--cb-field-height);
+  block-size: var(--cb-field-height);
+  font: inherit;
 }
 [part~=trigger]::part(control),
 [part~=trigger]::part(button-label) {
@@ -22,7 +25,10 @@
   text-align: inherit;
 }
 [part~=trigger]::part(control) {
-  padding: var(--spacing-xs,4px) var(--spacing-md,12px);
+  block-size: 100%;
+  min-block-size: 0;
+  line-height: var(--cb-field-line-height);
+  padding: var(--cb-field-padding-block) var(--cb-field-padding-inline);
 }
 [part~=popup] {
   z-index: var(--z-index-dropdown,var(--z-index-popup,100));
@@ -34,7 +40,7 @@
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-foreground);
-  box-shadow: var(--shadow-md,0 12px 32px rgba(0,0,0,.14));
+  box-shadow: none;
 }
 [part~=option] {
   display: block;
@@ -46,7 +52,7 @@
 }
 [part~=option]::part(control) {
   justify-content: flex-start;
-  padding: var(--spacing-xs,4px) var(--spacing-md,12px);
+  padding: var(--spacing-xs,4px) var(--spacing-md,14px);
   text-align: inherit;
 }
 [part~=option][aria-selected=true] {

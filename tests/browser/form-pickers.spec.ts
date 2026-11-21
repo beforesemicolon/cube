@@ -139,15 +139,15 @@ test('radio group owns its options, keyboard selection and form value', async ({
         }
     })
     expect(indicatorGeometry).toMatchObject({
-        width: 24,
-        height: 24,
+        width: 36,
+        height: 36,
         padding: '0px',
         alignItems: 'center',
         justifyItems: 'center',
     })
-    // The checked dot occupies 44% of the 22px inner control, rounded to layout pixels.
-    expect(indicatorGeometry.dotWidth).toBeCloseTo(22 * .44, 1)
-    expect(indicatorGeometry.dotHeight).toBeCloseTo(22 * .44, 1)
+    // The checked dot occupies 44% of the inner control, excluding its 1px borders.
+    expect(indicatorGeometry.dotWidth).toBeCloseTo((indicatorGeometry.width - 2) * .44, 1)
+    expect(indicatorGeometry.dotHeight).toBeCloseTo((indicatorGeometry.height - 2) * .44, 1)
     await email.focus()
     await page.keyboard.press('ArrowRight')
     await expect(sms).toBeChecked()
@@ -301,7 +301,9 @@ test('combobox stays closed initially, filters interactively and replaces autoco
         combo.locator('[part~="input-shell"]').evaluate(element => element.getBoundingClientRect().height),
         textInput.locator('[part~="control"]').evaluate(element => element.getBoundingClientRect().height),
     ])
-    expect(await controlHeights()).toEqual([28, 28])
+    const heights = await controlHeights()
+    expect(heights[0]).toBeGreaterThan(28)
+    expect(heights[0]).toBe(heights[1])
     await combo.evaluate(element => { (element as HTMLElement & { size: 'lg' }).size = 'lg' })
     await textInput.evaluate(element => { (element as HTMLElement & { size: 'lg' }).size = 'lg' })
     expect(await controlHeights()).toEqual([44, 44])

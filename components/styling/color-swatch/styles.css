@@ -1,0 +1,81 @@
+@import '../../theme/editor.css';
+:host {
+    display: inline-block;
+    inline-size: var(--component-color-swatch-size, var(--cb-height));
+    block-size: var(--component-color-swatch-size, var(--cb-height));
+    min-inline-size: 0;
+    vertical-align: middle;
+}
+:host([data-size='tiny']) { --cb-height: 14px; }
+:host([data-size='xl']) { --cb-height: 52px; }
+:host([data-palette]) {
+    inline-size: fit-content;
+    block-size: auto;
+}
+[part='palette'] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--component-color-swatch-gap, var(--spacing-sm, 8px));
+    padding: 2px;
+}
+[part='palette'] > [part='control'] {
+    flex: none;
+    inline-size: var(--component-color-swatch-size, var(--cb-height));
+    block-size: var(--component-color-swatch-size, var(--cb-height));
+}
+[part='control'],
+[part='control']::part(control),
+[part='control']::part(button-label) {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    min-inline-size: 0;
+    min-block-size: 0;
+    overflow: visible;
+}
+[part='control'] {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+[part='control']::part(control) {
+    border-radius: var(--component-color-swatch-radius, var(--radius-sm, 6px));
+}
+[part='control'][data-shape='round']::part(control) { border-radius: 50%; }
+[part='preview'] {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    inline-size: 100%;
+    block-size: 100%;
+    padding: 2px;
+    border: 1px solid var(--color-border, #8a959f);
+    border-radius: var(--component-color-swatch-radius, var(--radius-sm, 6px));
+    background: var(--color-surface, #fff);
+}
+[part='preview'][data-variant='round'] {
+    border-radius: 50%;
+}
+[part='preview'][data-selected] {
+    border-color: var(--color-primary, #2563eb);
+    box-shadow: 0 0 0 1px var(--color-primary, #2563eb);
+}
+[part='color'] {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    border-radius: inherit;
+    /* A transparent color reveals the checkerboard on the preview. */
+}
+[part='preview']::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: inherit;
+    background: conic-gradient(var(--color-separator, #dae0e4) 25%, var(--color-surface, #fff) 0 50%, var(--color-separator, #dae0e4) 0 75%, var(--color-surface, #fff) 0) 0 0 / 8px 8px;
+}
+[part='preview'] { isolation: isolate; }
+@media (pointer: coarse) {
+    :host { --cb-height: var(--component-control-touch-height, 44px); }
+}

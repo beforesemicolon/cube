@@ -6,8 +6,8 @@
 }
 [part~=root] {
   display: grid;
-  gap: var(--spacing-md,12px);
-  padding: var(--spacing-md,12px);
+  gap: var(--spacing-md,14px);
+  padding: var(--spacing-md,14px);
   border: 1px solid var(--color-separator, #DAE0E4);
   border-radius: var(--radius-lg,12px);
   background: var(--color-surface, #FFFFFF);
@@ -28,7 +28,7 @@
 [part~=workspace] {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) minmax(150px, .55fr);
-  gap: var(--spacing-md,12px);
+  gap: var(--spacing-md,14px);
   align-items: stretch;
 }
 [part~=graph] {
@@ -125,7 +125,7 @@
   translate: 0 -50%;
   border-radius: 50%;
   background: var(--color-primary, #2563EB);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary, #2563EB) 45%, transparent);
+  box-shadow: none;
 }
 [part~=preview][data-playing] [part~=preview-dot] {
   animation: cb-bezier-preview var(--cb-duration) var(--cb-easing) both;

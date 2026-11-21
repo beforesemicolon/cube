@@ -10,6 +10,8 @@ layout: document
 
 Open a dialog for a task that needs focused attention. Call `show()` from the action that opens it.
 
+The default `md` dialog is `500px` wide. Use `modal-size="sm"` for `400px`, `modal-size="lg"` for `600px`, or the `full` and `page` sizes for larger workflows.
+
 `<cb-modal>` · `@beforesemicolon/cube/overlay/modal`
 
 :::component

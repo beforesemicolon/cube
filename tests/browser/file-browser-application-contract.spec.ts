@@ -82,6 +82,69 @@ test('grid cards render generic entry metadata and include it in filtering', asy
     ).toHaveCount(0)
 })
 
+test('shows a responsive selected-files popover instead of a footer', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 740 })
+    const host = page.locator('cb-file-browser')
+    await host.evaluate((node) => {
+        const browser = node as FileBrowser
+        browser.selectionCountLabel = '{count} selected'
+        browser.selectionLimitLabel = '{count} of {max} selected'
+        browser.selectedFilesLabel = 'Selected files'
+        browser.clearSelectionLabel = 'Clear all'
+        browser.maxSelections = 3
+        browser.entries = [
+            { id: 'one', name: 'one.svg', type: 'file' },
+            { id: 'two', name: 'two.svg', type: 'file' },
+            { id: 'three', name: 'three.svg', type: 'file' },
+        ]
+        const selections: string[][] = []
+        browser.addEventListener('selectionchange', (event) => {
+            selections.push((event as CustomEvent<{ selectedIds: string[] }>).detail.selectedIds)
+        })
+        Object.assign(browser, { selections })
+    })
+
+    await expect(host.locator('footer[part~="selection"]')).toHaveCount(0)
+    await expect(host.locator('cb-popover[part~="selection"]')).toHaveCount(0)
+    await host.evaluate((node) => {
+        ;(node as FileBrowser).selectedIds = ['one', 'two', 'three']
+    })
+    const search = host.getByRole('textbox', { name: 'Search assets' })
+    const trigger = host.getByRole('button', { name: '3 selected' })
+    await expect(trigger).toBeVisible()
+    await expect.poll(async () => {
+        const a = await search.boundingBox()
+        const b = await trigger.boundingBox()
+        return !!a && !!b && a.x < b.x
+    }).toBe(true)
+    await trigger.press('Enter')
+    const dialog = host.getByRole('dialog', { name: 'Selected files' })
+    await expect(dialog).toBeVisible()
+    const selectedItems = host.locator('cb-list[part~="selected-files"]').getByRole('listitem')
+    await expect(selectedItems).toHaveCount(3)
+    await expect(host.getByText('3 of 3 selected')).toBeVisible()
+
+    const remove = host.getByRole('button', { name: 'Remove two.svg' })
+    await remove.press('Escape')
+    await expect(dialog).toBeHidden()
+    await expect(trigger).toBeFocused()
+    await trigger.press('Enter')
+    await expect(dialog).toBeVisible()
+    await host.evaluate((node) => {
+        node.addEventListener('beforeselectionchange', (event) => event.preventDefault(), { once: true })
+    })
+    await remove.press('Enter')
+    await expect(selectedItems).toHaveCount(3)
+    await remove.click()
+    await expect(selectedItems).toHaveCount(2)
+    await expect(host.getByRole('button', { name: '2 selected' })).toBeVisible()
+    await host.getByRole('button', { name: 'Clear all' }).click()
+    await expect(dialog).toHaveCount(0)
+    await expect(search).toBeFocused()
+    await expect(host.evaluate(node => Reflect.get(node, 'selections')))
+        .resolves.toEqual([['one', 'three'], []])
+})
+
 test('flat current-folder entries render with an explicit navigable path', async ({
     page,
 }) => {
@@ -107,6 +170,59 @@ test('flat current-folder entries render with an explicit navigable path', async
     await host.getByRole('button', { name: 'Assets', exact: true }).click()
     await expect(navigated).resolves.toBe('assets')
 })
+
+for (const view of ['grid', 'table'] as const) {
+    test(`navigates from a nested ${view} to any ancestor without the toolbar`, async ({
+        page,
+    }) => {
+        const host = page.locator('cb-file-browser')
+        await host.evaluate((element, view) => {
+            const browser = element as FileBrowser
+            Object.assign(browser, {
+                toolbarEnabled: false,
+                view,
+                currentFolderId: 'leaf',
+                pathItems: [
+                    { id: 'assets', label: 'Assets' },
+                    { id: 'one', label: 'Design' },
+                    { id: 'two', label: 'Branding' },
+                    { id: 'leaf', label: 'Logos' },
+                ],
+                entries: [{ id: 'example', name: 'mark.svg', type: 'file' }],
+            })
+            const navigated: string[] = []
+            browser.addEventListener('navigate', (event: Event) => {
+                navigated.push(
+                    (event as CustomEvent<{ folderId: string }>).detail.folderId
+                )
+            })
+            Object.assign(browser, { navigated })
+        }, view)
+
+        const path = host.getByRole('navigation', { name: 'Folder' })
+        const current = path.locator('[aria-current="page"]')
+        await expect(host.locator('[part~="toolbar"]')).toHaveCount(0)
+        await expect(current).toHaveText('Logos')
+        await expect(path.getByRole('button', { name: 'Logos' })).toHaveCount(0)
+
+        const parent = path.getByRole('button', { name: 'Design' })
+        await parent.focus()
+        await parent.press('Enter')
+        // The application has not yet sent its new pathItems or entries.
+        await expect(current).toHaveText('Design')
+        await expect(path.getByText('Branding')).toHaveCount(0)
+        await expect(path.getByText('Logos')).toHaveCount(0)
+
+        await path.getByRole('button', { name: 'Assets' }).click()
+        await expect(current).toHaveText('Assets')
+        await expect(path.getByRole('button', { name: 'Assets' })).toHaveCount(0)
+        await expect(
+            host.evaluate((element) =>
+                Reflect.get(element, 'navigated')
+            )
+        ).resolves.toEqual(['one', 'assets'])
+    })
+}
 
 test('create, upload, and refresh requests honor disabled and loading guards', async ({
     page,

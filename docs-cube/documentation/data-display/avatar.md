@@ -24,3 +24,9 @@ Identify a person or team with an image or initials. Supply the person’s name 
 from `name`. An explicit `color` still wins. Its `tiny` and `xl` sizes are 20px
 and 64px respectively, and every size remains overridable through
 `--component-avatar-size-*` tokens.
+
+Initials automatically use a contrasting neutral foreground for both seeded and
+explicit `color` backgrounds, including CSS colors such as OKLCH, in light and
+dark themes. `--component-avatar-foreground` (or the indexed
+`--component-avatar-foreground-0` through `-5` tokens) overrides that choice.
+When overriding the foreground, choose a readable pair with your background.

@@ -21,6 +21,9 @@ Arrange children with CSS Grid. Pass a track expression to `columns` and set `ga
 
 [{{t.cubeReference.openPlayground}}](/playground/?path=/story/layout--grid)
 
+Use `variant="cards"` without `columns` to fit as many cards as the width allows.
+Set `columns` to override the preset, or leave both unset for one column.
+
 ## Empty state
 
 Set `empty` on `cb-grid` when its slotted content represents an empty state. The

@@ -14,6 +14,7 @@
     "tests/component-contract.ts",
     "tests/browser/package-styles.spec.ts",
     "scripts/check-package.ts",
+    "scripts/build-ai.ts",
     ".storybook/main.ts",
     "types/css.d.ts"
   ]

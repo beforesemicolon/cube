@@ -100,7 +100,7 @@ button[part~=trigger]:active:not(:disabled) {
 }
 [part~=content] {
   display: block;
-  padding: var(--component-expandable-section-content-padding,var(--spacing-md,12px) 0);
+  padding: var(--component-expandable-section-content-padding,var(--spacing-md,14px) 0);
 }
 :host([data-disable-content-padding]) [part~=content] {
   padding: 0;
@@ -121,16 +121,16 @@ button[part~=trigger]:active:not(:disabled) {
   overflow: hidden;
 }
 :host([data-variant=container]) [part~=trigger]::part(control) {
-  padding: var(--spacing-md,12px);
+  padding: var(--spacing-md,14px);
 }
 :host([data-variant=container]) [part~=header-extras] {
-  padding: var(--spacing-sm,8px) var(--spacing-md,12px) var(--spacing-sm,8px) 0;
+  padding: var(--spacing-sm,8px) var(--spacing-md,14px) var(--spacing-sm,8px) 0;
 }
 :host([data-variant=container][data-expanded]) [part~=panel] {
   border-block-start: 1px solid var(--component-expandable-section-border,var(--color-separator, #DAE0E4));
 }
 :host([data-variant=container]) [part~=content] {
-  padding: var(--spacing-md,12px);
+  padding: var(--spacing-md,14px);
 }
 :host([data-variant=container][data-disable-content-padding]) [part~=content] {
   padding: 0;

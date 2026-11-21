@@ -8,22 +8,32 @@ import type { SpinnerBase } from './spinner/SpinnerBase.js'
 type MessageKind = 'status' | 'toast' | 'alert' | 'banner'
 const tones: readonly FeedbackTone[] = ['neutral','info','success','warning','danger']
 const toneFor = (tone: FeedbackTone): FeedbackTone => tones.includes(tone) ? tone : 'info'
+const slotHasContent = (slot: Element | undefined): boolean =>
+    slot?.tagName === 'SLOT' &&
+    typeof (slot as HTMLSlotElement).assignedNodes === 'function' &&
+    (slot as HTMLSlotElement)
+        .assignedNodes()
+        .some(
+            (node) =>
+                node.nodeType === Node.ELEMENT_NODE ||
+                Boolean(node.textContent?.trim())
+        )
 
 // Family-owned feedback styles, independent of the Studio demo/control layouts.
 
-export function messageView(source: MessageBase, kind: MessageKind): Template {
-    const title = () => kind === 'status' ? scalarText(source.value) || scalarText(source.label) : scalarText(source.label) || scalarText(source.value)
+export function messageView(source: MessageBase, kind: MessageKind, action?: Template): Template {
+    const title = () => kind === 'status' ? scalarText(source.value) || scalarText(source.label) : scalarText(source.label).trim() || scalarText(source.value).trim()
     const copy = () => [...new Set([kind !== 'status' && scalarText(source.value) !== title() ? scalarText(source.value) : '',scalarText(source.status) !== title() ? scalarText(source.status) : ''].filter(Boolean))].join(' · ')
     const tone = () => toneFor(source.tone)
     const actions = state(false)
     const content = state(false)
     const syncActions = (): void => {
         const slot = root.refs.actions?.[0]
-        actions[1](slot instanceof HTMLSlotElement && slot.assignedNodes().some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim())))
+        actions[1](slotHasContent(slot))
     }
     const syncContent = (): void => {
         const slot = root.refs.content?.[0]
-        content[1](slot instanceof HTMLSlotElement && slot.assignedNodes().some(node => node.nodeType === Node.ELEMENT_NODE || Boolean(node.textContent?.trim())))
+        content[1](slotHasContent(slot))
     }
     const root = html`<div part="display status-display" data-component=${kind} data-tone=${tone}
         role=${() => kind === 'alert' && ['warning', 'danger'].includes(tone()) ? 'alert' : 'status'}
@@ -35,6 +45,7 @@ export function messageView(source: MessageBase, kind: MessageKind): Template {
                 <div part="content" hidden=${isNot(content[0])} onslotchange=${syncContent}><slot ref="content"></slot></div>
                 <div part="actions" hidden=${isNot(actions[0])} onslotchange=${syncActions}><slot ref="actions"></slot></div>
             </div>
+            ${action ?? ''}
         </div>
     </div>`
     return root.onMount(() => { syncContent(); syncActions() })

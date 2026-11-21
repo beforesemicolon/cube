@@ -1,5 +1,4 @@
 import { scalarText } from '../../core/value.js'
-import type { ControlSize } from '../../core/Component.js'
 import { FieldControlBase, type FieldControlProps } from '../FormControlBase.js'
 import { normalizeOptions, type SelectOption, type NormalizedSelectOption } from '../model.js'
 
@@ -15,7 +14,6 @@ export abstract class RadioGroupBase extends FieldControlBase<RadioGroupProps> {
     options: SelectOption[] = []
     value = ''
     stacked = false
-    size: ControlSize = 'xs'
 
     get normalizedOptions(): readonly NormalizedSelectOption[] { return normalizeOptions(this.props.options?.()) }
     get selection(): string {

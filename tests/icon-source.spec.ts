@@ -3,7 +3,45 @@ import { test } from 'node:test'
 import { iconSource } from '../components/icons/source.js'
 import { normalizeActions } from '../components/core/actions.js'
 import { normalizeItems } from '../components/core/items.js'
-import { iconPaths } from '../components/icons/registry.js'
+import {
+    filledIconNames,
+    iconPaths,
+    iconViewBoxes,
+    iconAliases,
+    canonicalIconName,
+    iconFillRules,
+} from '../components/icons/registry.js'
+
+test('the icon catalog has canonical names and no duplicate glyph definitions', () => {
+    const signatures = new Set<string>()
+    for (const [name, path] of Object.entries(iconPaths)) {
+        assert.match(name, /^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+        const signature = `${iconViewBoxes[name]}:${filledIconNames.has(name)}:${iconFillRules[name]}:${path.replace(/\s+/g, '')}`
+        assert.ok(!signatures.has(signature), `Duplicate catalog glyph: ${name}`)
+        signatures.add(signature)
+    }
+    for (const [alias, canonical] of Object.entries(iconAliases)) {
+        assert.equal(canonicalIconName(alias), canonical)
+        assert.equal(iconPaths[alias], iconPaths[canonical])
+        assert.ok(!Object.keys(iconPaths).includes(alias), alias)
+    }
+    assert.equal(canonicalIconName('creditCard'), 'credit-card')
+    assert.equal(canonicalIconName('settings'), 'gear')
+})
+
+test('related icons have genuine, distinct artwork rather than placeholder aliases', () => {
+    for (const names of [
+        ['calendar', 'calendar-check'], ['boxes', 'database', 'collection'],
+        ['comment', 'whatsapp', 'chat', 'chat-left-dots', 'chat-left-text'],
+        ['gear', 'sliders'], ['facebook', 'instagram', 'twitter-x', 'globe'],
+        ['credit-card', 'paypal', 'stripe', 'cash-stack'],
+        ['hexagon', 'hexagon-fill'], ['image', 'camera', 'images', 'card-image'],
+    ]) assert.equal(new Set(names.map(name => iconPaths[name])).size, names.length, names.join(', '))
+    for (const name of ['hexagon-fill', 'folder-fill', 'check-circle-fill', 'people-fill', 'lock-fill', 'play-fill']) {
+        assert.ok(filledIconNames.has(name), name)
+    }
+    assert.ok(!filledIconNames.has('hexagon'))
+})
 
 test('duplicate has its own add-copy glyph, distinct from the clipboard copy command', () => {
     assert.ok(iconPaths.duplicate)
@@ -52,6 +90,54 @@ test('application glyphs cover tabular views, rich text, people, attachments and
     assert.equal(new Set(names.map(name => iconPaths[name])).size, names.length)
     assert.notEqual(iconPaths.table, iconPaths.grid)
     assert.notEqual(iconPaths.users, iconPaths.userAdd)
+})
+
+test('Bootstrap-style application icon aliases resolve through the shared registry', () => {
+    const names = [
+        'activity',
+        'arrows-angle-expand',
+        'cash-stack',
+        'chevron-expand',
+        'credit-card',
+        'currency-dollar',
+        'megaphone',
+        'pencil-square',
+        'people',
+        'shield-exclamation',
+        'shield-lock-fill',
+        'box-arrow-up-right',
+        'cloud-upload',
+        'file-earmark-pdf',
+        'person-plus',
+        'send-check',
+        'x-lg',
+    ]
+
+    for (const name of names) assert.ok(iconPaths[name], name)
+})
+
+test('directional arrow glyphs cover vertical and diagonal navigation', () => {
+    const names = [
+        'arrow-up',
+        'arrow-down',
+        'arrow-up-right',
+        'arrow-up-left',
+        'arrow-down-right',
+        'arrow-down-left',
+    ]
+
+    for (const name of names) assert.ok(iconPaths[name], name)
+    assert.equal(new Set(names.map((name) => iconPaths[name])).size, names.length)
+})
+
+test('filled theme glyphs preserve their Bootstrap icon presentation', () => {
+    const names = ['moon-stars-fill', 'circle-half', 'sun-fill']
+
+    for (const name of names) {
+        assert.ok(iconPaths[name], name)
+        assert.equal(iconViewBoxes[name], '0 0 16 16')
+        assert.equal(filledIconNames.has(name), true)
+    }
 })
 
 test('icon sources accept image URLs without interpreting markup or executable protocols', () => {

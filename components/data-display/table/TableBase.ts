@@ -65,9 +65,16 @@ export interface TableColumn<TItem extends object = TableRecord> {
     readonly ariaLabel?: string
     readonly field?: string
     readonly cell?: (context: TableCellContext<TItem>) => TableCellContent
+    /** Render a cell directly from its row item. */
+    readonly itemCell?: (item: TItem, rowIndex: number) => TableCellContent
     readonly cellVariant?:
         | TableCellVariant
         | ((context: TableCellContext<TItem>) => TableCellVariant)
+    /** Resolve a cell variant directly from its row item. */
+    readonly itemCellVariant?: (
+        item: TItem,
+        rowIndex: number
+    ) => TableCellVariant
     readonly align?: TableAlign
     readonly width?: string | number
     readonly minWidth?: string | number
@@ -426,6 +433,14 @@ export abstract class TableBase extends Component<TableProps> {
             value: this.cellValue(column, row.item),
             depth: row.depth,
         }
+        if (typeof column.itemCell === 'function') {
+            try {
+                return column.itemCell(row.item, rowIndex)
+            } catch (error) {
+                this.onError(error)
+                return null
+            }
+        }
         if (typeof column.cell === 'function') {
             try {
                 return column.cell(context)
@@ -449,10 +464,11 @@ export abstract class TableBase extends Component<TableProps> {
             value: this.cellValue(column, row.item),
             depth: row.depth,
         }
-        const variant =
-            typeof column.cellVariant === 'function'
-                ? column.cellVariant(context)
-                : column.cellVariant
+        const variant = column.itemCellVariant
+            ? column.itemCellVariant(row.item, rowIndex)
+            : typeof column.cellVariant === 'function'
+              ? column.cellVariant(context)
+              : column.cellVariant
         return ['success', 'warning', 'danger', 'muted'].includes(variant ?? '')
             ? (variant ?? '')
             : ''

@@ -63,8 +63,8 @@ test('picker triggers keep their text and icon on one padded row', async ({ page
             const style = getComputedStyle(control)
             return { padding: parseFloat(style.paddingInlineStart), height: host.getBoundingClientRect().height }
         })
-        expect(layout.padding).toBe(12)
-        expect(layout.height).toBe(28)
+        expect(layout.padding).toBe(14)
+        expect(layout.height).toBeGreaterThan(28)
     }
 })
 

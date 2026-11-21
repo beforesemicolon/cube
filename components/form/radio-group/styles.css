@@ -11,7 +11,7 @@
   display: flex;
   flex-flow: row wrap;
   align-items: flex-start;
-  gap: var(--spacing-md,12px);
+  gap: var(--spacing-md,14px);
 }
 [part~=group][data-stacked] {
   flex-direction: column;

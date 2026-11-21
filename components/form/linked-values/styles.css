@@ -1,4 +1,4 @@
-@import "../../theme/editor.css";
+@import "../../theme/field.css";
 :host {
   display: block;
   inline-size: var(--component-linked-values-width,420px);
@@ -31,8 +31,9 @@
   --component-studio-control-min-width:0px;
 }
 [part~=link] {
-  margin-block-end: 1px;
+  block-size: var(--cb-field-height);
 }
+[part~=link]::part(control) { block-size: 100%; }
 @container (max-width:300px) {
   [part~=group] {
     grid-template-columns: minmax(0, 1fr) auto;

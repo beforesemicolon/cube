@@ -39,10 +39,11 @@
   display: block;
   box-sizing: border-box;
   min-inline-size: 0;
-  min-block-size: var(--cb-height);
+  min-block-size: calc(var(--cb-field-height) - 2px);
   max-block-size: var(--component-rich-text-editor-max-height,320px);
   margin: 0;
-  padding: var(--spacing-xs,4px) var(--spacing-md,12px);
+  padding: var(--cb-field-padding-block) var(--cb-field-padding-inline);
+  line-height: var(--cb-field-line-height);
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -57,7 +58,7 @@
   pointer-events: none;
 }
 [data-variant=box] [part~=control] {
-  min-block-size: max(var(--component-rich-text-editor-box-height,0px),calc(3lh + var(--spacing-xs,4px) + var(--spacing-xs,4px)));
+  min-block-size: max(var(--component-rich-text-editor-box-height,0px),calc(3lh + 2 * var(--cb-field-padding-block)));
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   resize: vertical;

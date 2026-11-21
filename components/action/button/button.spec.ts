@@ -3,10 +3,31 @@ import type { Button } from './index.js'
 import { componentContract } from '../../../tests/component-contract.js'
 
 componentContract('cb-button', 'action--button', async ({ page, host }) => {
+    await expect(host).toHaveAttribute('data-size', 'md')
+    await host.evaluate(node => {
+        const button = document.createElement('cb-button')
+        button.textContent = 'Default size'
+        node.after(button)
+    })
+    await expect(page.getByRole('button', { name: 'Default size', exact: true })).toHaveCSS('font-size', '14px')
     await host.evaluate(node => { Object.assign(node, { label: 'Button', icon: 'plus', variant: 'primary' } satisfies Partial<Button>) })
     const textColor = await host.locator('[part~=label]').evaluate(node => getComputedStyle(node).color)
     await expect(host.locator('cb-icon')).toHaveCSS('color', textColor)
     await expect(host.locator('cb-icon svg path')).toHaveCSS('stroke', textColor)
+    for (const [size, fontSize] of [
+        ['tiny', 10], ['xs', 11], ['sm', 12], ['md', 14], ['lg', 16], ['xl', 18],
+    ] as const) {
+        await host.evaluate((node, size) => node.setAttribute('size', size), size)
+        await expect(host.getByRole('button', { name: 'Button', exact: true })).toHaveCSS('font-size', `${fontSize}px`)
+    }
+    await host.evaluate(node => {
+        node.style.setProperty('--component-font-size', '18px')
+        node.setAttribute('size', 'lg')
+    })
+    await expect(host.getByRole('button', { name: 'Button', exact: true })).toHaveCSS('font-size', '24px')
+    await host.evaluate(node => {
+        node.style.removeProperty('--component-font-size')
+    })
     await host.evaluate(node => { Object.assign(node, { size: 'tiny', icon: 'close', iconOnly: true, accessibleLabel: 'Close', variant: 'ghost', pressed: false } satisfies Partial<Button>) })
     const tiny = host.getByRole('button', { name: 'Close', exact: true })
     await expect(tiny).toHaveCSS('padding', '1px')

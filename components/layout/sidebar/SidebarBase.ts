@@ -10,16 +10,29 @@ export interface SidebarProps extends ComponentProps {
 }
 
 /** Sidebar disclosure behavior without prescribing its rendered navigation. */
-export abstract class SidebarBase<P extends SidebarProps = SidebarProps> extends Component<P> {
-    static observedAttributes = [...Component.observedAttributes, 'collapsible', 'expanded', 'placement', 'expand-label', 'collapse-label']
+export abstract class SidebarBase<
+    P extends SidebarProps = SidebarProps,
+> extends Component<P> {
+    static observedAttributes = [
+        ...Component.observedAttributes,
+        'collapsible',
+        'expanded',
+        'placement',
+        'expand-label',
+        'collapse-label',
+    ]
     collapsible = false
     expanded = true
     placement: 'start' | 'end' = 'start'
     expandLabel = ''
     collapseLabel = ''
 
-    protected isCollapsible = (): boolean => { return bool(this.collapsible) }
-    protected isExpanded = (): boolean => { return !this.isCollapsible() || bool(this.expanded) }
+    protected isCollapsible = (): boolean => {
+        return bool(this.collapsible)
+    }
+    protected isExpanded = (): boolean => {
+        return !this.isCollapsible() || bool(this.expanded)
+    }
 
     toggle(originalEvent?: Event): boolean {
         if (!this.isCollapsible() || this.unavailable) return false
@@ -33,5 +46,9 @@ export abstract class SidebarBase<P extends SidebarProps = SidebarProps> extends
         return true
     }
 
-    protected toggleText(): string { return scalarText(this.isExpanded() ? this.collapseLabel : this.expandLabel) }
+    protected toggleText(): string {
+        return scalarText(
+            this.isExpanded() ? this.collapseLabel : this.expandLabel
+        )
+    }
 }

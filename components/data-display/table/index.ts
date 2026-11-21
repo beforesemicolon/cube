@@ -18,11 +18,7 @@ import {
 import { uid } from '../../core/id.js'
 import { bool, finite, scalarText } from '../../core/value.js'
 
-import {
-    TableBase,
-    type TableColumn,
-    type TableRowModel,
-} from './TableBase.js'
+import { TableBase, type TableColumn, type TableRowModel } from './TableBase.js'
 
 function cssSize(
     value: string | number | undefined,
@@ -46,7 +42,9 @@ export class Table extends TableBase {
     private readonly widths = state<ReadonlyMap<string, number>>(new Map())
     private readonly offsets = state<ReadonlyMap<number, number>>(new Map())
     private readonly liveText = state('')
-    private readonly cellMounts = new TableCellMounts(error => this.onError(error))
+    private readonly cellMounts = new TableCellMounts((error) =>
+        this.onError(error)
+    )
     private get columnWidths(): ReadonlyMap<string, number> {
         return this.widths[0]()
     }
@@ -498,7 +496,8 @@ export class Table extends TableBase {
                         style=${() => this.stickyStyle(this.stickyIndex(columnIndex))}
                     >
                         ${when(
-                            columnIndex === 0,
+                            columnIndex === 0 &&
+                                (row.hasChildren || row.depth > 0),
                             () =>
                                 html`<div part="tree-cell">
                                     ${when(row.depth > 0, () => html`<span part="tree-indent" aria-hidden="true" style=${`--table-depth:${row.depth}`}></span>`)}
@@ -542,13 +541,28 @@ export class Table extends TableBase {
             )}
         </tr>`
     }
-    private cellTemplate(column: TableColumn, row: TableRowModel, index: number): Template {
-        if (typeof column.cell === 'function') {
-            return html`<span part="cell-content" ref="cellContent"
-                data-row-key=${row.key} data-column-id=${column.id}></span>`
+    private cellTemplate(
+        column: TableColumn,
+        row: TableRowModel,
+        index: number
+    ): Template {
+        if (
+            typeof column.cell === 'function' ||
+            typeof column.itemCell === 'function'
+        ) {
+            return html`<span
+                part="cell-content"
+                ref="cellContent"
+                data-row-key=${row.key}
+                data-column-id=${column.id}
+            ></span>`
         }
-        return html`<span part="cell-content" data-row-key=${row.key}
-            data-column-id=${column.id}>${() => this.cellContent(column, row, index)}</span>`
+        return html`<span
+            part="cell-content"
+            data-row-key=${row.key}
+            data-column-id=${column.id}
+            >${() => this.cellContent(column, row, index)}</span
+        >`
     }
     protected mount(): void {
         super.mount()

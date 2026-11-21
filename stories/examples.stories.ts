@@ -16,6 +16,28 @@ const meta: Meta = {
 export default meta
 type Story = StoryObj
 
+export const InlineLinks: Story = {
+    name: 'Navigation / Inline links',
+    render: () => {
+        const article = document.createElement('article')
+        article.style.cssText = 'max-inline-size:640px;color:var(--color-foreground)'
+        html`<p data-inline-link-paragraph style="font:italic 500 16px/28px Georgia,serif;letter-spacing:0.03em">
+            Read our <cb-link href="#privacy" variant="secondary">Privacy Policy</cb-link>
+            and <cb-link href="#terms" variant="secondary">Terms and Conditions</cb-link>
+            before continuing. Links inherit this paragraph’s typography and baseline.
+        </p>
+        <p style="font:400 12px/20px system-ui,sans-serif">
+            © 2026 <cb-link href="#company" variant="secondary">Before Semicolon</cb-link>.
+            All rights reserved.
+        </p>
+        <p style="max-inline-size:240px;font:400 14px/24px system-ui,sans-serif">
+            An inline link can <cb-link data-wrapping-link href="#guide">wrap across several lines without creating a separate button-shaped box</cb-link>
+            and continue in the same paragraph.
+        </p>`.render(article)
+        return article
+    },
+}
+
 export const IconGallery: Story = {
     name: 'Icons / All icons',
     render: () => {

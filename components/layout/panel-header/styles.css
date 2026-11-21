@@ -7,9 +7,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-md,12px);
+  gap: var(--spacing-md,14px);
   min-block-size: var(--component-panel-header-height,44px);
-  padding: var(--component-panel-header-padding,var(--spacing-sm,8px) var(--spacing-md,12px));
+  padding: var(--component-panel-header-padding,var(--spacing-sm,8px) var(--spacing-md,14px));
   border-block-end: 1px solid var(--color-separator);
   background: var(--component-panel-header-background,var(--color-surface));
 }

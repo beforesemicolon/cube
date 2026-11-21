@@ -238,7 +238,7 @@
   position: absolute;
   z-index: 7;
   display: none;
-  box-shadow: var(--shadow-lg,0 20px 60px rgba(0,0,0,.24));
+  box-shadow: none;
 }
 :host([data-mobile][mobile-panel=start]) [part~=start-panel],
 :host([data-mobile][mobile-panel=end]) [part~=end-panel],

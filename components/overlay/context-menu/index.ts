@@ -1,5 +1,5 @@
 import { register } from '../../core/Component.js'
-import componentStylesheet from '../../navigation/menu/view.css?inline'
+import componentStylesheet from './styles.css?inline'
 import { type Template } from '../../core/runtime.js'
 import { bool, finite } from '../../core/value.js';
 import { ContextMenuBase } from './ContextMenuBase.js';

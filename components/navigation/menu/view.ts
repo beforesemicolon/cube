@@ -3,7 +3,7 @@ import { when, or, html, repeat, type Template } from '../../core/runtime.js'
 
 import { safeHref } from '../../core/url.js'
 import { RovingFocus } from '../../core/roving.js'
-import { bool } from '../../core/value.js'
+import { bool, scalarText } from '../../core/value.js'
 import type { MenuBase } from './MenuBase.js'
 export interface MenuView {
     root: Template
@@ -23,18 +23,28 @@ export function createMenuView(
         elementRefs(root.refs.items).filter(
             (node) => !node.hasAttribute('data-disabled')
         )
-    const roving = new RovingFocus(controls, () => 'vertical')
+    const orientation = () => bool(host.stacked) ? 'vertical' : 'horizontal'
+    const roving = new RovingFocus(controls, orientation)
     const root = html` <div
         ref="menu"
         part="menu"
         role="menu"
         aria-label="${host.resolvedMenuLabel}"
+        aria-orientation="${orientation}"
+        data-stacked="${() => bool(host.stacked) ? '' : null}"
+        data-variant="${() => host.variant}"
+        style="${() => `--component-menu-gap:${scalarText(host.gap) || '8px'}`}"
         onkeydown="${(event: KeyboardEvent) => roving.keydown(event)}"
     >
         ${repeat(
             () => host.normalizedItems,
             (item) => {
-                if (item.separator) return html`<div part="separator"></div>`
+                if (item.separator) return html`<cb-divider
+                    part="separator"
+                    label="${() => host.variant === 'icon' ? '' : item.label}"
+                    stacked="${() => !bool(host.stacked)}"
+                    size="${host.props.size}"
+                ></cb-divider>`
                 const href = safeHref(item.href)
                 const role =
                     item.type === 'checkbox'
@@ -43,6 +53,40 @@ export function createMenuView(
                           ? 'menuitemradio'
                           : 'menuitem'
                 const tone = item.tone === 'danger' ? 'danger' : null
+                if (typeof item.renderItem === 'function') {
+                    const activateCustom = (event: Event): void => {
+                        if (bool(host.disabled) || item.disabled) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            return
+                        }
+                        onActivate(item, event)
+                    }
+                    return html`<div
+                        part="custom-item"
+                        ref="items"
+                        role="${role}"
+                        data-label="${item.label}"
+                        aria-label="${item.label || null}"
+                        aria-checked="${role === 'menuitem' ? null : String(Boolean(item.checked))}"
+                        aria-disabled="${() => (bool(host.disabled) || item.disabled ? 'true' : null)}"
+                        data-disabled="${() => (bool(host.disabled) || item.disabled ? '' : null)}"
+                        data-active="${() => (host.active === item.id ? '' : null)}"
+                        aria-current="${() => (host.active === item.id ? 'true' : null)}"
+                        onclick="${activateCustom}"
+                        onaction="${(event: Event) => event.stopPropagation()}"
+                        onnavigate="${(event: Event) => event.stopPropagation()}"
+                        onkeydown="${(event: KeyboardEvent) => {
+                            if (event.target !== event.currentTarget) return
+                            if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault()
+                                activateCustom(event)
+                            }
+                        }}"
+                    >
+                        ${() => item.renderItem?.(item)}
+                    </div>`
+                }
                 const content = html`<cb-icon
                         part="icon"
                         name="${item.icon ?? ''}"
@@ -87,6 +131,7 @@ export function createMenuView(
                     () =>
                         html`<cb-link
                             part="item"
+                            size="${host.props.size}"
                             exportparts="control:item-control,label:item-label"
                             data-bare
                             ref="items"
@@ -95,6 +140,8 @@ export function createMenuView(
                             role="${role}"
                             href="${href}"
                             data-tone="${tone}"
+                            data-active="${() => (host.active === item.id ? '' : null)}"
+                            aria-current="${() => (host.active === item.id ? 'true' : null)}"
                             accessible-label="${item.label}"
                             disabled="${or(() => bool(host.disabled), item.disabled)}"
                             aria-checked="${checked}"
@@ -111,6 +158,7 @@ export function createMenuView(
                     () =>
                         html`<cb-button
                             part="item"
+                            size="${host.props.size}"
                             exportparts="control:item-control,button-label:item-label"
                             data-bare
                             data-semantic-host
@@ -119,6 +167,8 @@ export function createMenuView(
                             data-label="${item.label}"
                             role="${role}"
                             data-tone="${tone}"
+                            data-active="${() => (host.active === item.id ? '' : null)}"
+                            aria-current="${() => (host.active === item.id ? 'true' : null)}"
                             accessible-label="${item.label}"
                             disabled="${or(() => bool(host.disabled), item.disabled)}"
                             aria-checked="${checked}"

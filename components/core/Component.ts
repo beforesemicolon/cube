@@ -25,7 +25,7 @@ export abstract class Component<
     accessibleLabel = ''
     description = ''
     disabled = false
-    size: ControlSize = 'sm'
+    size: ControlSize = 'md'
     private disposers: Array<() => void> = []
     private reflectingNativeState = false
     protected syncView(): void {}
@@ -58,7 +58,7 @@ export abstract class Component<
             this.size
         )
             ? this.size
-            : 'sm'
+            : 'md'
         this.toggleAttribute('data-disabled', this.unavailable)
     }
     protected cleanup(fn: () => void): void {
@@ -149,7 +149,7 @@ export abstract class Component<
     }
 }
 const brand = Symbol.for('@beforesemicolon/cube/component-version')
-const componentVersion = '1.0.0'
+const componentVersion = '1.2.0'
 export function register(tag: string, ctor: CustomElementConstructor): void {
     const existing = customElements.get(tag)
     if (!existing) {

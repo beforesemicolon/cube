@@ -10,6 +10,70 @@ import type { SelectionOverlayProps } from '../../components/editor/selection-ov
 import type { ActionItem } from '../../components/core/items.js'
 
 const source = '/tests/browser/fixtures/custom-icon.svg'
+
+test('folder shortcut and eyedropper preserve the source SVG geometry', async ({ page }) => {
+    await page.goto('/tests/browser/fixture.html')
+    await page.waitForFunction(() => Boolean(customElements.get('cb-icon')))
+    const mismatches = await page.evaluate(async () => {
+        const failures: string[] = []
+        const rasterize = async (svg: SVGSVGElement, size: number): Promise<Uint8ClampedArray> => {
+            svg.setAttribute('width', String(size))
+            svg.setAttribute('height', String(size))
+            svg.style.color = 'black'
+            const image = new Image()
+            image.src = `data:image/svg+xml,${encodeURIComponent(new XMLSerializer().serializeToString(svg))}`
+            await image.decode()
+            const canvas = document.createElement('canvas')
+            canvas.width = canvas.height = size
+            const context = canvas.getContext('2d')
+            if (!context) throw new Error('Missing canvas context')
+            context.drawImage(image, 0, 0)
+            return context.getImageData(0, 0, size, size).data
+        }
+        for (const name of ['folder-symlink', 'eyedropper']) {
+            const icon = document.createElement('cb-icon')
+            icon.setAttribute('name', name)
+            document.querySelector('#fixture')?.append(icon)
+            await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+            const rendered = icon.shadowRoot?.querySelector('svg')
+            const response = await fetch(`/tests/browser/fixtures/icon-reference/${name}.svg`)
+            const parsed = new DOMParser().parseFromString(await response.text(), 'image/svg+xml')
+            const reference = parsed.querySelector('svg')
+            if (!rendered || !reference) throw new Error(`Missing SVG: ${name}`)
+            for (const size of [24, 96]) {
+                const actual = await rasterize(rendered, size)
+                const expected = await rasterize(reference, size)
+                // Separate SVG paths can blend shared antialiased edges differently.
+                // Compare alpha coverage so geometry shifts fail without demanding byte-identical rasterization.
+                let alphaDifference = 0
+                for (let index = 3; index < actual.length; index += 4) alphaDifference += Math.abs(actual[index]! - expected[index]!)
+                if (alphaDifference / (size * size * 255) > 0.01) failures.push(`${name}:${size}`)
+            }
+        }
+        return failures
+    })
+    expect(mismatches).toEqual([])
+})
+
+test('icon gallery shows canonical names and distinct application glyphs', async ({ page }) => {
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=examples--icon-gallery&viewMode=story')
+    const icons = page.locator('cb-icon')
+    await expect(icons.locator('svg path').first()).toBeVisible()
+    const names = await icons.evaluateAll(nodes => nodes.map(node => node.getAttribute('name') ?? ''))
+    expect(names.length).toBeGreaterThan(200)
+    expect(new Set(names).size).toBe(names.length)
+    for (const name of names) expect(name).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    expect(names).toContain('credit-card')
+    expect(names).not.toContain('creditCard')
+    expect(names).toContain('gear')
+    expect(names).not.toContain('settings')
+    for (const group of [['calendar', 'calendar-check'], ['boxes', 'database'], ['comment', 'chat', 'chat-left-dots', 'chat-left-text', 'whatsapp']]) {
+        const paths = await Promise.all(group.map(name => page.locator(`cb-icon[name="${name}"] path`).getAttribute('d')))
+        expect(new Set(paths).size).toBe(group.length)
+    }
+    await expect(page.locator('cb-icon[name="hexagon-fill"] path')).toHaveAttribute('fill', 'currentColor')
+    await expect(page.locator('cb-icon[name="hexagon"] path')).toHaveAttribute('fill', 'none')
+})
 test.beforeEach(async ({ page }) => {
     await page.goto('/tests/browser/fixture.html')
     await page.waitForFunction(() => Boolean(customElements.get('cb-icon')))

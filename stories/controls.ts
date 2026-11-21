@@ -1,5 +1,5 @@
 import type { StoryObj } from '@storybook/web-components-vite'
-import { iconPaths } from '../components/icons/paths.js'
+import { iconPaths } from '../components/icons/registry.js'
 import { fieldControlTags, preview } from './helpers.js'
 
 type ControlOption = string | number | boolean
@@ -46,6 +46,8 @@ interface ObservedElementConstructor extends CustomElementConstructor {
 }
 
 const booleanProperties = new Set([
+    'fill',
+    'actionsOnly',
     'pin',
     'expandFunctions',
     'enabled',
@@ -274,6 +276,11 @@ const genericOptions: Readonly<Record<string, readonly ControlOption[]>> = {
 const tagOptions: Readonly<
     Record<string, Readonly<Record<string, readonly ControlOption[]>>>
 > = {
+    'cb-divider': {
+        size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'],
+        labelPosition: ['start', 'center', 'end'],
+        variant: ['solid', 'dotted', 'dashed', 'double'],
+    },
     'cb-flashbar': {
         position: [
             'top-start',
@@ -286,6 +293,7 @@ const tagOptions: Readonly<
     'cb-rich-text-editor': { variant: ['inline', 'box'] },
     'cb-list': { orientation: ['vertical', 'horizontal'] },
     'cb-avatar': {
+        variant: ['round', 'boxy'],
         status: ['none', 'online', 'idle', 'busy', 'offline'],
         size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'],
     },
@@ -307,8 +315,10 @@ const tagOptions: Readonly<
         variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'],
     },
     'cb-heading': { variant: ['h2', 'h3', 'h4', 'h5', 'h6'] },
+    'cb-menu': { size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'], variant: ['icon', 'label', 'both'] },
     'cb-link': {
         variant: ['primary', 'secondary', 'outline', 'ghost', 'destructive'],
+        size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'],
     },
     'cb-cartesian-chart': {
         status: ['finished', 'loading', 'error'],
@@ -339,6 +349,7 @@ const tagOptions: Readonly<
     },
     'cb-accordion': { variant: ['simple', 'container'] },
     'cb-expandable-section': { variant: ['default', 'container', 'footer'] },
+    'cb-color-swatch': { variant: ['round', 'boxy'], size: ['tiny', 'xs', 'sm', 'md', 'lg', 'xl'] },
     'cb-gradient-editor': {
         type: ['linear', 'radial'],
         shape: ['circle', 'ellipse'],
@@ -675,6 +686,8 @@ const descriptions: Readonly<Record<string, string>> = {
 }
 
 const defaultSummaries: Readonly<Record<string, string>> = {
+    fill: 'false',
+    actionsOnly: 'false',
     activation: 'automatic',
     align: 'stretch',
     appearance: 'system',
@@ -732,7 +745,7 @@ const defaultSummaries: Readonly<Record<string, string>> = {
     seekStep: '10',
     recentColors: '[]',
     series: '[]',
-    size: 'sm',
+    size: 'md',
     src: "''",
     status: 'finished',
     statusLabel: "''",
@@ -814,6 +827,9 @@ const primitiveDefaults: Readonly<
 > = {
     accessibleLabel: '',
     actionLabel: '',
+    labelPosition: 'start',
+    fill: false,
+    actionsOnly: false,
     activation: 'automatic',
     align: 'stretch',
     allowAlpha: true,
@@ -937,7 +953,7 @@ const primitiveDefaults: Readonly<
     seekStep: 10,
     shape: 'circle',
     siblings: 1,
-    size: 'sm',
+    size: 'md',
     src: '',
     status: '',
     statusLabel: '',
@@ -1022,6 +1038,7 @@ const primitiveDefaults: Readonly<
 const taggedDefaults: Readonly<
     Record<string, Readonly<Record<string, StoryValue>>>
 > = {
+    'cb-divider': { variant: 'solid', labelPosition: 'start' },
     'cb-text-input': { type: 'text', min: '', max: '', step: '' },
     'cb-tooltip': { anchorRect: null, placement: 'top', delay: 400 },
     'cb-verification-code': { length: 6, mode: 'numeric', pin: false, autocomplete: 'one-time-code' },
@@ -1053,7 +1070,7 @@ const taggedDefaults: Readonly<
         offset: 100,
         renderItem: null,
     },
-    'cb-avatar': { status: 'none' },
+    'cb-avatar': { status: 'none', variant: 'round' },
     'cb-badge': { tone: 'neutral' },
     'cb-accordion': { variant: 'simple' },
     'cb-expandable-section': { variant: 'default' },
@@ -1065,11 +1082,13 @@ const taggedDefaults: Readonly<
     },
     'cb-device-frame': { device: 'desktop', orientation: 'landscape' },
     'cb-presence': { maxVisible: 2 },
-    'cb-button': { variant: 'secondary' },
+    'cb-button': { variant: 'secondary', size: 'md' },
     'cb-heading': { variant: 'h2' },
     'cb-button-group': { variant: 'secondary' },
     'cb-split-button': { popupMaxWidth: '320px', popupMaxHeight: '360px' },
-    'cb-link': { variant: 'secondary' },
+    'cb-link': { variant: 'primary' },
+    'cb-menu': { variant: 'both', stacked: true },
+    'cb-color-swatch': { variant: 'boxy' },
     'cb-cartesian-chart': {
         status: 'finished',
         stacking: false,
@@ -1565,11 +1584,6 @@ function defaultValueFor(
     tag: string,
     property: string
 ): StoryValue | undefined {
-    if (
-        property === 'size' &&
-        ['cb-checkbox', 'cb-radio', 'cb-radio-group'].includes(tag)
-    )
-        return 'xs'
     if (tag === 'cb-list' && property === 'renderItem') return undefined
     if (tag === 'cb-list' && property === 'orientation') return 'vertical'
     if (tag === 'cb-list' && property === 'offset') return 100

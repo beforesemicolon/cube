@@ -1,43 +1,97 @@
-import { iconPaths } from './paths.js'
+import { iconPaths as originalIconPaths } from './paths.js'
 import { mediaIconPaths } from '../media/icons.js'
 import { tablerIconPaths } from './tabler.js'
-/** One canonical glyph registry for standalone icons and composed media controls. */
-Object.assign(iconPaths,mediaIconPaths,tablerIconPaths)
+import { bootstrapIconPaths, evenOddBootstrapIcons } from './bootstrap.js'
 
-Object.assign(iconPaths, {
-    'arrow-clockwise': iconPaths.reset,
-    'bar-chart': 'M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7M2 20h20',
-    boxes: iconPaths.collection,
-    bug: iconPaths.warning,
-    calendar2: iconPaths.calendar,
-    calendar3: iconPaths.calendar,
-    'card-list': iconPaths.collection,
-    'chat-left-text': iconPaths.comment,
-    'clock-history': iconPaths.clock,
-    'diagram-3': iconPaths.workflow,
-    'envelope-open': iconPaths.mail,
-    'envelope-plus': iconPaths.mailCheck,
-    'exclamation-triangle': iconPaths.warning,
-    'file-earmark-text': iconPaths.file,
-    'folder2-open': iconPaths.folder,
-    fonts: iconPaths.text,
-    globe2: iconPaths.globe,
-    hourglass: 'M6 3h12M6 21h12M7 3c0 4 2 6 5 9-3 3-5 5-5 9M17 3c0 4-2 6-5 9 3 3 5 5 5 9',
-    images: iconPaths.image,
-    'journal-plus': iconPaths.noteAdd,
-    'journal-text': iconPaths.file,
-    'link-45deg': iconPaths.link,
-    'list-check': iconPaths.checkSquare,
-    palette: 'M12 3a9 9 0 1 0 0 18h2a2 2 0 0 0 0-4h-1a2 2 0 0 1-2-2c0-2 2-3 4-3h6a9 9 0 0 0-9-9M7 10h.01M10 7h.01M14 7h.01M17 10h.01',
-    pen: iconPaths.edit,
-    'people-fill': iconPaths.users,
-    'question-circle': iconPaths.help,
-    'shield-lock': iconPaths.lock,
-    stars: iconPaths.spark,
-    translate: 'M4 5h10M9 3v2M6 5c1 4 3 7 7 9M12 5c-1 4-3 7-7 9M14 21l4-10 4 10M16 17h4',
-    'ui-checks-grid': iconPaths.checkSquare,
-    'wifi-off': iconPaths.wifiOff,
-    window: iconPaths.desktop,
-    'window-stack': iconPaths.collection,
-})
-export { iconPaths }
+const kebabCase = (name: string): string => name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+
+/** Synonyms stay accepted at runtime, but never appear as additional catalog entries. */
+const synonyms: Readonly<Record<string, string>> = {
+    "box-arrow-up-right": "external",
+    "edit": "pencil",
+    "envelope": "mail",
+    "exclamation-triangle": "warning",
+    "funnel": "filter",
+    "users": "people",
+    "settings": "gear",
+    "attributes": "sliders",
+    "review-star": "star",
+    "arrow": "arrow-right",
+    "calendar2": "calendar",
+    "calendar3": "calendar",
+    "check2": "check",
+    "check2-circle": "check-circle",
+    "check2-square": "check-square",
+    "chevron-down": "down",
+    "chevron-left": "left",
+    "chevron-right": "right",
+    "dark": "moon",
+    "light": "sun",
+    "eye-slash": "eye-off",
+    "file-earmark": "file",
+    "floppy": "save",
+    "fonts": "text",
+    "globe2": "globe",
+    "grip-vertical": "drag",
+    "info-circle": "info",
+    "link-45deg": "link",
+    "list-ul": "list",
+    "paperclip": "attachment",
+    "person-plus": "user-add",
+    "plus-lg": "plus",
+    "question-circle": "help",
+    "sticky": "sticky-note",
+    "star-outline": "star",
+    "folder-plus": "folder-add",
+    "system": "circle-half",
+    "x": "close",
+    "x-lg": "close",
+    "speedometer2": "gauge"
+}
+
+const rawPaths: Record<string, string> = { ...originalIconPaths, ...mediaIconPaths, ...tablerIconPaths, ...bootstrapIconPaths }
+const definitions: Record<string, string> = {}
+for (const [name, path] of Object.entries(rawPaths)) {
+    const canonical = kebabCase(name)
+    if (!synonyms[canonical]) definitions[canonical] = path
+}
+
+export const iconPaths: Record<string, string> = {}
+export const filledIconNames = new Set<string>()
+export const iconViewBoxes: Record<string, string> = {}
+export const iconFillRules: Record<string, 'evenodd' | 'nonzero'> = {}
+const aliases: Record<string, string> = {}
+const signatures = new Map<string, string>()
+for (const [name, path] of Object.entries(definitions)) {
+    const filled = Object.hasOwn(bootstrapIconPaths, name)
+    const viewBox = filled ? '0 0 16 16' : '0 0 24 24'
+    const fillRule = evenOddBootstrapIcons.has(name) ? 'evenodd' : 'nonzero'
+    const signature = `${viewBox}:${filled}:${fillRule}:${path.replace(/\s+/g, '')}`
+    const previous = signatures.get(signature)
+    if (previous) { aliases[name] = previous; continue }
+    signatures.set(signature, name)
+    iconPaths[name] = path
+    iconViewBoxes[name] = viewBox
+    iconFillRules[name] = fillRule
+    if (filled) filledIconNames.add(name)
+}
+
+for (const name of [...Object.keys(rawPaths), ...Object.keys(synonyms)]) {
+    let canonical = kebabCase(name)
+    while (synonyms[canonical] || aliases[canonical]) canonical = synonyms[canonical] ?? aliases[canonical]!
+    if (!Object.hasOwn(iconPaths, canonical)) throw new Error(`Missing icon alias target: ${name} -> ${canonical}`)
+    if (name !== canonical) aliases[name] = canonical
+}
+
+export const iconAliases: Readonly<Record<string, string>> = aliases
+export function canonicalIconName(name: string): string {
+    return iconAliases[name] ?? iconAliases[kebabCase(name)] ?? kebabCase(name)
+}
+
+// Existing property lookups remain compatible without duplicating Object.keys/entries.
+for (const [alias, canonical] of Object.entries(iconAliases)) {
+    if (!Object.hasOwn(iconPaths, alias)) Object.defineProperty(iconPaths, alias, {
+        enumerable: false,
+        get: () => iconPaths[canonical],
+    })
+}

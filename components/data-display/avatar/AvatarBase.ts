@@ -2,8 +2,10 @@ import { Component, type ComponentProps } from '../../core/Component.js'
 import { bool, scalarText } from '../../core/value.js'
 
 export type AvatarStatus = 'none' | 'online' | 'idle' | 'busy' | 'offline'
+export type AvatarVariant = 'round' | 'boxy'
 
 export interface AvatarProps extends ComponentProps {
+    variant?: AvatarVariant
     name?: string
     src?: string
     initials?: string
@@ -45,10 +47,11 @@ function colorIndex(value: string): number {
 export abstract class AvatarBase extends Component<AvatarProps> {
     static observedAttributes = [
         ...Component.observedAttributes,
-        'name', 'src', 'initials', 'color', 'status', 'status-label', 'decorative',
+        'name', 'src', 'initials', 'color', 'status', 'status-label', 'decorative', 'variant',
     ]
 
     name = ''
+    variant: AvatarVariant = 'round'
     src = ''
     initials = ''
     color = ''

@@ -12,7 +12,7 @@
   border: 1px solid var(--color-border, #8A959F);
   border-radius: var(--radius-md,10px);
   background: var(--color-surface, #FFFFFF);
-  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-foreground, #20262B) 10%, transparent);
+  box-shadow: none;
 }
 [part~=corner] {
   z-index: 3;
