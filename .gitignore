@@ -109,3 +109,12 @@ test-results/
 release-artifacts/
 docs-cube/_template/template.config.js
 .DS_Store
+
+# Generated versioned reference and web-component metadata
+/ai/
+/custom-elements.json
+/skills/beforesemicolon-cube/manifest.json
+/skills/beforesemicolon-cube/references/*
+!/skills/beforesemicolon-cube/references/recipes.md
+!/skills/beforesemicolon-cube/references/patterns.md
+/skills/beforesemicolon-cube/examples/

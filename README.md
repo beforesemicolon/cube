@@ -14,6 +14,16 @@ import '@beforesemicolon/cube'
 
 Import the full library, a category such as `@beforesemicolon/cube/action`, or an individual component such as `@beforesemicolon/cube/action/button`. For classic browser scripts, load WebComponent first, then Cube's full or category client.
 
+## Build with AI
+
+Read the [Cube agent skill](skills/beforesemicolon-cube/SKILL.md) and the [AI quick start](https://cube.beforesemicolon.com/documentation/build-with-ai).
+Find the index at `node_modules/@beforesemicolon/cube/ai/index.json`, or open the
+[version-pinned Cube 1.2.0 index](https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.2.0/ai/index.json)
+after publication. Change the version in the URL only to match your installed release.
+The packaged skill includes the offline component guides and local examples for every tag.
+The index points to individual component records, and `custom-elements.json` supplies
+the Custom Elements Manifest. Neither is part of a runtime bundle.
+
 ## Components
 
 | Category | Custom elements |
