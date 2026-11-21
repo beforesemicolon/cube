@@ -153,3 +153,33 @@ test('field-compatible controls keep a useful width and contract with their cont
         await expect.poll(async () => control.evaluate(element => element.getBoundingClientRect().width)).toBeLessThanOrEqual(220)
     }
 })
+
+test('description does not change field alignment in a stretched grid row', async ({ page }) => {
+    await page.locator('#fixture').evaluate(fixture => {
+        const row = document.createElement('div')
+        row.style.display = 'grid'
+        row.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))'
+        for (const [index, label] of ['Plain field', 'Described field'].entries()) {
+            const field = document.createElement('cb-field')
+            field.setAttribute('label', label)
+            if (index) field.setAttribute('description', 'Additional information about this field.')
+            field.append(document.createElement('cb-text-input'))
+            row.append(field)
+        }
+        fixture.append(row)
+    })
+
+    await expect(page.locator('cb-field').nth(1).locator('[part="description"]')).toBeVisible()
+    await expect.poll(async () => page.locator('cb-field').evaluateAll(fields => {
+        const position = (field: Element, part: string) =>
+            field.shadowRoot!.querySelector(`[part="${part}"]`)!.getBoundingClientRect()
+        const [plain, described] = fields
+        const plainLabel = position(plain, 'label')
+        const describedLabel = position(described, 'label')
+        const plainControl = position(plain, 'control-container')
+        const describedControl = position(described, 'control-container')
+        return plainLabel.top === describedLabel.top
+            && plainControl.top === describedControl.top
+            && plainControl.top - plainLabel.bottom === describedControl.top - describedLabel.bottom
+    })).toBe(true)
+})
