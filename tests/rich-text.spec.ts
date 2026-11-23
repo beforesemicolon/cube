@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { parseRichText } from '../components/form/rich-text-editor/html.js'
 import { activeFormats, normalizeRuns, plainText, replaceRuns, resolveReferences, serializeRuns, setFormat, toggleRuns, type RichTextRun } from '../components/form/rich-text-editor/model.js'
 
 test('rich text serialization escapes text, canonicalizes marks, and round-trips line breaks', () => {
@@ -33,4 +34,11 @@ test('reference display and source stay distinct through formatting, replacement
     assert.equal(serializeRuns(adjacent), '{{version}}{{version}}')
     assert.equal(plainText(adjacent), '1.3.61.3.6')
     assert.equal(serializeRuns(resolveReferences([{ text: '{{empty}}', formats: [] }], [{ value: '{{empty}}', text: '' }])), '{{empty}}')
+})
+
+test('parsing without a browser preserves text, line breaks, and supported marks', () => {
+    const runs = parseRichText('<div><b title="draft">Hello &amp; welcome</b></div><p>Line <em>two</em></p>')
+    assert.equal(plainText(runs), 'Hello & welcome\nLine two')
+    assert.equal(serializeRuns(runs), '<strong>Hello &amp; welcome</strong><br>Line <em>two</em>')
+    assert.equal(plainText(parseRichText('<p>One</p><p>Two</p>', true)), 'One Two')
 })

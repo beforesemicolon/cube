@@ -62,7 +62,7 @@ export class RichTextEditor extends RichTextEditorBase {
             formatsChanged: this.active[1], submit: () => this.form?.requestSubmit(),
         })
         this.controller.sync()
-        const text = plainText(parseRichText(this.value, this.ownerDocument, this.inlineMode()))
+        const text = plainText(parseRichText(this.value, this.inlineMode()))
         control.value = text
         editor.toggleAttribute('data-empty', !text)
     }
