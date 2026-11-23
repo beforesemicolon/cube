@@ -1,6 +1,6 @@
 import { register } from '../../core/Component.js'
 import componentStylesheet from './view.css?inline'
-import { html, type Template } from '../../core/runtime.js'
+import { html, when, type Template } from '../../core/runtime.js'
 import { bool } from '../../core/value.js'
 import { MenuBase, type MenuProps } from './MenuBase.js'
 import { MenuScrollControls } from './scroll-controls.js'
@@ -18,43 +18,47 @@ export class Menu extends MenuBase<MenuProps> {
     render(): Template {
         const view = createMenuView(this, (item, event) => this.activate(item, event))
         this.view = view
+        const enabled = () => bool(this.scrollControls)
         const root = html`<div ref="frame" class="menu-scroll-frame"
-            data-scroll-controls="${() => bool(this.scrollControls) ? '' : null}"
+            data-scroll-controls="${() => enabled() ? '' : null}"
             data-vertical="${() => bool(this.stacked) ? '' : null}"
         >
-            <div class="menu-scroll-slot">
+            ${when(enabled, html`<div class="menu-scroll-slot">
                 <cb-button ref="previous" variant="ghost"
                     class="menu-scroll-previous"
                     part="scroll-control scroll-previous"
                     accessible-label="Scroll to previous menu items" hidden
                     onaction="${(event: Event) => this.scrollToHiddenItem(-1, event)}"
                 ><span class="menu-scroll-arrow" aria-hidden="true"></span></cb-button>
-            </div>
+            </div>`)}
             ${view.root}
-            <div class="menu-scroll-slot">
+            ${when(enabled, html`<div class="menu-scroll-slot">
                 <cb-button ref="next" variant="ghost"
                     class="menu-scroll-next"
                     part="scroll-control scroll-next"
                     accessible-label="Scroll to next menu items" hidden
                     onaction="${(event: Event) => this.scrollToHiddenItem(1, event)}"
                 ><span class="menu-scroll-arrow" aria-hidden="true"></span></cb-button>
-            </div>
+            </div>`)}
         </div>`
 
         return root.onMount(() => {
             const frame = root.refs.frame?.[0]
-            const previous = root.refs.previous?.[0]
-            const next = root.refs.next?.[0]
             const menu = view.menu
-            if (!(frame instanceof HTMLElement) || !(previous instanceof HTMLElement)
-                || !(next instanceof HTMLElement) || !menu) return
+            if (!(frame instanceof HTMLElement) || !menu) return
             const controller = new MenuScrollControls(
                 frame,
                 menu,
-                previous,
-                next,
+                () => {
+                    const node = root.refs.previous?.[0]
+                    return node instanceof HTMLElement ? node : undefined
+                },
+                () => {
+                    const node = root.refs.next?.[0]
+                    return node instanceof HTMLElement ? node : undefined
+                },
                 () => bool(this.stacked),
-                () => bool(this.scrollControls),
+                enabled,
                 view.focusCurrent
             )
             this.scrollControlsView = controller

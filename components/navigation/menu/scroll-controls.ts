@@ -11,8 +11,8 @@ export class MenuScrollControls {
     constructor(
         private frame: HTMLElement,
         private menu: HTMLElement,
-        private previous: HTMLElement,
-        private next: HTMLElement,
+        private previous: () => HTMLElement | undefined,
+        private next: () => HTMLElement | undefined,
         private vertical: () => boolean,
         private enabled: () => boolean,
         private focusItem: () => void
@@ -151,11 +151,13 @@ export class MenuScrollControls {
         const next = overflow && max - offset > edgeTolerance
         const focused = (this.frame.getRootNode() as ShadowRoot).activeElement
 
-        this.previous.hidden = !previous
-        this.next.hidden = !next
-        if ((focused === this.previous && !previous) || (focused === this.next && !next)) {
-            if (previous) this.previous.focus({ preventScroll: true })
-            else if (next) this.next.focus({ preventScroll: true })
+        const previousButton = this.previous()
+        const nextButton = this.next()
+        if (previousButton) previousButton.hidden = !previous
+        if (nextButton) nextButton.hidden = !next
+        if ((focused === previousButton && !previous) || (focused === nextButton && !next)) {
+            if (previous) previousButton?.focus({ preventScroll: true })
+            else if (next) nextButton?.focus({ preventScroll: true })
             else this.focusItem()
         }
     }

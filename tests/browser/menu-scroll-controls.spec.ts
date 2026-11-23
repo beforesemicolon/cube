@@ -32,6 +32,7 @@ for (const orientation of ['vertical', 'horizontal', 'rtl'] as const) {
         const offset = () => menu.evaluate((node) => Math.abs(node.scrollLeft || node.scrollTop))
 
         await expect(item(1)).toBeVisible()
+        await expect(host.locator('[part~="scroll-control"]')).toHaveCount(0)
         await expect(next).toBeHidden()
         await host.evaluate((node) => node.setAttribute('scroll-controls', 'true'))
         await expect(next).toBeVisible()
