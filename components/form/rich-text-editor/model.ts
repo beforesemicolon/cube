@@ -4,7 +4,7 @@ export type RichTextFormat = typeof richTextFormats[number]
 export interface RichTextReference { readonly value: string; readonly text: string }
 export interface RichTextRun { readonly text: string; readonly formats: readonly RichTextFormat[]; readonly reference?: string }
 export interface RichTextSelection { readonly start: number; readonly end: number }
-const tags: Readonly<Record<RichTextFormat, string>> = {
+export const richTextTags: Readonly<Record<RichTextFormat, string>> = {
     bold: 'strong', italic: 'em', underline: 'u', strikethrough: 's', superscript: 'sup', subscript: 'sub',
 }
 export function setFormat(formats: readonly RichTextFormat[], format: RichTextFormat, enabled: boolean): readonly RichTextFormat[] {
@@ -37,7 +37,7 @@ export function serializeRuns(runs: readonly RichTextRun[], editing = false): st
         const text = editing && run.reference
             ? `<span data-cb-reference="${escapedText(run.reference, false).replaceAll('"', '&quot;')}" contenteditable="false">${escapedText(run.text, false)}</span>`
             : escapedText(run.reference || run.text)
-        return run.formats.map(format => `<${tags[format]}>`).join('') + text + [...run.formats].reverse().map(format => `</${tags[format]}>`).join('')
+        return run.formats.map(format => `<${richTextTags[format]}>`).join('') + text + [...run.formats].reverse().map(format => `</${richTextTags[format]}>`).join('')
     }).join('')
 }
 /** Resolve only declared tokens, never evaluate application expressions. */

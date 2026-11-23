@@ -24,6 +24,20 @@ test.afterEach(async ({ page }) => {
     expect(await page.evaluate(() => window.richErrors)).toEqual([])
     expect(await page.evaluate(() => window.richLeaks)).toEqual([])
 })
+test('renders canonical formatting and literal text as editor nodes', async ({ page }) => {
+    await mount(page, {
+        variant: 'box',
+        value: '<p><b title="draft">Hello &amp; welcome</b><br>2 &lt; 3</p>',
+    })
+    const editor = page.locator('cb-rich-text-editor')
+    const surface = editor.getByRole('textbox', { name: 'Content', exact: true })
+    await expect(surface.locator('strong')).toHaveText('Hello & welcome')
+    await expect(surface.locator('strong')).not.toHaveAttribute('title')
+    await expect(surface.locator('br')).toHaveCount(1)
+    await expect(surface).toContainText('2 < 3')
+    await expect(editor).toHaveJSProperty('value', '<strong>Hello &amp; welcome</strong><br>2 &lt; 3')
+})
+
 test('programmatic focus moves an external text selection into the rich-text surface', async ({ page }) => {
     await mount(page, { variant: 'box' })
     await page.getByRole('heading').first().dblclick()
