@@ -4,16 +4,17 @@ import { when, or, html, repeat, type Template } from '../../core/runtime.js'
 import { safeHref } from '../../core/url.js'
 import { RovingFocus } from '../../core/roving.js'
 import { bool, scalarText } from '../../core/value.js'
-import type { MenuBase } from './MenuBase.js'
+import type { BaseMenuProps, MenuBase } from './MenuBase.js'
 export interface MenuView {
     root: Template
     menu?: HTMLElement
     update(): void
     focusFirst(): void
+    focusCurrent(): void
 }
 
-export function createMenuView(
-    host: MenuBase,
+export function createMenuView<P extends BaseMenuProps>(
+    host: MenuBase<P>,
     onActivate: (
         item: MenuBase['normalizedItems'][number],
         event: Event
@@ -194,5 +195,6 @@ export function createMenuView(
         },
         update() {},
         focusFirst: () => controls()[0]?.focus(),
+        focusCurrent: () => controls().find((item) => item.tabIndex === 0)?.focus({ preventScroll: true }),
     }
 }

@@ -36,6 +36,21 @@ the square size (by default, the icon size plus 16px).
 
 [Compact and horizontal menu examples](/playground/?path=/story/examples--menu-layouts)
 
+## Scroll controls
+
+Set `scroll-controls` (or the `scrollControls` property) on an inline menu
+whose height or width is constrained. On overflow, buttons outside the menu
+move to the next or previous clipped item. They disappear at their respective
+ends and do not select items or emit `action`. Wheel, touch, and keyboard
+navigation inside the menu keep working. For a horizontal menu, arrow direction
+follows the reading direction.
+
+:::component
+<cb-menu accessible-label="More page actions" scroll-controls style="height: 124px"
+    items='[{"id":"rename","label":"Rename"},{"id":"duplicate","label":"Duplicate"},{"id":"move","label":"Move"},{"id":"archive","label":"Archive"},{"id":"delete","label":"Delete"}]'>
+</cb-menu>
+:::
+
 ## Labeled separators
 
 Set `group` on items to insert a divider whenever the group changes. The divider

@@ -10,6 +10,7 @@
 }
 [part~=field] {
   display: grid;
+  align-content: start;
   gap: var(--spacing-xs,4px);
   inline-size: 100%;
   min-inline-size: 0;

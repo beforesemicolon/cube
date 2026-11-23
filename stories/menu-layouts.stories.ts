@@ -37,6 +37,10 @@ export const MenuLayouts: StoryObj = {
             <cb-heading label="Horizontal menu" size="sm"></cb-heading>
             <cb-menu accessible-label="Horizontal navigation" stacked="false"
                 items=${items} active=${active} onaction=${select}></cb-menu>
+            <cb-heading label="Scrollable horizontal menu" size="sm"></cb-heading>
+            <cb-menu accessible-label="Scrollable navigation" stacked="false" scroll-controls
+                style="width:min(100%, 240px)"
+                items=${items} active=${active} onaction=${select}></cb-menu>
             <cb-heading label="Mobile icon menu" size="sm"></cb-heading>
             <cb-menu accessible-label="Mobile navigation" variant="icon" stacked="false"
                 items=${items} active=${active} onaction=${select}></cb-menu>
