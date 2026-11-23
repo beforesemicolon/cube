@@ -68,13 +68,7 @@ export abstract class RichTextEditorBase<
     }
     protected inlineMode = (): boolean => this.variant !== 'box'
     protected cleanValue = (value: string): string =>
-        serializeRuns(
-            parseRichText(
-                scalarText(value),
-                this.ownerDocument,
-                this.inlineMode()
-            )
-        )
+        serializeRuns(parseRichText(scalarText(value), this.inlineMode()))
     protected normalizeValue(value: string): string {
         return this.cleanValue(value)
     }

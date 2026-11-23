@@ -1,4 +1,5 @@
-import { normalizeRuns, plainText, resolveReferences, serializeRuns, setFormat, type RichTextReference, type RichTextFormat, type RichTextRun } from './model.js'
+import { defaultTreeAdapter, parseFragment, type DefaultTreeAdapterTypes } from 'parse5'
+import { normalizeRuns, plainText, resolveReferences, richTextTags, setFormat, type RichTextReference, type RichTextFormat, type RichTextRun } from './model.js'
 
 const formats: Readonly<Record<string, RichTextFormat>> = {
     B: 'bold', STRONG: 'bold', I: 'italic', EM: 'italic', U: 'underline', S: 'strikethrough', STRIKE: 'strikethrough', DEL: 'strikethrough', SUP: 'superscript', SUB: 'subscript',
@@ -36,7 +37,7 @@ export function readRichText(root: Node, inline = false, editing = false, refere
                 return
             }
             if (blocks.has(tag) && node !== root) lineBreak()
-            const format = formats[tag]
+            const format = Object.hasOwn(formats, tag) ? formats[tag] : undefined
             if (format) marks = setFormat(marks, format, true)
         }
         for (const child of node.childNodes) visit(child, marks)
@@ -45,16 +46,101 @@ export function readRichText(root: Node, inline = false, editing = false, refere
     visit(root, [])
     return normalizeRuns(runs, inline)
 }
-export function parseRichText(html: string, document: Document, inline = false, references: readonly RichTextReference[] = []): readonly RichTextRun[] {
-    // Template contents are inert (unlike adopting untrusted DOM or loading resources into the editor).
-    const template = document.createElement('template')
-    template.innerHTML = html
-    return resolveReferences(readRichText(template.content, inline, false, references), references, inline)
+type ParsedNode = DefaultTreeAdapterTypes.ChildNode
+const parsedText = (node: ParsedNode): string =>
+    defaultTreeAdapter.isTextNode(node)
+        ? node.value
+        : defaultTreeAdapter.isElementNode(node)
+          ? node.childNodes.map(parsedText).join('')
+          : ''
+
+export function parseRichText(
+    html: string,
+    inline = false,
+    references: readonly RichTextReference[] = []
+): readonly RichTextRun[] {
+    // Keep the untrusted input in a plain tree: no browser elements, resource
+    // requests, custom element lifecycle, or HTML sinks are involved.
+    const root = parseFragment(html)
+    const runs: RichTextRun[] = []
+    const append = (text: string, marks: readonly RichTextFormat[]): void => {
+        if (text) runs.push({ text, formats: marks })
+    }
+    const lineBreak = (): void => {
+        if (runs.length && !runs.at(-1)?.text.endsWith('\n')) append('\n', [])
+    }
+
+    const visit = (
+        node: ParsedNode,
+        marks: readonly RichTextFormat[],
+        followedBySibling: boolean
+    ): void => {
+        if (defaultTreeAdapter.isTextNode(node)) {
+            append(node.value, marks)
+            return
+        }
+        if (!defaultTreeAdapter.isElementNode(node)) return
+        const tag = node.tagName.toUpperCase()
+        if (discard.has(tag)) return
+
+        if (tag === 'SPAN') {
+            const token = node.attrs.find(attr => attr.name === 'data-cb-reference')?.value
+            const reference = token && references.find(item => item.value === token)
+            if (reference && parsedText(node) === (reference.text.replace(/\r\n?/g, '\n').replace(/\n/g, inline ? ' ' : '\n') || '\u200b')) {
+                runs.push({ text: reference.text || '\u200b', formats: marks, reference: reference.value })
+                return
+            }
+        }
+        if (tag === 'BR') {
+            append('\n', marks)
+            return
+        }
+        if (blocks.has(tag)) lineBreak()
+        const format = Object.hasOwn(formats, tag) ? formats[tag] : undefined
+        const nextMarks = format ? setFormat(marks, format, true) : marks
+        node.childNodes.forEach((child, index) =>
+            visit(child, nextMarks, index < node.childNodes.length - 1)
+        )
+        if (blocks.has(tag) && followedBySibling) lineBreak()
+    }
+
+    root.childNodes.forEach((child, index) =>
+        visit(child, [], index < root.childNodes.length - 1)
+    )
+    return resolveReferences(normalizeRuns(runs, inline), references, inline)
 }
 
-/** Native contenteditable interop: only canonical escaped runs enter the editing surface. */
+/** Build the editor surface from fixed tags and literal text, not from HTML. */
 export function syncEditorContent(editor: HTMLElement, runs: readonly RichTextRun[]): void {
-    const value = serializeRuns(runs, true)
-    const content = value + (!value || plainText(runs).endsWith('\n') ? '<br data-caret="">' : '')
-    if (editor.innerHTML !== content) editor.innerHTML = content
+    const document = editor.ownerDocument
+    const fragment = document.createDocumentFragment()
+    for (const run of normalizeRuns(runs)) {
+        let target: DocumentFragment | HTMLElement = fragment
+        for (const format of run.formats) {
+            const mark = document.createElement(richTextTags[format])
+            target.append(mark)
+            target = mark
+        }
+        if (run.reference) {
+            const span = document.createElement('span')
+            span.setAttribute('data-cb-reference', run.reference)
+            span.contentEditable = 'false'
+            span.textContent = run.text
+            target.append(span)
+            continue
+        }
+        run.text.split('\n').forEach((text, index) => {
+            if (index) target.append(document.createElement('br'))
+            if (text) target.append(document.createTextNode(text))
+        })
+    }
+    if (!fragment.childNodes.length || plainText(runs).endsWith('\n')) {
+        const caret = document.createElement('br')
+        caret.setAttribute('data-caret', '')
+        fragment.append(caret)
+    }
+    // Do not replace the browser selection when the surface is already current.
+    if (fragment.childNodes.length === editor.childNodes.length &&
+        Array.from(fragment.childNodes).every((node, index) => node.isEqualNode(editor.childNodes[index]))) return
+    editor.replaceChildren(fragment)
 }

@@ -164,7 +164,7 @@ export class RichTextController {
     }
     private snapshot = (): Snapshot => ({ value: this.value, selection: this.selected[0]() })
     private references = (): readonly RichTextReference[] => this.options.references?.() || []
-    private runs = (): readonly RichTextRun[] => parseRichText(this.value, this.ownerDocument, this.inlineMode(), this.references())
+    private runs = (): readonly RichTextRun[] => parseRichText(this.value, this.inlineMode(), this.references())
     private updateActive = (): void => {
         const next = this.pendingFormats ?? activeFormats(this.runs(), this.selected[0]())
         if (next.join() !== this.active[0]().join()) { this.active[1](next); this.options.formatsChanged?.(next) }
@@ -283,7 +283,7 @@ export class RichTextController {
         event.preventDefault()
         if (!this.canChangeValue() || !event.clipboardData) return
         const html = event.clipboardData.getData('text/html')
-        const runs = html ? parseRichText(html, this.ownerDocument, this.inlineMode(), this.references()) : [{ text: event.clipboardData.getData('text/plain'), formats: this.active[0]() }]
+        const runs = html ? parseRichText(html, this.inlineMode(), this.references()) : [{ text: event.clipboardData.getData('text/plain'), formats: this.active[0]() }]
         if (plainText(runs)) this.insert(runs, event)
     }
     private allowDrop = (event: DragEvent): void => { event.preventDefault() }
@@ -291,7 +291,7 @@ export class RichTextController {
         event.preventDefault()
         if (!this.canChangeValue() || !event.dataTransfer) return
         const html = event.dataTransfer.getData('text/html')
-        const runs = html ? parseRichText(html, this.ownerDocument, this.inlineMode(), this.references()) : [{ text: event.dataTransfer.getData('text/plain'), formats: [] }]
+        const runs = html ? parseRichText(html, this.inlineMode(), this.references()) : [{ text: event.dataTransfer.getData('text/plain'), formats: [] }]
         if (plainText(runs)) this.insert(runs, event)
     }
     private compositionStart = (): void => {
