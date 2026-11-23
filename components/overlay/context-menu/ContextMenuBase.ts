@@ -1,7 +1,7 @@
-import { MenuBase, type MenuProps } from '../../navigation/menu/MenuBase.js'
+import { MenuBase, type BaseMenuProps } from '../../navigation/menu/MenuBase.js'
 import { finite } from '../../core/value.js'
 
-export interface ContextMenuProps extends MenuProps { open?: boolean; x?: number; y?: number }
+export interface ContextMenuProps extends BaseMenuProps { open?: boolean; x?: number; y?: number }
 
 /** Context-menu visibility and pointer anchoring layered on MenuBase. */
 export abstract class ContextMenuBase<P extends ContextMenuProps = ContextMenuProps> extends MenuBase<P> {

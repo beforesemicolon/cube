@@ -7,7 +7,7 @@ import {
 
 export type MenuVariant = 'icon' | 'label' | 'both'
 
-export interface MenuProps extends ComponentProps {
+export interface BaseMenuProps extends ComponentProps {
     items?: ActionItem[]
     loop?: boolean
     gap?: string
@@ -16,9 +16,13 @@ export interface MenuProps extends ComponentProps {
     stacked?: boolean
 }
 
+export interface MenuProps extends BaseMenuProps {
+    scrollControls?: boolean
+}
+
 /** Menu item normalization and activation without choosing popup or inline rendering. */
 export abstract class MenuBase<
-    P extends MenuProps = MenuProps,
+    P extends BaseMenuProps = BaseMenuProps,
 > extends Component<P> {
     static observedAttributes = [
         ...Component.observedAttributes,
