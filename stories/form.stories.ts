@@ -168,6 +168,18 @@ export const RangeSlider: Story = componentStory('cb-range-slider', {
     step: 1,
 })
 
+export const RangeSliderDouble: Story = componentStory('cb-range-slider', {
+    variant: 'double',
+    accessibleLabel: 'Price range',
+    startLabel: 'Minimum price',
+    endLabel: 'Maximum price',
+    min: 0,
+    max: 100,
+    step: 5,
+    startValue: 25,
+    endValue: 75,
+})
+
 export const Stepper: Story = componentStory('cb-stepper', {
     label: 'Stepper',
     value: 24,

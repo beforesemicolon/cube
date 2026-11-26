@@ -221,6 +221,7 @@ function eventsFor(klass: Klass): Event[] {
     const stateEvent = events.filter(e => ['beforechange', 'change'].includes(e.name))
     for (const event of stateEvent) {
         if (event.detail === 'changeDetail') event.detail = 'value, previousValue, originalEvent, and component-specific values'
+        if (klass.node.id?.name === 'RangeSlider') event.detail = 'value, previousValue, originalEvent; double mode uses [start, end] pairs and adds thumb (start or end) for interactions'
         if (klass.node.id?.name === 'Button') event.detail = 'pressed, value, previousValue, originalEvent (pressed toggle only)'
     }
     if (klass.node.id?.name === 'RemoteCursor') {
@@ -309,6 +310,11 @@ async function hooksFor(klass: Klass): Promise<{ slots: Slot[]; parts: Part[]; c
         for (const [, file] of source.text.matchAll(/['"](\.[^'"]+\.css)\?inline['"]/g))
             tokenSources.push(await readFile(resolve('components', dirname(source.path), file!), 'utf8'))
         for (const text of tokenSources) for (const [, property] of text.matchAll(/var\((--[\w-]+)/g)) cssProperties.push({ name: property! })
+    }
+    if (klass.node.id?.name === 'RangeSlider') {
+        const thumbParts = [...klass.source.text.matchAll(/'control ((?:start|end)-thumb)'/g)]
+        assert.equal(thumbParts.length, 2, 'Review RangeSlider thumb part generation')
+        for (const [, name] of thumbParts) scanPart(name!)
     }
     if (chain.some(item => item.node.id?.name === 'ButtonBase')) parts.push({ name: 'label' })
     return { slots: unique(slots), parts: unique(parts), cssProperties: unique(cssProperties) }

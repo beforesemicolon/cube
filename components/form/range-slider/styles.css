@@ -1,0 +1,101 @@
+@import '../../studio/view.css';
+
+[part~='range-track'] {
+    --cb-dual-thumb-size: var(--component-range-slider-thumb-size, 16px);
+    position: relative;
+    display: grid;
+    align-items: center;
+    min-block-size: var(--cb-height);
+    cursor: pointer;
+}
+
+[part~='range-rail'] {
+    position: absolute;
+    inset-inline: calc(var(--cb-dual-thumb-size) / 2);
+    block-size: var(--component-range-slider-track-height, 4px);
+    border-radius: 999px;
+    background: var(--color-track);
+    pointer-events: none;
+}
+
+[part~='range-fill'] {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: var(--cb-range-start);
+    inset-inline-end: calc(100% - var(--cb-range-end));
+    border-radius: inherit;
+    background: var(--color-primary);
+}
+
+[part~='range-track'] input[type='range'][part~='control'] {
+    grid-area: 1 / 1;
+    position: relative;
+    margin: 0;
+    pointer-events: none;
+    outline: none;
+}
+
+[part~='range-track'] input[type='range']:focus {
+    z-index: 1;
+}
+
+[part~='range-track']
+    input[type='range'][part~='control']::-webkit-slider-runnable-track {
+    background: transparent;
+}
+
+[part~='range-track'] input[type='range'][part~='control']::-moz-range-track,
+[part~='range-track']
+    input[type='range'][part~='control']::-moz-range-progress {
+    background: transparent;
+}
+
+[part~='range-track'] input[type='range']:enabled::-webkit-slider-thumb {
+    pointer-events: auto;
+    cursor: grab;
+}
+
+[part~='range-track'] input[type='range']:enabled::-moz-range-thumb {
+    pointer-events: auto;
+    cursor: grab;
+}
+
+[part~='range-track'] input[type='range']:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+[part~='range-track'] input[type='range']:focus-visible::-moz-range-thumb {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+:host([data-disabled]) [part~='range-track'] {
+    cursor: not-allowed;
+    opacity: var(--component-disabled-opacity, 0.5);
+}
+
+:host([data-disabled])
+    [part~='range-track']
+    input[type='range'][part~='control']:disabled {
+    opacity: 1;
+}
+
+[part~='range-track'][data-read-only] {
+    cursor: default;
+}
+
+@media (forced-colors: active) {
+    [part~='range-rail'],
+    [part~='range-fill'] {
+        forced-color-adjust: none;
+    }
+
+    [part~='range-rail'] {
+        background: GrayText;
+    }
+
+    [part~='range-fill'] {
+        background: Highlight;
+    }
+}
