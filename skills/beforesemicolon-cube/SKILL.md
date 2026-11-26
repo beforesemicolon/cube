@@ -96,7 +96,7 @@ the WebComponent script already supplies its matching Markup runtime as
 
 ## npm: icon action and toggle
 
-For a browser application with a bundler, install `npm install @beforesemicolon/cube@1.2.1`. Use these candidate versions after publication.
+For a browser application with a bundler, install `npm install @beforesemicolon/cube@1.3.0`. Use these candidate versions after publication.
 
 ```js
 import '@beforesemicolon/cube/icons/icon'
@@ -134,10 +134,10 @@ Save this as an HTML file and serve it through HTTP. Use `tone.wav` next to the 
   <meta charset="utf-8">
   <title>Cube audio example</title>
   <script defer src="https://cdn.jsdelivr.net/npm/@beforesemicolon/web-component@1.22.0/dist/client.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.2.1/dist/icons-client.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.2.1/dist/action-client.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.2.1/dist/form-client.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.2.1/dist/media-client.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.3.0/dist/icons-client.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.3.0/dist/action-client.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.3.0/dist/form-client.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.3.0/dist/media-client.js"></script>
 </head>
 <body>
   <cb-audio-player src="./tone.wav" media-title="Tone sample"
