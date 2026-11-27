@@ -17,6 +17,7 @@ const foundationEntries = [
     {path:'layout/toolbar',name:'toolbar',className:'Toolbar'},
     {path:'layout/action-bar',name:'action-bar',className:'ActionBar'},
     {path:'navigation/pagination',name:'pagination',className:'Pagination'},
+    {path:'navigation/progress-dots',name:'progress-dots',className:'ProgressDots'},
     {path:'overlay/tooltip',name:'tooltip',className:'Tooltip'},
     {path:'overlay/tooltip-provider',name:'tooltip-provider',className:'TooltipProvider'},
     {path:'text/heading',name:'heading',className:'Heading'},

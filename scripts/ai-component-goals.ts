@@ -34,6 +34,7 @@ export const componentGoals: Record<string, readonly [intent: string, tags: stri
         ['Link to a destination or show the current hierarchy', 'link breadcrumb'],
         ['Switch peer views or choose one compact view mode', 'tabs segmented-control'],
         ['Jump between numbered pages', 'pagination'],
+        ['Show and navigate steps in a multistep flow', 'progress-dots'],
         ['Show an inline keyboard-navigable list of commands', 'menu'],
     ],
     overlay: [

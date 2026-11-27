@@ -1,0 +1,65 @@
+@import "../../theme/editor.css";
+
+:host {
+    display: inline-block;
+    max-inline-size: 100%;
+}
+
+[part=steps] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--component-progress-dots-gap, 8px);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+[part=target]::part(control) {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    inline-size: max(24px, var(--component-progress-dots-target-size, 28px));
+    block-size: max(24px, var(--component-progress-dots-target-size, 28px));
+    min-inline-size: 0;
+    min-block-size: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 100%;
+    background: transparent;
+    color: var(--cb-progress-dots-color, var(--component-progress-dots-pending-color, var(--color-foreground, #20262b)));
+    cursor: pointer;
+}
+
+[part=target]::part(control):disabled {
+    /* Disabled navigation must not fade the visible pending step. */
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+[part=target]::part(control):focus-visible {
+    outline: 2px solid var(--color-foreground, #20262b);
+    outline-offset: 1px;
+}
+
+[part=dot] {
+    box-sizing: border-box;
+    inline-size: var(--component-progress-dots-dot-size, 10px);
+    block-size: var(--component-progress-dots-dot-size, 10px);
+    border: 2px solid currentColor;
+    border-radius: 50%;
+}
+
+[part=target]:is([data-state=complete], [data-state=current]) {
+    --cb-progress-dots-color: var(--component-progress-dots-active-color, var(--color-primary, #2563eb));
+}
+
+[data-state=complete] [part=dot] {
+    background: currentColor;
+}
+
+[data-state=current] [part=dot] {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    background: currentColor;
+}

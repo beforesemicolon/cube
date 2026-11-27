@@ -51,6 +51,7 @@ export const cubeEventNames = [
     'cancel',
     'change',
     'center',
+    'click',
     'close',
     'columnresize',
     'confirm',
