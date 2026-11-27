@@ -1,14 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>beforesemicolon/.github",
+    "config:recommended",
     "helpers:pinGitHubActionDigests"
   ],
+  "rebaseWhen": "behind-base-branch",
   "timezone": "Etc/UTC",
   "schedule": [
     "* 0-5 * * *"
   ],
-  "dependencyDashboard": true,
   "prCreation": "immediate",
   "prConcurrentLimit": 5,
   "prHourlyLimit": 2,
