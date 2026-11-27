@@ -8,7 +8,7 @@ layout: document
 
 # Progress dots
 
-Use progress dots to show position in a short task and let users jump to a reachable step. Cube does not change the active step by itself.
+Use a step indicator to show position in a short task and let users jump to a reachable step. Set `variant="circles"` (default) or `variant="lines"`. Cube does not change the active step by itself.
 
 `<cb-progress-dots>` · `@beforesemicolon/cube/navigation/progress-dots`
 
@@ -20,11 +20,12 @@ For per-component imports, also load `@beforesemicolon/cube/action/button`. For 
 </cb-progress-dots>
 :::
 
+- The Lines variant uses compact pill-shaped marks. Both variants use larger, separated click targets.
 - `total-steps` sets the number of dots. `active-index` is zero-based and marks the current step.
 - `last-reachable-index` is optional and inclusive. Set it to `-1` to keep all dots reachable. Setting `disabled` disables every dot.
 - `step-label` uses `{step}` for the one-based accessible name. Set the JavaScript `stepLabels` property to an array to name individual steps. Use `label` or `accessible-label` to name the navigation region.
 - The bubbling `click` event carries `detail.index` (zero-based) and `detail.originalEvent`. Set `activeIndex` when the requested step is ready.
 
-Use `--component-progress-dots-gap`, `--component-progress-dots-target-size`, or `--component-progress-dots-dot-size` for spacing and size. Dot targets stay at least 24 CSS pixels. The pending border uses the theme foreground by default; use `--component-progress-dots-pending-color` to override the pending dot color. Completed and current dots use the theme primary color; override it with `--component-progress-dots-active-color`. Keep both colors readable against the background.
+Use `--component-progress-dots-gap`, `--component-progress-dots-target-size`, or `--component-progress-dots-dot-size` for spacing and size. Dot targets stay at least 24 CSS pixels. For Lines, use `--component-progress-dots-line-width` and `--component-progress-dots-line-height` to size the marks. The pending border uses the theme foreground by default; use `--component-progress-dots-pending-color` to override the pending dot color. Completed and current dots use the theme primary color; override it with `--component-progress-dots-active-color`. Keep both colors readable against the background.
 
 [{{t.cubeReference.openPlayground}}](/playground/?path=/story/navigation--progress-dots)

@@ -7,7 +7,7 @@ export class ProgressDots extends ProgressDotsBase {
     stylesheet = componentStylesheet
 
     render(): Template {
-        return html`<nav part="navigation" aria-label="${this.progressName}">
+        return html`<nav part="navigation" aria-label="${this.progressName}" data-variant="${this.progressVariant}">
             <ol part="steps" role="list">
                 ${repeat(
                     () => this.indices,
@@ -30,6 +30,6 @@ export class ProgressDots extends ProgressDotsBase {
 }
 
 export { ProgressDotsBase }
-export type { ProgressDotsClickDetail, ProgressDotsProps } from './ProgressDotsBase.js'
+export type { ProgressDotsClickDetail, ProgressDotsProps, ProgressDotsVariant } from './ProgressDotsBase.js'
 
 register('cb-progress-dots', ProgressDots)

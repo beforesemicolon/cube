@@ -551,7 +551,7 @@ const foundationStoryArgs = {
     menu: `{ label: 'Menu', items, loop: true }`,
     link: `{ label: 'Documentation', href: '#documentation', target: '_self', variant: 'ghost' }`,
     pagination: `{ label: 'Results pages', page: 2, totalPages: 8, siblings: 1, previousLabel: 'Previous page', nextLabel: 'Next page', pageLabel: 'Page {page}' }`,
-    'progress-dots': `{ label: 'Onboarding progress', totalSteps: 5, activeIndex: 1, lastReachableIndex: 2, stepLabel: 'Step {step}' }`,
+    'progress-dots': `{ label: 'Onboarding progress', variant: 'circles', totalSteps: 5, activeIndex: 1, lastReachableIndex: 2, stepLabel: 'Step {step}' }`,
     'context-menu': `{ label: 'Context menu', items, open: false, x: 32, y: 32, loop: true }`,
     dropdown: `{ label: 'Dropdown', items, open: false, placement: 'bottom-start', icon: 'down' }`,
     'command-palette': `{ label: 'Command palette', items, open: false, query: '', placeholder: 'Search commands', emptyLabel: 'No commands found' }`,

@@ -1,7 +1,10 @@
 import { Component, type ComponentProps } from '../../core/Component.js'
 import { finite } from '../../core/value.js'
 
+export type ProgressDotsVariant = 'circles' | 'lines'
+
 export interface ProgressDotsProps extends ComponentProps {
+    variant?: ProgressDotsVariant
     totalSteps?: number
     activeIndex?: number
     lastReachableIndex?: number
@@ -19,12 +22,14 @@ export interface ProgressDotsClickDetail {
 export abstract class ProgressDotsBase extends Component<ProgressDotsProps> {
     static observedAttributes = [
         ...Component.observedAttributes,
+        'variant',
         'total-steps',
         'active-index',
         'last-reachable-index',
         'step-label',
     ]
 
+    variant: ProgressDotsVariant = 'circles'
     totalSteps = 0
     activeIndex = 0
     lastReachableIndex = -1
@@ -57,6 +62,8 @@ export abstract class ProgressDotsBase extends Component<ProgressDotsProps> {
     }
 
     protected progressName = (): string => this.accessibleName() || 'Progress'
+    protected progressVariant = (): ProgressDotsVariant =>
+        this.variant === 'lines' ? 'lines' : 'circles'
 
     protected activateStep(index: number, event: Event): void {
         event.stopPropagation()

@@ -9,7 +9,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--component-progress-dots-gap, 8px);
+    gap: var(--component-progress-dots-gap, var(--cb-progress-dots-default-gap, 8px));
     padding: 0;
     margin: 0;
     list-style: none;
@@ -19,7 +19,7 @@
     display: grid;
     place-items: center;
     box-sizing: border-box;
-    inline-size: max(24px, var(--component-progress-dots-target-size, 28px));
+    inline-size: max(24px, var(--component-progress-dots-target-size, 28px), var(--cb-progress-dots-line-width, 0px));
     block-size: max(24px, var(--component-progress-dots-target-size, 28px));
     min-inline-size: 0;
     min-block-size: 0;
@@ -62,4 +62,17 @@
     outline: 2px solid currentColor;
     outline-offset: 2px;
     background: currentColor;
+}
+
+[data-variant=lines] {
+    --cb-progress-dots-default-gap: 6px;
+    --cb-progress-dots-line-width: var(--component-progress-dots-line-width, 28px);
+}
+
+[data-variant=lines] [part=dot] {
+    inline-size: var(--cb-progress-dots-line-width);
+    block-size: var(--component-progress-dots-line-height, 4px);
+    border-width: 1px;
+    border-radius: 999px;
+    outline: none;
 }

@@ -113,3 +113,32 @@ test.describe('progress dot touch targets', () => {
         }
     })
 })
+
+test('the lines story uses compact segments without shrinking the controls', async ({ page }) => {
+    await page.goto('http://127.0.0.1:6006/iframe.html?id=navigation--progress-dots-lines&viewMode=story')
+    const host = page.locator('cb-progress-dots')
+    const first = host.getByRole('button', { name: 'Step 1' })
+    const current = host.getByRole('button', { name: 'Step 2' })
+    await expect(current).toHaveAttribute('aria-current', 'step')
+    const segments = host.locator('[part="dot"]')
+    await expect(segments.first()).toHaveCSS('width', '28px')
+    await expect(segments.first()).toHaveCSS('height', '4px')
+    await expect(segments.nth(1)).toHaveCSS('outline-style', 'none')
+    await expect(segments.nth(4)).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+    const firstBounds = await first.boundingBox()
+    const currentBounds = await current.boundingBox()
+    if (!firstBounds || !currentBounds) throw new Error('Missing line targets')
+    expect(firstBounds.height).toBeGreaterThanOrEqual(24)
+    expect(currentBounds.x - firstBounds.x - firstBounds.width).toBeGreaterThanOrEqual(6)
+    await host.evaluate((node: ProgressDots) => {
+        node.addEventListener('click', (event) => {
+            if (!(event instanceof CustomEvent)) throw new Error('Expected one semantic click')
+            const detail: ProgressDotsClickDetail = event.detail
+            node.activeIndex = detail.index
+        })
+    })
+    await first.focus()
+    await page.keyboard.press('Space')
+    await expect(first).toHaveAttribute('aria-current', 'step')
+    await expect(first).toBeFocused()
+})
