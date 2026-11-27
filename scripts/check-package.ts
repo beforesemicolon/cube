@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { posix, resolve } from 'node:path'
-import { componentEntries, componentGroups } from './component-entries.js'
+import { compatibilityEntries, componentEntries, componentGroups } from './component-entries.js'
 import { build } from 'esbuild'
 
 interface Manifest {
@@ -110,7 +110,8 @@ for (const [key, target] of Object.entries(manifest.exports)) {
     if (key.includes('*')) continue
     for (const path of typeof target === 'string' ? [target] : Object.values(target)) assert(files.has(path.replace(/^\.\//, '')), `Unpacked export ${key}: ${path}`)
 }
-for (const entry of componentEntries) for (const [format, extension] of [['esm', 'js'], ['cjs', 'js'], ['types', 'd.ts']] as const) {
+const registryEntries = [...componentEntries, ...compatibilityEntries]
+for (const entry of registryEntries) for (const [format, extension] of [['esm', 'js'], ['cjs', 'js'], ['types', 'd.ts']] as const) {
     for (const name of ['index', 'base']) assert(files.has(`dist/${format}/${entry.path}/${name}.${extension}`), `Missing ${format} ${entry.path}/${name}`)
 }
 for (const category of componentGroups) assert(files.has(`dist/${category}-client.js`), `Missing ${category} browser client`)
@@ -129,7 +130,7 @@ try {
     })
     assert.match(registration.outputFiles[0]!.text, /register\d*\("cb-modal-renderer", ModalRenderer\)/, 'Bundled side-effect imports must keep the modal renderer registration')
     const entries = ['theme/tokens', 'media/controller', 'charts/model'].map(path => `${manifest.name}/dist/esm/${path}.js`)
-    const allTags = [...componentEntries.map(entry => `cb-${entry.name}`), 'cb-modal-renderer'].sort()
+    const allTags = [...registryEntries.map(entry => `cb-${entry.name}`), 'cb-modal-renderer'].sort()
     const smoke = `
         import assert from 'node:assert/strict';
         import { createRequire } from 'node:module';
@@ -151,8 +152,16 @@ try {
         assert.equal(registry.size, 1, 'An individual import registers only its own tag');
         assert.equal(registry.get('cb-text-input'), single.TextInput);
         const form = await import(${JSON.stringify(manifest.name + '/form')});
-        assert.equal(registry.size, ${componentEntries.filter(entry => entry.path.startsWith('form/')).length}, 'A category import registers only its own category');
+        assert.equal(registry.size, ${registryEntries.filter(entry => entry.path.startsWith('form/')).length}, 'A category import registers only its own category');
         assert.equal(registry.get('cb-text-input'), form.TextInput);
+        const range = await import('${manifest.name}/form/range-input');
+        assert.equal(registry.get('cb-range-input'), range.RangeInput);
+        const legacyRange = await import('${manifest.name}/form/range-slider');
+        assert.equal(registry.get('cb-range-slider'), legacyRange.RangeSlider);
+        const legacySlider = await import('${manifest.name}/form/slider');
+        assert.equal(registry.get('cb-slider'), legacySlider.Slider);
+        const progress = await import('${manifest.name}/navigation/progress-steps');
+        assert.equal(registry.get('cb-progress-steps'), progress.ProgressSteps);
         const esm = await import(${JSON.stringify(manifest.name)});
         assert.deepEqual([...registry.keys()].sort(), ${JSON.stringify(allTags)}, 'ESM import registers immediately');
         assert.equal(typeof esm.TextInput, 'function');
@@ -162,10 +171,14 @@ try {
         assert.equal(registry.size, 1, 'An individual CJS require registers only its own tag');
         assert.equal(registry.get('cb-text-input'), singleCjs.TextInput);
         require(${JSON.stringify(manifest.name + '/form')});
-        assert.equal(registry.size, ${componentEntries.filter(entry => entry.path.startsWith('form/')).length});
+        assert.equal(registry.size, ${registryEntries.filter(entry => entry.path.startsWith('form/')).length});
         const cjs = require(${JSON.stringify(manifest.name)});
         assert.deepEqual([...registry.keys()].sort(), ${JSON.stringify(allTags)}, 'CJS require registers immediately');
         assert.equal(typeof cjs.TextInput, 'function');
+        assert.equal(registry.get('cb-range-input'), require('${manifest.name}/form/range-input').RangeInput);
+        assert.equal(registry.get('cb-range-slider'), require('${manifest.name}/form/range-slider').RangeSlider);
+        assert.equal(registry.get('cb-slider'), require('${manifest.name}/form/slider').Slider);
+        assert.equal(registry.get('cb-progress-steps'), require('${manifest.name}/navigation/progress-steps').ProgressSteps);
         assert(!('initializeCube' in cjs)); assert(!('ready' in cjs));
         assert.equal((await import(${JSON.stringify(manifest.name + '/package.json')}, {with:{type:'json'}})).default.version, ${JSON.stringify(manifest.version)});
     `
