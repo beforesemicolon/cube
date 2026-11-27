@@ -17,12 +17,12 @@ const foundationEntries = [
     {path:'layout/toolbar',name:'toolbar',className:'Toolbar'},
     {path:'layout/action-bar',name:'action-bar',className:'ActionBar'},
     {path:'navigation/pagination',name:'pagination',className:'Pagination'},
+    {path:'navigation/progress-steps',name:'progress-steps',className:'ProgressSteps'},
     {path:'overlay/tooltip',name:'tooltip',className:'Tooltip'},
     {path:'overlay/tooltip-provider',name:'tooltip-provider',className:'TooltipProvider'},
     {path:'text/heading',name:'heading',className:'Heading'},
     {path:'text/shortcut',name:'shortcut',className:'Shortcut'},
     {path:'icons/icon',name:'icon',className:'Icon'},
-    {path:'form/slider',name:'slider',className:'Slider'},
     {path:'form/select',name:'select',className:'Select'},
     {path:'form/radio-group',name:'radio-group',className:'RadioGroup'},
     {path:'form/calendar',name:'calendar',className:'Calendar'},
@@ -60,5 +60,10 @@ export const componentEntries = [...foundationEntries, ...studioEntries] as cons
 export const componentDocsEntries = [
     ...componentEntries,
     { name: 'modal-renderer', path: 'overlay/modal-renderer' },
+] as const
+/** Already published registrations retained for older imports, not in the component catalog. */
+export const compatibilityEntries = [
+    { path: 'form/slider', name: 'slider' },
+    { path: 'form/range-slider', name: 'range-slider' },
 ] as const
 export const componentGroups = ['action','text','form','layout','navigation','overlay','feedback','data-display','media','charts','styling','editor','collaboration','icons','theme'] as const

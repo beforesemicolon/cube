@@ -24,7 +24,7 @@ for(const appearance of ['light','dark'])for(const type of Object.keys(chartExam
 test('media players compose icon-only buttons, range inputs and selects',async({page})=>{
     await page.goto('/tests/browser/fixture.html');await page.waitForFunction(()=>!!customElements.get('cb-audio-player'))
     await page.evaluate(async(mediaText)=>{const {silentAudio}=await import('/stories/helpers.ts');const n=document.createElement('cb-audio-player');Object.assign(n,mediaText,{src:silentAudio(8),mediaTitle:'Recording'});document.querySelector('#fixture')!.append(n)},mediaText)
-    const player=page.locator('cb-audio-player');await expect(player.locator('cb-button[part=play]')).toBeVisible();await expect(player.locator('cb-slider[part=seek]')).toBeVisible();await expect(player.locator('cb-select[part=rate]')).toBeVisible()
+    const player=page.locator('cb-audio-player');await expect(player.locator('cb-button[part=play]')).toBeVisible();await expect(player.locator('cb-range-input[part=seek]')).toBeVisible();await expect(player.locator('cb-select[part=rate]')).toBeVisible()
     await expect.poll(()=>player.locator('audio').evaluate((n:HTMLAudioElement)=>n.duration)).toBe(8)
     const seek=player.getByRole('slider',{name:'Playback position',exact:true});await expect(seek).toBeEnabled();await seek.focus();await page.keyboard.press('ArrowRight');expect(await player.locator('audio').evaluate((n:HTMLAudioElement)=>n.currentTime)).toBeGreaterThan(0)
     const rate=player.locator('cb-select[part=rate]');await rate.getByRole('button',{name:'Playback speed'}).click();await rate.locator('[part~=popup]').getByRole('option',{name:'1.5×'}).click();await expect.poll(()=>player.locator('audio').evaluate((n:HTMLAudioElement)=>n.playbackRate)).toBe(1.5)

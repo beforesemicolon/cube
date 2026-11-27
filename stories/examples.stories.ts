@@ -316,7 +316,7 @@ export const StylingControls: Story = {
     render: () => {
         const controls = component('cb-grid', { columns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: '12px' })
         const fillField = formField('cb-color-picker', { label: 'Fill', value: '#2563eb' })
-        const opacityField = formField('cb-range-slider', { label: 'Opacity', value: 84, min: 0, max: 100, step: 1 })
+        const opacityField = formField('cb-range-input', { label: 'Opacity', value: 84, min: 0, max: 100, step: 1 })
         const blendField = formField('cb-select', { label: 'Blend mode', value: 'normal', options: [{ value: 'normal', label: 'Normal' }, { value: 'multiply', label: 'Multiply' }, { value: 'screen', label: 'Screen' }] })
         const radiusField = formField('cb-unit-input', { label: 'Corner radius', value: 12, ...lengthUnitProps })
         controls.append(fillField, opacityField, blendField, radiusField)

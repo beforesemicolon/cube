@@ -140,7 +140,7 @@ test('text input and textarea keep a usable minimum width without overflowing na
 
 test('range slider keeps its width and reaches both visual endpoints', async ({ page }) => {
     await page.evaluate(() => {
-        const slider = document.createElement('cb-range-slider') as HTMLElement & {
+        const slider = document.createElement('cb-range-input') as HTMLElement & {
             accessibleLabel: string
             value: number
             min: number
@@ -151,7 +151,7 @@ test('range slider keeps its width and reaches both visual endpoints', async ({ 
         document.querySelector('#fixture')?.append(slider)
     })
 
-    const host = page.locator('cb-range-slider')
+    const host = page.locator('cb-range-input')
     const slider = host.getByRole('slider', { name: 'Opacity' })
     const box = await slider.boundingBox()
     expect(box).not.toBeNull()

@@ -4,7 +4,7 @@ import { dirname, posix, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { parse } from '@babel/parser'
 import type * as t from '@babel/types'
-import { componentDocsEntries } from './component-entries.js'
+import { compatibilityEntries, componentDocsEntries } from './component-entries.js'
 import { componentGoals, exactIntentKeywords } from './ai-component-goals.js'
 import { buildCubeSkill } from './build-ai-skill.js'
 import { expandExportPattern, type ClassicPreviewSource } from './ai-example-utils.js'
@@ -90,7 +90,7 @@ for (const source of sources.values()) visit(source.ast, node => {
     assert(!registered.has(tag), `Duplicate tag: ${tag}`)
     registered.set(tag, klass)
 })
-assert.deepEqual([...registered.keys()].sort(), componentDocsEntries.map(entry => `cb-${entry.name}`).sort())
+assert.deepEqual([...registered.keys()].sort(), [...componentDocsEntries, ...compatibilityEntries].map(entry => `cb-${entry.name}`).sort())
 
 function lineage(leaf: Klass): Klass[] {
     const parent = nameOf(leaf.node.superClass)
@@ -221,6 +221,7 @@ function eventsFor(klass: Klass): Event[] {
     const stateEvent = events.filter(e => ['beforechange', 'change'].includes(e.name))
     for (const event of stateEvent) {
         if (event.detail === 'changeDetail') event.detail = 'value, previousValue, originalEvent, and component-specific values'
+        if (klass.node.id?.name === 'RangeInput') event.detail = 'value, previousValue, originalEvent; double mode uses [start, end] pairs and adds thumb (start or end) for interactions'
         if (klass.node.id?.name === 'Button') event.detail = 'pressed, value, previousValue, originalEvent (pressed toggle only)'
     }
     if (klass.node.id?.name === 'RemoteCursor') {
@@ -310,6 +311,11 @@ async function hooksFor(klass: Klass): Promise<{ slots: Slot[]; parts: Part[]; c
             tokenSources.push(await readFile(resolve('components', dirname(source.path), file!), 'utf8'))
         for (const text of tokenSources) for (const [, property] of text.matchAll(/var\((--[\w-]+)/g)) cssProperties.push({ name: property! })
     }
+    if (klass.node.id?.name === 'RangeInput') {
+        const thumbParts = [...klass.source.text.matchAll(/'control ((?:start|end)-thumb)'/g)]
+        assert.equal(thumbParts.length, 2, 'Review RangeInput thumb part generation')
+        for (const [, name] of thumbParts) scanPart(name!)
+    }
     if (chain.some(item => item.node.id?.name === 'ButtonBase')) parts.push({ name: 'label' })
     return { slots: unique(slots), parts: unique(parts), cssProperties: unique(cssProperties) }
 }
@@ -341,7 +347,7 @@ const scriptsFor = (category: string) => [
 // Classic category bundles and per-element imports are intentionally isolated.
 // Read literal composed tags from the component and its own shared views. The
 // resulting install instructions add the companions without changing runtime.
-const registrationPaths = new Map(componentDocsEntries.map(entry => [
+const registrationPaths = new Map([...componentDocsEntries, ...compatibilityEntries].map(entry => [
     `cb-${entry.name}`, entry.name === 'modal-renderer' ? 'overlay/modal' : entry.path,
 ]))
 const dependencies = new Map<string, string[]>()
@@ -499,7 +505,7 @@ for (const entry of componentDocsEntries) {
 assert.deepEqual([...indexedEvents].sort(), [...cubeEventNames].sort(), 'The reference must account for every Storybook event')
 for (const tag of Object.keys(guide)) assert(registered.has(tag), `Orphan guidance: ${tag}`)
 const baseModules = new Set<string>()
-for (const klass of registered.values()) for (const current of lineage(klass).slice(0, -1)) {
+for (const { name } of componentDocsEntries) for (const current of lineage(registered.get(`cb-${name}`)!).slice(0, -1)) {
     const base = current.node.id?.name
     if (!base || baseModules.has(base)) continue
     baseModules.add(base)

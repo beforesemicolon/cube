@@ -70,6 +70,18 @@ for (const { name } of studioBoardItems)
         `Missing Studio board component: ${name}`
     )
 const index = JSON.parse(await readFile('storybook-static/index.json', 'utf8'))
+assert(index.entries['form--range-input'], 'Range Input must have a single Playground story')
+assert(index.entries['navigation--progress-steps'], 'Progress Steps must have a single Playground story')
+for (const retiredId of [
+    'form--slider',
+    'form--range-slider',
+    'form--range-slider-double',
+    'form--range-input-double',
+    'navigation--progress-dots',
+    'navigation--progress-dots-lines',
+    'navigation--progress-steps-lines',
+]) assert(!index.entries[retiredId], `Retired Playground entry: ${retiredId}`)
+
 for (const id of [
     'bar',
     'line',

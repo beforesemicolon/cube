@@ -26,3 +26,15 @@
 /zh/documentation/video-player /zh/documentation/media/video-player 301
 /zh/documentation/cartesian-chart /zh/documentation/charts/cartesian-chart 301
 /zh/documentation/pie-chart /zh/documentation/charts/pie-chart 301
+
+# Preserve existing Range Input guide links.
+/documentation/form/slider /documentation/form/range-input 301
+/documentation/form/range-slider /documentation/form/range-input 301
+/es/documentation/form/slider /es/documentation/form/range-input 301
+/es/documentation/form/range-slider /es/documentation/form/range-input 301
+/fr/documentation/form/slider /fr/documentation/form/range-input 301
+/fr/documentation/form/range-slider /fr/documentation/form/range-input 301
+/pt/documentation/form/slider /pt/documentation/form/range-input 301
+/pt/documentation/form/range-slider /pt/documentation/form/range-input 301
+/zh/documentation/form/slider /zh/documentation/form/range-input 301
+/zh/documentation/form/range-slider /zh/documentation/form/range-input 301

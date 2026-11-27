@@ -92,9 +92,9 @@ const allStudioDefinitions = [
     {
         board: 'inputs',
         category: 'form',
-        name: 'range-slider',
-        className: 'RangeSlider',
-        title: 'Range slider',
+        name: 'range-input',
+        className: 'RangeInput',
+        title: 'Range input',
         kind: 'range',
     },
     {
@@ -1681,8 +1681,8 @@ const allStudioBoardItems = [
     {
         board: 'inputs',
         category: 'form',
-        name: 'range-slider',
-        title: 'Range slider',
+        name: 'range-input',
+        title: 'Range input',
     },
     { board: 'inputs', category: 'form', name: 'stepper', title: 'Stepper' },
     {
@@ -2710,7 +2710,7 @@ export const publicStudioComponentNames: ReadonlySet<string> = new Set([
     'checkbox',
     'radio',
     'switch',
-    'range-slider',
+    'range-input',
     'stepper',
     'date-picker',
     'time-picker',

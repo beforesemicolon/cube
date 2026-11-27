@@ -18,7 +18,7 @@ Import the full library, a category such as `@beforesemicolon/cube/action`, or a
 
 Read the [Cube agent skill](skills/beforesemicolon-cube/SKILL.md) and the [AI quick start](https://cube.beforesemicolon.com/documentation/build-with-ai).
 Find the index at `node_modules/@beforesemicolon/cube/ai/index.json`, or open the
-[version-pinned Cube 1.2.1 index](https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.2.1/ai/index.json)
+[version-pinned Cube 1.3.0 index](https://cdn.jsdelivr.net/npm/@beforesemicolon/cube@1.3.0/ai/index.json)
 after publication. Change the version in the URL only to match your installed release.
 The packaged skill includes the offline component guides and local examples for every tag.
 The index points to individual component records, and `custom-elements.json` supplies
@@ -30,9 +30,9 @@ the Custom Elements Manifest. Neither is part of a runtime bundle.
 | --- | --- |
 | Action | `cb-button-group`, `cb-button`, `cb-split-button` |
 | Text | `cb-heading`, `cb-shortcut` |
-| Form | `cb-calendar`, `cb-checkbox`, `cb-code-editor`, `cb-combobox`, `cb-css-value-input`, `cb-date-picker`, `cb-editable-label`, `cb-editable-list`, `cb-field`, `cb-file-picker`, `cb-json-editor`, `cb-linked-values`, `cb-masked-input`, `cb-number-input`, `cb-radio-group`, `cb-radio`, `cb-range-slider`, `cb-rich-text-editor`, `cb-rich-text-toolbar`, `cb-select`, `cb-slider`, `cb-stepper`, `cb-switch`, `cb-text-input`, `cb-textarea`, `cb-time-picker`, `cb-token-input`, `cb-unit-input`, `cb-verification-code` |
+| Form | `cb-calendar`, `cb-checkbox`, `cb-code-editor`, `cb-combobox`, `cb-css-value-input`, `cb-date-picker`, `cb-editable-label`, `cb-editable-list`, `cb-field`, `cb-file-picker`, `cb-json-editor`, `cb-linked-values`, `cb-masked-input`, `cb-number-input`, `cb-radio-group`, `cb-radio`, `cb-range-input`, `cb-rich-text-editor`, `cb-rich-text-toolbar`, `cb-select`, `cb-stepper`, `cb-switch`, `cb-text-input`, `cb-textarea`, `cb-time-picker`, `cb-token-input`, `cb-unit-input`, `cb-verification-code` |
 | Layout | `cb-action-bar`, `cb-box`, `cb-col`, `cb-divider`, `cb-docked-panel`, `cb-grid`, `cb-panel-header`, `cb-resizable-panel`, `cb-row`, `cb-sidebar`, `cb-toolbar`, `cb-workspace` |
-| Navigation | `cb-breadcrumb`, `cb-link`, `cb-menu`, `cb-pagination`, `cb-segmented-control`, `cb-tabs` |
+| Navigation | `cb-breadcrumb`, `cb-link`, `cb-menu`, `cb-pagination`, `cb-progress-steps`, `cb-segmented-control`, `cb-tabs` |
 | Overlay | `cb-alert-dialog`, `cb-bottom-sheet`, `cb-command-palette`, `cb-context-menu`, `cb-drawer`, `cb-dropdown`, `cb-hover-card`, `cb-modal`, `cb-modal-renderer`, `cb-popover`, `cb-tooltip-provider`, `cb-tooltip` |
 | Feedback | `cb-alert`, `cb-banner`, `cb-empty-state`, `cb-flashbar`, `cb-progress`, `cb-skeleton`, `cb-spinner`, `cb-status`, `cb-toast` |
 | Data display | `cb-accordion`, `cb-avatar`, `cb-badge`, `cb-card`, `cb-code-preview`, `cb-expandable-section`, `cb-file-browser`, `cb-layer-tree`, `cb-list`, `cb-table`, `cb-tree` |

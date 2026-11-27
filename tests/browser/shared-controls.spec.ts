@@ -35,7 +35,7 @@ test('false disabled attributes re-enable form-associated controls',async({page}
 test('all value controls use the shared native form-control contract',async({page})=>{
     await start(page)
     const formAssociated=await page.evaluate(()=>{
-        const tags=['cb-text-input','cb-textarea','cb-number-input','cb-unit-input','cb-combobox','cb-checkbox','cb-radio','cb-switch','cb-range-slider','cb-stepper','cb-date-picker','cb-time-picker','cb-file-picker','cb-token-input','cb-slider','cb-select','cb-radio-group','cb-calendar','cb-editable-list','cb-code-editor','cb-json-editor','cb-linked-values','cb-editable-label','cb-masked-input','cb-color-picker','cb-gradient-editor']
+        const tags=['cb-text-input','cb-textarea','cb-number-input','cb-unit-input','cb-combobox','cb-checkbox','cb-radio','cb-switch','cb-range-input','cb-stepper','cb-date-picker','cb-time-picker','cb-file-picker','cb-token-input','cb-slider','cb-select','cb-radio-group','cb-calendar','cb-editable-list','cb-code-editor','cb-json-editor','cb-linked-values','cb-editable-label','cb-masked-input','cb-color-picker','cb-gradient-editor']
         return Object.fromEntries(tags.map(tag=>[tag,Reflect.get(customElements.get(tag)??{},'formAssociated')]))
     })
     expect(Object.values(formAssociated).every(Boolean)).toBe(true)
@@ -48,7 +48,7 @@ test('primitive controls submit, reset, disable, and emit one real-time change',
         const fieldset=document.createElement('fieldset');fieldset.id='primitive-controls'
         const text=document.createElement('cb-text-input');Object.assign(text,{label:'Title',name:'title',value:'Initial'})
         const number=document.createElement('cb-number-input');Object.assign(number,{label:'Count',name:'count',value:2,min:0,max:10})
-        const range=document.createElement('cb-range-slider');Object.assign(range,{label:'Opacity',name:'opacity',value:25,min:0,max:100})
+        const range=document.createElement('cb-range-input');Object.assign(range,{label:'Opacity',name:'opacity',value:25,min:0,max:100})
         const choice=document.createElement('cb-checkbox');Object.assign(choice,{label:'Published',name:'published',value:'yes',checked:true})
         const tokens=document.createElement('cb-token-input');Object.assign(tokens,{label:'Tags',name:'tags',value:['design','system'],items:[]})
         text.addEventListener('change',()=>{text.dataset.changeCount=String(Number(text.dataset.changeCount??0)+1)})
@@ -62,7 +62,7 @@ test('primitive controls submit, reset, disable, and emit one real-time change',
     await expect(page.locator('cb-text-input')).toHaveAttribute('data-change-count','1')
     await expect(page.locator('cb-text-input')).not.toHaveAttribute('data-prefixed-change-count')
     const range=page.getByRole('slider',{name:'Opacity'});await range.focus();await page.keyboard.press('ArrowRight')
-    await expect(page.locator('cb-range-slider')).toHaveAttribute('data-change-count','1')
+    await expect(page.locator('cb-range-input')).toHaveAttribute('data-change-count','1')
     await page.locator('form').evaluate((form:HTMLFormElement)=>form.reset())
     await expect(text).toHaveValue('Initial');await expect(range).toHaveValue('25')
     await page.locator('#primitive-controls').evaluate((fieldset:HTMLFieldSetElement)=>{fieldset.disabled=true})

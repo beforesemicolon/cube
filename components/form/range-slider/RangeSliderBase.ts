@@ -1,10 +1,9 @@
-import { NumericInputBase, type NumericInputProps } from '../NumericInputBase.js'
-import type { StudioKind } from '../../studio/types.js'
-
-export interface RangeSliderProps extends NumericInputProps {}
-
-/** Headless behavior for the Range slider component. */
-export abstract class RangeSliderBase extends NumericInputBase<RangeSliderProps> {
-    readonly componentName = 'range-slider'
-    readonly componentKind: StudioKind = 'range'
-}
+/** @deprecated Import RangeInputBase from ../range-input/base.js. */
+export { RangeInputBase as RangeSliderBase } from '../range-input/RangeInputBase.js'
+export type {
+    RangeInputProps as RangeSliderProps,
+    RangeInputVariant as RangeSliderVariant,
+    RangeInputValue as RangeSliderValue,
+    RangeInputThumb as RangeSliderThumb,
+    RangeInputChangeDetail as RangeSliderChangeDetail,
+} from '../range-input/RangeInputBase.js'

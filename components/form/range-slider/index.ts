@@ -1,16 +1,18 @@
 import { register } from '../../core/Component.js'
-import componentStylesheet from '../../studio/view.css?inline'
-import { type Template } from '../../core/runtime.js'
-import { createStudioView, type StudioView } from '../../studio/view.js'
-import { RangeSliderBase } from './RangeSliderBase.js';
-export class RangeSlider extends RangeSliderBase {
-    stylesheet = componentStylesheet
+import { RangeInput } from '../range-input/index.js'
 
-    private view?: StudioView;
-    render(): Template { this.view = createStudioView(this); return this.view.root; }
-    protected syncView(): void { this.view?.update(); }
+/** @deprecated Use RangeInput from @beforesemicolon/cube/form/range-input. */
+export class RangeSlider extends RangeInput {
+    readonly componentName = 'range-slider'
 }
-export { RangeSliderBase };
-export type { RangeSliderProps } from './RangeSliderBase.js';
+
+export { RangeInputBase as RangeSliderBase } from '../range-input/RangeInputBase.js'
+export type {
+    RangeInputProps as RangeSliderProps,
+    RangeInputVariant as RangeSliderVariant,
+    RangeInputValue as RangeSliderValue,
+    RangeInputThumb as RangeSliderThumb,
+    RangeInputChangeDetail as RangeSliderChangeDetail,
+} from '../range-input/RangeInputBase.js'
 
 register('cb-range-slider', RangeSlider)

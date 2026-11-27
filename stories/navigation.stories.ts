@@ -99,3 +99,19 @@ export const Pagination: Story = componentStory('cb-pagination', {
     nextLabel: 'Next page',
     pageLabel: 'Page {page}',
 })
+
+export const ProgressSteps: Story = componentStory('cb-progress-steps', {
+    label: 'Onboarding progress',
+    variant: 'dots',
+    totalSteps: 5,
+    activeIndex: 1,
+    lastReachableIndex: 2,
+    stepLabel: 'Step {step}',
+})
+ProgressSteps.parameters = {
+    docs: {
+        description: {
+            story: 'Activate a step to see its zero-based click index in Actions. The active step is controlled by the consumer; use the Controls panel to change it.',
+        },
+    },
+}

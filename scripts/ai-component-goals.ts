@@ -18,7 +18,7 @@ export const componentGoals: Record<string, readonly [intent: string, tags: stri
         ['Toggle a choice, toggle a live setting, or pick one visible option', 'checkbox switch radio radio-group'],
         ['Pick from a compact list or search by typing', 'select combobox'],
         ['Choose a day inline, from a popup, or choose a time of day', 'calendar date-picker time-picker'],
-        ['Enter a number, click step buttons, or set a numeric value by dragging', 'number-input stepper slider range-slider'],
+        ['Enter a number, click step buttons, or set a numeric value by dragging', 'number-input stepper range-input'],
         ['Enter formatted values, multiple tokens, a fixed-length code, or files', 'masked-input token-input verification-code file-picker'],
         ['Edit CSS measurements or change related dimensions together', 'unit-input linked-values css-value-input'],
         ['Edit a collection of labels', 'editable-list'],
@@ -34,6 +34,7 @@ export const componentGoals: Record<string, readonly [intent: string, tags: stri
         ['Link to a destination or show the current hierarchy', 'link breadcrumb'],
         ['Switch peer views or choose one compact view mode', 'tabs segmented-control'],
         ['Jump between numbered pages', 'pagination'],
+        ['Show and navigate steps in a multistep flow', 'progress-steps'],
         ['Show an inline keyboard-navigable list of commands', 'menu'],
     ],
     overlay: [

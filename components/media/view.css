@@ -27,6 +27,13 @@ audio {
   gap: var(--spacing-md, 14px);
   margin-block: var(--spacing-sm, 8px);
 }
+[part=seek],
+[part=volume] {
+  --component-range-input-width: 100%;
+  --component-range-input-min-width: 0px;
+  --component-range-input-thumb-size: 14px;
+  --component-control-height-md: 28px;
+}
 [part=seek] {
   flex: 1;
   min-inline-size: 0;

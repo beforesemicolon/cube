@@ -40,7 +40,7 @@ const actionComponents = new Set([
 ])
 const textComponents = new Set(['heading', 'shortcut'])
 const navigationComponents = new Set([
-    'link', 'segmented-control', 'tabs', 'breadcrumb', 'menu', 'pagination', 'nested-menu', 'panel-tabs',
+    'link', 'segmented-control', 'tabs', 'breadcrumb', 'menu', 'pagination', 'progress-steps', 'nested-menu', 'panel-tabs',
     'page-navigator', 'breakpoint-navigator', 'workspace-switcher', 'project-picker', 'device-selector', 'selection-trail', 'user-menu',
 ])
 const overlayComponents = new Set([

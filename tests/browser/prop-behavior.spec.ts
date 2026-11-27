@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-const studioFields = ['text-input', 'textarea', 'number-input', 'unit-input', 'stepper', 'range-slider', 'checkbox', 'switch'] as const
+const studioFields = ['text-input', 'textarea', 'number-input', 'unit-input', 'stepper', 'range-input', 'checkbox', 'switch'] as const
 
 interface NumericField extends HTMLElement {
     value: number | null
@@ -64,7 +64,7 @@ for (const name of studioFields) test(`${name}: custom error props affect validi
     await expect(host).not.toHaveAttribute('data-invalid')
 })
 
-for (const name of ['number-input', 'unit-input', 'stepper', 'range-slider'] as const) test(`${name}: numeric and form props remain live after mount`, async ({ page }) => {
+for (const name of ['number-input', 'unit-input', 'stepper', 'range-input'] as const) test(`${name}: numeric and form props remain live after mount`, async ({ page }) => {
     await page.goto('/tests/browser/fixture.html')
     await page.waitForFunction(() => Boolean(customElements.get('cb-number-input')))
     await page.evaluate(name => {
@@ -88,7 +88,7 @@ for (const name of ['number-input', 'unit-input', 'stepper', 'range-slider'] as 
 
     await host.evaluate(node => { (node as NumericField).readOnly = true })
     await expect(control).toHaveAttribute('readonly')
-    if (name === 'range-slider') {
+    if (name === 'range-input') {
         await control.focus()
         await control.press('ArrowRight')
         await expect(control).toHaveValue('14')
@@ -103,7 +103,7 @@ for (const name of ['number-input', 'unit-input', 'stepper', 'range-slider'] as 
     await expect(control).toBeEnabled()
     await expect.poll(submitted).toEqual([['quantity', '14']])
 
-    if (name === 'range-slider') {
+    if (name === 'range-input') {
         await control.focus()
         await control.press('Home')
         await expect(control).toHaveValue('10')
