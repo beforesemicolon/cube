@@ -1,9 +1,9 @@
 import { register } from '../../core/Component.js'
 import { html, repeat, type Template } from '../../core/runtime.js'
-import { ProgressDotsBase } from './ProgressDotsBase.js'
+import { ProgressStepsBase } from './ProgressStepsBase.js'
 import componentStylesheet from './styles.css?inline'
 
-export class ProgressDots extends ProgressDotsBase {
+export class ProgressSteps extends ProgressStepsBase {
     stylesheet = componentStylesheet
 
     render(): Template {
@@ -29,7 +29,7 @@ export class ProgressDots extends ProgressDotsBase {
     }
 }
 
-export { ProgressDotsBase }
-export type { ProgressDotsClickDetail, ProgressDotsProps, ProgressDotsVariant } from './ProgressDotsBase.js'
+export { ProgressStepsBase }
+export type { ProgressStepsClickDetail, ProgressStepsProps, ProgressStepsVariant } from './ProgressStepsBase.js'
 
-register('cb-progress-dots', ProgressDots)
+register('cb-progress-steps', ProgressSteps)

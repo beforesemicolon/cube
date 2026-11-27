@@ -1,10 +1,10 @@
 import { Component, type ComponentProps } from '../../core/Component.js'
 import { finite } from '../../core/value.js'
 
-export type ProgressDotsVariant = 'circles' | 'lines'
+export type ProgressStepsVariant = 'dots' | 'lines'
 
-export interface ProgressDotsProps extends ComponentProps {
-    variant?: ProgressDotsVariant
+export interface ProgressStepsProps extends ComponentProps {
+    variant?: ProgressStepsVariant
     totalSteps?: number
     activeIndex?: number
     lastReachableIndex?: number
@@ -12,14 +12,14 @@ export interface ProgressDotsProps extends ComponentProps {
     stepLabels?: readonly string[]
 }
 
-export interface ProgressDotsClickDetail {
+export interface ProgressStepsClickDetail {
     /** Zero-based index of the activated step. */
     index: number
     originalEvent: MouseEvent
 }
 
 /** A controlled step indicator. Consumers decide whether to change the active step. */
-export abstract class ProgressDotsBase extends Component<ProgressDotsProps> {
+export abstract class ProgressStepsBase extends Component<ProgressStepsProps> {
     static observedAttributes = [
         ...Component.observedAttributes,
         'variant',
@@ -30,7 +30,7 @@ export abstract class ProgressDotsBase extends Component<ProgressDotsProps> {
         'step-labels',
     ]
 
-    variant: ProgressDotsVariant = 'circles'
+    variant: ProgressStepsVariant = 'dots'
     totalSteps = 0
     activeIndex = 0
     lastReachableIndex = -1
@@ -64,8 +64,8 @@ export abstract class ProgressDotsBase extends Component<ProgressDotsProps> {
     }
 
     protected progressName = (): string => this.accessibleName() || 'Progress'
-    protected progressVariant = (): ProgressDotsVariant =>
-        this.variant === 'lines' ? 'lines' : 'circles'
+    protected progressVariant = (): ProgressStepsVariant =>
+        this.variant === 'lines' ? 'lines' : 'dots'
 
     protected activateStep(index: number, event: Event): void {
         event.stopPropagation()
@@ -76,6 +76,6 @@ export abstract class ProgressDotsBase extends Component<ProgressDotsProps> {
         originalEvent.stopPropagation()
         if (this.isStepDisabled(index)) return
 
-        this.emit('click', { index, originalEvent } satisfies ProgressDotsClickDetail)
+        this.emit('click', { index, originalEvent } satisfies ProgressStepsClickDetail)
     }
 }

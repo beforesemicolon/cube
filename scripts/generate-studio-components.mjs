@@ -21,7 +21,7 @@ const groups = [
             ['checkbox', 'Checkbox', 'choice'],
             ['radio', 'Radio', 'choice'],
             ['switch', 'Switch', 'choice'],
-            ['range-slider', 'Range slider', 'range'],
+            ['range-input', 'Range input', 'range'],
             ['stepper', 'Stepper', 'number'],
             ['date-picker', 'Date picker', 'text'],
             ['time-picker', 'Time picker', 'text'],
@@ -283,7 +283,7 @@ const publicStudioComponentNames = new Set([
     'checkbox',
     'radio',
     'switch',
-    'range-slider',
+    'range-input',
     'stepper',
     'date-picker',
     'time-picker',
@@ -439,6 +439,7 @@ const existingCategoryExports = {
         "export * from './NumericInputBase.js'",
         "export * from './ChoiceControlBase.js'",
         "export * from './slider/index.js'",
+        "export * from './range-slider/index.js'",
         "export * from './select/index.js'",
         "export * from './radio-group/index.js'",
         "export * from './calendar/index.js'",
@@ -460,7 +461,7 @@ const existingCategoryExports = {
         "export * from './breadcrumb/index.js'",
         "export * from './menu/index.js'",
         "export * from './pagination/index.js'",
-        "export * from './progress-dots/index.js'",
+        "export * from './progress-steps/index.js'",
     ],
     overlay: [
         "export * from './context-menu/index.js'",
@@ -551,7 +552,7 @@ const foundationStoryArgs = {
     menu: `{ label: 'Menu', items, loop: true }`,
     link: `{ label: 'Documentation', href: '#documentation', target: '_self', variant: 'ghost' }`,
     pagination: `{ label: 'Results pages', page: 2, totalPages: 8, siblings: 1, previousLabel: 'Previous page', nextLabel: 'Next page', pageLabel: 'Page {page}' }`,
-    'progress-dots': `{ label: 'Onboarding progress', variant: 'circles', totalSteps: 5, activeIndex: 1, lastReachableIndex: 2, stepLabel: 'Step {step}' }`,
+    'progress-steps': `{ label: 'Onboarding progress', variant: 'dots', totalSteps: 5, activeIndex: 1, lastReachableIndex: 2, stepLabel: 'Step {step}' }`,
     'context-menu': `{ label: 'Context menu', items, open: false, x: 32, y: 32, loop: true }`,
     dropdown: `{ label: 'Dropdown', items, open: false, placement: 'bottom-start', icon: 'down' }`,
     'command-palette': `{ label: 'Command palette', items, open: false, query: '', placeholder: 'Search commands', emptyLabel: 'No commands found' }`,
@@ -576,10 +577,10 @@ const foundationStoryArgs = {
 const storyExtras = [
     {
         category: 'navigation',
-        name: 'progress-dots',
-        title: 'Progress dots',
+        name: 'progress-steps',
+        title: 'Progress steps',
         kind: 'number',
-        className: 'ProgressDots',
+        className: 'ProgressSteps',
     },
     {
         category: 'form',
@@ -662,7 +663,7 @@ const storyExtras = [
 const reusedStoryDefinitions = reusedDefinitions.filter(
     (reused) =>
         !definitions.some((definition) => definition.name === reused.name) &&
-        reused.name !== 'toggle-button'
+        !['toggle-button', 'slider'].includes(reused.name)
 )
 const storyDefinitions = [
     ...publicDefinitions,
@@ -679,7 +680,7 @@ const formStoryOrder = [
     'radio',
     'radio-group',
     'switch',
-    'range-slider',
+    'range-input',
     'stepper',
     'date-picker',
     'time-picker',
@@ -688,7 +689,6 @@ const formStoryOrder = [
     'editable-label',
     'masked-input',
     'select',
-    'slider',
     'calendar',
 ]
 const orderDefinitions = (category, entries) =>

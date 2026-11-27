@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test'
 import { componentContract } from '../../../tests/component-contract.js'
-import type { ProgressDots, ProgressDotsClickDetail } from './index.js'
+import type { ProgressSteps, ProgressStepsClickDetail } from './index.js'
 
-componentContract('cb-progress-dots', 'navigation--progress-dots', async ({ page, host }) => {
+componentContract('cb-progress-steps', 'navigation--progress-steps', async ({ page, host }) => {
     const current = host.getByRole('button', { name: 'Step 2' })
     const first = host.getByRole('button', { name: 'Step 1' })
     const locked = host.getByRole('button', { name: 'Step 4' })
@@ -12,11 +12,11 @@ componentContract('cb-progress-dots', 'navigation--progress-dots', async ({ page
     await expect(host.locator('cb-button').nth(0)).toHaveAttribute('data-state', 'complete')
     await expect(host.locator('cb-button').nth(3)).toHaveAttribute('data-state', 'pending')
     await expect(locked).toBeDisabled()
-    await host.evaluate((node: ProgressDots) => {
+    await host.evaluate((node: ProgressSteps) => {
         node.addEventListener('click', (event) => {
             node.dataset.clickCount = String(Number(node.dataset.clickCount ?? 0) + 1)
             if (!(event instanceof CustomEvent)) throw new Error('Expected one semantic click')
-            const detail: ProgressDotsClickDetail = event.detail
+            const detail: ProgressStepsClickDetail = event.detail
             node.dataset.clickedIndex = String(detail.index)
         })
     })
@@ -37,18 +37,18 @@ componentContract('cb-progress-dots', 'navigation--progress-dots', async ({ page
     await page.keyboard.press('Enter')
     await expect(host).toHaveAttribute('data-clicked-index', '1')
     await expect(host).toHaveAttribute('data-click-count', '2')
-    await host.evaluate((node: ProgressDots) => {
+    await host.evaluate((node: ProgressSteps) => {
         node.activeIndex = 2
     })
     await expect(host.getByRole('button', { name: 'Step 3' })).toHaveAttribute('aria-current', 'step')
     await expect(current).toBeFocused()
-    await host.evaluate((node: ProgressDots) => {
+    await host.evaluate((node: ProgressSteps) => {
         node.disabled = true
     })
     await expect(first).toBeDisabled()
     await first.evaluate((button: HTMLButtonElement) => button.click())
     await expect(host).toHaveAttribute('data-click-count', '2')
-    await host.evaluate((node: ProgressDots) => {
+    await host.evaluate((node: ProgressSteps) => {
         node.stepLabels = ['Business', 'Services']
     })
     await expect(host.getByRole('button', { name: 'Business' })).toBeVisible()
@@ -62,14 +62,14 @@ test.describe('progress dot touch targets', () => {
     test('touch activates one step and locked dots retain contrast in both themes', async ({ page }) => {
         await page.goto('/tests/browser/fixture.html')
         await page.evaluate(async () => {
-            await customElements.whenDefined('cb-progress-dots')
-            const host = document.createElement('cb-progress-dots')
+            await customElements.whenDefined('cb-progress-steps')
+            const host = document.createElement('cb-progress-steps')
             host.setAttribute('total-steps', '8')
             host.setAttribute('active-index', '2')
             host.setAttribute('last-reachable-index', '3')
             host.addEventListener('click', (event) => {
                 if (!(event instanceof CustomEvent)) throw new Error('Expected one semantic click')
-                const detail: ProgressDotsClickDetail = event.detail
+                const detail: ProgressStepsClickDetail = event.detail
                 host.dataset.clicks = `${host.dataset.clicks ?? ''}${detail.index}`
             })
             const fixture = document.querySelector<HTMLElement>('#fixture')
@@ -77,7 +77,7 @@ test.describe('progress dot touch targets', () => {
             fixture.style.backgroundColor = 'var(--color-background)'
             fixture.append(host)
         })
-        const host = page.locator('cb-progress-dots')
+        const host = page.locator('cb-progress-steps')
         const lastReachable = host.getByRole('button', { name: 'Step 4' })
         const locked = host.getByRole('button', { name: 'Step 5' })
         await lastReachable.tap()
@@ -114,9 +114,11 @@ test.describe('progress dot touch targets', () => {
     })
 })
 
-test('the lines story uses compact segments without shrinking the controls', async ({ page }) => {
-    await page.goto('http://127.0.0.1:6006/iframe.html?id=navigation--progress-dots-lines&viewMode=story')
-    const host = page.locator('cb-progress-dots')
+test('the Progress Steps story changes to lines without shrinking the controls', async ({ page }) => {
+    await page.goto('http://127.0.0.1:6006/?path=/story/navigation--progress-steps')
+    const host = page.frameLocator('#storybook-preview-iframe').locator('cb-progress-steps')
+    await expect(host.getByRole('navigation')).toHaveAttribute('data-variant', 'dots')
+    await page.locator('#control-variant').selectOption('lines')
     const first = host.getByRole('button', { name: 'Step 1' })
     const current = host.getByRole('button', { name: 'Step 2' })
     await expect(current).toHaveAttribute('aria-current', 'step')
@@ -130,10 +132,10 @@ test('the lines story uses compact segments without shrinking the controls', asy
     if (!firstBounds || !currentBounds) throw new Error('Missing line targets')
     expect(firstBounds.height).toBeGreaterThanOrEqual(24)
     expect(currentBounds.x - firstBounds.x - firstBounds.width).toBeGreaterThanOrEqual(6)
-    await host.evaluate((node: ProgressDots) => {
+    await host.evaluate((node: ProgressSteps) => {
         node.addEventListener('click', (event) => {
             if (!(event instanceof CustomEvent)) throw new Error('Expected one semantic click')
-            const detail: ProgressDotsClickDetail = event.detail
+            const detail: ProgressStepsClickDetail = event.detail
             node.activeIndex = detail.index
         })
     })

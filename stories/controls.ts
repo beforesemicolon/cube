@@ -291,7 +291,8 @@ const tagOptions: Readonly<
         ],
     },
     'cb-rich-text-editor': { variant: ['inline', 'box'] },
-    'cb-range-slider': { variant: ['single', 'double'] },
+    'cb-range-input': { variant: ['single', 'double'] },
+    'cb-progress-steps': { variant: ['dots', 'lines'] },
     'cb-list': { orientation: ['vertical', 'horizontal'] },
     'cb-avatar': {
         variant: ['round', 'boxy'],
@@ -1040,7 +1041,8 @@ const taggedDefaults: Readonly<
     Record<string, Readonly<Record<string, StoryValue>>>
 > = {
     'cb-divider': { variant: 'solid', labelPosition: 'start' },
-    'cb-range-slider': { variant: 'single', startValue: null, endValue: null },
+    'cb-range-input': { variant: 'single', startValue: null, endValue: null },
+    'cb-progress-steps': { variant: 'dots' },
     'cb-text-input': { type: 'text', min: '', max: '', step: '' },
     'cb-tooltip': { anchorRect: null, placement: 'top', delay: 400 },
     'cb-verification-code': { length: 6, mode: 'numeric', pin: false, autocomplete: 'one-time-code' },
@@ -1242,8 +1244,7 @@ const taggedDefaults: Readonly<
 const numericValueTags = new Set([
     'cb-number-input',
     'cb-unit-input',
-    'cb-range-slider',
-    'cb-slider',
+    'cb-range-input',
     'cb-stepper',
     'cb-resizable-panel',
 ])
@@ -1298,7 +1299,7 @@ function descriptionFor(tag: string, property: string): string {
         return 'Custom image URL (including SVG). A child SVG takes precedence, then src, then the built-in name.'
     if (tag === 'cb-rich-text-editor' && property === 'value')
         return 'Sanitized HTML string. Supports strong, em, u, s, sup, sub and br; other tags/attributes are not rendered.'
-    if (tag === 'cb-range-slider') {
+    if (tag === 'cb-range-input') {
         if (property === 'variant') return 'Single selects one value; double selects an ordered interval.'
         if (property === 'startValue') return 'Lower endpoint in double mode. Leave unset to start at min.'
         if (property === 'endValue') return 'Upper endpoint in double mode. Leave unset to start at max.'
@@ -1361,7 +1362,7 @@ function optionsFor(
 
 function controlFor(tag: string, property: string): StoryControl['control'] {
     if (tag === 'cb-combobox' && property === 'value') return 'object'
-    if (tag === 'cb-range-slider' && (property === 'startValue' || property === 'endValue'))
+    if (tag === 'cb-range-input' && (property === 'startValue' || property === 'endValue'))
         return numberControl(property)
     if (tag === 'cb-list' && property === 'renderItem') return false
     if (tag === 'cb-list' && property === 'offset')

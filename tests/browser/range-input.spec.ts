@@ -1,21 +1,21 @@
 import { expect, test, type Page } from '@playwright/test'
-import type { RangeSlider, RangeSliderChangeDetail } from '../../components/form/range-slider/index.js'
+import type { RangeInput, RangeInputChangeDetail } from '../../components/form/range-input/index.js'
 
 async function mount(page: Page, double = true): Promise<void> {
     await page.goto('/tests/browser/fixture.html')
     await page.evaluate(async (double) => {
-        await customElements.whenDefined('cb-range-slider')
+        await customElements.whenDefined('cb-range-input')
         const form = document.createElement('form')
         // Exercise HTML attribute parsing as well as the JavaScript API.
-        form.innerHTML = `<cb-range-slider name="price" accessible-label="Price"
+        form.innerHTML = `<cb-range-input name="price" accessible-label="Price"
             min="0" max="10" step="0.5" value="3"
             ${double ? 'variant="double" start-value="2" end-value="8" start-label="From" end-label="To"' : ''}>
-        </cb-range-slider>`
-        const slider = form.querySelector('cb-range-slider')
+        </cb-range-input>`
+        const slider = form.querySelector('cb-range-input')
         if (!slider) throw new Error('Missing slider')
         slider.addEventListener('change', (event) => {
             if (!(event instanceof CustomEvent)) throw new Error('Unexpected native event')
-            const { value, previousValue, thumb }: RangeSliderChangeDetail = event.detail
+            const { value, previousValue, thumb }: RangeInputChangeDetail = event.detail
             slider.setAttribute('data-event', JSON.stringify({ value, previousValue, thumb }))
             slider.setAttribute('data-count', String(Number(slider.getAttribute('data-count')) + 1))
         })
@@ -25,20 +25,20 @@ async function mount(page: Page, double = true): Promise<void> {
 
 test('single remains scalar, focusable, and form associated after a variant switch', async ({ page }) => {
     await mount(page, false)
-    const host = page.locator('cb-range-slider')
+    const host = page.locator('cb-range-input')
     const slider = host.getByRole('slider', { name: 'Price', exact: true })
     await expect(slider).toHaveValue('3')
-    await host.evaluate((element: RangeSlider) => element.focus())
+    await host.evaluate((element: RangeInput) => element.focus())
     await expect(slider).toBeFocused()
     await page.keyboard.press('ArrowRight')
     await expect(slider).toHaveValue('3.5')
     await expect(host).toHaveAttribute('data-event', JSON.stringify({ value: 3.5, previousValue: 3 }))
     const form = page.locator('form')
     expect(await form.evaluate((element: HTMLFormElement) => new FormData(element).getAll('price'))).toEqual(['3.5'])
-    await host.evaluate((element: RangeSlider) => { element.variant = 'double' })
+    await host.evaluate((element: RangeInput) => { element.variant = 'double' })
     await expect(host.getByRole('slider')).toHaveCount(2)
-    expect(await host.evaluate((element: RangeSlider) => element.rangeValue)).toEqual([0, 10])
-    await host.evaluate((element: RangeSlider) => { element.variant = 'single' })
+    expect(await host.evaluate((element: RangeInput) => element.rangeValue)).toEqual([0, 10])
+    await host.evaluate((element: RangeInput) => { element.variant = 'single' })
     await expect(slider).toHaveValue('3.5')
     await form.evaluate((element: HTMLFormElement) => element.reset())
     await expect(slider).toHaveValue('3')
@@ -46,7 +46,7 @@ test('single remains scalar, focusable, and form associated after a variant swit
 
 test('double picks both values with keyboard, prevents crossing and honors canceled changes', async ({ page }) => {
     await mount(page)
-    const host = page.locator('cb-range-slider')
+    const host = page.locator('cb-range-input')
     const start = host.getByRole('slider', { name: 'From', exact: true })
     const end = host.getByRole('slider', { name: 'To', exact: true })
     await expect(start).toHaveValue('2')
@@ -69,7 +69,7 @@ test('double picks both values with keyboard, prevents crossing and honors cance
     await expect(end).toHaveValue('2.5')
     await expect(host).toHaveAttribute('data-count', '2')
 
-    await host.evaluate((element: RangeSlider) => {
+    await host.evaluate((element: RangeInput) => {
         element.addEventListener('beforechange', (event) => event.preventDefault(), { once: true })
     })
     await page.keyboard.press('End')
@@ -82,7 +82,7 @@ test('double picks both values with keyboard, prevents crossing and honors cance
 
 test('double supports track taps, thumb dragging and a highlighted interval', async ({ page }) => {
     await mount(page)
-    const host = page.locator('cb-range-slider')
+    const host = page.locator('cb-range-input')
     const rail = host.locator('[part="range-rail"]')
     const start = host.getByRole('slider', { name: 'From', exact: true })
     const end = host.getByRole('slider', { name: 'To', exact: true })
@@ -103,10 +103,10 @@ test('double supports track taps, thumb dragging and a highlighted interval', as
     await page.mouse.move(to.x, to.y, { steps: 6 })
     await page.mouse.up()
     await expect(end).toHaveValue('9')
-    expect(await host.evaluate((element: RangeSlider) => element.rangeValue)).toEqual([1, 9])
+    expect(await host.evaluate((element: RangeInput) => element.rangeValue)).toEqual([1, 9])
     const fill = await rail.locator('[part="range-fill"]').boundingBox()
     expect(fill?.width).toBeCloseTo(bounds.width * 0.8, 0)
-    await host.evaluate((element: RangeSlider) => { element.dir = 'rtl' })
+    await host.evaluate((element: RangeInput) => { element.dir = 'rtl' })
     const rtlTap = point(0.95)
     await page.mouse.click(rtlTap.x, rtlTap.y)
     await expect(start).toHaveValue('0.5')
@@ -114,18 +114,18 @@ test('double supports track taps, thumb dragging and a highlighted interval', as
 
 test('double normalizes programmatic values, submits in order, restores and resets', async ({ page }) => {
     await mount(page)
-    const host = page.locator('cb-range-slider')
+    const host = page.locator('cb-range-input')
     const form = page.locator('form')
     const read = () => form.evaluate((element: HTMLFormElement) => new FormData(element).getAll('price'))
     const start = host.getByRole('slider', { name: 'From', exact: true })
     const end = host.getByRole('slider', { name: 'To', exact: true })
     expect(await read()).toEqual(['2', '8'])
-    expect(await host.evaluate((element: RangeSlider) => element.setValue(5))).toBe(false)
-    expect(await host.evaluate((element: RangeSlider) => element.setRangeValue([13, -4]))).toBe(true)
+    expect(await host.evaluate((element: RangeInput) => element.setValue(5))).toBe(false)
+    expect(await host.evaluate((element: RangeInput) => element.setRangeValue([13, -4]))).toBe(true)
     await expect(start).toHaveValue('0')
     await expect(end).toHaveValue('10')
     expect(await read()).toEqual(['0', '10'])
-    await host.evaluate((element: RangeSlider) => {
+    await host.evaluate((element: RangeInput) => {
         element.max = 9.9
         element.setRangeValue([3.26, 7.99])
         element.readOnly = true
@@ -134,7 +134,7 @@ test('double normalizes programmatic values, submits in order, restores and rese
     await expect(end).toHaveValue('8')
     await expect(end).toHaveAttribute('aria-readonly', 'true')
     expect(await read()).toEqual(['3.5', '8'])
-    await host.evaluate((element: RangeSlider) => {
+    await host.evaluate((element: RangeInput) => {
         element.readOnly = false
         const saved = new FormData()
         saved.append('price', '4')
@@ -147,7 +147,7 @@ test('double normalizes programmatic values, submits in order, restores and rese
     await form.evaluate((element: HTMLFormElement) => element.reset())
     await expect(start).toHaveValue('2')
     await expect(end).toHaveValue('8')
-    await host.evaluate((element: RangeSlider) => {
+    await host.evaluate((element: RangeInput) => {
         const fieldset = document.createElement('fieldset')
         element.parentElement?.append(fieldset)
         fieldset.append(element)
@@ -164,7 +164,7 @@ test.describe('mobile range slider', () => {
     test('double track responds to touch in dark mode without overflow', async ({ page }) => {
         await mount(page)
         await page.locator('#theme').evaluate(element => { element.setAttribute('appearance', 'dark') })
-        const host = page.locator('cb-range-slider')
+        const host = page.locator('cb-range-input')
         const rail = await host.locator('[part="range-rail"]').boundingBox()
         if (!rail) throw new Error('Track not rendered')
         expect(rail.x + rail.width).toBeLessThanOrEqual(320)

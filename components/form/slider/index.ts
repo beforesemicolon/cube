@@ -5,6 +5,7 @@ import { html, type Template } from '../../core/runtime.js'
 import { SliderBase } from './SliderBase.js'
 import { bool, text } from '../../core/value.js'
 
+/** @deprecated Use RangeInput from @beforesemicolon/cube/form/range-input for new work. */
 export class Slider extends SliderBase {
     stylesheet = componentStylesheet
 

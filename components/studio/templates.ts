@@ -152,7 +152,9 @@ export function studioTemplates(source: StudioViewSource): Template {
                           )?.label ?? unit.selectedUnit
                       return label ? value() + ' ' + label : null
                   })()
-                : null,
+                : kind === 'range'
+                  ? scalarText(source.valueText) || null
+                  : null,
     }
     const input = (): Template =>
         kind === 'textarea'

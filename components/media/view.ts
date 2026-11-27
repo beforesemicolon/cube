@@ -26,10 +26,10 @@ export function mediaView(owner:MediaBase,kind:'audio'|'video') {
             muted=${()=>bool(owner.muted)} preload=${()=>owner.preload} crossorigin=${()=>owner.crossOrigin||null}>${tracks()}</audio>`;
     const root=html`<section part="player" role="group" aria-label=${accessibleName}>
         <div part="title" hidden=${isNot(() => text(owner.mediaTitle))}>${()=>text(owner.mediaTitle)}</div>${mediaTemplate}
-        <div part="timeline"><cb-slider part="seek" exportparts="control:seek-control" step="0.1" min=${pick(playback[0], "seekStart")}
+        <div part="timeline"><cb-range-input part="seek" exportparts="control:seek-control" step="0.1" min=${pick(playback[0], "seekStart")}
             max=${()=>Math.max(playback[0]().seekStart,playback[0]().seekEnd)} value=${pick(playback[0], "position")}
             accessible-label=${()=>owner.seekLabel} value-text=${timeText} disabled=${noSeek}
-            onchange=${(event:CustomEvent<{value:number}>)=>{event.stopPropagation();owner.seek(Number(event.detail.value));}}></cb-slider>
+            onchange=${(event:CustomEvent<{value:number}>)=>{event.stopPropagation();owner.seek(Number(event.detail.value));}}></cb-range-input>
             <output part="time" aria-live="off">${timeText}</output></div>
         <div part="controls"><div part="transport">
             ${action('backward',()=> 'backward',()=>owner.backwardLabel,()=>owner.backward(),noSeek)}
@@ -38,8 +38,8 @@ export function mediaView(owner:MediaBase,kind:'audio'|'video') {
             ${action('forward',()=> 'forward',()=>owner.forwardLabel,()=>owner.forward(),noSeek)}
         </div><div part="settings">
             ${action('mute',()=>playback[0]().muted?'muted':'volume',()=>playback[0]().muted?owner.unmuteLabel:owner.muteLabel,()=>owner.setMuted(!playback[0]().muted))}
-            <cb-slider part="volume" exportparts="control:volume-control" min="0" max="1" step="0.05" value=${pick(playback[0], "volume")} accessible-label=${()=>owner.volumeLabel}
-                onchange=${(event:CustomEvent<{value:number}>)=>{event.stopPropagation();owner.setVolume(Number(event.detail.value));}}></cb-slider>
+            <cb-range-input part="volume" exportparts="control:volume-control" min="0" max="1" step="0.05" value=${pick(playback[0], "volume")} accessible-label=${()=>owner.volumeLabel}
+                onchange=${(event:CustomEvent<{value:number}>)=>{event.stopPropagation();owner.setVolume(Number(event.detail.value));}}></cb-range-input>
             <cb-select part="rate" exportparts="control:rate-control" accessible-label=${()=>owner.rateLabel} title=${()=>owner.rateLabel} value=${()=>String(playback[0]().rate)}
                 options=${()=>[.5,.75,1,1.25,1.5,2].map(value=>({value:String(value),label:`${value}×`}))}
                 onchange=${(event:CustomEvent<{value:string}>)=>{event.stopPropagation();owner.setRate(Number(event.detail.value));}}></cb-select>

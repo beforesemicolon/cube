@@ -9,7 +9,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--component-progress-dots-gap, var(--cb-progress-dots-default-gap, 8px));
+    gap: var(--component-progress-steps-gap, var(--cb-progress-steps-default-gap, 8px));
     padding: 0;
     margin: 0;
     list-style: none;
@@ -19,15 +19,15 @@
     display: grid;
     place-items: center;
     box-sizing: border-box;
-    inline-size: max(24px, var(--component-progress-dots-target-size, 28px), var(--cb-progress-dots-line-width, 0px));
-    block-size: max(24px, var(--component-progress-dots-target-size, 28px));
+    inline-size: max(24px, var(--component-progress-steps-target-size, 28px), var(--cb-progress-steps-line-width, 0px));
+    block-size: max(24px, var(--component-progress-steps-target-size, 28px));
     min-inline-size: 0;
     min-block-size: 0;
     padding: 0;
     border: 0;
     border-radius: 100%;
     background: transparent;
-    color: var(--cb-progress-dots-color, var(--component-progress-dots-pending-color, var(--color-foreground, #20262b)));
+    color: var(--cb-progress-steps-color, var(--component-progress-steps-pending-color, var(--color-foreground, #20262b)));
     cursor: pointer;
 }
 
@@ -44,14 +44,14 @@
 
 [part=dot] {
     box-sizing: border-box;
-    inline-size: var(--component-progress-dots-dot-size, 10px);
-    block-size: var(--component-progress-dots-dot-size, 10px);
+    inline-size: var(--component-progress-steps-dot-size, 10px);
+    block-size: var(--component-progress-steps-dot-size, 10px);
     border: 2px solid currentColor;
     border-radius: 50%;
 }
 
 [part=target]:is([data-state=complete], [data-state=current]) {
-    --cb-progress-dots-color: var(--component-progress-dots-active-color, var(--color-primary, #2563eb));
+    --cb-progress-steps-color: var(--component-progress-steps-active-color, var(--color-primary, #2563eb));
 }
 
 [data-state=complete] [part=dot] {
@@ -65,13 +65,13 @@
 }
 
 [data-variant=lines] {
-    --cb-progress-dots-default-gap: 6px;
-    --cb-progress-dots-line-width: var(--component-progress-dots-line-width, 28px);
+    --cb-progress-steps-default-gap: 6px;
+    --cb-progress-steps-line-width: var(--component-progress-steps-line-width, 28px);
 }
 
 [data-variant=lines] [part=dot] {
-    inline-size: var(--cb-progress-dots-line-width);
-    block-size: var(--component-progress-dots-line-height, 4px);
+    inline-size: var(--cb-progress-steps-line-width);
+    block-size: var(--component-progress-steps-line-height, 4px);
     border-width: 1px;
     border-radius: 999px;
     outline: none;

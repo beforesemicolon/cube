@@ -1,7 +1,7 @@
 @import '../../studio/view.css';
 
 [part~='range-track'] {
-    --cb-dual-thumb-size: var(--component-range-slider-thumb-size, 16px);
+    --cb-dual-thumb-size: var(--component-range-input-thumb-size, var(--component-range-slider-thumb-size, 16px));
     position: relative;
     display: grid;
     align-items: center;
@@ -12,7 +12,7 @@
 [part~='range-rail'] {
     position: absolute;
     inset-inline: calc(var(--cb-dual-thumb-size) / 2);
-    block-size: var(--component-range-slider-track-height, 4px);
+    block-size: var(--component-range-input-track-height, var(--component-range-slider-track-height, 4px));
     border-radius: 999px;
     background: var(--color-track);
     pointer-events: none;

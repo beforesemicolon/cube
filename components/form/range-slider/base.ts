@@ -1,8 +1,8 @@
 export { RangeSliderBase } from './RangeSliderBase.js'
 export type {
     RangeSliderProps,
-    RangeSliderValue,
     RangeSliderVariant,
+    RangeSliderValue,
     RangeSliderThumb,
     RangeSliderChangeDetail,
 } from './RangeSliderBase.js'

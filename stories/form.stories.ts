@@ -160,24 +160,17 @@ export const Switch: Story = componentStory('cb-switch', {
     checked: true,
 })
 
-export const RangeSlider: Story = componentStory('cb-range-slider', {
-    label: 'Range slider',
+export const RangeInput: Story = componentStory('cb-range-input', {
+    label: 'Range input',
+    variant: 'single',
+    startLabel: 'Minimum',
+    endLabel: 'Maximum',
+    startValue: 25,
+    endValue: 75,
     value: 64,
     min: 0,
     max: 100,
     step: 1,
-})
-
-export const RangeSliderDouble: Story = componentStory('cb-range-slider', {
-    variant: 'double',
-    accessibleLabel: 'Price range',
-    startLabel: 'Minimum price',
-    endLabel: 'Maximum price',
-    min: 0,
-    max: 100,
-    step: 5,
-    startValue: 25,
-    endValue: 75,
 })
 
 export const Stepper: Story = componentStory('cb-stepper', {
@@ -280,16 +273,6 @@ export const Select: Story = componentStory('cb-select', {
         { value: 'phone-large', label: 'Large phone' },
         { value: 'kiosk', label: 'Kiosk' },
     ],
-})
-
-export const Slider: Story = componentStory('cb-slider', {
-    label: 'Opacity',
-    value: 64,
-    min: 0,
-    max: 100,
-    step: 1,
-    valueText: '64%',
-    stacked: false,
 })
 
 export const Calendar: Story = componentStory('cb-calendar', {

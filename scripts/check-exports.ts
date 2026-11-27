@@ -22,6 +22,21 @@ for (const file of files.filter(file => /^(esm|cjs)\//.test(file) && file.endsWi
     assert(!/\.css\?inline/.test(source), `${file} must resolve CSS imports for published modules`)
 }
 assert(!files.some(file => file.includes('/description-row/')), 'The removed Description Row component must not ship')
+for (const path of [
+    'navigation/progress-steps',
+    'form/range-input',
+    'form/slider',
+    'form/range-slider',
+]) {
+    for (const format of ['esm', 'cjs', 'types']) {
+        const ext = format === 'types' ? 'd.ts' : 'js'
+        for (const entry of ['index', 'base']) {
+            await access(new URL(`../dist/${format}/${path}/${entry}.${ext}`, import.meta.url))
+        }
+    }
+}
+assert(!files.some(file => file.includes('/progress-dots/')), 'The unpublished Progress Dots entry must not ship')
+
 for (const client of ['client.js', 'data-display-client.js']) {
     const source = await readFile(new URL(`../dist/${client}`, import.meta.url), 'utf8')
     assert(!source.includes('cb-description-row'), `${client} must not register Description Row`)
