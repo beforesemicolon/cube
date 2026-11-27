@@ -27,6 +27,7 @@ export abstract class ProgressDotsBase extends Component<ProgressDotsProps> {
         'active-index',
         'last-reachable-index',
         'step-label',
+        'step-labels',
     ]
 
     variant: ProgressDotsVariant = 'circles'
@@ -49,7 +50,8 @@ export abstract class ProgressDotsBase extends Component<ProgressDotsProps> {
     }
 
     protected labelForStep(index: number): string {
-        const label = this.stepLabels?.[index]
+        const labels = this.props.stepLabels?.()
+        const label = Array.isArray(labels) ? labels[index] : undefined
         if (typeof label === 'string' && label.trim()) return label.trim()
         const step = String(index + 1)
         const pattern = this.stepLabel || 'Step {step}'
